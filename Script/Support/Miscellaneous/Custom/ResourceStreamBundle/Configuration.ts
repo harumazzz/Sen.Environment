@@ -16,5 +16,6 @@ namespace Sen.Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configura
         texture_format_category: bigint;
         only_high_resolution: boolean;
         packages_setting: PackagesSetting;
+        unpack_packages: boolean;
     }
 }

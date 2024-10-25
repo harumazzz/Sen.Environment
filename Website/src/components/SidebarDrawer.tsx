@@ -3,6 +3,7 @@ import { Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, use
 import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import TutorialIcon from "@mui/icons-material/YouTube";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const SidebarDrawer: React.FC<{
@@ -49,12 +50,20 @@ const SidebarDrawer: React.FC<{
                             {!isCollapsed && <ListItemText primary="Home" />}
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key="Documentation" disablePadding>
-                        <ListItemButton onClick={() => setActivePage("Documentation")}>
+                    <ListItem key="Changelog" disablePadding>
+                        <ListItemButton onClick={() => setActivePage("Changelog")}>
                             <ListItemIcon>
                                 <AssignmentIcon />
                             </ListItemIcon>
-                            {!isCollapsed && <ListItemText primary="Documentation" />}
+                            {!isCollapsed && <ListItemText primary="Changelog" />}
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem key="Tutorial" disablePadding>
+                        <ListItemButton onClick={() => setActivePage("Tutorial")}>
+                            <ListItemIcon>
+                                <TutorialIcon />
+                            </ListItemIcon>
+                            {!isCollapsed && <ListItemText primary="Tutorial" />}
                         </ListItemButton>
                     </ListItem>
                     <ListItem key="About" disablePadding>

@@ -351,7 +351,7 @@ namespace Sen.Script {
             "~/Support/PopCap/Animation/Miscellaneous/AddLibrary.js",
             "~/Support/PopCap/LawnStrings/Convert.js",
             "~/Support/PopCap/ResourceStreamBundle/Miscellaneous/Obfuscate.js",
-            "~/Support/PopCap/ResourceStreamBundle/Miscellaneous/ConvertAndroidToiOS.js",
+            "~/Support/PopCap/ResourceStreamBundle/Miscellaneous/PlatformConverter.js",
             "~/Support/PopCap/ReflectionObjectNotation/DecodeByLooseConstraints.js",
             "~/Support/Wwise/Media/Common.js",
             "~/Support/Wwise/Media/Decode.js",
@@ -426,8 +426,8 @@ namespace Sen.Script {
             "~/Executor/Methods/popcap.reanim.from_flash_and_encode.js",
             "~/Executor/Methods/popcap.reanim.decode_and_to_flash.js",
             "~/Executor/Methods/popcap.rsb.unpack_by_loose_constraints.js",
-            "~/Executor/Methods/popcap.rsb.unpack_custom.js",
-            "~/Executor/Methods/popcap.rsb.pack_custom.js",
+            "~/Executor/Methods/popcap.rsb.init_project.js",
+            "~/Executor/Methods/popcap.rsb.build_project.js",
             "~/Executor/Methods/popcap.atlas.split_by_resource_group.js",
             "~/Executor/Methods/popcap.atlas.pack_by_resource_group.js",
             "~/Executor/Methods/popcap.atlas.split_by_res_info.js",
@@ -437,9 +437,9 @@ namespace Sen.Script {
             "~/Executor/Methods/popcap.player_info.encode.js",
             "~/Executor/Methods/pvz2.custom.scg.encode.js",
             "~/Executor/Methods/pvz2.custom.scg.decode.js",
-            "~/Executor/Methods/popcap.rsb.watch.js",
+            "~/Executor/Methods/popcap.rsb.trace.js",
             "~/Executor/Methods/popcap.animation.add_library.js",
-            "~/Executor/Methods/popcap.rsb.to_ios.js",
+            "~/Executor/Methods/popcap.rsb.convert_platform.js",
         ];
     }
 }

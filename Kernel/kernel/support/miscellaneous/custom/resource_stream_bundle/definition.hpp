@@ -43,6 +43,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
     {
         TextureFormatCategory texture_format_category;
         bool only_high_resolution;
+        bool unpack_packages{true};
         PackagesSetting packages_setting;
     };
 
@@ -52,6 +53,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
     {
         nlohmann_json_j["texture_format_category"] = nlohmann_json_t.texture_format_category;
         nlohmann_json_j["only_high_resolution"] = nlohmann_json_t.only_high_resolution;
+        nlohmann_json_j["unpack_packages"] = nlohmann_json_t.unpack_packages;
         nlohmann_json_j["packages_setting"] = nlohmann_json_t.packages_setting;
         return;
     }
@@ -62,6 +64,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
     {
         nlohmann_json_j.at("texture_format_category").get_to(nlohmann_json_t.texture_format_category);
         nlohmann_json_j.at("only_high_resolution").get_to(nlohmann_json_t.only_high_resolution);
+        nlohmann_json_j.at("unpack_packages").get_to(nlohmann_json_t.unpack_packages);
         nlohmann_json_j.at("packages_setting").get_to(nlohmann_json_t.packages_setting);
         return;
     }
@@ -160,6 +163,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         nlohmann_json_j["texture_information_version"] = nlohmann_json_t.texture_information_version;
         if (nlohmann_json_t.packages_info.is_contain_packages) {
             nlohmann_json_j["packages_info"] = nlohmann_json_t.packages_info;
+        }
+        else {
+            nlohmann_json_j["packages_info"] = nullptr;
         }
         nlohmann_json_j["manifest_info"] = nlohmann_json_t.manifest_info;
         nlohmann_json_j["packet"] = nlohmann_json_t.packet;

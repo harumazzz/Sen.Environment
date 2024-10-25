@@ -27,12 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-  void _initWidget({
-    required SettingProvider settingProvider,
-  }) {
+  void _initWidget() {
     _initShellWidget();
     //_initMethodPicker();
-    _initJSModule(holder: settingProvider.toolChain);
+    _initJSModule();
     _initAnimationViewer();
   }
 
@@ -48,12 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
-  void _initJSModule({
-    required String holder,
-  }) {
+  void _initJSModule() {
+    final settingProvider =
+        Provider.of<SettingProvider>(context, listen: false);
     items[1].onWidget = () {
       return JsPick(
-        holder: holder,
+        holder: settingProvider.toolChain,
       );
     };
   }
@@ -222,9 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final settingProvider = Provider.of<SettingProvider>(context);
     _initItem();
-    _initWidget(settingProvider: settingProvider);
+    _initWidget();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: _buildUI(),

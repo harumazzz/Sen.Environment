@@ -264,7 +264,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             definition.texture_information_version = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(bundle.texture_information_section_size);
             auto resource_info = CustomResourceInformation{};
             exchange_manifest_group(resource_info, packet_data_section_view_stored, definition.manifest_info, destination);
-            exchange_packages(packet_data_section_view_stored, definition.packages_info, resource_info, destination);
+            if (setting.unpack_packages) {
+                exchange_packages(packet_data_section_view_stored, definition.packages_info, resource_info, destination);
+            }
             exchange_packet(definition, bundle, resource_info, packet_data_section_view_stored, destination, setting);
             return;
         }

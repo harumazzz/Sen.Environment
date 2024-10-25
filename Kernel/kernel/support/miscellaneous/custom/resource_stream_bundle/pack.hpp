@@ -276,7 +276,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             auto manifest = ManifestStructure{};
             auto packet_data_section_view_stored = DataSectionViewStored{};
             auto resource_info = CustomResourceInformation{};
-            if (definition.packages_info.is_contain_packages)
+            if (definition.packages_info.is_contain_packages && setting.unpack_packages)
             {
                 exchange_packages(packet_data_section_view_stored, resource_info, bundle, definition.packages_info, fmt::format("{}/packages", source), setting);
             }

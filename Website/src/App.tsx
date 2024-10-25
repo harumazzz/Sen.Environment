@@ -5,8 +5,10 @@ import MainContent from "./components/MainContent";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import SidebarDrawer from "./components/SidebarDrawer";
-import Documentation from "./components/Documentation";
+import Changelog from "./components/Changelog";
 import About from "./components/About";
+import BottomNavBar from "./components/BottomNavbar";
+import Tutorial from "./components/Tutorial";
 
 const App: React.FC = () => {
     const isLargeScreen = useMediaQuery("(min-width:1024px)");
@@ -23,10 +25,12 @@ const App: React.FC = () => {
         switch (activePage) {
             case "Home":
                 return <MainContent setActivePage={setActivePage} />;
-            case "Documentation":
-                return <Documentation />;
+            case "Changelog":
+                return <Changelog />;
             case "About":
                 return <About />;
+            case "Tutorial":
+                return <Tutorial />;
             default:
                 return <MainContent setActivePage={setActivePage} />;
         }
@@ -59,6 +63,7 @@ const App: React.FC = () => {
                     {!isSmallScreen && <Footer />}
                 </Box>
             </React.Fragment>
+            <BottomNavBar setActivePage={setActivePage} />
         </ThemeProvider>
     );
 };

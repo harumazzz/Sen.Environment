@@ -2,8 +2,8 @@
 //     export type Dummy = Record<string, Array<string>>;
 
 //     export interface Prop {
-//         international_manifest: Kernel.Support.PopCap.RSB.Manifest;
-//         chinese_manifest: Kernel.Support.PopCap.RSB.Manifest;
+//         international_data: Kernel.Support.PopCap.RSB.Manifest;
+//         chinese_data: Kernel.Support.PopCap.RSB.Manifest;
 //         international_packet: string;
 //         chinese_packet: string;
 //         dummy: Dummy;

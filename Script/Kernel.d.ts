@@ -2103,20 +2103,11 @@ declare namespace Sen {
                     }
 
                     /**
-                     * Interface representing information about a packet within a resource stream group in an RSB bundle.
-                     */
-                    export interface ResourceStreamGroupPacketInfo extends Record<string, unknown> {
-                        /** Compression flags used for the resources in the packet. */
-                        compression: CompressionFlags;
-                        /** Array of resources associated with the packet. */
-                        res: Array<ResourceStreamGroupResInfo>;
-                    }
-
-                    /**
                      * 
                      */
                     export interface Category extends Record<string, unknown> {
                         resolution: null | bigint;
+
                         locale: null | string;
                     }
 
@@ -2127,8 +2118,10 @@ declare namespace Sen {
                     export interface ResourceStreamGroupInfo extends Record<string, unknown> {
                         /** Category of the resource stream group (interpretation depends on implementation). Can be null. */
                         category: null | Category;
-                        /** Information about the packet contained within the group. */
-                        packet_info: ResourceStreamGroupPacketInfo;
+                        /** Compression flags used for the resources in the packet. */
+                        compression: CompressionFlags;
+                        /** Array of resources associated with the packet. */
+                        resource: Array<ResourceStreamGroupResInfo>;
                     }
 
                     /**
@@ -2280,7 +2273,7 @@ declare namespace Sen {
                      *                                 Can be omitted if only header information is needed.
                      * @returns {Definition} - Returns a Definition object containing information about the file format and resources within the archive.
                      */
-                    export function unpack_modding(source: string, destination?: string): Definition;
+                    // export function unpack_modding(source: string, destination?: string): Definition;
 
                     /**
                      * JavaScript RSG Pack method for file (modding purposes)
@@ -2303,7 +2296,7 @@ declare namespace Sen {
                      * @param {Definition} packet_info - An object containing custom metadata about the archive format and resources.
                      * @returns {void} - Doesn't return any data, creates a new RSG archive with custom header information.
                      */
-                    export function pack(source: string, destination: string, packet_info: Definition): void;
+                    // export function pack(source: string, destination: string, packet_info: Definition): void;
                 }
 
                 /**

@@ -5,11 +5,10 @@ import senLogo from "../assets/logo.ico";
 import detectOS from "../utility/Platform";
 import { GitHubAPI } from "../models/GitHub";
 import DownloadButton from "./DownloadButton";
-import BottomNavBar from "./BottomNavbar";
 
-const MainContent: React.FC<{ setActivePage: (value: string) => void }> = ({ setActivePage }) => {
+const MainContent: React.FC<{ setActivePage: (value: string) => void }> = () => {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-    const allowance: Array<string> = ["windows", "android", "linux", "macintosh", "ios"];
+    const allowance: Array<string> = ["windows", "android"];
     const [message, setMessage] = useState<string>("");
     const [open, setOpen] = useState<boolean>(false);
     const includeOS = allowance.includes(detectOS());
@@ -63,6 +62,7 @@ const MainContent: React.FC<{ setActivePage: (value: string) => void }> = ({ set
                     baseUrl = data.assets.find((e) => e.name === "win-x64.zip")!.browser_download_url;
                     break;
                 case "android":
+                    baseUrl = data.assets.find((e) => e.name === "android-arm64-v8a.zip")!.browser_download_url;
                     break;
                 default:
                     throw new Error("Current operating system does not supported");
@@ -113,11 +113,18 @@ const MainContent: React.FC<{ setActivePage: (value: string) => void }> = ({ set
                                 Sen
                             </Typography>
 
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
                                 Sen is a PvZ2-Modding tool created by Haruma & is the recommended tool by most modders.
                             </Typography>
 
                             <Box sx={{ mb: 3 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    Version:{" "}
+                                    <strong>
+                                        {/* Version changing */}
+                                        {`4.0`}
+                                    </strong>
+                                </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Your operating system is <strong>{detectOS()}</strong> which is <strong>{includeOS ? "supported for download" : "unsupported at the moment"}</strong>.
                                 </Typography>
@@ -148,7 +155,6 @@ const MainContent: React.FC<{ setActivePage: (value: string) => void }> = ({ set
                             </Button>
                         }
                     />
-                    <BottomNavBar setActivePage={setActivePage} />
                 </Box>
             </ThemeProvider>
         </React.Fragment>
