@@ -24,8 +24,8 @@ auto get_executable_path(
 
 
 auto execute_windows_command(
-    auto& command,
-    std::wstring& arguments
+    const std::wstring& command,
+    const std::wstring& arguments
 ) -> void
 {
     auto processInfo = PROCESS_INFORMATION{};
@@ -37,26 +37,24 @@ auto execute_windows_command(
     startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
     startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-    auto fullCommand = command + L" " + arguments;
-
+    std::wstring fullCommand = command + L" " + arguments;
     if (!CreateProcessW(
-        command.c_str(),
+        nullptr,                  
         const_cast<LPWSTR>(fullCommand.c_str()),
-        nullptr,
-        nullptr,
-        TRUE,
-        0,
-        nullptr,
-        nullptr,
-        &startupInfo,
-        &processInfo)
-        ) {
+        nullptr,                  
+        nullptr,                 
+        TRUE,                     
+        0,                        
+        nullptr,                  
+        nullptr,                  
+        &startupInfo,            
+        &processInfo             
+    )) {
         throw std::runtime_error{ "Failed to execute command via CreateProcessW" };
     }
     WaitForSingleObject(processInfo.hProcess, INFINITE);
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
-    return;
 }
 
 auto get_download_directory(
@@ -158,7 +156,7 @@ MAIN{
                     }
                 }();
             }*/
-            auto shell_path = home + L"\\Shell.exe";
+            auto shell_path = L"\"" + home + L"\\Shell.exe" + L"\"";
             auto arguments = L"\"" + home + L"\\Kernel.dll\" \"" + home + L"\\Script\\main.js\"";
             for (auto i = 1; i < argc; ++i) {
                 auto arg = std::wstring(argv[i], argv[i] + wcslen(argv[i]));

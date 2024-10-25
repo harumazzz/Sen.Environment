@@ -246,14 +246,14 @@ namespace Sen::Kernel::FileSystem
 			return;
 		}
 		#else
-		if(fs::is_directory(path.data())){
+		if(fs::is_directory(String::to_posix_style(path.data()))){
 			return;
 		}
 		#endif
 		#if WINDOWS
 			fs::create_directories(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data()))));
 		#else
-			fs::create_directories(path);
+			fs::create_directories(String::to_posix_style(path.data()));
 		#endif
 		return;
 	}
