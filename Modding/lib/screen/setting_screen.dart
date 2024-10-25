@@ -277,6 +277,11 @@ class _SettingScreenState extends State<SettingScreen> {
               title: los.es,
               value: 'es',
             ),
+            _buildLocaleOptionTitle(
+              settingProvider: settingProvider,
+              title: los.ru,
+              value: 'ru',
+            ),
             const SizedBox(height: 10),
             _onCloseButton(),
           ],
@@ -291,6 +296,7 @@ class _SettingScreenState extends State<SettingScreen> {
       'en': localization.en,
       'vi': localization.vi,
       'es': localization.es,
+      'ru': localization.ru
     };
     return data[key] ?? key;
   }
