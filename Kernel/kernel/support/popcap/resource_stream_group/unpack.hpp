@@ -98,7 +98,11 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
                     }
                     if constexpr (std::is_same<Args, std::string>::value)
                     {
+                        #if WINDOWS
                         write_bytes(fmt::format("{}/resource/{}", args, resource_path), resource_data);
+                        #else
+                        write_bytes(fmt::format("{}/resource/{}", args, resource_info.path), resource_data);
+                        #endif
                     }
                 }
             }
