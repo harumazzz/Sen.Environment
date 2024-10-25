@@ -35,7 +35,7 @@ const CountdownButton = () => {
     }, []);
 
     return (
-        <Button variant="outlined" sx={{ borderRadius: "8px" }} disabled={timeLeft !== "Download Available"}>
+        <Button variant="outlined" sx={{ borderRadius: "8px", mt: 3 }} disabled={timeLeft !== "Download Available"}>
             {timeLeft !== "Download Available" ? `${timeLeft}` : "Download"}
         </Button>
     );

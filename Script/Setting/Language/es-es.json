@@ -691,5 +691,8 @@
     "popcap.rsb.convert_platform": "PopCap RSB: Plataforma Convertir",
     "popcap.rsb.convert_platform.platform_convert": "Plataforma convertir",
     "popcap.rsb.convert_platform.convert_android_to_ios": "De Android a iOS",
-    "popcap.rsb.convert_platform.convert_ios_to_android": "De iOS a Android"
+    "popcap.rsb.convert_platform.convert_ios_to_android": "De iOS a Android",
+    "already_exists": "{} ya existe",
+    "sen.scg.regular": "Normal",
+    "sen.scg.for_modding": "Para modificar"
 }

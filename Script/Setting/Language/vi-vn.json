@@ -691,5 +691,8 @@
     "popcap.rsb.convert_platform": "PopCap RSB: Chuyển đổi nền tảng",
     "popcap.rsb.convert_platform.platform_convert": "Nền tảng chuyển đổi",
     "popcap.rsb.convert_platform.convert_android_to_ios": "Android sang iOS",
-    "popcap.rsb.convert_platform.convert_ios_to_android": "iOS sang Android"
+    "popcap.rsb.convert_platform.convert_ios_to_android": "iOS sang Android",
+    "already_exists": "{} đã tồn tại",
+    "sen.scg.regular": "Bình thường",
+    "sen.scg.for_modding": "Cho Modding"
 }

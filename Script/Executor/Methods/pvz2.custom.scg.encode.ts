@@ -35,8 +35,8 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode {
     export namespace Detail {
         export function generic(): Array<[bigint, bigint, string]> {
             return [
-                [1n, 0n, Kernel.Language.get("simple")],
-                [2n, 1n, Kernel.Language.get("advanced")],
+                [1n, 0n, Kernel.Language.get("sen.scg.regular")],
+                [2n, 1n, Kernel.Language.get("sen.scg.for_modding")],
                 [3n, 2n, Kernel.Language.get("debug")],
             ];
         }
