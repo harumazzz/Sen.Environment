@@ -98,7 +98,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
     export namespace Detail {
         export function sprite_generic(): Array<[bigint, bigint, string]> {
             return [
-                [1n, 0n, Kernel.Language.get("popcap.animation.miscellaneous.to_apng.enable_all")], // TODO: add localization.
+                [1n, 0n, Kernel.Language.get("popcap.animation.miscellaneous.to_apng.enable_all")],
                 [2n, 1n, Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_all")],
                 [3n, 2n, Kernel.Language.get("popcap.animation.miscellaneous.to_apng.select_to_disable")],
             ];
@@ -125,11 +125,11 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
         });
         const sprite_list = Object.keys(sprite_information_map);
         if (sprite_list.length >= 0) {
-            Console.finished("All sprites loaded"); // TODO: add locale
+            Console.finished(Kernel.Language.get("popcap.animation.to_apng.all_sprite_loaded"));
             sprite_list.map((e, i) => {
                 Kernel.Console.print(`    ${i + 1}: ${e}`);
             });
-            Console.argument(Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite")); // TODO: add localization.
+            Console.argument(Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite"));
             const input_generic = load_bigint(Detail.sprite_generic());
             switch (input_generic) {
                 case 0n: {
@@ -186,7 +186,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
                         return range;
                     };
                     while (true) {
-                        Console.argument(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.input_sprite_to_disable")}`); // TODO: add locale
+                        Console.argument(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.input_sprite_to_disable")}`);
                         const argument_result: Array<bigint> = argument(rule);
                         const selected_list: Array<bigint> = [];
                         for (const index_result of argument_result) {
@@ -202,13 +202,13 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
                             sprite_to_disable += sprite_to_disable === "" ? `${index_result}` : `, ${index_result}`;
                         }
                         if (selected_list.length > 0) {
-                            Console.warning(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.sprite_already_selected")}: ${selected_list.join(", ")}`); //TODO: add locale
+                            Console.warning(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.sprite_already_selected")}: ${selected_list.join(", ")}`);
                         }
                         if (argument_result.includes(0n)) {
-                            Console.finished(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite")}: ${sprite_to_disable}`); // TODO: add locale
+                            Console.finished(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite")}: ${sprite_to_disable}`);
                             break;
                         }
-                        Console.send(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite")}: ${sprite_to_disable}`); // TODO: add locale
+                        Console.send(`${Kernel.Language.get("popcap.animation.miscellaneous.to_apng.disable_sprite")}: ${sprite_to_disable}`);
                     }
                     sprite_list.map((e, i) => {
                         if (sprite_information_map[e]) {
@@ -219,7 +219,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
                 }
             }
         } else {
-            Console.finished("Animation has no sprite"); //TODO: add locale
+            Console.finished(Kernel.Language.get("popcap.animation.to_apng.animation_has_no_sprite"));
         }
         return;
     }
@@ -238,7 +238,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
                 return [...transform] as Matrix;
             }
             default: {
-                throw new Error(Kernel.Language.get("popcap.animation.from_animation.invalid_transform")); //TODO: add locale
+                throw new Error(Kernel.Language.get("popcap.animation.from_animation.invalid_transform"));
             }
         }
     }
@@ -490,8 +490,8 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
         if (setting.rendering_size.width <= 0n && setting.rendering_size.height <= 0n) {
             exchange_area(main_visual_sprite, visual_sprite_list, media_source_list, setting);
         }
-        Console.output(`Animation Width: ${setting.rendering_size.width}`); // TODO
-        Console.output(`Animation Height: ${setting.rendering_size.height}`);
+        Console.output(`${Kernel.Language.get("popcap.animation.to_apng.width")}: ${setting.rendering_size.width}`);
+        Console.output(`${Kernel.Language.get("popcap.animation.to_apng.height")}: ${setting.rendering_size.height}`);
         write_frames(main_visual_sprite, visual_sprite_list, media_source_list, `${destination}/frames`, setting);
         const frame_rate = setting.apng_setting.frame_rate <= 0n ? animation.frame_rate : setting.apng_setting.frame_rate;
         const definition: DataInfo = {

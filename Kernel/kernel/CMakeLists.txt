@@ -179,6 +179,10 @@ add_library(
 )
 
 
+if (MSVC)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE QUICKJS_BY_C_SMILE=1)
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/fmt)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
@@ -205,8 +209,6 @@ target_compile_definitions(
 	${PROJECT_NAME} PRIVATE
   	CANVAS_ITY_IMPLEMENTATION
 )
-
-
 
 target_compile_definitions( 
     ${PROJECT_NAME} PRIVATE 

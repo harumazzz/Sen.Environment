@@ -1,9 +1,5 @@
 namespace Sen.Script.Helper.PvZ2.Permanent.RemoveSubgroupFromResources {
-
-
-    export function rewrite_slot_count(
-        resources: any
-    ): void {
+    export function rewrite_slot_count(resources: any): void {
         let slot_index: bigint = 0n;
         const slot_group: Record<string, bigint> = {};
         for (let element of resources.groups) {
@@ -12,8 +8,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.RemoveSubgroupFromResources {
                     if (!slot_group.hasOwnProperty(c.id)) {
                         c.slot = slot_index;
                         slot_group[c.id] = slot_index++;
-                    }
-                    else {
+                    } else {
                         c.slot = slot_group[c.id];
                     }
                 }
@@ -42,22 +37,19 @@ namespace Sen.Script.Helper.PvZ2.Permanent.RemoveSubgroupFromResources {
                         const subgroup = resource.subgroups[subgroup_index];
                         if (regex.test(subgroup.id)) {
                             resources.groups[index].subgroups.splice(subgroup_index, 1);
-                        }
-                        else {
+                        } else {
                             ++subgroup_index;
                         }
                     }
                     ++index;
-                }
-                else {
+                } else {
                     if (regex.test(resource.id)) {
                         resources.groups.splice(index, 1);
-                    }
-                    else {
+                    } else {
                         ++index;
                     }
                 }
-            };
+            }
         }
         rewrite_slot_count(resources);
         Kernel.JSON.serialize_fs(destination, resources, 1, true);
@@ -71,7 +63,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.RemoveSubgroupFromResources {
 
     export function execute(): void {
         const keyword_list: Array<string> = ["384", "768"];
-        const source: string = Console.path(Kernel.Language.get("script.orgainize_resources.source_file"), "file"); //TODO.
+        const source: string = Console.path(Kernel.Language.get("script.orgainize_resources.source_file"), "file");
         process(source, source.replace(/((\.json))?$/i, ".trim.json"), keyword_list);
         return;
     }

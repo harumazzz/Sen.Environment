@@ -512,8 +512,7 @@ namespace Sen.Script.Executor {
                     run_as_module<Argument>(id, argument, forward);
                     break;
                 case "whole":
-                    // TODO : Add localization
-                    assert(Array.isArray(argument.source), "argument must be array of string");
+                    assert(Array.isArray(argument.source), Kernel.Language.get("argument_must_be_list_of_string"));
                     (argument.source as Array<string>).forEach((e) => {
                         run_as_module<Argument>(id, { ...argument, source: e }, forward);
                     });
@@ -680,7 +679,7 @@ namespace Sen.Script.Executor {
                 return;
             }
         }
-        if ((argument.source as Array<string>).empty()) {
+        if ((argument.source as Array<string>).length === 0) {
             input_path(argument as any);
         }
         argument.source = (argument.source as Array<string>).map((e: string) => normalize(e));
@@ -706,8 +705,7 @@ namespace Sen.Script.Executor {
             switch (input) {
                 case 1n: {
                     load_module({ source: argument.source }, "whole");
-                    // TODO : Add localization
-                    Console.finished(`Total ${(argument.source as Array<string>).length} files are executed`);
+                    Console.finished(format(Kernel.Language.get("total_n_files_are_executed"), argument.source as Array<string>).length.toString());
                     break;
                 }
                 case 2n: {

@@ -46,10 +46,9 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
                 if (Kernel.FileSystem.is_directory(image_source)) {
                     image_source = Kernel.FileSystem.read_directory(image_source);
                 }
-                // TODO : Add localization
-                Console.argument("Image posix for id:");
+                Console.argument(Kernel.Language.get("popcap.animation.add_library.image_posix_for_id"));
                 argument.image_posix = Kernel.Console.readline();
-                Console.argument("Generate sprite");
+                Console.argument(Kernel.Language.get("popcap.animation.add_library.generate_sprite"));
                 const has_sprite = Executor.input_boolean();
                 const input_sprite = (media: string) => {
                     let sprite: string | undefined = undefined;

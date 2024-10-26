@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(
 	libpng
-	VERSION 1.6.43
+	VERSION 1.6.44
 	HOMEPAGE_URL http://www.libpng.org/
 	LANGUAGES C
 )

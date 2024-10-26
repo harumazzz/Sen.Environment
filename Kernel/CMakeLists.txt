@@ -19,6 +19,10 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
+if (MSVC)
+    message(STATUS "MSVC version: ${MSVC_VERSION}")
+endif()
+
 add_subdirectory("./dependencies/md5")
 add_subdirectory("./dependencies/json")
 add_subdirectory("./dependencies/zlib")
@@ -46,21 +50,18 @@ if (MSVC)
   add_subdirectory("./dependencies/dirent")
 endif()
 
-if(UNIX OR APPLE OR ANDROID OR IOS)
-    add_subdirectory("./dependencies/quickjs")
-endif()
-
 if (MSVC)
     add_compile_options(/bigobj)
 endif ()
 
+if (MSVC)
+    add_subdirectory("./dependencies/quickjs.c_smile")
+else()
+    add_subdirectory("./dependencies/quickjs")
+endif()
 
 if(WIN32 OR UNIX OR APPLE)
     add_subdirectory("./test")
-endif()
-
-if(WIN32)
-	add_subdirectory("./dependencies/quickjs.c_smile")
 endif()
 
 add_subdirectory("./kernel")
@@ -120,3 +121,41 @@ include(InstallRequiredSystemLibraries)
 install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zl")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(
+        -Weverything
+        -Wno-c++98-compat
+        -Wno-c++98-compat-pedantic
+        -Wno-pre-c++14-compat
+        -Wno-pre-c++17-compat
+        -Wno-c++20-compat
+        -Wno-c99-extensions
+        -Wno-padded
+        -Wno-redundant-parens
+        -Wno-missing-field-initializers
+        -Wno-unused-parameter
+        -Wno-unused-variable
+        -Wno-unused-local-typedef
+        -Wno-missing-noreturn
+        -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-ctad-maybe-unsupported
+        -Wno-global-constructors
+        -Wno-exit-time-destructors
+        -Wno-weak-vtables
+        -Wno-self-assign
+        -Wno-switch-enum
+        -Wno-switch-default
+        -Wno-covered-switch-default
+        -Wno-shadow-field
+        -Wno-shadow-field-in-constructor
+        -Wno-shadow-uncaptured-local
+        -Wno-unsafe-buffer-usage
+        -Wno-gnu-line-marker
+        -Wno-disabled-macro-expansion
+        -Wno-language-extension-token
+        -Wno-shadow
+        -Wno-float-equal
+        -Wno-deprecated-declarations
+    )
+endif()

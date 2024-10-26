@@ -1,8 +1,8 @@
 namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
-     /**
+    /**
      * Structure
      */
-     export interface OrganizeOrder {
+    export interface OrganizeOrder {
         slot: bigint;
         id: bigint;
         path: bigint;
@@ -48,7 +48,6 @@ namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
         forceOriginalVectorSymbolSize: 18n,
     };
 
-
     export interface Resource_Structure_Template {
         id: string;
         parent: string;
@@ -74,22 +73,19 @@ namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
             srcpath?: string | Array<string>;
         }>;
         type: string;
-    };
+    }
 
     /**
-         * Structure
-         */
+     * Structure
+     */
 
     export interface Resources_Group_Structure_Template {
         groups: Array<any & Resource_Structure_Template>;
         slot_count: number;
-    };
-
+    }
 
     export function orgainize_resources_content(res: Resource_Structure_Template): void {
-        const organize_property = Object.keys(Order).sort((a: string, b: string) =>
-            Number((Order as any)[a] - (Order as any)[b])
-        );
+        const organize_property = Object.keys(Order).sort((a: string, b: string) => Number((Order as any)[a] - (Order as any)[b]));
         res.resources.forEach((e, i) => {
             const reorganizedObject: any = {};
             for (const prop of organize_property) {
@@ -103,9 +99,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
         return;
     }
 
-    export function rewrite_slot_count(
-        resources: any
-    ): void {
+    export function rewrite_slot_count(resources: any): void {
         let slot_index: bigint = 0n;
         const slot_group: Record<string, bigint> = {};
         for (let element of resources.groups) {
@@ -114,8 +108,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
                     if (!slot_group.hasOwnProperty(c.id)) {
                         c.slot = slot_index;
                         slot_group[c.id] = slot_index++;
-                    }
-                    else {
+                    } else {
                         c.slot = slot_group[c.id];
                     }
                 }
@@ -150,7 +143,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.OrgainizeResources {
      */
 
     export function execute(): void {
-        const source: string = Console.path(Kernel.Language.get("script.orgainize_resources.source_file"), "file"); //TODO.
+        const source: string = Console.path(Kernel.Language.get("script.orgainize_resources.source_file"), "file");
         process(source, source.replace(/((\.json))?$/i, ".orgainize.json"));
         return;
     }
