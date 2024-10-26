@@ -8951,6 +8951,10 @@ namespace Sen::Kernel::Interface::Script
 				try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto width = JS_GetPropertyStr(context, argv[0], "width");
 				auto height = JS_GetPropertyStr(context, argv[0], "height");
+				auto atlas_width = static_cast<int>(JS::Converter::get_bigint64(context, width));
+				auto atlas_height = static_cast<int>(JS::Converter::get_bigint64(context, height));
+				JS_FreeValue(context, width);
+				JS_FreeValue(context, height);
 				M_JS_UNDEFINED_BEHAVIOR(context, width, "width", "join_png"_sv);
 				M_JS_UNDEFINED_BEHAVIOR(context, height, "height", "join_png"_sv);
 				auto length_value = JS_GetPropertyStr(context, argv[1], "length");
@@ -8997,8 +9001,8 @@ namespace Sen::Kernel::Interface::Script
 				}
 				auto destination = Kernel::Definition::Image<int>::transparent(
 					Kernel::Definition::Dimension<int>(
-						static_cast<int>(JS::Converter::get_bigint64(context, width)), 
-						static_cast<int>(JS::Converter::get_bigint64(context, height))
+						atlas_width, 
+						atlas_height
 					)
 				);
 				Sen::Kernel::Definition::ImageIO::join_extend(
@@ -9032,14 +9036,6 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_data = JS_NewAtomLen(context, "data", 4_size);  
 				JS_DefinePropertyValue(context, image_obj, atom_data, JS_NewArrayBufferCopy(context, destination.data().data(), destination.data().size()), int{JS_PROP_C_W_E});
 				JS_FreeAtom(context, atom_data);
-				auto atom_area = JS_NewAtomLen(context, "area", 4_size);  
-				JS_DefinePropertyValue(context, image_obj, atom_area, area_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				JS_FreeAtom(context, atom_area);
-				auto atom_circumference = JS_NewAtomLen(context, "circumference", 13_size);
-				JS_DefinePropertyValue(context, image_obj, atom_circumference, circumference_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				JS_FreeAtom(context, atom_circumference);
-				JS_FreeValue(context, width);
-				JS_FreeValue(context, height);
 				return image_obj; }, "join_extend"_sv);
 		}
 

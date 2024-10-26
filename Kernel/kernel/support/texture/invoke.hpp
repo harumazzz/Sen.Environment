@@ -233,6 +233,7 @@ namespace Sen::Kernel::Support::Texture {
 			#pragma region encode
 
 			/**
+			 * TODO : Fix
 			 * source: the input file
 			 * destination: the output file
 			 * format: texture format
@@ -342,7 +343,7 @@ namespace Sen::Kernel::Support::Texture {
 			#pragma region encode_whole
 
 			inline static auto encode_whole(
-				Definition::Image<int> const& source_image,
+				Definition::Image<int> & source_image,
 				Format format
 			) -> std::vector<unsigned char>
 			{

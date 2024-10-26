@@ -42,10 +42,10 @@ namespace Sen::Kernel {
 
 
 	class Exception : public std::runtime_error {
-		std::string msg;
-		std::string arg;
 
 	public:
+		std::string msg;
+		std::string arg;
 		std::string function_name;
 		std::string source;
 		Exception() = default;

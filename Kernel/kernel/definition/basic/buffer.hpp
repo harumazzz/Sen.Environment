@@ -73,11 +73,12 @@ namespace Sen::Kernel::Definition
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(source.data(), "rb"), close_file);
 #endif
                 assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source), "Stream");
-#if WINDOWS
+                #if WINDOWS
                 auto size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data())});
-#else
+                #else
                 auto size = std::filesystem::file_size(std::filesystem::path{source});
-#endif
+                #endif
+                assert_conditional(size < static_cast<std::uintmax_t>(thiz.data.max_size()), fmt::format("{}", Language::get("file_size_is_bigger_than_data_stream_view")), "Stream");
                 thiz.reserve(static_cast<std::uint64_t>(size + thiz.buffer_size));
                 thiz.file_path = source;
                 thiz.length = size;

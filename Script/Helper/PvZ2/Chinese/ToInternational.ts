@@ -40,9 +40,10 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
             if (scg_data["composite"] && scg_data["category"] !== null) {
                 scg_data["category"]["format"] = 0n;
             }
-            for (const [_, value] of scg_data.subgroup) {
-                value.category.compression = 3n;
+            for (const [_, value] of Object.entries(scg_data.subgroup)) {
+                (value as any).category.compression = 3n;
             }
+            Kernel.JSON.serialize_fs(`${source_directory}/data.json`, scg_data, 1, false);
             Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.encode_fs(source_directory, `${international_bundle}/packet/${e}.scg`, scg_setting);
             international_data.packet.push(e);
             Kernel.FileSystem.Operation.remove_all(source_directory);

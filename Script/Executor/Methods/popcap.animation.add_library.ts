@@ -42,7 +42,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 Console.output(argument.source);
-                let image_source: string | Array<string> = Console.path("Input png path (can be directory)", "any");
+                let image_source: string | Array<string> = Console.path(Kernel.Language.get("popcap.animation.add_library.input_png_path"), "any");
                 if (Kernel.FileSystem.is_directory(image_source)) {
                     image_source = Kernel.FileSystem.read_directory(image_source);
                 }
@@ -53,7 +53,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
                 const input_sprite = (media: string) => {
                     let sprite: string | undefined = undefined;
                     if (has_sprite) {
-                        Console.argument(`Sprite name for ${media}`);
+                        Console.argument(`${Kernel.Language.get("popcap.animation.add_library.sprite_name")} ${media}`);
                         sprite = has_sprite ? Kernel.Console.readline() : undefined;
                     }
                     return sprite;
