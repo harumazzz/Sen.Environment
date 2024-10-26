@@ -741,9 +741,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             ResourceContentInformation const &data,
             DataStreamView &stream) -> void
         {
-            // TODO : Add localization
-            assert_conditional(data.magic == k_resource_content_information_magic_identifier, "invalid_magic", "exchange_resouce_content_information");
-            assert_conditional(data.version == k_resource_content_information_version, "invalid_version", "exchange_resouce_content_information");
+            assert_conditional(data.magic == k_resource_content_information_magic_identifier, fmt::format("{}", Language::get("wwise.bnk.decode.invalid_magic")), "exchange_resouce_content_information");
+            assert_conditional(data.version == k_resource_content_information_version, fmt::format("{}", Language::get("wwise.bnk.decode.invalid_version")), "exchange_resouce_content_information");
             stream.writeUint32(data.magic);
             stream.writeUint32(data.version);
             stream.writeUint32(data.information_compressed_size);

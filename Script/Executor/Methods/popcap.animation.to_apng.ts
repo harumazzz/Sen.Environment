@@ -41,7 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToAPNG {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 Console.output(argument.source!);
-                defined_or_default<Argument, string>(argument, "destination", Kernel.Path.resolve(`${argument.source}.animation`)); // TODO: change dest folder name
+                defined_or_default<Argument, string>(argument, "destination", Kernel.Path.resolve(`${argument.source}.animation`));
                 if (argument.media === undefined) {
                     argument.media = Console.path(Kernel.Language.get("popcap.animation.to_apng.input_media"), "directory");
                 }
@@ -65,10 +65,10 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToAPNG {
                         frame_rate: 0n,
                         loop: 0n, // 0 - infinity
                     },
-                }; // TODO: make setting json
+                };
                 const animation: Sen.Script.Support.PopCap.Animation.SexyAnimation = Kernel.JSON.deserialize_fs<Sen.Script.Support.PopCap.Animation.SexyAnimation>(argument.source!);
                 Support.PopCap.Animation.Miscellaenous.GenerateAnimation.exchange_sprite_disable(animation, setting);
-                Console.output(`Total animation frames: ${animation.main_sprite.frame.length}`); // TODO
+                Console.output(`${Kernel.Language.get("popcap.animation.to_apng.total_frame")}: ${animation.main_sprite.frame.length}`);
                 clock.start_safe();
                 Support.PopCap.Animation.Miscellaenous.GenerateAnimation.process(animation, argument.media!, argument.destination!, setting);
                 clock.stop_safe();

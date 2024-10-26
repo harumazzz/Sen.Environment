@@ -2513,7 +2513,12 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				JS_NewClassID(&ClassID<use_big_endian>::value);
+				
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&ClassID<use_big_endian>::value);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<use_big_endian>::value, &this_class<use_big_endian>) == 0, "DataStreamView class register failed", "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (use_big_endian)
@@ -2676,7 +2681,11 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Boolean class register failed", "register_class");
 				auto class_name = "Boolean"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -2893,7 +2902,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = "Image"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3087,7 +3100,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = "Sprite"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3281,7 +3298,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileInputStream class register failed", "register_class");
 				auto class_name = "FileInputStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3468,7 +3489,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileOutputStream class register failed", "register_class");
 				auto class_name = "FileOutputStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3688,7 +3713,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileStream class register failed", "register_class");
 				auto class_name = "FileStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4036,7 +4065,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "JsonWriter class register failed", "register_class");
 				auto class_name = "JsonWriter"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4261,7 +4294,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&(NumberID<T>::class_id));
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&(NumberID<T>::class_id));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), NumberID<T>::class_id, &this_class<T>) == 0, "Number class register failed", "register_class");
 				auto class_name = fmt::format("{}", this_class<T>.class_name);
 				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4465,7 +4502,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
 				auto class_name = "APNGMakerSetting"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4623,7 +4664,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Size class failed register", "register_class");
 				auto class_name = "Size"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4827,7 +4872,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&(ClassID<T>::value));
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&(ClassID<T>::value));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<T>::value, &this_class<T>) == 0, "Character class register failed", "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (std::is_same<T, char>::value)
@@ -5054,7 +5103,11 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "String class register failed", "register_class");
 				auto class_name = "String"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -5397,7 +5450,11 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "BinaryView class register failed", "register_class");
 				auto class_name = "BinaryView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6294,7 +6351,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&(Detail::class_id));
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&(Detail::class_id));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), Detail::class_id, &this_class) == 0, "Canvas class register failed", "register_class");
 				auto class_name = "Canvas"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6471,7 +6532,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "DimensionView class failed register", "register_class");
 				auto class_name = "DimensionView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6681,7 +6746,11 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Rectangle class register failed", "register_class");
 				auto class_name = "Rectangle"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -7207,7 +7276,11 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(&class_id);
+				JS_NewClassID(
+					#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+					#endif
+					&class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "ImageView class register failed", "register_class");
 				auto class_name = "ImageView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -12876,7 +12949,11 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *ctx
 		) -> void
 		{
-			JS_NewClassID(&js_filewatcher_class_id);
+			JS_NewClassID(
+				#ifndef QUICKJS_BY_C_SMILE
+					JS_GetRuntime(ctx),
+				#endif
+				&js_filewatcher_class_id);
 			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), js_filewatcher_class_id, &js_filewatcher_class) == 0, "FileWatcher class register failed", "register_class");
 			auto class_name = "FileWatcher"_sv;
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);

@@ -23,6 +23,7 @@
 #if defined MSVC_COMPILER
 #include "dependencies/quickjs.c_smile/quickjs.h"
 #else
+#include "dependencies/quickjs/cutils.h"
 #include "dependencies/quickjs/quickjs.h"
 #endif
 

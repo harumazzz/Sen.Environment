@@ -694,5 +694,16 @@
     "popcap.rsb.convert_platform.convert_ios_to_android": "iOS to Android",
     "already_exists": "{} already exists",
     "sen.scg.regular": "Regular",
-    "sen.scg.for_modding": "For Modding"
+    "sen.scg.for_modding": "For Modding",
+    "popcap.animation.to_apng.all_sprite_loaded": "All sprites loaded",
+    "popcap.animation.to_apng.animation_has_no_sprite": "Animation has no sprite",
+    "popcap.animation.to_apng.width": "Frame width",
+    "popcap.animation.to_apng.height": "Frame height",
+    "popcap.animation.to_apng.total_frame": "Total frames",
+    "popcap.animation.add_library.image_posix_for_id": "Image posix for id",
+    "popcap.animation.add_library.generate_sprite": "Generate sprite",
+    "argument_must_be_list_of_string": "argument must be array of string",
+    "total_n_files_are_executed": "Total {} files are executed!",
+    "wwise.bnk.decode.invalid_magic": "Invalid BNK magic",
+    "wwise.bnk.decode.invalid_version": "Invalid BNK version"
 }
