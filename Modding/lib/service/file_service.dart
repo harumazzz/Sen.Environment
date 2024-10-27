@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:modding/service/android_service.dart';
+import 'package:path/path.dart' as p;
 
 class FileService {
   static List<String> readDirectory({
@@ -17,6 +19,20 @@ class FileService {
       result.add(ripe.path);
     }
     return result;
+  }
+
+  static Future<String?> saveFile() async {
+    var outputFile = null as String?;
+    if (Platform.isWindows ||
+        Platform.isLinux ||
+        Platform.isMacOS ||
+        Platform.isIOS) {
+      outputFile = (await file_selector.getSaveLocation())?.path;
+    }
+    if (Platform.isAndroid) {
+      // TODO : Implement this state in MainActivity.kt
+    }
+    return outputFile != null ? p.absolute(outputFile) : null;
   }
 
   static isDirectory(String source) {
@@ -33,6 +49,15 @@ class FileService {
   }) {
     final file = File(source);
     file.writeAsStringSync(data);
+    return;
+  }
+
+  static void writeJson({
+    required String source,
+    required dynamic data,
+  }) {
+    final file = File(source);
+    file.writeAsStringSync(const JsonEncoder.withIndent('\t').convert(data));
     return;
   }
 

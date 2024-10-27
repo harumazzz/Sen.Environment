@@ -9,6 +9,6 @@ namespace Sen::Kernel {
 	 * C++ Wrapper contains C library
 	*/
 
-	inline auto constexpr version = 2;
+	inline auto constexpr version = 3;
 
 }

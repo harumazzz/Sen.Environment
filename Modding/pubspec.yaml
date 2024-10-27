@@ -28,6 +28,7 @@ dependencies:
     flutter_local_notifications: ^17.2.3
     local_notifier: ^0.1.6
     flutter_launcher_icons: ^0.14.1
+    file_selector: ^1.0.3
 dev_dependencies:
     flutter_test:
         sdk: flutter
