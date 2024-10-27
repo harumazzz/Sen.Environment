@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:modding/model/translator.dart';
 import 'package:modding/provider/setting_provider.dart';
+import 'package:modding/screen/setting/translator_page.dart';
 import 'package:modding/service/android_service.dart';
 import 'package:modding/service/file_service.dart';
 import 'package:provider/provider.dart';
@@ -248,6 +250,66 @@ class _SettingScreenState extends State<SettingScreen> {
     controller.dispose();
   }
 
+  Translator _exchangeTranslator(String name) {
+    return switch (name) {
+      'haruma' => Translator(
+          name: 'Haruma',
+          discord: 'harumaluvcat',
+          contacts: [
+            ['GitHub', 'https://github.com/Haruma-VN'],
+            ['Youtube', 'https://www.youtube.com/@harumavn'],
+          ],
+          imageCover: 'assets/images/translator/haruma.png',
+        ),
+      'jnr' => Translator(
+          name: 'JNR',
+          discord: 'jnr1809',
+          contacts: [
+            ['Youtube', 'https://www.youtube.com/@jnr1809'],
+          ],
+          imageCover: 'assets/images/translator/jnr.png',
+        ),
+      'ppp' => Translator(
+          name: 'PPP',
+          discord: 'theprimalpea',
+          contacts: [
+            ['Facebook', 'https://www.facebook.com/ThePrimalPea'],
+          ],
+          imageCover: 'assets/images/translator/ppp.png',
+        ),
+      'vi' => Translator(
+          name: 'Vi',
+          discord: 'vi_i_guess',
+          contacts: [
+            ['github', 'https://github.com/viiguess']
+          ],
+          imageCover: 'assets/images/translator/vi.png',
+        ),
+      String() => throw UnimplementedError(),
+    };
+  }
+
+  void _onViewTranslator() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: TranslatorPage(
+          translator: _exchangeTranslator(
+            AppLocalizations.of(context)!.author_of_this_locale.toLowerCase(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.okay),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onChangeLocale() async {
     final los = AppLocalizations.of(context)!;
     final settingProvider = Provider.of<SettingProvider>(
@@ -340,6 +402,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 leading: const Icon(Icons.person_2_outlined),
                 title: Text(los.author),
                 subtitle: Text(los.author_of_this_locale),
+                onTap: _onViewTranslator,
               ),
               const Divider(),
               Text(los.application_setting),

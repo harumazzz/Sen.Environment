@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:modding/provider/setting_provider.dart';
 import 'package:modding/screen/home_screen.dart';
-import 'package:modding/screen/setting_screen.dart';
+import 'package:modding/screen/setting/setting_screen.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:modding/screen/shell/shell_screen.dart';
