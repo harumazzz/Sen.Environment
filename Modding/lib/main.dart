@@ -76,6 +76,7 @@ class Application extends StatelessWidget {
           Locale('en'),
           Locale('vi'),
           Locale('es'),
+          Locale('ru'),
         ],
         locale: Locale(Provider.of<SettingProvider>(context).locale),
       ),
