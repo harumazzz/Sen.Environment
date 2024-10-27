@@ -5,8 +5,10 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop
   dynamic_color
+  file_selector_windows
   local_notifier
   screen_retriever
+  url_launcher_windows
   window_manager
 )
 

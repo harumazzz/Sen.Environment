@@ -3,7 +3,7 @@ import senLogo from "../assets/logo.ico";
 // TODO : Add database
 const updates = [
     {
-        version: "4.0",
+        version: "4.0.0",
         date: "2024-10-26",
         changes: [
             "Removed the RSB for Modding method. Added a RSB Project method, RSB Project are the better version of RSB for Modding, it provides you newer way to processing RSB files",
@@ -21,6 +21,15 @@ const updates = [
             ["Vi", "Beta Tester and Bug tracker when Sen 4 was still in development"],
             ["DT, Stuff26, TheShero, FazeSmuziy", "Beta Tester when Sen 4 was in beta"],
             ["People from Modding community", "Without everyone, Sen cannot be good like today. I cannot express how much thankful I am. Please enjoy the newest update as my thanks to everyone"],
+        ],
+    },
+    {
+        version: "4.0.1",
+        date: "2024-10-27",
+        changes: ["Fixed ToInternational.js script when porting Chinese content", "Fixed png that only has 3 channels", "Android requests more RAM Usage"],
+        specialThanks: [
+            ["Fireplei", "Reported png issues"],
+            ["Coldysnapdragon", "Report Script issues"],
         ],
     },
 ];

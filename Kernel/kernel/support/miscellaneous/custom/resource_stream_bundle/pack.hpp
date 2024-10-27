@@ -78,28 +78,34 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             };
             if (packages_info.encode)
             {
-                for (auto element : packages_list)
+                for (auto & element : packages_list)
                 {
                     auto extension = Path::getExtension(element);
                     if (compare_string(extension, ".json"_sv))
                     {
                         auto pos = packages_source.size() - packages_name.size();
                         auto path = toupper_back(String::to_windows_style(element.substr(pos, (element.size() - pos - ".json"_sv.size())) + ".rton"));
-                        auto resource_stream = DataStreamView{};
-                        Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(resource_stream, FileSystem::read_file(element));
-                        if (packages_info.chinese)
-                        {
-                            auto encrypted_stream = DataStreamView{};
-                            Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt(resource_stream, encrypted_stream, packages_setting.key, packages_setting.iv);
-                            resource_data_section_view_stored[path] = std::move(encrypted_stream.toBytes());
+                        try {
+                            auto resource_stream = DataStreamView{};
+                            Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(resource_stream, FileSystem::read_file(element));
+                            if (packages_info.chinese)
+                            {
+                                auto encrypted_stream = DataStreamView{};
+                                Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt(resource_stream, encrypted_stream, packages_setting.key, packages_setting.iv);
+                                resource_data_section_view_stored[path] = std::move(encrypted_stream.toBytes());
+                            }
+                            else
+                            {
+                                resource_data_section_view_stored[path] = std::move(resource_stream.toBytes());
+                            }
+                            push_definition(path);
+                            --json_count;
+                            --rton_count;
+                        } catch (...) {
+                            auto exception = parse_exception();
+                            exception.arg += fmt::format(". JSON: {}", element);
+                            assert_conditional(false, exception.message(), "exchange_packages");
                         }
-                        else
-                        {
-                            resource_data_section_view_stored[path] = std::move(resource_stream.toBytes());
-                        }
-                        push_definition(path);
-                        --json_count;
-                        --rton_count;
                     }
                     if (compare_string(extension, ".rton"_sv))
                     {

@@ -320,6 +320,13 @@ namespace Sen::Kernel::Definition {
 				return c;
 			}
 
+			inline auto is_rgb (
+
+			) -> bool
+			{
+				return thiz.channels == 3;
+			}
+
 			/**
 			 * default constructor
 			*/
@@ -431,6 +438,24 @@ namespace Sen::Kernel::Definition {
 				return;
 			}
 
+			inline auto normalize_32bit(
+			) -> void
+			{
+				if (thiz.is_rgb()) {
+					auto &data = thiz.data();
+					auto color = ZList(static_cast<ZList::size_type>((data.size() / 3) * 4_size));
+					for (auto i = 0_size, j = 0_size; i < data.size(); i += 3, j += 4) {
+						color[j] = data[i];
+						color[j + 1] = data[i + 1];
+						color[j + 2] = data[i + 2];
+						color[j + 3] = 0xFF_ui;
+					}
+					set_data(color);
+					thiz.channels = 4;
+				}
+				return;
+			}
+
 			/**
 			 * Algorithm to join image - Reverse from split
 			 * source: source image
@@ -440,11 +465,11 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join_extend(
 				Image<T>& source,
-				const std::vector<Image<T>>& data
+				std::vector<Image<T>>& data
 			) -> void
 			{
 				auto source_data = source.data();
-				for (const auto& img : data) {
+				for (auto& img : data) {
 					if (!(img.width + img.x <= source.width and img.height + img.y <= source.height)) {
 						throw Exception(fmt::format("{}", Language::get("image.does_not_fit_current_image")), std::source_location::current(), "join");
 					}
@@ -713,7 +738,7 @@ namespace Sen::Kernel::Definition {
 					throw Exception(fmt::format("{}: {}", Language::get("image.png_pointer_init_failed"), source), std::source_location::current(), "read_png");
 				}
 				auto info_ptr = png_create_info_struct(png_ptr);  
-				if(!info_ptr){
+				if(info_ptr == nullptr){
 					png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 					throw Exception(fmt::format("{}: {}", Language::get("image.info_pointer_init_failed"), source), std::source_location::current(), "read_png");
 				}
@@ -738,7 +763,7 @@ namespace Sen::Kernel::Definition {
 				auto interlace_type = static_cast<int>(png_get_interlace_type(png_ptr, info_ptr));
 				auto rowbytes = static_cast<int>(png_get_rowbytes(png_ptr, info_ptr));
 				png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-				return Image<int>{
+				auto image = Image<int>{
 					width, 
 					height, 
 					bit_depth,
@@ -748,6 +773,8 @@ namespace Sen::Kernel::Definition {
 					rowbytes,
 					data
 				};
+				image.normalize_32bit();
+				return image;
 			}
 
 			/**
@@ -941,7 +968,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join_extend(
 				Image<int> & destination,
-				const std::vector<Image<int>>& data
+				std::vector<Image<int>>& data
 			) -> void
 			{
 				Image<int>::join_extend(destination, data);

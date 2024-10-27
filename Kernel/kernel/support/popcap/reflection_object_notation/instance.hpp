@@ -11,23 +11,21 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     struct Instance
     {
     private:
-            using Rijndael = Sen::Kernel::Definition::Encryption::Rijndael;
+        using Rijndael = Sen::Kernel::Definition::Encryption::Rijndael;
+
     public:
         inline static auto decrypt(
-            DataStreamView & source,
-            DataStreamView & destination,
+            DataStreamView &source,
+            DataStreamView &destination,
             std::string_view key,
-            std::string_view iv
-        ) -> void
+            std::string_view iv) -> void
         {
             destination.writeBytes(
                 Rijndael::decrypt<std::uint64_t, Rijndael::Mode::CBC>(
-                    reinterpret_cast<char*>(source.getBytes(2, source.size()).data()),
-                    key, 
-                    iv, 
-                    source.size() - 2_size
-                )
-            );
+                    reinterpret_cast<char *>(source.getBytes(2, source.size()).data()),
+                    key,
+                    iv,
+                    source.size() - 2_size));
             return;
         }
 
@@ -54,6 +52,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             auto dest = DataStreamView{};
             decrypt(stream, dest, key, iv);
             auto json = JsonWriter{};
+            json.WriteIndent = true;
             Decode::process_whole(dest, json);
             FileSystem::write_file(destination, json.ToString());
             return;
@@ -64,14 +63,16 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         {
             auto threads = std::vector<std::thread>{};
             auto file_mutexes = std::map<std::string, std::mutex>{};
-            for (const auto & data : paths) {
-                threads.emplace_back([=, &file_mutexes]() { 
+            for (const auto &data : paths)
+            {
+                threads.emplace_back([=, &file_mutexes]()
+                                     { 
                 auto lock_source = std::lock_guard<std::mutex>(file_mutexes[data[0]]);
                 auto lock_destination = std::lock_guard<std::mutex>(file_mutexes[data[1]]);
-                    Decode::process_fs(data[0], data[1]); 
-                });
+                    Decode::process_fs(data[0], data[1]); });
             }
-            for (auto & thread : threads) {
+            for (auto &thread : threads)
+            {
                 thread.join();
             }
             return;
