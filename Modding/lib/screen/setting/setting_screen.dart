@@ -281,7 +281,7 @@ class _SettingScreenState extends State<SettingScreen> {
           name: 'Vi',
           discord: 'vi_i_guess',
           contacts: [
-            ['github', 'https://github.com/viiguess']
+            ['GitHub', 'https://github.com/viiguess']
           ],
           imageCover: 'assets/images/translator/vi.png',
         ),
@@ -343,7 +343,7 @@ class _SettingScreenState extends State<SettingScreen> {
               settingProvider: settingProvider,
               title: los.ru,
               value: 'ru',
-            ),            
+            ),
             const SizedBox(height: 10),
             _onCloseButton(),
           ],
@@ -358,6 +358,7 @@ class _SettingScreenState extends State<SettingScreen> {
       'en': localization.en,
       'vi': localization.vi,
       'es': localization.es,
+      'ru': localization.ru,
     };
     return data[key] ?? key;
   }

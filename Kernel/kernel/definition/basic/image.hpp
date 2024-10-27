@@ -763,6 +763,7 @@ namespace Sen::Kernel::Definition {
 				auto interlace_type = static_cast<int>(png_get_interlace_type(png_ptr, info_ptr));
 				auto rowbytes = static_cast<int>(png_get_rowbytes(png_ptr, info_ptr));
 				png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+				assert_conditional(channels == 3 || channels == 4, fmt::format("{}: {}", Language::get("image_is_broken"), String::to_posix_style(std::string{source.data(), source.size()})), "read_png");
 				auto image = Image<int>{
 					width, 
 					height, 

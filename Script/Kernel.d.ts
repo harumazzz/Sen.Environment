@@ -4,7 +4,7 @@
  * Namespace representing the kernel functionalities within the system.
  * This namespace likely provides access to core functionalities.
  *
- * @version 1 - (Update this version number as the kernel evolves)
+ * @version 3 - (Update this version number as the kernel evolves)
  */
 declare namespace Sen {
     // **Shell Sub-Namespace**
@@ -2103,14 +2103,13 @@ declare namespace Sen {
                     }
 
                     /**
-                     * 
+                     *
                      */
                     export interface Category extends Record<string, unknown> {
                         resolution: null | bigint;
 
                         locale: null | string;
                     }
-
 
                     /**
                      * Interface representing information about a resource stream group in an RSB bundle.

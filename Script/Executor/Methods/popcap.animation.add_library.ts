@@ -91,7 +91,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
             },
             is_enabled: true,
             configuration: undefined!,
-            filter: ["directory", /(.+)\.xfl$/i],
+            filter: ["directory", /.*/g],
             option: 79n,
         });
         return;

@@ -708,5 +708,6 @@
     "total_n_files_are_executed": "Total {} files are executed!",
     "wwise.bnk.decode.invalid_magic": "Invalid BNK magic",
     "wwise.bnk.decode.invalid_version": "Invalid BNK version",
-    "file_size_is_bigger_than_data_stream_view": "File size is bigger than size of DataStreamView"
+    "file_size_is_bigger_than_data_stream_view": "File size is bigger than size of DataStreamView",
+    "image_is_broken": "The provided file is not an valid image"
 }

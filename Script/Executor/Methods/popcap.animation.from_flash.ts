@@ -41,7 +41,11 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlash {
             direct_forward(argument: Argument): void {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
-                defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.json`);
+                if (/(.+)\.xfl$/i.test(argument.source)) {
+                    defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.json`);
+                } else {
+                    defined_or_default<Argument, string>(argument, "destination", `${argument.source}.pam.json`);
+                }
                 Console.output(argument.destination!);
                 load_boolean(argument, "has_label", this.configuration, Kernel.Language.get("popcap.animation.extract_label"));
                 clock.start_safe();
@@ -54,7 +58,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlash {
             },
             is_enabled: true,
             configuration: undefined!,
-            filter: ["directory", /(.+)\.xfl$/i],
+            filter: ["directory", /.*/g],
             option: 12n,
         });
         return;
