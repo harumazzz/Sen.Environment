@@ -1,30 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingProvider with ChangeNotifier {
-  String _theme = 'system';
+final settingProvider = StateNotifierProvider<SettingProvider, SettingState>(
+  (ref) => SettingProvider(),
+);
 
-  String _locale = 'en';
+class SettingState {
+  final String theme;
+  final String locale;
+  final bool sendNotification;
+  final String toolChain;
+  final bool isValid;
+  final bool requestedPermission;
 
-  bool _sendNotification = false;
-
-  String _toolchain = '';
-
-  bool _isValid = false;
-
-  String get theme => _theme;
-
-  bool get sendNotification => _sendNotification;
-
-  String get locale => _locale;
-
-  String get toolChain => _toolchain;
-
-  bool get isValid => _isValid;
-
-  bool _requestedPermission = false;
-
-  bool get requestedPermission => _requestedPermission;
+  SettingState({
+    this.theme = 'system',
+    this.locale = 'en',
+    this.sendNotification = false,
+    this.toolChain = '',
+    this.isValid = false,
+    this.requestedPermission = false,
+  });
 
   ThemeMode get themeData {
     final Map<String, ThemeMode> exchanger = {
@@ -32,124 +29,79 @@ class SettingProvider with ChangeNotifier {
       'dark': ThemeMode.dark,
       'light': ThemeMode.light,
     };
-    return exchanger[_theme] ?? ThemeMode.system;
+    return exchanger[theme] ?? ThemeMode.system;
   }
 
-  SettingProvider() {
-    _loadTheme();
-    _loadOnNotification();
-    _loadToolChain();
-    _loadValid();
-    _loadLocale();
-    _loadRequestedPermission();
-    notifyListeners();
+  SettingState copyWith({
+    String? theme,
+    String? locale,
+    bool? sendNotification,
+    String? toolChain,
+    bool? isValid,
+    bool? requestedPermission,
+  }) {
+    return SettingState(
+      theme: theme ?? this.theme,
+      locale: locale ?? this.locale,
+      sendNotification: sendNotification ?? this.sendNotification,
+      toolChain: toolChain ?? this.toolChain,
+      isValid: isValid ?? this.isValid,
+      requestedPermission: requestedPermission ?? this.requestedPermission,
+    );
+  }
+}
+
+class SettingProvider extends StateNotifier<SettingState> {
+  SettingProvider() : super(SettingState()) {
+    _loadPreferences();
   }
 
-  void setTheme(String value) async {
-    _theme = value;
-    await _saveTheme();
-    notifyListeners();
-  }
-
-  void setIsValid(bool value) async {
-    _isValid = value;
-    await _saveIsValid();
-    notifyListeners();
-  }
-
-  void setRequestedPermission(bool value) async {
-    _requestedPermission = value;
-    await _saveRequestedPermission();
-    notifyListeners();
-  }
-
-  void setLocale(String value) async {
-    _locale = value;
-    await _saveLocale();
-    notifyListeners();
-  }
-
-  void setNotification(bool value) async {
-    _sendNotification = value;
-    await _saveOnNotification();
-    notifyListeners();
-  }
-
-  void setToolChain(String value) async {
-    _toolchain = value;
-    await _saveToolChain();
-    notifyListeners();
-  }
-
-  Future<void> _saveTheme() async {
+  Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme', _theme);
-    return;
+
+    state = state.copyWith(
+      theme: prefs.getString('theme') ?? 'system',
+      locale: prefs.getString('locale') ?? 'en',
+      sendNotification: prefs.getBool('sendNotification') ?? false,
+      toolChain: prefs.getString('toolchain') ?? '',
+      isValid: prefs.getBool('isValid') ?? false,
+      requestedPermission: prefs.getBool('requestedPermission') ?? false,
+    );
   }
 
-  Future<void> _saveLocale() async {
+  Future<void> setTheme(String theme) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('locale', _locale);
-    return;
+    await prefs.setString('theme', theme);
+    state = state.copyWith(theme: theme);
   }
 
-  Future<void> _loadTheme() async {
+  Future<void> setLocale(String locale) async {
     final prefs = await SharedPreferences.getInstance();
-    _theme = prefs.getString('theme') ?? 'system';
-    return;
+    await prefs.setString('locale', locale);
+    state = state.copyWith(locale: locale);
   }
 
-  Future<void> _loadLocale() async {
+  Future<void> setNotification(bool sendNotification) async {
     final prefs = await SharedPreferences.getInstance();
-    _locale = prefs.getString('locale') ?? 'en';
-    return;
+    await prefs.setBool('sendNotification', sendNotification);
+    state = state.copyWith(sendNotification: sendNotification);
   }
 
-  Future<void> _loadValid() async {
+  Future<void> setToolChain(String toolChain) async {
     final prefs = await SharedPreferences.getInstance();
-    _isValid = prefs.getBool('isValid') ?? false;
-    return;
+    await prefs.setString('toolchain', toolChain);
+    state = state.copyWith(toolChain: toolChain);
   }
 
-  Future<void> _loadRequestedPermission() async {
+  Future<void> setIsValid(bool isValid) async {
     final prefs = await SharedPreferences.getInstance();
-    _requestedPermission = prefs.getBool('requestedPermission') ?? false;
-    return;
+    await prefs.setBool('isValid', isValid);
+    state = state.copyWith(isValid: isValid);
   }
 
-  Future<void> _saveToolChain() async {
+  Future<void> setRequestedPermission(bool requestedPermission) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('toolchain', _toolchain);
-    return;
-  }
-
-  Future<void> _saveIsValid() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isValid', _isValid);
-    return;
-  }
-
-  Future<void> _saveRequestedPermission() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('requestedPermission', _requestedPermission);
-    return;
-  }
-
-  Future<void> _loadToolChain() async {
-    final prefs = await SharedPreferences.getInstance();
-    _toolchain = prefs.getString('toolchain') ?? '';
-    return;
-  }
-
-  Future<void> _saveOnNotification() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('sendNotification', _sendNotification);
-    return;
-  }
-
-  Future<void> _loadOnNotification() async {
-    final prefs = await SharedPreferences.getInstance();
-    _sendNotification = prefs.getBool('sendNotification') ?? false;
-    return;
+    await prefs.setBool('requestedPermission', requestedPermission);
+    state = state.copyWith(requestedPermission: requestedPermission);
   }
 }

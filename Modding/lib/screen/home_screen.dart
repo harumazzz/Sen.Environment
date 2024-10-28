@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/provider/setting_provider.dart';
@@ -9,17 +10,16 @@ import 'package:sen/screen/js_pick.dart';
 import 'package:sen/screen/method_picker.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late List<Item> items;
 
   @override
@@ -47,11 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _initJSModule() {
-    final settingProvider =
-        Provider.of<SettingProvider>(context, listen: false);
+    final setting = ref.read(settingProvider);
     items[1].onWidget = () {
       return JsPick(
-        holder: settingProvider.toolChain,
+        holder: setting.toolChain,
       );
     };
   }
@@ -64,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildUI() {
     final los = AppLocalizations.of(context)!;
-    final settingProvider = Provider.of<SettingProvider>(context);
+    final setting = ref.watch(settingProvider);
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       final screenWidth = MediaQuery.of(context).size.width;
       const itemWidth = 250.0;
@@ -83,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               clipBehavior: Clip.none,
               child: InkWell(
                 splashColor: Colors.blue.withAlpha(30),
-                onTap: settingProvider.isValid
+                onTap: setting.isValid
                     ? () {
                         Navigator.push(
                           context,
@@ -116,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 15),
-                      settingProvider.isValid
+                      setting.isValid
                           ? Container()
                           : Text(los.toolchain_is_invalid),
                     ],
@@ -138,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
               clipBehavior: Clip.hardEdge,
               child: InkWell(
                 splashColor: Colors.blue.withAlpha(30),
-                onTap: settingProvider.isValid
+                onTap: setting.isValid
                     ? () {
                         Navigator.push(
                           context,
@@ -166,12 +165,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
-                      settingProvider.isValid
+                      setting.isValid
                           ? Container()
                           : Text(los.toolchain_is_invalid),
                     ],
                   ),
-                  onTap: settingProvider.isValid
+                  onTap: setting.isValid
                       ? () {
                           Navigator.push(
                             context,

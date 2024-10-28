@@ -8,7 +8,6 @@ dependencies:
     flutter:
         sdk: flutter
     cupertino_icons: ^1.0.6
-    provider: ^6.1.2
     delightful_toast: ^1.1.0
     google_fonts: ^6.2.1
     shared_preferences: ^2.3.1
@@ -29,6 +28,7 @@ dependencies:
     flutter_launcher_icons: ^0.14.1
     file_selector: ^1.0.3
     url_launcher: ^6.3.1
+    flutter_riverpod: ^2.6.1
 dev_dependencies:
     flutter_test:
         sdk: flutter

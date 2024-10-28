@@ -1,23 +1,25 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/setting/translator_page.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/file_service.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class SettingScreen extends StatefulWidget {
+class SettingScreen extends ConsumerStatefulWidget {
   const SettingScreen({super.key});
 
   @override
-  State<SettingScreen> createState() => _SettingScreenState();
+  ConsumerState<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends State<SettingScreen> {
+class _SettingScreenState extends ConsumerState<SettingScreen> {
   bool _hasPermission = false;
+
+  late TextEditingController _controller;
 
   @override
   void initState() {
@@ -28,40 +30,46 @@ class _SettingScreenState extends State<SettingScreen> {
         _hasPermission = hasPermission;
       });
     });
+    _controller =
+        TextEditingController(text: ref.read(settingProvider).toolChain);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void _onChangeTheme() async {
-    final settingProvider = Provider.of<SettingProvider>(
-      context,
-      listen: false,
-    );
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.theme),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildThemeOptionTile(
-              settingProvider: settingProvider,
-              title: los.system,
-              value: 'system',
-            ),
-            _buildThemeOptionTile(
-              settingProvider: settingProvider,
-              title: los.light,
-              value: 'light',
-            ),
-            _buildThemeOptionTile(
-              settingProvider: settingProvider,
-              title: los.dark,
-              value: 'dark',
-            ),
-            const SizedBox(height: 10),
-            _onCloseButton(),
-          ],
+      builder: (context) => Consumer(
+        builder: (context, ref, child) => AlertDialog(
+          title: Text(los.theme),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeOptionTile(
+                title: los.system,
+                value: 'system',
+                ref: ref,
+              ),
+              _buildThemeOptionTile(
+                title: los.light,
+                value: 'light',
+                ref: ref,
+              ),
+              _buildThemeOptionTile(
+                title: los.dark,
+                value: 'dark',
+                ref: ref,
+              ),
+              const SizedBox(height: 10),
+              _onCloseButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -71,6 +79,7 @@ class _SettingScreenState extends State<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     return TextButton(
       onPressed: () {
+        _onCheckValidator(ref: ref);
         Navigator.of(context).pop();
       },
       child: Text(los.okay),
@@ -78,25 +87,24 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Widget _buildThemeOptionTile({
-    required SettingProvider settingProvider,
     required String title,
     required String value,
+    required WidgetRef ref,
   }) {
     return ListTile(
       title: Text(title),
       leading: Radio<String>(
         value: value,
-        groupValue: settingProvider.theme,
+        groupValue: ref.read(settingProvider).theme,
         onChanged: (String? value) {
           if (value == null) return;
-          settingProvider.setTheme(value);
+          ref.watch(settingProvider.notifier).setTheme(value);
         },
       ),
     );
   }
 
   Widget _buildLocaleOptionTitle({
-    required SettingProvider settingProvider,
     required String title,
     required String value,
   }) {
@@ -104,73 +112,68 @@ class _SettingScreenState extends State<SettingScreen> {
       title: Text(title),
       leading: Radio<String>(
         value: value,
-        groupValue: settingProvider.locale,
+        groupValue: ref.read(settingProvider).locale,
         onChanged: (String? value) {
           if (value == null) return;
-          settingProvider.setLocale(value);
+          ref.watch(settingProvider.notifier).setLocale(value);
         },
       ),
     );
   }
 
   Widget _buildNotificationOption({
-    required SettingProvider settingProvider,
     required String title,
     required bool value,
+    required WidgetRef ref,
   }) {
     return ListTile(
       title: Text(title),
       leading: Radio<bool>(
         value: value,
-        groupValue: settingProvider.sendNotification,
+        groupValue: ref.watch(settingProvider).sendNotification,
         onChanged: (bool? value) {
           if (value == null) {
             return;
           }
-          settingProvider.setNotification(value);
+          ref.watch(settingProvider.notifier).setNotification(value);
         },
       ),
     );
   }
 
   void _onChangeNotification() async {
-    final settingProvider = Provider.of<SettingProvider>(
-      context,
-      listen: false,
-    );
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.send_notification),
-        actions: [
-          _buildNotificationOption(
-            settingProvider: settingProvider,
-            title: los.enable,
-            value: true,
-          ),
-          _buildNotificationOption(
-            settingProvider: settingProvider,
-            title: los.disable,
-            value: false,
-          ),
-          const SizedBox(height: 10),
-          _onCloseButton(),
-        ],
+      builder: (context) => Consumer(
+        builder: (context, ref, child) => AlertDialog(
+          title: Text(los.send_notification),
+          actions: [
+            _buildNotificationOption(
+              title: los.enable,
+              value: true,
+              ref: ref,
+            ),
+            _buildNotificationOption(
+              title: los.disable,
+              value: false,
+              ref: ref,
+            ),
+            const SizedBox(height: 10),
+            _onCloseButton(),
+          ],
+        ),
       ),
     );
   }
 
-  void _onCheckValidator() {
-    final settingProvider = Provider.of<SettingProvider>(
-      context,
-      listen: false,
-    );
-    if (settingProvider.toolChain.isNotEmpty) {
-      settingProvider.setIsValid(
-        _existKernel(settingProvider.toolChain) &&
-            _existScript(settingProvider.toolChain),
-      );
+  void _onCheckValidator({
+    required WidgetRef ref,
+  }) {
+    if (ref.watch(settingProvider).toolChain.isNotEmpty) {
+      final state = _existKernel(ref.watch(settingProvider).toolChain) &&
+          _existScript(ref.watch(settingProvider).toolChain);
+      ref.watch(settingProvider.notifier).setIsValid(state);
     }
   }
 
@@ -202,52 +205,52 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   void _onChangeToolChain() async {
-    final settingProvider = Provider.of<SettingProvider>(
-      context,
-      listen: false,
-    );
     final los = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: settingProvider.toolChain);
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.toolchain),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  onChanged: (String value) {
-                    controller.text = value;
-                    settingProvider.setToolChain(controller.text);
-                    _onCheckValidator();
-                  },
+      builder: (context) => Consumer(
+        builder: (context, ref, child) => AlertDialog(
+          title: Text(los.toolchain),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    onChanged: (String value) {
+                      _controller.text = value;
+                      ref
+                          .watch(settingProvider.notifier)
+                          .setToolChain(_controller.text);
+                      _onCheckValidator(ref: ref);
+                    },
+                  ),
                 ),
-              ),
-              Tooltip(
-                message: los.upload_directory,
-                child: IconButton(
-                  onPressed: () async {
-                    final directory = await FileService.uploadDirectory();
-                    if (directory == null) {
-                      return;
-                    }
-                    controller.text = directory;
-                    settingProvider.setToolChain(directory);
-                    _onCheckValidator();
-                  },
-                  icon: const Icon(Icons.drive_folder_upload_outlined),
+                Tooltip(
+                  message: los.upload_directory,
+                  child: IconButton(
+                    onPressed: () async {
+                      final directory = await FileService.uploadDirectory();
+                      if (directory == null) {
+                        return;
+                      }
+                      _controller.text = directory;
+                      ref
+                          .watch(settingProvider.notifier)
+                          .setToolChain(directory);
+                      _onCheckValidator(ref: ref);
+                    },
+                    icon: const Icon(Icons.drive_folder_upload_outlined),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _onCloseButton(),
-        ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            _onCloseButton(),
+          ],
+        ),
       ),
     );
-    controller.dispose();
   }
 
   Translator _exchangeTranslator(String name) {
@@ -312,10 +315,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
   void _onChangeLocale() async {
     final los = AppLocalizations.of(context)!;
-    final settingProvider = Provider.of<SettingProvider>(
-      context,
-      listen: false,
-    );
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -325,22 +324,18 @@ class _SettingScreenState extends State<SettingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildLocaleOptionTitle(
-              settingProvider: settingProvider,
               title: los.en,
               value: 'en',
             ),
             _buildLocaleOptionTitle(
-              settingProvider: settingProvider,
               title: los.vi,
               value: 'vi',
             ),
             _buildLocaleOptionTitle(
-              settingProvider: settingProvider,
               title: los.es,
               value: 'es',
             ),
             _buildLocaleOptionTitle(
-              settingProvider: settingProvider,
               title: los.ru,
               value: 'ru',
             ),
@@ -371,10 +366,9 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    final settingProvider = Provider.of<SettingProvider>(context);
-    toolchainPath() => settingProvider.toolChain == ''
+    toolchainPath() => ref.watch(settingProvider).toolChain == ''
         ? los.not_specified
-        : settingProvider.toolChain;
+        : ref.read(settingProvider).toolChain;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -400,7 +394,8 @@ class _SettingScreenState extends State<SettingScreen> {
               ListTile(
                 leading: const Icon(Icons.translate_outlined),
                 title: Text(los.language),
-                subtitle: Text(_exchangeLocale(settingProvider.locale)),
+                subtitle:
+                    Text(_exchangeLocale(ref.read(settingProvider).locale)),
                 onTap: _onChangeLocale,
               ),
               const SizedBox(height: 10),

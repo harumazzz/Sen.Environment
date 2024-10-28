@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/home_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
@@ -7,18 +8,17 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 
-class RootScreen extends StatefulWidget {
+class RootScreen extends ConsumerStatefulWidget {
   const RootScreen({super.key, required this.title});
 
   final String title;
 
   @override
-  State<RootScreen> createState() => _RootScreenState();
+  ConsumerState<RootScreen> createState() => _RootScreenState();
 }
 
-class _RootScreenState extends State<RootScreen> {
+class _RootScreenState extends ConsumerState<RootScreen> {
   int _currentPageIndex = 0;
 
   final _labelBehavior = NavigationDestinationLabelBehavior.alwaysShow;
@@ -116,14 +116,14 @@ class _RootScreenState extends State<RootScreen> {
     if (!Platform.isAndroid) return;
     Future.sync(
       () async {
-        final provider = Provider.of<SettingProvider>(context, listen: false);
+        final provider = ref.read(settingProvider);
         if (!provider.requestedPermission) {
           if (!(await AndroidService.checkStoragePermission())) {
             await _displayAllowDialog();
             await AndroidService.requestStoragePermission();
           }
         }
-        provider.setRequestedPermission(true);
+        ref.watch(settingProvider.notifier).setRequestedPermission(true);
       },
     );
   }

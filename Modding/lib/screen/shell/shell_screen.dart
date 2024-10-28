@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/api.dart';
 import 'package:async/async.dart';
@@ -17,10 +18,9 @@ import 'package:sen/service/file_service.dart';
 import 'package:sen/service/notification_service.dart';
 import 'package:sen/service/pointer_service.dart';
 import 'package:sen/widget/radio_button.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class ShellScreen extends StatefulWidget {
+class ShellScreen extends ConsumerStatefulWidget {
   final List<String> arguments;
 
   const ShellScreen({
@@ -29,10 +29,10 @@ class ShellScreen extends StatefulWidget {
   });
 
   @override
-  State<ShellScreen> createState() => _ShellScreenState();
+  ConsumerState<ShellScreen> createState() => _ShellScreenState();
 }
 
-class _ShellScreenState extends State<ShellScreen> {
+class _ShellScreenState extends ConsumerState<ShellScreen> {
   TextEditingController? _inputController;
   late ScrollController _scrollController;
   bool _finished = false;
@@ -346,8 +346,7 @@ class _ShellScreenState extends State<ShellScreen> {
   void _pushNotification(
     String message,
   ) async {
-    final provider = Provider.of<SettingProvider>(context, listen: false);
-    if (provider.sendNotification) {
+    if (ref.read(settingProvider).sendNotification) {
       await NotificationService.push(
         BuildDistribution.kApplicationName,
         message,
@@ -461,18 +460,19 @@ class _ShellScreenState extends State<ShellScreen> {
     await WidgetsBinding.instance.endOfFrame;
   }
 
-  String _exchangeKernelPath({required SettingProvider provider}) {
+  String _exchangeKernelPath() {
+    final toolChain = ref.read(settingProvider).toolChain;
     if (Platform.isAndroid) {
       return 'libKernel.so';
     }
     if (Platform.isWindows) {
-      return '${provider.toolChain}/kernel.dll';
+      return '$toolChain/kernel.dll';
     }
     if (Platform.isLinux) {
-      return '${provider.toolChain}/libKernel.so';
+      return '$toolChain/libKernel.so';
     }
     if (Platform.isMacOS || Platform.isIOS) {
-      return '${provider.toolChain}/Kernel.dylib';
+      return '$toolChain/Kernel.dylib';
     }
     throw Exception('unsupported platform');
   }
@@ -480,20 +480,19 @@ class _ShellScreenState extends State<ShellScreen> {
   void _run(
     List<String> additionalArguments,
   ) async {
-    final settingProvider =
-        Provider.of<SettingProvider>(context, listen: false);
+    final setting = ref.read(settingProvider);
     _setPendingJob();
     _clearMessage();
     final mainReceivePort = ReceivePort();
     final mainStreamQueue = StreamQueue<dynamic>(mainReceivePort);
     await Isolate.spawn(_sub, [
       mainReceivePort.sendPort,
-      _exchangeKernelPath(provider: settingProvider),
+      _exchangeKernelPath(),
     ]);
     final subSendPort = await mainStreamQueue.next as SendPort;
     subSendPort.send([
-      '${settingProvider.toolChain}/script/main.js',
-      (settingProvider.toolChain),
+      '${setting.toolChain}/script/main.js',
+      (setting.toolChain),
       additionalArguments
     ]);
     while (await mainStreamQueue.hasNext) {
@@ -625,7 +624,7 @@ class _ShellScreenState extends State<ShellScreen> {
   }
 
   void _onRecentFile() async {
-    final provider = Provider.of<RecentProvider>(context, listen: false);
+    final provider = ref.read(recentProvider);
     final los = AppLocalizations.of(context)!;
     Navigator.of(context).pop();
     await showDialog(
@@ -747,8 +746,7 @@ class _ShellScreenState extends State<ShellScreen> {
   void _onSendString() {
     final inputData = _inputController!.text;
     if (FileService.isFile(inputData) || FileService.isDirectory(inputData)) {
-      final provider = Provider.of<RecentProvider>(context, listen: false);
-      provider.addFile(inputData);
+      ref.watch(recentProvider.notifier).addFile(inputData);
     }
     _completer!.complete(inputData);
     _inputController!.text = '';

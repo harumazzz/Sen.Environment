@@ -1,14 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
-import 'package:sen/provider/log_provider.dart';
-import 'package:sen/provider/recent_provider.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/root_screen.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/notification_service.dart';
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -32,28 +30,17 @@ Future<void> main(
     AndroidService.initialize();
   }
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => LogProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => RecentProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => SettingProvider(),
-        ),
-      ],
+    ProviderScope(
       child: const Application(),
     ),
   );
 }
 
-class Application extends StatelessWidget {
+class Application extends ConsumerWidget {
   const Application({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) => MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -64,7 +51,7 @@ class Application extends StatelessWidget {
         darkTheme: MaterialDesign.darkTheme.copyWith(
           colorScheme: darkDynamic,
         ),
-        themeMode: Provider.of<SettingProvider>(context).themeData,
+        themeMode: ref.watch(settingProvider).themeData,
         home: const RootScreen(title: BuildDistribution.kApplicationName),
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -78,7 +65,7 @@ class Application extends StatelessWidget {
           Locale('es'),
           Locale('ru'),
         ],
-        locale: Locale(Provider.of<SettingProvider>(context).locale),
+        locale: Locale(ref.read(settingProvider).locale),
       ),
     );
   }
