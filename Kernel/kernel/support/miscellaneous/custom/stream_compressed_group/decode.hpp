@@ -98,6 +98,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 {
                     if (highest_resolution != packet_value.subgroup_content_information.texture.resolution)
                     {
+                        packet_value.is_removed = true;
                         continue;
                     }
                     auto image_index = k_begin_index;
@@ -137,6 +138,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     }
                     auto result = nlohmann::ordered_json{};
                     exchange_subgroup_compression_info(image_information, result);
+                    result.erase("type");                                                                                         // removed unused property
                     write_json(fmt::format("{}/{}/{}.json", resource_destination, k_atlases_folder_string, subgroup_id), result); // atlases
                     auto &info = definition.subgroup[subgroup_id].resource[subgroup_id];
                     info.type = DataType::ImageData;
@@ -162,6 +164,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         if (is_program_path(data_value.path))
                         {
                             packet_info.resource[data_id] = resource_information;
+                            packet_value.subgroup_content_information.general.data.erase(data_id);
                             continue;
                         }
                         else
@@ -292,6 +295,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     exchange_compression(packet_value.packet_structure.compression, packet_compression);
                     if (highest_resolution != packet_value.subgroup_content_information.texture.resolution)
                     {
+                        packet_value.is_removed = true;
                         continue;
                     }
                     for (auto &[packet_id, packet_info] : packet_value.subgroup_content_information.texture.packet)
@@ -594,6 +598,17 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             else
             {
                 exchange_general_additional(packet_information, definition, fmt::format("{}/resource", destination), setting);
+            }
+            for (auto &[id, value] : packet_information)
+            {
+                if (!value.is_removed && value.resource_data_section_view_stored.size() != k_none_size)
+                {
+                    for (auto &[path, resource_data] : value.resource_data_section_view_stored)
+                    {
+                        // debug(path); // TODO: add warning print
+                        write_bytes(fmt::format("{}/removed_resource/{}", destination, path), resource_data);
+                    }
+                }
             }
             return;
         }

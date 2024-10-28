@@ -223,7 +223,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             }
             default:
             {
-                if (resolution == static_cast<int>(k_none_size)) {
+                if (resolution == static_cast<int>(k_none_size))
+                {
                     return 768; // most image for android.
                 }
                 return resolution;
@@ -268,7 +269,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             auto highest_resolution = resolution_list.front();
             for (auto &[subgroup_id, packet_value] : definition.subgroup)
             {
-                if (!packet_value.category.common_type) {
+                if (!packet_value.category.common_type)
+                {
                     general_subgroup[subgroup_id] = packet_value;
                     continue;
                 }
@@ -386,7 +388,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             resolution_list.erase(resolution_list.begin());
             for (auto &[subgroup_id, packet_value] : definition.subgroup)
             {
-                if (!packet_value.category.common_type) {
+                if (!packet_value.category.common_type)
+                {
                     general_subgroup[subgroup_id] = packet_value;
                 }
                 for (auto &[resource_id, resource_info] : packet_value.resource)
@@ -475,9 +478,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         {
                             auto resource_data = std::vector<uint8_t>{};
                             encode_popcap_file<false>(resource_data, data_information, resource_source);
-                            if (data_information.type == DataType::PopAnim) {
+                            if (data_information.type == DataType::PopAnim)
+                            {
                                 data_information.path = restore_animation_path(data_information.path, get_animation_resolution(definition.texture_format_category, highest_resolution));
-                            } 
+                            }
                             packet_info.resource_data_section_view_stored[toupper_back(String::to_windows_style(data_information.path))] = std::move(resource_data);
                             packet_info.subgroup_content_information.general.data[toupper_back(resource_id)] = data_information;
                             packet_info.packet_structure.resource.emplace_back(Sen::Kernel::Support::PopCap::ResourceStreamGroup::Resource{
@@ -648,12 +652,14 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             packet_original_information.texture_format_category = definition.texture_format_category;
             packet_original_information.composite = definition.composite;
             auto packet_information = std::map<std::string, PacketInformation>{};
-            if (definition.composite) {
+            if (definition.composite)
+            {
                 auto general_subgroup = std::map<std::string, SubgroupDataInformation>{};
                 exchange_texture_additional(packet_information, definition, general_subgroup, fmt::format("{}/resource", source), setting);
                 exchange_general_additional(packet_information, definition, general_subgroup, fmt::format("{}/resource", source), setting);
             }
-            else {
+            else
+            {
                 exchange_general_additional(packet_information, definition, definition.subgroup, fmt::format("{}/resource", source), setting);
             }
             exchange_nessessory_data(packet_information, packet_original_information.subgroup);

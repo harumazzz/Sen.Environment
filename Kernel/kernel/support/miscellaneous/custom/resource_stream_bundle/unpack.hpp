@@ -46,7 +46,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                         auto group_size_left = k_none_size;
                         for (auto &group : res_temp["groups"])
                         {
-                            write_json(fmt::format("{}/unuse_resource/{}.json", destination, group["id"].get<std::string>()), group);
+                            write_json(fmt::format("{}/removed_data/{}.json", destination, group["id"].get<std::string>()), group);
                             ++group_size_left;
                         }
                         assert_conditional(res_temp["groups"].size() == group_size_left, fmt::format("{}", Language::get("popcap.rsb.project.group_must_be_empty")), "exchange_manifest_group");
@@ -195,9 +195,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                     auto contain = try_find_subgroup_information(group_id, subgroup_id, bundle, subgroup_information);
                     if (!packet_data_section_view_stored.contains(toupper_back(subgroup_id)) || !contain)
                     {
-                        auto unuse_resource = nlohmann::ordered_json{};
-                        Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_subgroup_compression_info(subgroup_value, unuse_resource);
-                        write_json(fmt::format("{}/unuse_resource/{}.json", destination, subgroup_id), unuse_resource);
+                        auto removed_data = nlohmann::ordered_json{};
+                        Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_subgroup_compression_info(subgroup_value, removed_data);
+                        write_json(fmt::format("{}/removed_data/{}.json", destination, subgroup_id), removed_data);
                         continue;
                     }
                     auto &subgroup_raw_content = packet_original_information.subgroup[subgroup_id];
@@ -243,7 +243,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             }
             for (auto &[packet_id, packet_data] : packet_data_section_view_stored)
             {
-                async_work_process.emplace_back(std::async(&write_bytes, fmt::format("{}/unuse_packet/{}.scg", destination, packet_id), packet_data));
+                async_work_process.emplace_back(std::async(&write_bytes, fmt::format("{}/removed_packet/{}.scg", destination, packet_id), packet_data));
             }
             async_process_list<void>(async_work_process);
             return;
@@ -264,7 +264,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             definition.texture_information_version = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(bundle.texture_information_section_size);
             auto resource_info = CustomResourceInformation{};
             exchange_manifest_group(resource_info, packet_data_section_view_stored, definition.manifest_info, destination);
-            if (setting.unpack_packages) {
+            if (setting.unpack_packages)
+            {
                 exchange_packages(packet_data_section_view_stored, definition.packages_info, resource_info, destination);
             }
             exchange_packet(definition, bundle, resource_info, packet_data_section_view_stored, destination, setting);

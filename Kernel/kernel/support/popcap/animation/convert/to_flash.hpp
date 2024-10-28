@@ -13,8 +13,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		inline static auto exchange_image_document(
 			AnimationImage const &image,
 			std::string const &image_name,
-			XMLDocument &value
-		) -> void
+			XMLDocument &value) -> void
 		{
 			auto image_transform_matrix = Transform{};
 			k_version < 2 ? exchange_tranform_from_rotate_to_standard(image.transform, image_transform_matrix) : exchange_tranform_by_copy(image.transform, image_transform_matrix);
@@ -103,7 +102,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						auto dom_symbol_instance = value.NewElement("DOMSymbolInstance");
 						if (frame_node.sprite)
 						{
-							if (static_cast<size_t>(frame_node.resource) >= animation_name_list.sprite.size()) {
+							if (static_cast<size_t>(frame_node.resource) >= animation_name_list.sprite.size())
+							{
 								continue; // skip vaild
 							}
 							dom_symbol_instance->SetAttribute("libraryItemName", fmt::format("sprite/{}", animation_name_list.sprite[frame_node.resource]).data());
@@ -111,7 +111,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						}
 						else
 						{
-							if (static_cast<size_t>(frame_node.resource) >= animation_name_list.image.size()) {
+							if (static_cast<size_t>(frame_node.resource) >= animation_name_list.image.size())
+							{
 								continue; // skip vaild
 							}
 							dom_symbol_instance->SetAttribute("libraryItemName", fmt::format("image/{}", animation_name_list.image[frame_node.resource]).data());
@@ -156,10 +157,10 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		}
 
 		inline static auto check_and_rewrite_vaild_label(
-			std::string &label
-		) -> void
+			std::string &label) -> void
 		{
-			if (label.size() > k_max_label_name_size) {
+			if (label.size() > k_max_label_name_size)
+			{
 				label = label.substr(0, k_max_label_name_size);
 			}
 			exchange_sprite_name_invalid<true>(label);
@@ -186,11 +187,13 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					{
 						label_name = frame.label;
 						check_and_rewrite_vaild_label(label_name); // only trash label will be fix.
-						if (label_duplicate_system_stored.contains(label_name)) {
+						if (label_duplicate_system_stored.contains(label_name))
+						{
 							++label_duplicate_system_stored[label_name];
 							label_name = fmt::format("{}_{}", label_name, label_duplicate_system_stored[label_name]);
 						}
-						else {
+						else
+						{
 							label_duplicate_system_stored[label_name] = k_begin_index + 1_size;
 						}
 						package_library.label[label_name].start = frame_index;
@@ -239,7 +242,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					}
 					auto &model_layer = model_structure[layer_index];
 					auto &frame_node_list = frame_node_structure[layer_index];
-					
+
 					if (model_layer.state != State::state_null)
 					{
 						if (frame_node_list.size() > 0_size)
@@ -344,7 +347,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 									new_frame_node.index = start_index;
 									new_frame_node.duration -= duration + start_index - end_index;
 								}
-								else {
+								else
+								{
 									new_frame_node.duration -= duration + frame_index - end_index;
 								}
 							}
@@ -424,8 +428,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			{
 				auto &image = definition.image[image_index];
 				auto dom_bitmap_item = value.NewElement("DOMBitmapItem");
-				dom_bitmap_item->SetAttribute("name", fmt::format("media/{}", image.path).data());
-				dom_bitmap_item->SetAttribute("href", fmt::format("media/{}.png", image.path).data());
+				dom_bitmap_item->SetAttribute("name", fmt::format("media/{}", animation_name_list.image[image_index]).data());
+				dom_bitmap_item->SetAttribute("href", fmt::format("media/{}.png", animation_name_list.image[image_index]).data());
 				media->InsertEndChild(dom_bitmap_item);
 				auto include = value.NewElement("Include");
 				include->SetAttribute("href", fmt::format("image/{}.xml", animation_name_list.image[image_index]).data());
@@ -486,9 +490,10 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					{
 						action_command_list.emplace_back("stop();");
 					}
-					if (!frame.stop && static_cast<size_t>(frame_index) == definition.main_sprite.frame.size() - 1_size) {
-						action_command_list.emplace_back("stop();");
-					}
+				}
+				if (!frame.stop && static_cast<size_t>(frame_index) == definition.main_sprite.frame.size() - 1_size)
+				{
+					action_command_list.emplace_back("stop();");
 				}
 				if (!action_command_list.empty())
 				{
@@ -622,16 +627,17 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			auto image_duplicate_stored = std::map<std::string, std::vector<string>>{};
 			for (auto &image : definition.image)
 			{
-				auto image_name =  image.path;
+				auto image_name = image.path;
 				auto image_is_changed = false;
-				if (std::find(image_name.begin(), image_name.end(), '/') != image_name.end()) {
+				if (std::find(image_name.begin(), image_name.end(), '/') != image_name.end())
+				{
 					auto string_list = String{image_name}.split("/"_sv);
 					image_name = string_list.back();
 					image_is_changed = true;
 				}
 				if (std::find(animation_name_list.image.begin(), animation_name_list.image.end(), image_name) != animation_name_list.image.end())
 				{
-					auto new_image_name = fmt::format("{}_{}", image_name, image_duplicate_stored[image_name].size());
+					auto new_image_name = fmt::format("{}_{}", image_name, image_duplicate_stored[image_name].size() + 2_size);
 					image_duplicate_stored[image_name].emplace_back(image_name);
 					image_name = new_image_name;
 					image_is_changed = true;

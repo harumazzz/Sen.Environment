@@ -663,6 +663,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         struct PacketInformation
         {
             bool is_image;
+            bool is_removed;
             SubgroupCompressedInfo subgroup_content_information;
             std::map<std::string, std::vector<uint8_t>> resource_data_section_view_stored;
             PacketStructure packet_structure;
@@ -784,7 +785,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         }
 
         inline static auto k_image_format_ios = std::map<ImageFormat, uint32_t>{
-            {ImageFormat::ARGB_8888, 0_ui}, {ImageFormat::RGBA_4444, 1_ui}, {ImageFormat::RGB_565, 2_ui}, {ImageFormat::RGBA_5551, 3_ui}, {ImageFormat::RGBA_4444_TILED, 21_ui}, {ImageFormat::RGB_565_TILED, 22_ui}, {ImageFormat::RGBA_5551_TILED, 23_ui}, {ImageFormat::RGB_PVRTC_4BPP, 30_ui}, {ImageFormat::RGB_PVRTC_4BPP_A_8, 148_ui}};
+            {ImageFormat::ARGB_8888, 0_ui}, {ImageFormat::RGBA_4444, 1_ui}, {ImageFormat::RGB_565, 2_ui}, {ImageFormat::RGBA_5551, 3_ui}, {ImageFormat::RGBA_4444_TILED, 21_ui}, {ImageFormat::RGB_565_TILED, 22_ui}, {ImageFormat::RGBA_5551_TILED, 23_ui}, {ImageFormat::RGBA_PVRTC_4BPP, 30_ui}, {ImageFormat::RGB_PVRTC_4BPP_A_8, 148_ui}};
 
         inline static auto k_image_format_android = std::map<ImageFormat, uint32_t>{
             {ImageFormat::RGBA_8888, 0_ui}, {ImageFormat::RGBA_4444, 1_ui}, {ImageFormat::RGB_565, 2_ui}, {ImageFormat::RGBA_5551, 3_ui}, {ImageFormat::RGBA_4444_TILED, 21_ui}, {ImageFormat::RGB_565_TILED, 22_ui}, {ImageFormat::RGBA_5551_TILED, 23_ui}, {ImageFormat::RGB_ETC1_A_8, 147_ui}};

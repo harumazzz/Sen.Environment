@@ -2,6 +2,7 @@
 
 #include "library/macro.hpp"
 #include "library/dialog.hpp"
+#include "version.hpp"
 
 namespace Sen::Shell {
 	
@@ -12,7 +13,23 @@ namespace Sen::Shell {
 		) -> std::string
 		{
 			auto str = std::string{};
-			std::getline(std::cin, str);
+			#if WINDOWS
+			auto state_b = BOOL{};
+			auto handle = GetStdHandle(STD_INPUT_HANDLE);
+			auto handle_mode = DWORD{};
+			if (GetConsoleMode(handle, &handle_mode)) {
+				auto text_16 = std::array<char16_t, 0x1000>{};
+				auto length = DWORD{};
+				state_b = ReadConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), &length, nullptr);
+				auto text_8 = utf16_to_utf8(std::u16string_view{text_16.data(), length - 2});
+				str = std::move(reinterpret_cast<std::string &>(text_8));
+			}
+			else {
+				std::getline(std::cin, str);
+			}
+			#else 
+				std::getline(std::cin, str);
+			#endif
 			return str;
 		}
 
@@ -23,9 +40,22 @@ namespace Sen::Shell {
 		) -> void
 		{
 			#if WINDOWS
-				auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-				SetConsoleTextAttribute(hConsole, color);
-				std::cout << title << '\n' << std::flush;
+				auto state_b = BOOL{};
+				auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+				auto handle_mode = DWORD{};
+				auto consoleInfo = CONSOLE_SCREEN_BUFFER_INFO{};
+				GetConsoleScreenBufferInfo(handle, &consoleInfo);
+				auto originalColor = consoleInfo.wAttributes;
+				SetConsoleTextAttribute(handle, color);
+				auto state = GetConsoleMode(handle, &handle_mode);
+				if (state) {
+					auto text = title + '\n';
+					auto text_16 = utf8_to_utf16(text);
+					state_b = WriteConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), nullptr, nullptr);
+				} 
+				else {
+					std::cout << title << '\n' << std::flush;
+				}
 			#else
 				switch (color) {
 					case Sen::Shell::Interactive::Color::RED: {
@@ -53,11 +83,21 @@ namespace Sen::Shell {
 				}
 			#endif
 			#if WINDOWS
-				SetConsoleTextAttribute(hConsole, Sen::Shell::Interactive::Color::DEFAULT);
+				SetConsoleTextAttribute(handle, originalColor);
 			#endif
-			if (message != "") {
-				std::cout << message << '\n' << std::flush;
-			}
+				if (message != "" && state) {
+					# if WINDOWS
+					if (state) {
+						auto text = message + '\n';
+						auto text_16 = utf8_to_utf16(text);
+						state_b = WriteConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), nullptr, nullptr);
+					} else {
+						std::cout << message << '\n' << std::flush;
+					}
+					#else
+						std::cout << message << '\n' << std::flush;
+					#endif
+				}
 				return;
 			}
 

@@ -80,7 +80,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			auto dom_bitmap_instance = elements->FirstChildElement("DOMBitmapInstance");
 			assert_conditional(dom_bitmap_instance != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.image_has_no_DOMBitmapInstance")), image_name), "exchange_image_document");
 			auto media_name = std::string{dom_bitmap_instance->FindAttribute("libraryItemName")->Value()}.substr(6_size);
-			if (compare_string(Path::getExtension(media_name), ".png"_sv)) {
+			if (compare_string(Path::getExtension(media_name), ".png"_sv))
+			{
 				media_name = media_name.substr(k_begin_index, media_name.size() - ".png"_sv.size());
 			}
 			assert_conditional(media_name == image.path, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_image_path")), image_name), "exchange_image_document");
@@ -317,10 +318,12 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				}
 				close_current_model_if_need();
 			}
-			if (frame_list.size() != k_none_size) {
+			if (frame_list.size() != k_none_size)
+			{
 				frame_list.erase(frame_list.end() - 1);
 			}
-			else {
+			else
+			{
 				frame_list.resize(1_size);
 			}
 			frame_node_structure.clear();
@@ -353,7 +356,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				auto frame_duration = static_cast<int>(std::stoi((m_duration ? m_duration->Value() : "1")));
 				frame_count += frame_duration;
 				auto label_name = dom_frame->FindAttribute("name");
-				assert_conditional(label_name != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info"); 
+				assert_conditional(label_name != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info");
 				auto name = std::string(label_name->Value());
 				// debug(name);
 				label[name].start = frame_index;
@@ -382,7 +385,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				definition.main_sprite.frame[label_info.start].label = label_name;
 			}
 			auto action_layer = dom_timeline->FirstChildElement("layers")->FirstChildElement("DOMLayer")->NextSiblingElement("DOMLayer");
-			assert_conditional(std::string_view{action_layer->FindAttribute("name")->Value()} == "action"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.action_layer_name_must_be_action")), "exchange_dom_document"); 
+			assert_conditional(std::string_view{action_layer->FindAttribute("name")->Value()} == "action"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.action_layer_name_must_be_action")), "exchange_dom_document");
 			auto action_frames = action_layer->FirstChildElement("frames");
 			for (auto dom_frame = action_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 			{
@@ -560,7 +563,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			}
 			for (auto &element : package_library.sprite)
 			{
-				
+
 				auto &sprite_name = element.first;
 				// debug(sprite_name);
 				exchange_sprite_document<SpriteType::sprite>(sprite_name, package_library, package_library.frame_node, package_library.sprite[sprite_name]);
@@ -579,7 +582,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				{
 					auto &label_name = element.first;
 					// debug(label_name);
-					assert_conditional(package_library.label_document.find(label_name) != package_library.label_document.end(),  String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.missing_label_xml")), label_name), "exchange_definition");
+					assert_conditional(package_library.label_document.find(label_name) != package_library.label_document.end(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.missing_label_xml")), label_name), "exchange_definition");
 					exchange_sprite_document<SpriteType::label>(label_name, package_library, label_frame_node[label_name], package_library.label_document.at(label_name));
 				}
 				// debug("exchange_label");

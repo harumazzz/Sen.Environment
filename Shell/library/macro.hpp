@@ -84,16 +84,14 @@ typedef void(*ShellCallback)(CStringList* list, CStringView* destination);
 
 namespace Sen::Shell {
 
-	inline auto constexpr version = 1;
-
 }
 
 #if WINDOWS
-#define KERNEL_DEFAULT L".\\kernel.dll"
+#define KERNEL_DEFAULT L".\\Kernel.dll"
 #elif MACINTOSH || IPHONE
-#define KERNEL_DEFAULT "kernel.dylib"
+#define KERNEL_DEFAULT "Kernel.dylib"
 #elif ANDROID || LINUX
-#define KERNEL_DEFAULT "kernel.so"
+#define KERNEL_DEFAULT "libKernel.so"
 #endif
 
 char* copy = new char[1];
