@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:modding/model/script.dart';
-import 'package:modding/screen/shell/shell_screen.dart';
-import 'package:modding/service/file_service.dart';
+import 'package:sen/model/script.dart';
+import 'package:sen/screen/shell/shell_screen.dart';
+import 'package:sen/service/file_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:page_transition/page_transition.dart';
 

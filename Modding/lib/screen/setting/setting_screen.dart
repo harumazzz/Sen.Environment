@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:modding/model/translator.dart';
-import 'package:modding/provider/setting_provider.dart';
-import 'package:modding/screen/setting/translator_page.dart';
-import 'package:modding/service/android_service.dart';
-import 'package:modding/service/file_service.dart';
+import 'package:sen/model/translator.dart';
+import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/screen/setting/translator_page.dart';
+import 'package:sen/service/android_service.dart';
+import 'package:sen/service/file_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

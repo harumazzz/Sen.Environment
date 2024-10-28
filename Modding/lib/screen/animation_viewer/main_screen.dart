@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:modding/screen/animation_viewer/animation_screen.dart';
-import 'package:modding/screen/animation_viewer/label_screen.dart';
-import 'package:modding/screen/animation_viewer/media_screen.dart';
-import 'package:modding/service/file_service.dart';
-import 'package:modding/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/animation_screen.dart';
+import 'package:sen/screen/animation_viewer/label_screen.dart';
+import 'package:sen/screen/animation_viewer/media_screen.dart';
+import 'package:sen/service/file_service.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AnimationViewer extends StatefulWidget {

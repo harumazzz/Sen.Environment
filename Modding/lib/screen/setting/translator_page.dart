@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:modding/model/translator.dart';
-import 'package:modding/widget/hyperlink.dart';
+import 'package:sen/model/translator.dart';
+import 'package:sen/widget/hyperlink.dart';
 
 class TranslatorPage extends StatelessWidget {
   const TranslatorPage({

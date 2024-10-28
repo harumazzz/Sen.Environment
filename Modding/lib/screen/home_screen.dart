@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:modding/model/item.dart';
-import 'package:modding/provider/setting_provider.dart';
-import 'package:modding/screen/animation_viewer/main_screen.dart';
-import 'package:modding/screen/js_pick.dart';
-import 'package:modding/screen/method_picker.dart';
-import 'package:modding/screen/shell/shell_screen.dart';
+import 'package:sen/model/item.dart';
+import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/screen/animation_viewer/main_screen.dart';
+import 'package:sen/screen/js_pick.dart';
+import 'package:sen/screen/method_picker.dart';
+import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';

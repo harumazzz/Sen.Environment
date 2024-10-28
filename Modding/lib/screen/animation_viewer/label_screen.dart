@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:modding/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 
 // ignore: must_be_immutable
 class LabelScreen extends StatefulWidget {

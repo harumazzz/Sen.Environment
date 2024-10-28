@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:modding/model/log_message.dart';
+import 'package:sen/model/log_message.dart';
 
 class LogProvider with ChangeNotifier {
   final List<LogMessage> _list = [];

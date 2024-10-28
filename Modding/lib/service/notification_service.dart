@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:local_notifier/local_notifier.dart';
-import 'package:modding/model/build_distribution.dart';
+import 'package:sen/model/build_distribution.dart';
 import 'package:window_manager/window_manager.dart';
 
 class NotificationService {

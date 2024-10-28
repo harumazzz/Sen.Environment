@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:modding/model/animation.dart' as model;
-import 'package:modding/service/file_service.dart';
+import 'package:sen/model/animation.dart' as model;
+import 'package:sen/service/file_service.dart';
 import 'dart:collection';
 import 'dart:math' as math;
 

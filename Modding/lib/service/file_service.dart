@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart' as file_selector;
-import 'package:modding/service/android_service.dart';
+import 'package:sen/service/android_service.dart';
 import 'package:path/path.dart' as p;
 
 class FileService {
@@ -94,7 +92,7 @@ class FileService {
     if (Platform.isAndroid) {
       directory = await AndroidService.pickDirectoryFromDocument();
     } else {
-      directory = await FilePicker.platform.getDirectoryPath();
+      directory = (await file_selector.getDirectoryPath());
     }
     if (directory == null || directory.isEmpty) {
       return null;
@@ -110,11 +108,11 @@ class FileService {
   }
 
   static Future<String?> _uploadFilePicker() async {
-    var result = await FilePicker.platform.pickFiles();
+    var result = (await file_selector.openFile())?.path;
     if (result == null) {
       return null;
     } else {
-      return result.files.single.path!;
+      return p.absolute(result);
     }
   }
 }

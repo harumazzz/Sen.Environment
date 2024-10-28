@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:modding/model/animation.dart' as animation;
+import 'package:sen/model/animation.dart' as animation;
 import 'dart:math' as math;
 
 class AnimationPainter extends CustomPainter {

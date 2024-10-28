@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:modding/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // ignore: must_be_immutable

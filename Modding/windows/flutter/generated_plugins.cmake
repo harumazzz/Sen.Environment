@@ -7,7 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   file_selector_windows
   local_notifier
-  screen_retriever
+  screen_retriever_windows
   url_launcher_windows
   window_manager
 )

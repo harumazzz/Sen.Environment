@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
-import 'package:modding/screen/animation_viewer/label_screen.dart';
-import 'package:modding/screen/animation_viewer/media_screen.dart';
-import 'package:modding/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/label_screen.dart';
+import 'package:sen/screen/animation_viewer/media_screen.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AnimationScreen extends StatefulWidget {
