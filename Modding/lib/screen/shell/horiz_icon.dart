@@ -11,25 +11,26 @@ class _HorizIconState extends State<HorizIcon>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _steamAnimation;
-  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-    )..repeat(reverse: true);
-    _steamAnimation = Tween<double>(begin: 0, end: -10).animate(
+    )..repeat(reverse: false);
+
+    _steamAnimation = Tween<double>(begin: 0, end: -20).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Curves.easeInOut,
       ),
     );
-    _scaleAnimation = Tween<double>(begin: 1, end: 1.05).animate(
+    _opacityAnimation = Tween<double>(begin: 1, end: 0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeInOut,
+        curve: Curves.easeIn,
       ),
     );
   }
@@ -42,19 +43,33 @@ class _HorizIconState extends State<HorizIcon>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final steamValue = _steamAnimation.value;
-        final scaleValue = _scaleAnimation.value;
-        return Transform(
-          transform: Matrix4.identity()
-            ..translate(0.0, steamValue)
-            ..scale(scaleValue),
-          alignment: Alignment.bottomCenter,
-          child: const Icon(Icons.coffee_outlined),
-        );
-      },
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          const Icon(Icons.coffee_outlined, size: 30),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 25,
+                child: Transform.translate(
+                  offset: Offset(0, _steamAnimation.value),
+                  child: Opacity(
+                    opacity: _opacityAnimation.value,
+                    child: Icon(
+                      Icons.waves_outlined,
+                      color: Colors.grey.shade400,
+                      size: 15,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -164,7 +164,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         if (is_program_path(data_value.path))
                         {
                             packet_info.resource[data_id] = resource_information;
-                            packet_value.subgroup_content_information.general.data.erase(data_id);
+                            packet_value.is_removed = true;
                             continue;
                         }
                         else
