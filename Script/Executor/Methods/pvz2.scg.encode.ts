@@ -1,4 +1,4 @@
-namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode {
+namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
     /**
      * Argument for the current method
      */
@@ -35,9 +35,9 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode {
     export namespace Detail {
         export function generic(): Array<[bigint, bigint, string]> {
             return [
-                [1n, 0n, Kernel.Language.get("sen.scg.regular")],
-                [2n, 1n, Kernel.Language.get("sen.scg.for_modding")],
-                [3n, 2n, Kernel.Language.get("debug")],
+                [1n, 1n, Kernel.Language.get("sen.scg.regular")],
+                [2n, 2n, Kernel.Language.get("sen.scg.for_modding")],
+                [3n, 3n, Kernel.Language.get("debug")],
             ];
         }
     }
@@ -56,37 +56,34 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode {
 
     export function forward(): void {
         Sen.Script.Executor.push_as_module<
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode.Argument,
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode.BatchArgument,
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode.Configuration
+            Sen.Script.Executor.Methods.PvZ2.SCG.Encode.Argument,
+            Sen.Script.Executor.Methods.PvZ2.SCG.Encode.BatchArgument,
+            Sen.Script.Executor.Methods.PvZ2.SCG.Encode.Configuration
         >({
-            id: "pvz2.custom.scg.encode",
-            configuration_file: Home.query("~/Executor/Configuration/pvz2.custom.scg.encode.json"),
+            id: "pvz2.scg.encode",
+            configuration_file: Home.query("~/Executor/Configuration/pvz2.scg.encode.json"),
             direct_forward(argument: Argument): void {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.scg`);
                 Console.output(argument.destination!);
-                load_boolean(argument, "enable_debug", this.configuration, Kernel.Language.get("pvz2.custom.scg.enable_debug"));
+                load_boolean(argument, "enable_debug", this.configuration, Kernel.Language.get("pvz2.scg.enable_debug"));
                 const generic = Detail.generic();
                 if (!argument.enable_debug) {
                     generic.pop();
                 }
-                load_bigint(argument, "generic", this.configuration, generic, Kernel.Language.get("pvz2.custom.scg.encode.generic"));
-                if (argument.generic! == 1n) {
-                    load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.custom.scg.animation_split_label"));
+                load_bigint(argument, "generic", this.configuration, generic, Kernel.Language.get("pvz2.scg.encode.generic"));
+                if (argument.generic! === 1n) {
+                    load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.scg.animation_split_label"));
                 }
                 const setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting = {
-                    decode_method: argument.generic!,
+                    decode_method: argument.generic! - 1n,
                     animation_split_label: argument.animation_split_label! ?? false,
                 };
                 clock.start_safe();
                 Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.encode_fs(argument.source, argument.destination!, setting);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,
@@ -97,4 +94,4 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode {
     }
 }
 
-Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Encode.forward();
+Sen.Script.Executor.Methods.PvZ2.SCG.Encode.forward();

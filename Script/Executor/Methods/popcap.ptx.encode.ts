@@ -128,6 +128,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
                 return;
             },
             batch_forward(argument: BatchArgument): void {
+                load_bigint(argument, "format", this.configuration, Detail.format(), Kernel.Language.get("popcap.ptx.encode.format"));
                 return basic_batch(this, argument, false);
             },
             is_enabled: true,

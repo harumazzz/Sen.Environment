@@ -70,10 +70,6 @@ namespace Sen.Script.Executor.Methods.Animation.Flash.Resize {
                 clock.stop_safe();
                 return;
             },
-            batch_forward(argument: BatchArgument): void {
-                load_bigint(argument, "resolution", this.configuration, Detail.resolution(), Kernel.Language.get("popcap.animation.to_flash.resolution"));
-                return basic_batch(this, argument, false, { resolution: BigInt(argument.resolution!) });
-            },
             is_enabled: true,
             configuration: undefined!,
             filter: ["directory", /.*(\.xfl|\.pam\.xfl)$/i],

@@ -47,9 +47,6 @@ namespace Sen.Script.Executor.Methods.PopCap.ResInfo.Split {
                 clock.stop_safe();
                 return;
             },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
-            },
             is_enabled: true,
             configuration: undefined!,
             filter: ["file", /(.+)\.json$/i],

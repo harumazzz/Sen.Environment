@@ -1,4 +1,4 @@
-namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode {
+namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
     /**
      * Argument for the current method
      */
@@ -53,25 +53,25 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode {
 
     export function forward(): void {
         Sen.Script.Executor.push_as_module<
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode.Argument,
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode.BatchArgument,
-            Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode.Configuration
+            Sen.Script.Executor.Methods.PvZ2.SCG.Decode.Argument,
+            Sen.Script.Executor.Methods.PvZ2.SCG.Decode.BatchArgument,
+            Sen.Script.Executor.Methods.PvZ2.SCG.Decode.Configuration
         >({
-            id: "pvz2.custom.scg.decode",
-            configuration_file: Home.query("~/Executor/Configuration/pvz2.custom.scg.decode.json"),
+            id: "pvz2.scg.decode",
+            configuration_file: Home.query("~/Executor/Configuration/pvz2.scg.decode.json"),
             direct_forward(argument: Argument): void {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.package`);
                 Console.output(argument.destination!);
-                load_boolean(argument, "enable_debug", this.configuration, Kernel.Language.get("pvz2.custom.scg.enable_debug"));
+                load_boolean(argument, "enable_debug", this.configuration, Kernel.Language.get("pvz2.scg.enable_debug"));
                 const generic = Detail.generic();
                 if (!argument.enable_debug) {
                     generic.pop();
                 }
-                load_bigint(argument, "generic", this.configuration, generic, Kernel.Language.get("pvz2.custom.scg.decode.generic"));
+                load_bigint(argument, "generic", this.configuration, generic, Kernel.Language.get("pvz2.scg.decode.generic"));
                 if (argument.generic! == 1n) {
-                    load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.custom.scg.animation_split_label"));
+                    load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.scg.animation_split_label"));
                 }
                 const setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting = {
                     decode_method: argument.generic!,
@@ -94,4 +94,4 @@ namespace Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode {
     }
 }
 
-Sen.Script.Executor.Methods.PvZ2.Custom.SCG.Decode.forward();
+Sen.Script.Executor.Methods.PvZ2.SCG.Decode.forward();

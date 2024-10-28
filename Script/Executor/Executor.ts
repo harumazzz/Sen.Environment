@@ -130,14 +130,19 @@ namespace Sen.Script.Executor {
             return configurate_or_input(argument, key as string, rule as Array<[bigint, string, string]>);
         }
         if (configuration[key] !== "?") {
-            if (rule.includes(configuration[key] as unknown as bigint & string)) {
+            const setState = (value: string) => {
                 if (Shell.is_gui()) {
-                    Kernel.Console.print(configuration[key] as string);
+                    Kernel.Console.print(value);
                 } else {
-                    Kernel.Console.print(`    ${configuration[key]}`);
+                    Kernel.Console.print(`    ${value}`);
                 }
                 (argument as any & Argument)[key] = configuration[key];
+            };
+            if (rule.includes(configuration[key] as unknown as bigint & string)) {
+                setState(configuration[key] as string);
                 return;
+            } else if ((rule as Array<[bigint, string, string]>).map((e) => e[1]).includes(configuration[key] as any)) {
+                setState((rule as any)[Number((configuration[key] as bigint) - 1n)][2] as string);
             } else {
                 Console.error(format(Kernel.Language.get("invalid.argument"), configuration[key]));
                 (configuration as any)[key] = "?";
@@ -526,6 +531,14 @@ namespace Sen.Script.Executor {
 
     export type ExecuteType = "simple" | "whole" | "js";
 
+    export function print_statement(name: string, num: bigint): void {
+        if (Shell.is_gui()) {
+            Kernel.Console.print(`${num}. ${Kernel.Language.get(name)}`);
+        } else {
+            Kernel.Console.print(`    ${num}. ${Kernel.Language.get(name)}`);
+        }
+    }
+
     export function load_module<Argument extends Base>(argument: Argument, load: ExecuteType): void {
         let modules: Map<bigint, string> = new Map<bigint, string>();
         const query = (
@@ -553,13 +566,7 @@ namespace Sen.Script.Executor {
         display_argument(argument.source as string | string[]);
         Console.send(`${Kernel.Language.get("execution_argument")}: ${Kernel.Language.get("js.input_an_method_to_start")}`, Definition.Console.Color.CYAN);
         modules = new Map([...modules.entries()].sort((a, b) => Number(a[0] - b[0])));
-        modules.forEach(function print_statement(name: string, num: bigint): void {
-            if (Shell.is_gui()) {
-                Kernel.Console.print(`${num}. ${Kernel.Language.get(name)}`);
-            } else {
-                Kernel.Console.print(`    ${num}. ${Kernel.Language.get(name)}`);
-            }
-        });
+        modules.forEach(print_statement);
         const view: Array<bigint> = Array.from(modules.keys());
         switch (view.length) {
             case 0: {
@@ -653,14 +660,42 @@ namespace Sen.Script.Executor {
 
     export function input_path<Argument extends Base & { source: Array<string> }>(argument: Argument): void {
         let input: string = undefined!;
+        Console.argument(Kernel.Language.get("script.input_any_path_to_continue"));
         while (true) {
-            input = Console.path(Kernel.Language.get("script.input_any_path_to_continue"), "any");
-            if (input === "") {
-                break;
+            input = Kernel.Console.readline();
+            switch (input) {
+                case "":
+                    return;
+                case ":p": {
+                    Console.argument(Kernel.Language.get("input_type"));
+                    [Kernel.Language.get("file"), Kernel.Language.get("directory")].forEach((e, i) => print_statement(e, BigInt(i + 1)));
+                    const result = input_integer([1n, 2n]);
+                    if (result === 1n) {
+                        input = Shell.callback(["pick_file"]);
+                    } else {
+                        input = Shell.callback(["pick_directory"]);
+                    }
+                    if (input.length === 0) continue;
+                    break;
+                }
+                case ":b":
+                    Console.argument(Kernel.Language.get("input_number_to_process_batch_function"));
+                    const modules: Map<bigint, string> = new Map<bigint, string>();
+                    let counter: bigint = 0n;
+                    methods.forEach((value, key) => {
+                        if (value.batch_forward !== undefined && value.is_enabled) {
+                            modules.set(++counter, key);
+                        }
+                    });
+                    modules.forEach((v, k) => print_statement(Kernel.Language.get(v), k));
+                    const option = input_integer([...modules.keys()]);
+                    (argument as any).directory = Console.path(Kernel.Language.get("input_directory"), "directory");
+                    execute(argument, modules.get(option)!, Forward.BATCH, "simple");
+                    continue;
             }
+            Console.argument(input);
             argument.source.push(input);
         }
-        return;
     }
 
     export function forward<Argument extends Base>(argument: Argument): void {

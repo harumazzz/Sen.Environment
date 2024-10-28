@@ -47,9 +47,6 @@ namespace Sen.Script.Executor.Methods.Marmalade.DZip.Pack {
                 clock.stop_safe();
                 return;
             },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, true);
-            },
             is_enabled: true,
             configuration: undefined!,
             filter: ["directory", /(.*)\.data_package$/i],

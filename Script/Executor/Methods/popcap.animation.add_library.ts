@@ -86,9 +86,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
                 clock.stop_safe();
                 return;
             },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
-            },
             is_enabled: true,
             configuration: undefined!,
             filter: ["directory", /.*/g],

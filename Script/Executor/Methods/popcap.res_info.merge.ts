@@ -47,9 +47,6 @@ namespace Sen.Script.Executor.Methods.PopCap.ResInfo.Merge {
                 clock.stop_safe();
                 return;
             },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, true);
-            },
             is_enabled: true,
             configuration: undefined!,
             filter: ["directory", /.*\.info$/i],

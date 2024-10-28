@@ -138,7 +138,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     }
                     auto result = nlohmann::ordered_json{};
                     exchange_subgroup_compression_info(image_information, result);
-                    result.erase("type");                                                                                         // removed unused property
                     write_json(fmt::format("{}/{}/{}.json", resource_destination, k_atlases_folder_string, subgroup_id), result); // atlases
                     auto &info = definition.subgroup[subgroup_id].resource[subgroup_id];
                     info.type = DataType::ImageData;
