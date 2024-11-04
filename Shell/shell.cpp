@@ -10,6 +10,9 @@ MAIN_FUNCTION
             SetConsoleCP(CP_UTF8);
             SetConsoleOutputCP(CP_UTF8);
         #endif
+        if (size < 1) {
+            throw std::runtime_error{"Please use launcher to launch Sen"};
+        }
         auto kernel = std::string{};
         auto script = std::string{};
         if (size >= 2) {

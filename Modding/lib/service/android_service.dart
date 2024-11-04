@@ -52,4 +52,11 @@ class AndroidService {
     );
     return result!;
   }
+
+  static Future<String?> saveFileFromDocument() async {
+    final result = await _methodChannel.invokeMethod<String?>(
+      'save_file',
+    );
+    return result!;
+  }
 }

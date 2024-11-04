@@ -1,8 +1,8 @@
-import { Button } from "@mui/material";
+import { Button, SxProps, Theme } from "@mui/material";
 
-const DownloadButton: React.FC<{ handleDownload: () => void }> = ({ handleDownload }) => {
+const DownloadButton: React.FC<{ handleDownload: () => void; sx: SxProps<Theme> | undefined }> = ({ handleDownload, sx }) => {
     return (
-        <Button onClick={handleDownload} variant="contained" color="primary" sx={{ borderRadius: "8px", marginTop: 20 }}>
+        <Button onClick={handleDownload} variant="contained" color="primary" sx={{ borderRadius: "8px", ...sx }}>
             Download
         </Button>
     );

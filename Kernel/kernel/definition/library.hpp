@@ -8,6 +8,7 @@
 #include <fstream>
 #include <filesystem>
 #include <sstream>
+#include <stack>
 #include <iomanip>
 #include <cstring>
 #include <codecvt>

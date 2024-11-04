@@ -22,11 +22,15 @@ class _JsPickState extends State<JsPick> {
 
   @override
   void initState() {
-    _data = ScriptData.fromJson(
-      FileService.readJson(
-          source: '${widget.holder}/Script/Helper/script.json'),
-    );
     super.initState();
+    var scriptPath = '${widget.holder}/Script/Helper/script.json';
+    if (FileService.isFile(scriptPath)) {
+      _data = ScriptData.fromJson(
+        FileService.readJson(
+          source: '${widget.holder}/Script/Helper/script.json',
+        ),
+      );
+    }
   }
 
   @override

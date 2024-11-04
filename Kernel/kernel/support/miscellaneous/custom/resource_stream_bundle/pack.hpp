@@ -103,7 +103,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                             --rton_count;
                         } catch (...) {
                             auto exception = parse_exception();
-                            exception.arg += fmt::format(". JSON: {}", element);
+                            #if WINDOWS
+                            exception.arg += fmt::format(" JSON: {}", String::to_posix_style(element));
+                            #else
+                            exception.arg += fmt::format(" JSON: {}", element);
+                            #endif
                             assert_conditional(false, exception.message(), "exchange_packages");
                         }
                     }

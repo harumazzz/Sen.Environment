@@ -60,5 +60,22 @@
     "image": "Image",
     "upload_media": "Tải lên ảnh",
     "drop_file_to_upload": "Thả tệp để tải",
-    "upload_file_to_continue": "Tải tệp để tiếp tục..."
+    "upload_file_to_continue": "Tải tệp để tiếp tục...",
+    "level_maker": "Level Maker",
+    "level_maker_description": "Through Level Maker, create your own level",
+    "level_name": "Level Name",
+    "level_description": "Level Description",
+    "level_stage": "Level Stage",
+    "lawn_mower": "Lawn Mower",
+    "level_music": "Music",
+    "level_has_sun_falling": "Has sun falling?",
+    "level_music_normal": "Normal",
+    "level_music_ultimate": "Ultimate Battle",
+    "level_music_minigame": "Minigame",
+    "map_editor": "Map Editor",
+    "map_editor_horizontal_view": "Horizontal View",
+    "map_editor_vertical_view": "Vertical View",
+    "save_file": "Save file",
+    "map_cannot_be_loaded": "Map cannot be loaded",
+    "map_editor_description": "Through Map Editor, edit your actual world map"
 }

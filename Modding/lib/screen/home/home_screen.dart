@@ -6,11 +6,13 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
-import 'package:sen/screen/js_pick.dart';
-import 'package:sen/screen/method_picker.dart';
+import 'package:sen/screen/javascript_category/js_pick.dart';
+import 'package:sen/screen/level_maker/level_maker.dart';
+import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/widget/animated_floating.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,9 +31,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _initWidget() {
     _initShellWidget();
-    //_initMethodPicker();
     _initJSModule();
     _initAnimationViewer();
+    _initLevelMaker();
+    _initMapEditor();
   }
 
   void _initAnimationViewer() {
@@ -55,9 +58,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     };
   }
 
-  void _initMethodPicker() {
-    items[1].onWidget = () {
-      return const MethodPicker();
+  void _initLevelMaker() {
+    items[3].onWidget = () {
+      return const LevelMaker();
+    };
+  }
+
+  void _initMapEditor() {
+    items[4].onWidget = () {
+      return const MapEditor();
     };
   }
 
@@ -99,7 +108,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      item.icon,
+                      AnimatedFloating(child: item.icon),
                       const SizedBox(height: 8),
                       Text(
                         item.title,
@@ -197,22 +206,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       Item(
         title: los.shell,
         description: los.shell_description,
-        icon: const Icon(Symbols.terminal_rounded, size: 50),
+        icon: Icon(
+          Symbols.terminal_rounded,
+          size: 50,
+          color: Colors.blueGrey.shade600,
+        ),
       ),
-      // Item(
-      //   title: los.method_picker,
-      //   description: los.method_picker_description,
-      //   icon: const Icon(Symbols.package_2, size: 50),
-      // ),
       Item(
         title: los.js_execute,
         description: los.js_execute_description,
-        icon: const Icon(Symbols.javascript_rounded, size: 50),
+        icon: Icon(
+          Symbols.javascript_rounded,
+          size: 50,
+          color: Colors.yellow.shade600,
+        ),
       ),
       Item(
         title: los.animation_viewer,
         description: los.animation_viewer_description,
-        icon: const Icon(Symbols.animated_images, size: 50),
+        icon: Icon(
+          Symbols.animated_images,
+          size: 50,
+          color: Colors.green.shade700,
+        ),
+      ),
+      Item(
+        title: los.level_maker,
+        description: los.level_maker_description,
+        icon: Icon(
+          Symbols.build,
+          size: 50,
+          color: Colors.cyan.shade600,
+        ),
+      ),
+      Item(
+        title: los.map_editor,
+        description: los.map_editor_description,
+        icon: Icon(
+          Symbols.map,
+          size: 50,
+          color: Colors.lightBlue.shade600,
+        ),
       ),
     ];
   }

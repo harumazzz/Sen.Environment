@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/provider/setting_provider.dart';
-import 'package:sen/screen/home_screen.dart';
+import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';

@@ -132,6 +132,10 @@ class MainActivity: FlutterActivity() {
                     val destination = Uri.parse(this.pickDirectoryFromDocument())
                     result.success(resolveUri(destination))
                 }
+                "save_file" -> {
+                    val destination = Uri.parse(this.pickSaveFileFromDocument())
+                    result.success(resolveUri(destination))
+                }
                 "request_storage_permission" -> {
                     val hasPermission = this@MainActivity.requestStoragePermission()
                     result.success(hasPermission)
@@ -152,6 +156,19 @@ class MainActivity: FlutterActivity() {
     private suspend fun pickStorageFileFromDocument(): String? {
         val intent = Intent()
         intent.setAction(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.setType("*/*")
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+        val primaryDirectory = Environment.getExternalStorageDirectory().absolutePath + "/"
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode("")}"))
+        this@MainActivity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
+        val targetUri = this.continuation.receive() as Uri?
+        return targetUri?.toString()
+    }
+
+    private suspend fun pickSaveFileFromDocument(): String? {
+        val intent = Intent()
+        intent.setAction(Intent.ACTION_CREATE_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.setType("*/*")
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)

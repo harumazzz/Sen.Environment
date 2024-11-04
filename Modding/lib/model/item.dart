@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Item {
   final String title;
   final String description;
-  final Icon icon;
+  final Widget icon;
   late Widget Function() onWidget;
 
   Item({

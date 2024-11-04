@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardMedia, CardContent, Typography, Button, Box, useMediaQuery, Snackbar } from "@mui/material";
+import { Typography, Button, Box, useMediaQuery, Snackbar } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import senLogo from "../assets/logo.ico";
 import detectOS from "../utility/Platform";
@@ -88,72 +88,76 @@ const MainContent: React.FC<{ setActivePage: (value: string) => void }> = () => 
     return (
         <React.Fragment>
             <ThemeProvider theme={theme}>
-                <Box sx={{ display: "flex" }}>
-                    <Card
-                        sx={{
-                            position: "relative",
-                            paddingBottom: "20px",
-                            boxShadow: 3,
-                            transition: "box-shadow 0.3s",
-                            "&:hover": { boxShadow: 6 },
-                        }}
-                    >
-                        <CardMedia
-                            component="img"
-                            image={senLogo}
-                            alt="Product Image"
-                            sx={{
-                                height: { xs: 300, md: 400 },
-                                width: "100%",
-                                objectFit: "cover",
-                            }}
-                        />
-                        <CardContent sx={{ padding: 3, position: "relative" }}>
-                            <Typography variant="h5" component="div" sx={{ fontWeight: "bold", mb: 2 }}>
-                                Sen
+                <Box sx={{ padding: 3, maxWidth: "800px", margin: "auto", textAlign: "center" }}>
+                    <Box sx={{ marginBottom: 4 }}>
+                        <img src={senLogo} alt="Sen Logo" style={{ maxHeight: "200px", width: "auto" }} />
+                        <Typography variant="h3" sx={{ fontWeight: "bold", mt: 2 }}>
+                            Sen
+                        </Typography>
+                        <Typography variant="h6" color="text.secondary" sx={{ mt: 1 }}>
+                            The PvZ2-Modding tool created by Haruma, recommended by most modders.
+                        </Typography>
+                    </Box>
+                    <Box sx={{ marginBottom: 2 }}>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                            Version: <strong>4.0</strong>
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                            Your operating system is <strong>{detectOS()}</strong> and is <strong>{includeOS ? "supported for download" : "unsupported at the moment"}</strong>.
+                        </Typography>
+                        {detectOS() === "windows" ? (
+                            <Typography variant="body2" sx={{ mt: 2 }} color="text.secondary">
+                                If you having any issues with Sen on your machine, try to install{" "}
+                                <a style={{ color: "blue", textDecoration: "none", fontStyle: "italic" }} href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170">
+                                    Microsoft Visual C++ Redistributable 2015 and 2017
+                                </a>{" "}
+                                on your machine. You can join{" "}
+                                <a style={{ color: "#5865F2", textDecoration: "none", fontStyle: "italic" }} href="https://discord.gg/C2Xr2kaBYJ">
+                                    our discord server
+                                </a>{" "}
+                                for further assistant.
                             </Typography>
-
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                                Sen is a PvZ2-Modding tool created by Haruma & is the recommended tool by most modders.
-                            </Typography>
-
-                            <Box sx={{ mb: 3 }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                    Version:{" "}
-                                    <strong>
-                                        {/* Version changing */}
-                                        {`4.0`}
-                                    </strong>
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Your operating system is <strong>{detectOS()}</strong> which is <strong>{includeOS ? "supported for download" : "unsupported at the moment"}</strong>.
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                    Download count: <strong>{downloadCount}</strong>
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ position: "absolute", bottom: 2, right: 16 }}>
-                                {includeOS ? (
-                                    <DownloadButton handleDownload={handleDownload} />
-                                ) : (
-                                    <Button variant="outlined" sx={{ borderRadius: "8px" }} disabled>
-                                        Unsupported
-                                    </Button>
-                                )}
-                            </Box>
-                        </CardContent>
-                    </Card>
+                        ) : (
+                            <></>
+                        )}
+                        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                            Download count: <strong>{downloadCount}</strong>
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, flexDirection: { xs: "column", sm: "row" }, mt: 4 }}>
+                        {includeOS ? (
+                            <DownloadButton handleDownload={handleDownload} sx={{ backgroundColor: "green", padding: "8px 24px", fontSize: "1.1rem", width: { xs: "100%", sm: "auto" } }} />
+                        ) : (
+                            <Button variant="outlined" sx={{ padding: "8px 24px", fontSize: "1.1rem", width: { xs: "100%", sm: "auto" } }} disabled>
+                                Unsupported
+                            </Button>
+                        )}
+                        <Button
+                            variant="contained"
+                            sx={{ borderRadius: "8px", padding: "8px 24px", fontSize: "1.1rem", width: { xs: "100%", sm: "auto", backgroundColor: "#5865F2" } }}
+                            onClick={() => window.open("https://discord.gg/C2Xr2kaBYJ", "_blank")}
+                        >
+                            Discord Server
+                        </Button>
+                    </Box>
                     <Snackbar
                         open={open}
                         autoHideDuration={6000}
                         onClose={handleClose}
                         message={message}
+                        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
                         action={
                             <Button color="secondary" size="small" onClick={handleClose}>
                                 Close
                             </Button>
                         }
+                        sx={{
+                            "& .MuiSnackbarContent-root": {
+                                borderRadius: "8px",
+                                backgroundColor: theme.palette.primary.main,
+                                color: theme.palette.primary.contrastText,
+                            },
+                        }}
                     />
                 </Box>
             </ThemeProvider>

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:sen/service/android_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart' as path_provider;
 
 class FileService {
   static List<String> readDirectory({
@@ -28,7 +29,7 @@ class FileService {
       outputFile = (await file_selector.getSaveLocation())?.path;
     }
     if (Platform.isAndroid) {
-      // TODO : Implement this state in MainActivity.kt
+      outputFile = (await AndroidService.saveFileFromDocument());
     }
     return outputFile != null ? p.absolute(outputFile) : null;
   }
@@ -114,5 +115,19 @@ class FileService {
     } else {
       return p.absolute(result);
     }
+  }
+
+  static Future<String> getWorkingDirectory() async {
+    if (Platform.isAndroid) {
+      return (await path_provider.getExternalStorageDirectory())!.path;
+    }
+    if (Platform.isIOS) {
+      return (await path_provider.getApplicationDocumentsDirectory()).path;
+    }
+    if (Platform.isWindows) {
+      return p.absolute(
+          (await path_provider.getApplicationSupportDirectory()).path);
+    }
+    return (await path_provider.getApplicationSupportDirectory()).path;
   }
 }

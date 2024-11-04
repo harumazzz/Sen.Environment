@@ -6,6 +6,8 @@
 
 #define debug(arg) std::cout << arg << '\n' << std::flush;
 
+#define debug_json(arg) std::cout << arg << '\n' << std::flush;
+
 #define WINDOWS _WIN32
 
 #define LINUX __linux__

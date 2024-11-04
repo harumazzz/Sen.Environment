@@ -13319,6 +13319,10 @@ namespace Sen::Kernel::Interface::Script
 								json2xml(element, child, doc);
 							}
 						}
+						else if (value.is_null()) {
+							auto child = doc.NewElement(key.data());
+							node->InsertEndChild(child);
+						}
 						else
 						{
 							auto child = doc.NewElement(node->Value());
@@ -13411,7 +13415,7 @@ namespace Sen::Kernel::Interface::Script
 				convert(j, doc);
 				auto printer = tinyxml2::XMLPrinter{};
 				doc.Print(&printer);
-				return JS::Converter::to_string(context, printer.CStr()); }, "serialize"_sv);
+				return JS::Converter::to_string(context, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)}); }, "serialize"_sv);
 		}
 
 		/**
@@ -13435,7 +13439,7 @@ namespace Sen::Kernel::Interface::Script
 				auto printer = tinyxml2::XMLPrinter{};
 				doc.Print(&printer);
 				auto destination = JS::Converter::get_string(context, argv[1]);
-				Kernel::FileSystem::write_file(destination, printer.CStr());
+				Kernel::FileSystem::write_file(destination, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)});
 				return JS::Converter::get_undefined(); }, "serialize_fs"_sv);
 		}
 

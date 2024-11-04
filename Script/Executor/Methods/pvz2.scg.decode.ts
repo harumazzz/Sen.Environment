@@ -35,9 +35,9 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
     export namespace Detail {
         export function generic(): Array<[bigint, bigint, string]> {
             return [
-                [1n, 0n, Kernel.Language.get("sen.scg.regular")],
-                [2n, 1n, Kernel.Language.get("sen.scg.for_modding")],
-                [3n, 2n, Kernel.Language.get("debug")],
+                [1n, 1n, Kernel.Language.get("sen.scg.regular")],
+                [2n, 2n, Kernel.Language.get("sen.scg.for_modding")],
+                [3n, 3n, Kernel.Language.get("debug")],
             ];
         }
     }
@@ -74,7 +74,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
                     load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.scg.animation_split_label"));
                 }
                 const setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting = {
-                    decode_method: argument.generic!,
+                    decode_method: argument.generic! - 1n,
                     animation_split_label: argument.animation_split_label! ?? false,
                 };
                 clock.start_safe();
@@ -83,7 +83,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
                 return;
             },
             batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, true);
+                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,
