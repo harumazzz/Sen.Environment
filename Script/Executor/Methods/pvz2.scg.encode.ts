@@ -73,11 +73,12 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
                     generic.pop();
                 }
                 load_bigint(argument, "generic", this.configuration, generic, Kernel.Language.get("pvz2.scg.encode.generic"));
+                argument.generic! -= 1n;
                 if (argument.generic! === 1n) {
                     load_boolean(argument, "animation_split_label", this.configuration, Kernel.Language.get("pvz2.scg.animation_split_label"));
                 }
                 const setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting = {
-                    decode_method: argument.generic! - 1n,
+                    decode_method: argument.generic!,
                     animation_split_label: argument.animation_split_label! ?? false,
                 };
                 clock.start_safe();

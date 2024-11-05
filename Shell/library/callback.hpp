@@ -46,7 +46,9 @@ namespace Sen::Shell {
 				auto consoleInfo = CONSOLE_SCREEN_BUFFER_INFO{};
 				GetConsoleScreenBufferInfo(handle, &consoleInfo);
 				auto originalColor = consoleInfo.wAttributes;
-				SetConsoleTextAttribute(handle, color);
+				if (color != Shell::Interactive::Color::DEFAULT) {
+					SetConsoleTextAttribute(handle, color);
+				}
 				auto state = GetConsoleMode(handle, &handle_mode);
 				if (state) {
 					auto text = title + '\n';

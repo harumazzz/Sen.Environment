@@ -70,8 +70,8 @@ namespace Sen::Kernel {
 			#if WINDOWS
 				auto buffer = std::array<char, 128>{};
 				auto result = std::string{};
-				std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.data(), "r"), _pclose);
-				if (!pipe) {
+				auto pipe = std::unique_ptr<FILE, decltype(&_pclose)>(_popen(command.data(), "r"), _pclose);
+				if (pipe == nullptr) {
 					throw Exception("_popen() failed!", std::source_location::current(), "execute");
 				}
 				while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {

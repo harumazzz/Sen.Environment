@@ -75,6 +75,11 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             ResourceStreamGroup::Unpack::process_whole(packet_stream, packet_definition, destination);
             return;
         }
+		
+		inline static auto check_compression(int flag) {
+			auto check = std::find(ResourceStreamGroup::Common::k_compression_list.begin(), ResourceStreamGroup::Common::k_compression_list.end(), flag) == ResourceStreamGroup::Common::k_compression_list.end();
+			return check;
+		}
 
 		inline static auto process_package(
 			DataStreamView &stream,
@@ -151,6 +156,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 					auto &basic_subgroup_information = information_structure.subgroup_information.at(simple_subgroup_infomation.index);
 					// auto &pool_information = information_structure.pool_information.at(simple_subgroup_infomation.index);
 					auto subgroup_id = find_subgroup_id(information_structure.subgroup_id, simple_subgroup_infomation.index);
+					
 					auto subgroup_information = SubgroupInformation{};
 					subgroup_information.category.resolution = simple_subgroup_infomation.resolution;
 					if (definition.version >= 3 && simple_subgroup_infomation.locale != 0_ui)
@@ -164,11 +170,13 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 					// assert_conditional(pool_information.texture_resource_begin == 0_ui, "invalid_texture_resource");
 					// assert_conditional(pool_information.texture_resource_count == 0_ui, "invalid_texture_resource");
 					auto packet_stream = DataStreamView{};
-					//debug(fmt::format("{}. pos: {}, size: {}", subgroup_id, basic_subgroup_information.offset, basic_subgroup_information.size));
+					auto info_pos = information_structure.header.subgroup_information_section_offset + (information_structure.header.subgroup_information_section_block_size * simple_subgroup_infomation.index);
+					//debug(fmt::format("{}. info_pos: {} pos: {}, size: {}", subgroup_id, info_pos, basic_subgroup_information.offset, basic_subgroup_information.size));
 					if (static_cast<size_t>(basic_subgroup_information.offset) + k_resource_information_section_offset_in_packet + 4_size >= stream.size()) {
 						continue;
 					}
-					if (auto resource_information_section_offset = stream.readUint32(static_cast<size_t>(basic_subgroup_information.offset) + k_resource_information_section_offset_in_packet); std::find(k_vaild_resource_information_section_offset_list.begin(), k_vaild_resource_information_section_offset_list.end(), resource_information_section_offset) != k_vaild_resource_information_section_offset_list.end())
+					auto is_invalid_compression = check_compression(static_cast<int>(basic_subgroup_information.resource_data_section_compression));
+					if (auto resource_information_section_offset = stream.readUint32(static_cast<size_t>(basic_subgroup_information.offset) + k_resource_information_section_offset_in_packet); std::find(k_vaild_resource_information_section_offset_list.begin(), k_vaild_resource_information_section_offset_list.end(), resource_information_section_offset) != k_vaild_resource_information_section_offset_list.end() || is_invalid_compression)
 					{	
 						/*
 						if (static_cast<size_t>(basic_subgroup_information.offset) + static_cast<size_t>(basic_subgroup_information.size) > stream.size() || basic_subgroup_information.size == k_none_size) {
@@ -177,12 +185,19 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 						*/
 						basic_subgroup_information.size = basic_subgroup_information.information_section_size + basic_subgroup_information.general_resource_data_section_size + basic_subgroup_information.texture_resource_data_section_size;
 						packet_stream.writeBytes(stream.getBytes(static_cast<size_t>(basic_subgroup_information.offset), static_cast<size_t>(basic_subgroup_information.offset) + static_cast<size_t>(basic_subgroup_information.size)));
-						if (!(packet_stream.readUint32(k_begin_index) == ResourceStreamGroup::Common::k_magic_identifier && packet_stream.readUint32() == definition.version && packet_stream.readUint32(k_resource_information_section_offset_in_packet) == basic_subgroup_information.resource_data_section_compression))
+						if (!(packet_stream.readUint32(k_begin_index) == ResourceStreamGroup::Common::k_magic_identifier && packet_stream.readUint32() == definition.version && packet_stream.readUint32(k_resource_information_section_offset_in_packet) == basic_subgroup_information.resource_data_section_compression) || is_invalid_compression)
 						{
 							auto information_structure_header = ResourceStreamGroup::Common::HeaderInformaiton{};
 							information_structure_header.magic = ResourceStreamGroup::Common::k_magic_identifier;
 							information_structure_header.version = definition.version;
-							information_structure_header.resource_data_section_compression = basic_subgroup_information.resource_data_section_compression;
+							auto flag = basic_subgroup_information.resource_data_section_compression;
+							if (is_invalid_compression) {
+								auto compression = ResourceStreamGroup::Common::PacketCompression{};
+								compression.general = basic_subgroup_information.general_resource_data_section_size != basic_subgroup_information.general_resource_data_section_size_original && basic_subgroup_information.general_resource_data_section_size_original != 0x1000;
+								compression.texture = basic_subgroup_information.texture_resource_data_section_size != basic_subgroup_information.texture_resource_data_section_size_original;
+								ResourceStreamGroup::Common::packet_compression_to_data(flag, compression);
+							}
+							information_structure_header.resource_data_section_compression = flag;
 							information_structure_header.information_section_size = basic_subgroup_information.information_section_size;
 							information_structure_header.general_resource_data_section_offset = basic_subgroup_information.general_resource_data_section_offset;
 							information_structure_header.general_resource_data_section_size = basic_subgroup_information.general_resource_data_section_size;
@@ -240,6 +255,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 			}
 			return;
 		}
+
 
 	public:
 		inline static auto process_whole(

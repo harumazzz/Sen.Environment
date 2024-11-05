@@ -710,6 +710,7 @@ namespace Sen.Script.Executor {
             if (loader.method !== undefined) {
                 const method = loader.method;
                 delete (loader as any).method;
+                debug(loader);
                 execute(loader as Argument, method, Forward.DIRECT, "simple");
                 return;
             }
