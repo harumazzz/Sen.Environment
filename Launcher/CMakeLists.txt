@@ -24,7 +24,10 @@ add_executable (
     ./library/utility.hpp
     ./library/string.hpp
     ./library/zip.hpp
+    ./library/version.hpp
     ./library/download.hpp
+    ./library/platform/windows.hpp
+    ./library/platform/unix.hpp
     ./launcher.cpp 
     $<$<PLATFORM_ID:Windows>:./launcher.rc>
 )
@@ -52,3 +55,4 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 endif()
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)

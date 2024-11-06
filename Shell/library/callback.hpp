@@ -43,9 +43,6 @@ namespace Sen::Shell {
 				auto state_b = BOOL{};
 				auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
 				auto handle_mode = DWORD{};
-				auto consoleInfo = CONSOLE_SCREEN_BUFFER_INFO{};
-				GetConsoleScreenBufferInfo(handle, &consoleInfo);
-				auto originalColor = consoleInfo.wAttributes;
 				SetConsoleTextAttribute(handle, color);
 				auto state = GetConsoleMode(handle, &handle_mode);
 				if (state) {
@@ -83,7 +80,7 @@ namespace Sen::Shell {
 				}
 			#endif
 			#if WINDOWS
-				SetConsoleTextAttribute(handle, originalColor);
+				SetConsoleTextAttribute(handle, Sen::Shell::Interactive::Color::DEFAULT);
 			#endif
 				if (message != "" && state) {
 					# if WINDOWS

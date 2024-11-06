@@ -124,7 +124,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.Trace {
                         Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(argument.source, argument.destination!, setting);
                     }
                     clock.stop_safe();
-                    Console.send(`${Kernel.Language.get("elapsed_time")}: ${clock.duration.toFixed(3)}s`, Definition.Console.Color.GREEN);
+                    Console.send(`${Kernel.Language.get("elapsed_time")}: ${clock.getDuration().toFixed(3)}s`, Definition.Console.Color.GREEN);
                 });
                 watcher.on("update", (e) => {
                     const timestamp = current_date();
@@ -140,7 +140,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.Trace {
                         Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(argument.source, argument.destination!, setting);
                     }
                     clock.stop_safe();
-                    Console.send(`${Kernel.Language.get("elapsed_time")}: ${clock.duration.toFixed(3)}s`, Definition.Console.Color.GREEN);
+                    Console.send(`${Kernel.Language.get("elapsed_time")}: ${clock.getDuration().toFixed(3)}s`, Definition.Console.Color.GREEN);
                 });
                 Console.argument(format(Kernel.Language.get("popcap.rsb.is_watching"), argument.source));
                 watcher.start();

@@ -2514,11 +2514,7 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
 				
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&ClassID<use_big_endian>::value);
+				JS_NewClassID(JS_GetRuntime(ctx), &ClassID<use_big_endian>::value);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<use_big_endian>::value, &this_class<use_big_endian>) == 0, "DataStreamView class register failed", "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (use_big_endian)
@@ -2681,11 +2677,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Boolean class register failed", "register_class");
 				auto class_name = "Boolean"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -2900,13 +2892,10 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto register_class(
-				JSContext *ctx) -> void
+				JSContext *ctx
+			) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = "Image"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3100,11 +3089,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = "Sprite"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3298,11 +3283,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileInputStream class register failed", "register_class");
 				auto class_name = "FileInputStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3489,11 +3470,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileOutputStream class register failed", "register_class");
 				auto class_name = "FileOutputStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -3713,11 +3690,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileStream class register failed", "register_class");
 				auto class_name = "FileStream"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4065,11 +4038,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "JsonWriter class register failed", "register_class");
 				auto class_name = "JsonWriter"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4294,11 +4263,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&(NumberID<T>::class_id));
+				JS_NewClassID(JS_GetRuntime(ctx), &(NumberID<T>::class_id));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), NumberID<T>::class_id, &this_class<T>) == 0, "Number class register failed", "register_class");
 				auto class_name = fmt::format("{}", this_class<T>.class_name);
 				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4502,11 +4467,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
 				auto class_name = "APNGMakerSetting"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4664,11 +4625,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Size class failed register", "register_class");
 				auto class_name = "Size"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -4872,11 +4829,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&(ClassID<T>::value));
+				JS_NewClassID(JS_GetRuntime(ctx), &(ClassID<T>::value));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<T>::value, &this_class<T>) == 0, "Character class register failed", "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (std::is_same<T, char>::value)
@@ -5103,11 +5056,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "String class register failed", "register_class");
 				auto class_name = "String"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -5450,11 +5399,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "BinaryView class register failed", "register_class");
 				auto class_name = "BinaryView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6351,11 +6296,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&(Detail::class_id));
+				JS_NewClassID(JS_GetRuntime(ctx), &(Detail::class_id));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), Detail::class_id, &this_class) == 0, "Canvas class register failed", "register_class");
 				auto class_name = "Canvas"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6532,11 +6473,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "DimensionView class failed register", "register_class");
 				auto class_name = "DimensionView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -6746,11 +6683,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto register_class(
 				JSContext *ctx) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Rectangle class register failed", "register_class");
 				auto class_name = "Rectangle"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -7276,11 +7209,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(
-					#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-					#endif
-					&class_id);
+				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "ImageView class register failed", "register_class");
 				auto class_name = "ImageView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -12798,7 +12727,7 @@ namespace Sen::Kernel::Interface::Script
 					std::lock_guard<std::mutex> lock(mtx);
 					auto it = eventCallbacks.find(event);
 					if (it != eventCallbacks.end()) {
-						JSValue jsFilename = JS_NewStringLen(ctx, filename.c_str(), filename.size());
+						auto jsFilename = JS_NewStringLen(ctx, filename.c_str(), filename.size());
 						it->second.function(jsFilename);  
 						JS_FreeValue(ctx, jsFilename);
 					}
@@ -12936,7 +12865,7 @@ namespace Sen::Kernel::Interface::Script
 			JS_CPPFUNC_DEF("on", 2, on),
 		};
 
-		static JSClassDef js_filewatcher_class = JSClassDef{
+		inline static auto js_filewatcher_class = JSClassDef{
 			.class_name = "FileWatcher",
 			.finalizer = finalizer,
 		};
@@ -12945,11 +12874,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *ctx
 		) -> void
 		{
-			JS_NewClassID(
-				#ifndef QUICKJS_BY_C_SMILE
-					JS_GetRuntime(ctx),
-				#endif
-				&js_filewatcher_class_id);
+			JS_NewClassID(JS_GetRuntime(ctx), &js_filewatcher_class_id);
 			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), js_filewatcher_class_id, &js_filewatcher_class) == 0, "FileWatcher class register failed", "register_class");
 			auto class_name = "FileWatcher"_sv;
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
@@ -12970,6 +12895,288 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 	}
+
+	namespace Clock {
+
+		struct Data {
+			public:
+				explicit Data() : start_time_(), duration_(0), running_(false) {}
+
+				inline auto  start(
+
+				) -> void
+				{
+					if (running_) {
+						throw std::runtime_error("Clock has already been started");
+					}
+					start_time_ = std::chrono::steady_clock::now();
+					running_ = true;
+				}
+
+				inline auto  start_safe(
+
+				) -> void
+				{
+					if (!running_) {
+						start_time_ = std::chrono::steady_clock::now();
+						running_ = true;
+					}
+				}
+
+				inline auto stop(
+
+				) -> void
+				{
+					if (!running_) {
+						throw std::runtime_error("Clock has not been started");
+					}
+					auto end_time = std::chrono::steady_clock::now();
+					duration_ += std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time_).count();
+					running_ = false;
+				}
+
+				inline auto stop_safe (
+
+				) -> void
+				{
+					if (!running_) {
+						auto end_time = std::chrono::steady_clock::now();
+						duration_ += std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time_).count();
+						running_ = false;
+					}
+				}
+
+				inline auto reset(
+
+				) -> void 
+				{
+					duration_ = 0;
+					running_ = false;
+				}
+
+				inline auto get_duration(
+
+				) -> int64_t const 
+				{
+					return duration_;
+				}
+
+				inline auto is_started(
+
+				) -> bool const {
+					return running_;
+				}
+
+				inline auto is_stopped(
+
+				) -> bool const {
+					return !running_;
+				}
+
+			private:
+				std::chrono::time_point<std::chrono::steady_clock> start_time_;
+				int64_t duration_;
+				bool running_;
+		};
+
+		inline static JSClassID class_id;
+
+		inline static auto constructor(
+			JSContext *ctx, 
+			JSValueConst new_target, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = new Data();
+			return JS_NewObjectProtoClass(ctx, JS::Converter::get_undefined(), class_id);
+		}
+
+		inline static auto finalizer(
+			JSRuntime *rt, 
+			JSValue val
+		) -> void
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(val, class_id));
+			if (clock != nullptr) {
+				delete clock;
+			}
+		}
+
+		inline static auto js_clock_start(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+				return JS::Converter::get_undefined();
+			}
+			try {
+				clock->start();
+			} catch (const std::exception &e) {
+				JS_ThrowInternalError(ctx, e.what());
+				return JS::Converter::get_undefined();
+			}
+			return JS_UNDEFINED;
+		}
+
+		inline static auto js_clock_start_safe(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+				return JS::Converter::get_undefined();
+			}
+			clock->start_safe();
+			return JS_UNDEFINED;
+		}
+
+		inline static auto js_clock_stop_safe(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+				return JS_UNDEFINED;
+			}
+			clock->stop_safe();
+			return JS_UNDEFINED;
+		}
+
+		inline static auto js_clock_stop(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+				return JS_UNDEFINED;
+			}
+			try {
+				clock->stop();
+			} catch (const std::exception &e) {
+				JS_ThrowInternalError(ctx, e.what());
+				return JS_UNDEFINED;
+			}
+			return JS_UNDEFINED;
+		}
+
+		inline static auto js_clock_reset(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue 
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+			}
+			clock->reset();
+			return JS_UNDEFINED;
+		}
+
+		inline static auto js_clock_get_duration(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+			}
+			return JS_NewInt64(ctx, clock->get_duration());
+		}
+
+		inline static auto js_clock_is_started(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue 
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+			}
+			return JS_NewBool(ctx, clock->is_started());
+		}
+
+		inline static auto js_clock_is_stopped(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue 
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+			}
+			return JS_NewBool(ctx, clock->is_stopped());
+		}
+
+		inline static auto this_class = JSClassDef {
+			.class_name = "Clock",
+			.finalizer = finalizer,
+		};
+
+		inline static const JSCFunctionListEntry proto_functions[] = {
+			JS_CPPFUNC_DEF("start", 0, js_clock_start),
+			JS_CPPFUNC_DEF("stop", 0, js_clock_stop),
+			JS_CPPFUNC_DEF("start_safe", 0, js_clock_start_safe),
+			JS_CPPFUNC_DEF("stop_safe", 0, js_clock_stop_safe),
+			JS_CPPFUNC_DEF("reset", 0, js_clock_reset),
+			JS_CPPFUNC_DEF("getDuration", 0, js_clock_get_duration),
+			JS_CPPFUNC_DEF("isStarted", 0, js_clock_is_started),
+			JS_CPPFUNC_DEF("isStopped", 0, js_clock_is_stopped),
+		};
+
+		inline static auto register_class(
+			JSContext *ctx
+		) -> void
+		{
+			JS_NewClassID(JS_GetRuntime(ctx), &class_id);
+			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Clock class register failed", "register_class");
+			auto class_name = "Clock"_sv;
+			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+			auto proto = JS_NewObject(ctx);
+			JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+			JS_SetConstructor(ctx, point_ctor, proto);
+			auto global_obj = JS_GetGlobalObject(ctx);
+			JS_INSTANCE_OF_OBJ(ctx, obj1, global_obj, "Sen"_sv);
+			JS_INSTANCE_OF_OBJ(ctx, obj2, obj1, "Kernel"_sv);
+			auto atom = JS_NewAtomLen(ctx, class_name.data(), class_name.size());
+			JS_DefinePropertyValue(ctx, obj2, atom, point_ctor, int{JS_PROP_C_W_E});
+			JS_FreeAtom(ctx, atom);
+			JS_FreeValue(ctx, global_obj);
+			JS_FreeValue(ctx, obj1);
+			JS_FreeValue(ctx, obj2);
+			JS_FreeValue(ctx, proto);
+			return;
+		}
+
+
+	}
+
 
 	namespace Miscellaneous
 	{

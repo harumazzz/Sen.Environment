@@ -69,6 +69,26 @@ declare namespace Sen {
             public start(): void;
         }
 
+        declare class Clock {
+            public constructor();
+
+            public start(): void;
+
+            public stop(): void;
+
+            public start_safe(): void;
+
+            public stop_safe(): void;
+
+            public reset(): void;
+
+            public getDuration(): number;
+
+            public isStarted(): boolean;
+
+            public isStopped(): boolean;
+        }
+
         /**
          * Sub-namespace for XML processing functionalities within the kernel.
          */

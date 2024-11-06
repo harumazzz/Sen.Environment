@@ -10,10 +10,7 @@
         "skipLibCheck": true,
         "removeComments": true,
         "alwaysStrict": true,
-        "checkJs": true,
         "disableSizeLimit": true,
-        "useDefineForClassFields": true,
-        "allowJs": false,
-        "suppressImplicitAnyIndexErrors": true
+        "useDefineForClassFields": true
     }
 }

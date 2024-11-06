@@ -717,6 +717,8 @@ namespace Sen::Kernel::Interface {
 				javascript->register_object(Script::Class::Sprite::register_class);
 				// FileWatcher
 				javascript->register_object(Script::FileWatcher::register_class);
+				// Clock
+				javascript->register_object(Script::Clock::register_class);
 				// execute the script
 				javascript->evaluate_fs(*Additional::script);
 				// Execute other Promise

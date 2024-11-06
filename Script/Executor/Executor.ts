@@ -43,7 +43,7 @@ namespace Sen.Script.Executor {
      * Clock will calculate everything
      */
 
-    export const clock: Clock = new Clock();
+    export const clock: Kernel.Clock = new Kernel.Clock();
 
     /**
      *
@@ -489,7 +489,7 @@ namespace Sen.Script.Executor {
             }
         }
         clock.stop_safe();
-        Console.send(`${Kernel.Language.get("execution_time")}: ${clock.duration.toFixed(3)}s`, Definition.Console.Color.GREEN);
+        Console.send(`${Kernel.Language.get("execution_time")}: ${clock.getDuration().toFixed(3)}s`, Definition.Console.Color.GREEN);
         return;
     }
 
