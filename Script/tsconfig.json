@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES2022",
+        "target": "ESNext",
         "module": "ESNext",
         "rootDir": "./",
         "outDir": "./build",
@@ -12,6 +12,8 @@
         "alwaysStrict": true,
         "checkJs": true,
         "disableSizeLimit": true,
-        "useDefineForClassFields": true
+        "useDefineForClassFields": true,
+        "allowJs": false,
+        "suppressImplicitAnyIndexErrors": true
     }
 }

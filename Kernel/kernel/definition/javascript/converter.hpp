@@ -263,11 +263,13 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 				return static_cast<bool>(JS_ToBool(context, that));
 			}
 
+			#if WINDOWS
+
 			/**
 			 * Return JS Undefined
 			*/
 
-			inline static auto constexpr get_undefined(
+			inline static auto get_undefined(
 
 			) -> JSValue
 			{
@@ -278,12 +280,38 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			 * Return JS Null
 			*/
 
-			inline static auto constexpr get_null(
+			inline static auto get_null(
 
 			) -> JSValue
 			{
 				return JS_NULL;
 			}
+
+			#else
+
+			/**
+			 * Return JS Undefined
+			*/
+
+			inline static constexpr auto get_undefined(
+
+			) -> JSValue
+			{
+				return JS_UNDEFINED;
+			}
+
+			/**
+			 * Return JS Null
+			*/
+
+			inline static constexpr auto get_null(
+
+			) -> JSValue
+			{
+				return JS_NULL;
+			}
+			
+			#endif
 
 			/**
 			 * Convert JS Array to C++ Vector

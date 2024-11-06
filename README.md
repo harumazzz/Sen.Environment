@@ -10,7 +10,7 @@
 
 # Platform Support
 
--   Fully supports `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 7+`
+-   Fully supports `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 6+`
 
 # Modules
 
@@ -20,15 +20,17 @@
 
 -   `Script` - Script control flows of the tool.
 
+-   `Modding` - The Sen GUI, also known as additional modules.
+
 # Technology
 
--   [CMake](https://cmake.org/): Used with both [Kernel](https://github.com/Haruma-VN/Sen.Environment/tree/master/Kernel) and [Shell](https://github.com/Haruma-VN/Sen.Environment/tree/master/Shell) to support cross-platform with C++
+-   [CMake](https://cmake.org/): Used with both [Kernel](https://github.com/Haruma-VN/Sen.Environment/tree/master/Kernel), [Shell](https://github.com/Haruma-VN/Sen.Environment/tree/master/Shell) and [Launcher](https://github.com/Haruma-VN/Sen.Environment/tree/master/Launcher) to support cross-platform with C++
 
--   [Flutter](https://flutter.dev/): Flutter helps build beautiful applications, which is used with [WinShell](https://github.com/Haruma-VN/Sen.Environment/tree/master/WinShell)
+-   [Flutter](https://flutter.dev/): Flutter helps build beautiful applications, which is used with [Modding](https://github.com/Haruma-VN/Sen.Environment/tree/master/Modding)
 
 # Acknowledgement
 
--   [TwinStar](https://github.com/twinkles-twinstar/): His project [TwinStar.ToolKit](https://github.com/twinkles-twinstar/TwinStar.ToolKit) has helped me a lot on making this project.
+-   [TwinStar](https://github.com/twinstar6980): His project [Twinning](https://github.com/twinstar6980/Twinning) has helped me a lot on making this project.
 
 # How to reach me?
 

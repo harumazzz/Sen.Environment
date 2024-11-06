@@ -254,17 +254,22 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     public:
         inline static auto process_whole(
             DataStreamView &stream,
-            std::string const &content) -> void
+            std::string const &content
+        ) -> void
         {
-            auto ondemand_parser = ondemand::parser{};
-            auto padded_string = simdjson::padded_string(content);
-            auto document = static_cast<ondemand::document>(ondemand_parser.iterate(padded_string));
-            stream.writeString(k_magic_identifier);
-            stream.writeUint32(k_version);
-            auto native_string_index = std::unordered_map<std::string_view, int>{};
-            auto unicode_string_index = std::unordered_map<std::string_view, int>{};
-            exchange_value<true>(stream, document.get_value(), native_string_index, unicode_string_index);
-            stream.writeString(k_done_identifier);
+            try {
+                auto ondemand_parser = ondemand::parser{};
+                auto padded_string = simdjson::padded_string(content);
+                auto document = static_cast<ondemand::document>(ondemand_parser.iterate(padded_string));
+                stream.writeString(k_magic_identifier);
+                stream.writeUint32(k_version);
+                auto native_string_index = std::unordered_map<std::string_view, int>{};
+                auto unicode_string_index = std::unordered_map<std::string_view, int>{};
+                exchange_value<true>(stream, document.get_value(), native_string_index, unicode_string_index);
+                stream.writeString(k_done_identifier);
+            } catch (...) {
+                nlohmann::ordered_json::parse(content);
+            }
             return;
         }
 

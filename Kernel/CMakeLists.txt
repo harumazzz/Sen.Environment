@@ -54,11 +54,9 @@ if (MSVC)
     add_compile_options(/bigobj)
 endif ()
 
-if (MSVC)
-    add_subdirectory("./dependencies/quickjs.c_smile")
-else()
-    add_subdirectory("./dependencies/quickjs")
-endif()
+add_subdirectory("./dependencies/quickjs")
+
+
 
 if(WIN32 OR UNIX OR APPLE)
     add_subdirectory("./test")
@@ -83,7 +81,6 @@ if(ANDROID)
         ANDROID_PLATFORM android-29 #  (Android 10) is minimum
     )
 endif()
-
 
 include(InstallRequiredSystemLibraries)
 
@@ -110,7 +107,6 @@ endif ()
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=znver3 -mtune=znver3")
 endif()
-
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
