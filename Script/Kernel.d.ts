@@ -82,7 +82,9 @@ declare namespace Sen {
 
             public reset(): void;
 
-            public getDuration(): number;
+            public duration(): number;
+
+            public duration_as_seconds(): number;
 
             public isStarted(): boolean;
 

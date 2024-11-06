@@ -489,7 +489,7 @@ namespace Sen.Script.Executor {
             }
         }
         clock.stop_safe();
-        Console.send(`${Kernel.Language.get("execution_time")}: ${clock.getDuration().toFixed(3)}s`, Definition.Console.Color.GREEN);
+        Console.send(`${Kernel.Language.get("execution_time")}: ${clock.duration_as_seconds().toFixed(3)}s`, Definition.Console.Color.GREEN);
         return;
     }
 

@@ -12939,7 +12939,7 @@ namespace Sen::Kernel::Interface::Script
 
 				) -> void
 				{
-					if (!running_) {
+					if (running_) {
 						auto end_time = std::chrono::steady_clock::now();
 						duration_ += std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time_).count();
 						running_ = false;
@@ -12988,8 +12988,33 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv
 		) -> JSValue
 		{
-			auto *clock = new Data();
-			return JS_NewObjectProtoClass(ctx, JS::Converter::get_undefined(), class_id);
+			M_JS_PROXY_WRAPPER(ctx, {
+				auto s = static_cast<Data*>(nullptr);
+				auto obj = JS_UNDEFINED;
+				auto proto = JSElement::Prototype{};
+				if (argc == 0) {
+					s = new Data();
+				}
+				else {
+					JS_ThrowInternalError(ctx, "Constructor for Clock class does not match, expected 0 argument");
+					return JS_EXCEPTION;
+				}
+				proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+				if (JS_IsException(proto)) {
+					goto fail;
+				}
+				obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+				JS_FreeValue(ctx, proto);
+				if (JS_IsException(obj)) {
+					goto fail;
+				}
+				JS_SetOpaque(obj, s);
+				return obj;
+				fail:
+					js_free(ctx, s);
+					JS_FreeValue(ctx, obj);
+					return JS_EXCEPTION; 
+			}, "proxy_constructor");
 		}
 
 		inline static auto finalizer(
@@ -13106,6 +13131,20 @@ namespace Sen::Kernel::Interface::Script
 			return JS_NewInt64(ctx, clock->get_duration());
 		}
 
+		inline static auto js_clock_get_duration_as_seconds(
+			JSContext *ctx, 
+			JSValueConst this_val, 
+			int argc, 
+			JSValueConst *argv
+		) -> JSValue
+		{
+			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
+			if (clock == nullptr) {
+				JS_ThrowInternalError(ctx, "Cannot get Clock class");
+			}
+			return JS_NewFloat64(ctx, static_cast<double>(static_cast<double>(clock->get_duration()) / 1000.0));
+		}
+
 		inline static auto js_clock_is_started(
 			JSContext *ctx, 
 			JSValueConst this_val, 
@@ -13145,7 +13184,8 @@ namespace Sen::Kernel::Interface::Script
 			JS_CPPFUNC_DEF("start_safe", 0, js_clock_start_safe),
 			JS_CPPFUNC_DEF("stop_safe", 0, js_clock_stop_safe),
 			JS_CPPFUNC_DEF("reset", 0, js_clock_reset),
-			JS_CPPFUNC_DEF("getDuration", 0, js_clock_get_duration),
+			JS_CPPFUNC_DEF("duration", 0, js_clock_get_duration),
+			JS_CPPFUNC_DEF("duration_as_seconds", 0, js_clock_get_duration_as_seconds),
 			JS_CPPFUNC_DEF("isStarted", 0, js_clock_is_started),
 			JS_CPPFUNC_DEF("isStopped", 0, js_clock_is_stopped),
 		};
