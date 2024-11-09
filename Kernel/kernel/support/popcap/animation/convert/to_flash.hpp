@@ -396,6 +396,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			auto dom_document = value.NewElement("DOMDocument");
 			dom_document->SetAttribute("xmlns:xsi", k_xmlns_xsi_attribute.data());
 			dom_document->SetAttribute("xmlns", k_xmlns_attribute.data());
+			dom_document->SetAttribute("backgroundColor", "#999999");
 			dom_document->SetAttribute("frameRate", std::to_string(definition.frame_rate).data());
 			dom_document->SetAttribute("width", std::to_string(definition.size.width).data());
 			dom_document->SetAttribute("height", std::to_string(definition.size.height).data());

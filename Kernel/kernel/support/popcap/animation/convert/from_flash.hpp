@@ -446,6 +446,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			tsl::ordered_map<std::string, LabelInfo> &label,
 			FrameNodeStructure &frame_node_structure) -> void
 		{
+			assert_conditional(label.size() != k_none_size, fmt::format("must has atleast one label"), "exchange_label"); // TODO.
 			auto first_label = label.begin()->first;
 			for (auto &[layer_index, frame_node_list] : label_frame_structure.at(first_label))
 			{
@@ -458,9 +459,11 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					continue;
 				}
 				auto start_index = label_info.start;
+				auto last_label_duration = label_info.duration;
 				auto &label_frame_node = label_frame_structure.at(label_name);
 				auto min_layer_to_insert = k_begin_index_int;
 				auto skip_sort = false;
+				auto last_duration = k_none_size;
 				for (auto &[layer_index, label_node_list] : label_frame_node)
 				{
 					auto insert_frame_before = false;
@@ -469,11 +472,19 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						auto &first_frame_in_label_node = label_node_list.front();
 						for (auto &[layer_index_k, frame_node_list] : frame_node_structure)
 						{
+							if (frame_node_list.size() == k_none_size)
+							{
+								continue;
+							}
 							auto &last_frame_in_node = frame_node_list.back();
 							auto last_index = last_frame_in_node.index + last_frame_in_node.duration;
 							if (last_index != start_index)
 							{
 								continue;
+							}
+							if (last_duration < last_index)
+							{
+								last_duration = last_index;
 							}
 							if (last_frame_in_node.sprite == first_frame_in_label_node.sprite && last_frame_in_node.resource == first_frame_in_label_node.resource)
 							{
@@ -505,6 +516,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						}
 					}
 				}
+				assert_conditional(start_index == last_duration, fmt::format("label: {} is not match size", label_name), "exchange_label"); // TODO.
 			}
 			return;
 		}

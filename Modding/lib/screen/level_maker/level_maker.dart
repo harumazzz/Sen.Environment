@@ -128,6 +128,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
           ),
           WaveManager(
             waves: _waves,
+            zombies: _zombies,
           ),
           CodePreview(
             levelNameController: _levelNameController,

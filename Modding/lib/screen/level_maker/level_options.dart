@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sen/service/file_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LevelOptions extends StatefulWidget {
   const LevelOptions({
@@ -7,7 +8,7 @@ class LevelOptions extends StatefulWidget {
     required this.plants,
     required this.zombies,
     required this.gridItem,
-    required this.onItemSelected, // Add this line
+    required this.onItemSelected,
   });
 
   final List<String> plants;
@@ -42,6 +43,8 @@ class _LevelOptionsState extends State<LevelOptions>
     );
     final imageWidget = Image(
       image: image,
+      width: 40,
+      height: 40,
     );
 
     return GestureDetector(
@@ -87,8 +90,8 @@ class _LevelOptionsState extends State<LevelOptions>
             runSpacing: 4.0,
             children: <Widget>[
               ...data.asMap().entries.map((entry) {
-                int index = entry.key;
-                String imagePath = entry.value;
+                final index = entry.key;
+                final imagePath = entry.value;
                 return _makeExpansionCard(imagePath, index);
               }),
             ],
@@ -100,14 +103,15 @@ class _LevelOptionsState extends State<LevelOptions>
 
   @override
   Widget build(BuildContext context) {
+    final los = AppLocalizations.of(context)!;
     return Column(
       children: <Widget>[
         TabBar(
           controller: _tabController,
-          tabs: const <Widget>[
-            Tab(text: 'Plants'),
-            Tab(text: 'Zombies'),
-            Tab(text: 'Grid Item'),
+          tabs: <Widget>[
+            Tab(text: los.plant),
+            Tab(text: los.zombie),
+            Tab(text: los.grid_item),
           ],
         ),
         Expanded(
