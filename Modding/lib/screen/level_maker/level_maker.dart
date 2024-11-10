@@ -31,6 +31,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
 
   late MusicType _musicType;
 
+  late String _resource;
   List<String> _plants = [], _zombies = [], _gridItems = [];
 
   @override
@@ -44,20 +45,20 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
     _musicType = MusicType.normal;
     _waves = [];
     _hasSunFalling = true;
+    final setting = ref.read(settingProvider).toolChain;
+    _resource = '$setting/resource/level_maker';
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final setting = ref.read(settingProvider).toolChain;
-      final resource = '$setting/resource/level_maker';
       setState(() {
         _plants = FileService.readDirectory(
-          source: '$resource/plant',
+          source: '$_resource/plant',
           recursive: false,
         );
         _zombies = FileService.readDirectory(
-          source: '$resource/zombie',
+          source: '$_resource/zombie',
           recursive: false,
         );
         _gridItems = FileService.readDirectory(
-          source: '$resource/item',
+          source: '$_resource/item',
           recursive: false,
         );
       });
@@ -127,6 +128,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
             gridItem: _gridItems,
           ),
           WaveManager(
+            resource: _resource,
             waves: _waves,
             zombies: _zombies,
           ),

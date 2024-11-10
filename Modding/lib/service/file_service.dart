@@ -34,11 +34,11 @@ class FileService {
     return outputFile != null ? p.absolute(outputFile) : null;
   }
 
-  static isDirectory(String source) {
+  static bool isDirectory(String source) {
     return Directory(source).existsSync();
   }
 
-  static isFile(String source) {
+  static bool isFile(String source) {
     return File(source).existsSync();
   }
 

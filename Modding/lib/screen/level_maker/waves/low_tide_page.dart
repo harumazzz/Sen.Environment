@@ -130,7 +130,7 @@ class _LowTidePageState extends State<LowTidePage> {
                             ),
                             _customTextField(
                               controller: _groupSize,
-                              labelText: 'Group size',
+                              labelText: los.group_size,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
@@ -171,7 +171,7 @@ class _LowTidePageState extends State<LowTidePage> {
                         child: Column(
                           children: [
                             Text(
-                              'Zombie',
+                              los.zombie,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleLarge

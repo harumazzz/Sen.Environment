@@ -11,11 +11,14 @@ class WaveManager extends StatefulWidget {
     super.key,
     required this.waves,
     required this.zombies,
+    required this.resource,
   });
 
   final List<List<Wave>> waves;
 
   final List<String> zombies;
+
+  final String resource;
 
   @override
   State<WaveManager> createState() => _WaveManagerState();
@@ -62,6 +65,7 @@ class _WaveManagerState extends State<WaveManager> {
       );
     } else if (wave is StormEvent) {
       state = StormPage(
+        resource: widget.resource,
         wave: wave,
         index: index,
         zombies: widget.zombies,
@@ -77,19 +81,25 @@ class _WaveManagerState extends State<WaveManager> {
 
   @override
   Widget build(BuildContext context) {
-    var index = 1;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(
-            children: widget.waves.map(
+            children: widget.waves.asMap().entries.map(
               (e) {
+                final index = e.key;
+                final value = e.value;
                 return _ExpandedWave(
-                  wave: e,
-                  index: index++,
+                  wave: value,
+                  index: index + 1,
                   onNavigate: _waveNavigate,
+                  onDelete: () {
+                    setState(() {
+                      widget.waves.removeAt(index);
+                    });
+                  },
                 );
               },
             ).toList(),
@@ -114,11 +124,14 @@ class _ExpandedWave extends StatefulWidget {
     required this.wave,
     required this.index,
     required this.onNavigate,
+    required this.onDelete,
   });
 
   final List<Wave> wave;
 
   final void Function(Wave wave, int index) onNavigate;
+
+  final void Function() onDelete;
 
   final int index;
 
@@ -207,7 +220,15 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                       },
                       isExpanded: _isExpanded,
                     ),
-                  )
+                  ),
+                  SizedBox(width: 15.0),
+                  Tooltip(
+                    message: los.delete,
+                    child: IconButton(
+                      onPressed: widget.onDelete,
+                      icon: Icon(Symbols.delete),
+                    ),
+                  ),
                 ],
               ),
             ),

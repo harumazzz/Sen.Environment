@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/zombie_suggestion.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/service/file_service.dart';
 
 class StormPage extends StatefulWidget {
   const StormPage({
@@ -10,10 +13,12 @@ class StormPage extends StatefulWidget {
     required this.wave,
     required this.index,
     required this.zombies,
+    required this.resource,
   });
 
   final StormEvent wave;
   final List<String> zombies;
+  final String resource;
   final int index;
 
   @override
@@ -31,6 +36,8 @@ class _StormPageState extends State<StormPage> {
   late List<String> _zombies;
   late TextEditingController _zombie;
 
+  late Map<int, MemoryImage> _cellItems;
+
   @override
   void initState() {
     _xStart = TextEditingController(text: widget.wave.columnStart.toString());
@@ -44,7 +51,34 @@ class _StormPageState extends State<StormPage> {
     _formKey = GlobalKey<FormState>();
     _eventName = widget.wave.eventName;
     _zombies = [...widget.wave.zombies];
+    _cellItems = {};
+    _initCellItems();
     super.initState();
+  }
+
+  int get _columnStart => int.parse(_xStart.text);
+
+  set _columnStart(int value) {
+    _xStart.text = value.toString();
+  }
+
+  int get _columnEnd => int.parse(_xEnd.text);
+
+  set _columnEnd(int value) {
+    _xEnd.text = value.toString();
+  }
+
+  void _initCellItems() {
+    _cellItems = {};
+    final random = Random();
+    for (var zombie in _zombies) {
+      final col =
+          random.nextInt((_columnEnd - _columnStart)) + int.parse(_xStart.text);
+      final row = random.nextInt(5);
+      final index = row * 9 + col;
+      final state = '${widget.resource}/zombie/$zombie.png';
+      _cellItems[index] = MemoryImage(FileService.readBuffer(source: state));
+    }
   }
 
   @override
@@ -126,6 +160,19 @@ class _StormPageState extends State<StormPage> {
               _zombie.text = value;
               cellItems[index] = image!;
             });
+            if (_columnEnd == 0 && _columnStart == 0) {
+              _columnEnd = col;
+              _columnStart = col;
+            }
+            if (col > _columnEnd) {
+              _columnEnd = col;
+            } else if (col < _columnStart) {
+              _columnStart = col;
+            }
+            if (_columnEnd < _columnStart) {
+              _columnEnd = _columnStart;
+            }
+            _zombies.add(value);
             Navigator.of(context).pop();
           },
         ),
@@ -228,7 +275,10 @@ class _StormPageState extends State<StormPage> {
                                   ),
                             ),
                             SizedBox(height: 20.0),
-                            LevelLawn(onTap: _onLevelLawnSpawn),
+                            _LevelLawn(
+                              onTap: _onLevelLawnSpawn,
+                              cellItems: _cellItems,
+                            ),
                           ],
                         ),
                       ),
@@ -239,8 +289,8 @@ class _StormPageState extends State<StormPage> {
                         if (_formKey.currentState!.validate()) {
                           widget.wave.replaceWith(
                             additionalPlantfood: int.parse(_plantfood.text),
-                            columnStart: int.parse(_xStart.text),
-                            columnEnd: int.parse(_xEnd.text),
+                            columnStart: _columnStart,
+                            columnEnd: _columnEnd,
                             eventName: _eventName,
                             groupSize: int.parse(_groupSize.text),
                             timeBetweenGroups: double.parse(_delay.text),
@@ -274,11 +324,13 @@ class _StormPageState extends State<StormPage> {
   }
 }
 
-class LevelLawn extends StatefulWidget {
-  const LevelLawn({
-    super.key,
+class _LevelLawn extends StatefulWidget {
+  const _LevelLawn({
     required this.onTap,
+    required this.cellItems,
   });
+
+  final Map<int, MemoryImage> cellItems;
 
   final Future<void> Function(
     int row,
@@ -288,14 +340,12 @@ class LevelLawn extends StatefulWidget {
   ) onTap;
 
   @override
-  State<LevelLawn> createState() => _LevelLawnState();
+  State<_LevelLawn> createState() => __LevelLawnState();
 }
 
-class _LevelLawnState extends State<LevelLawn> {
+class __LevelLawnState extends State<_LevelLawn> {
   final int rows = 5;
   final int columns = 9;
-
-  final Map<int, MemoryImage> cellItems = {};
 
   @override
   Widget build(BuildContext context) {
@@ -313,16 +363,16 @@ class _LevelLawnState extends State<LevelLawn> {
           final row = index ~/ columns;
           final col = index % columns;
           return GestureDetector(
-            onTap: () => widget.onTap(row, col, cellItems, index),
+            onTap: () => widget.onTap(row, col, widget.cellItems, index),
             child: Container(
               color: Colors.white,
               child: Center(
-                child: cellItems.containsKey(index)
+                child: widget.cellItems.containsKey(index)
                     ? SizedBox(
                         width: 40,
                         height: 40,
                         child: Image(
-                          image: cellItems[index]!,
+                          image: widget.cellItems[index]!,
                           width: 40,
                           height: 40,
                         ),
