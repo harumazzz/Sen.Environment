@@ -230,7 +230,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             {
                 if (res.is_string())
                 {
-                    return std::stoi(res.get<std::string>());
+                    return Converter::to_int32(res.get<std::string>(), String::format(fmt::format("{}", Language::get("pvz2.scg.exchange_custom_resource_info.invalid_convert")), res.get<std::string>()));
                 }
                 else if (res.is_number())
                 {
@@ -535,7 +535,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             if (data["type"] != nullptr)
             {
-                value.texture.resolution = std::stoi(data["type"].get<string>());
+                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), String::format(fmt::format("{}", Language::get("pvz2.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
                 for (auto &[packet_id, packet_value] : data["packet"].items())
                 {
                     auto &packet = value.texture.packet[packet_id];

@@ -380,7 +380,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             auto d = data->FindAttribute("d");
             auto tx = data->FindAttribute("tx");
             auto ty = data->FindAttribute("ty");
-            value = Transform{std::stod((a ? a->Value() : "1")), std::stod((b ? b->Value() : "0")), std::stod((c ? c->Value() : "0")), std::stod((d ? d->Value() : "1")), std::stod((tx ? tx->Value() : "0")), std::stod((ty ? ty->Value() : "0"))};
+            value = Transform{Converter::to_float64((a != nullptr ? a->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"a"}, std::string{a->Value()})), Converter::to_float64((b != nullptr ? b->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"b"}, std::string{b->Value()})), Converter::to_float64((c != nullptr ? c->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"c"}, std::string{c->Value()})), Converter::to_float64((d != nullptr ? d->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"d"}, std::string{d->Value()})), Converter::to_float64((tx != nullptr ? tx->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"tx"}, std::string{tx->Value()})), Converter::to_float64((ty != nullptr ? ty->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"ty"}, std::string{ty->Value()}))};
             return;
         }
 
@@ -403,10 +403,10 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             auto b_pos = data->FindAttribute("blueOffset");
             auto a_pos = data->FindAttribute("alphaOffset");
             value = Color{
-                color_compute(std::stod(r ? r->Value() : "1"), std::stod(r_pos ? r_pos->Value() : "0")),
-                color_compute(std::stod(g ? g->Value() : "1"), std::stod(g_pos ? g_pos->Value() : "0")),
-                color_compute(std::stod(b ? b->Value() : "1"), std::stod(b_pos ? b_pos->Value() : "0")),
-                color_compute(std::stod(a ? a->Value() : "1"), std::stod(a_pos ? a_pos->Value() : "0"))};
+                color_compute(Converter::to_float64(r != nullptr ? r->Value() : "1", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"r"}, std::string{r->Value()})), Converter::to_float64(r_pos != nullptr ? r_pos->Value() : "0", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"r_pos"}, std::string{r_pos->Value()}))),
+                color_compute(Converter::to_float64(g != nullptr ? g->Value() : "1", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"g"}, std::string{g->Value()})), Converter::to_float64(g_pos != nullptr ? g_pos->Value() : "0", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"g_pos"}, std::string{g_pos->Value()}))),
+                color_compute(Converter::to_float64(b != nullptr ? b->Value() : "1", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"b"}, std::string{b->Value()})), Converter::to_float64(b_pos != nullptr ? b_pos->Value() : "0", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"b_pos"}, std::string{b_pos->Value()}))),
+                color_compute(Converter::to_float64(a != nullptr ? a->Value() : "1", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"a"}, std::string{a->Value()})), Converter::to_float64(a_pos != nullptr ? a_pos->Value() : "0", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"a_pos"}, std::string{a_pos->Value()})))};
             return;
         }
 

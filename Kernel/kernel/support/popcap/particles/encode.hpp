@@ -281,7 +281,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 			}
 			for (auto &emitter : definition.emitters)
 			{
-				stream.writeInt32(std::stoi(emitter.image));
+				stream.writeInt32(Converter::to_int32(emitter.image, fmt::format("{}", Language::get("popcap.particles.invalid_emitter_image"))));
 				stream.writeStringByInt32(emitter.name);
 				write_track_nodes(emitter.system_duration);
 				stream.writeStringByInt32(emitter.on_duration);
@@ -384,7 +384,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 			}
 			for (auto &emitter : definition.emitters)
 			{
-				stream.writeInt32(std::stoi(emitter.image));
+				stream.writeInt32(Converter::to_int32(emitter.image, fmt::format("{}", Language::get("popcap.particles.invalid_emitter_image"))));
 				stream.writeStringByInt32(emitter.name);
 				write_track_nodes(emitter.system_duration);
 				stream.writeStringByInt32(emitter.on_duration);

@@ -60,7 +60,7 @@ namespace Sen::Kernel::Interface {
 						) -> JSValue {
 							auto is_gui = std::make_unique<CStringView>();
 							Shell::callback(construct_string_list(std::vector<std::string>{std::string{"is_gui"}}).get(), is_gui.get());
-							return JS::Converter::to_bool(ctx, static_cast<bool>(std::stoi(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)})));
+							return JS::Converter::to_bool(ctx, static_cast<bool>(Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell")));
 						}, "Sen"_sv, "Shell"_sv, "is_gui"_sv);
 					}
 					{
@@ -72,7 +72,7 @@ namespace Sen::Kernel::Interface {
 						) -> JSValue {
 							auto shell_version = std::make_unique<CStringView>();
 							Shell:: callback(construct_string_list(std::vector<std::string>{std::string{"version"}}).get(), shell_version.get());
-							return JS::Converter::to_number(ctx, static_cast<int>(std::stoi(std::string{shell_version->value, static_cast<std::size_t>(shell_version->size)}))); 
+							return JS::Converter::to_number(ctx, static_cast<int>(Converter::to_int32(std::string{shell_version->value, static_cast<std::size_t>(shell_version->size)}, "Cannot get the Shell version"))); 
 						}, "Sen"_sv, "Shell"_sv, "version"_sv);
 					}
 					// version

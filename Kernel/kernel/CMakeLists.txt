@@ -13,6 +13,7 @@ add_library(
 	./definition/utility.hpp
 	./definition/basic/filesystem.hpp
 	./definition/basic/string.hpp
+	./definition/basic/converter.hpp
 	./definition/basic/math.hpp
 	./definition/basic/language.hpp
 	./definition/basic/path.hpp
@@ -256,6 +257,8 @@ if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE "NOMINMAX")
     target_compile_definitions(${PROJECT_NAME} PRIVATE "_WINSOCKAPI_")
     target_compile_definitions(${PROJECT_NAME} PRIVATE "_UCRT_NOISY_NAN")
+	# Disable MSVC Scream on WINSOCKAPI
+	target_compile_options(${PROJECT_NAME} PRIVATE /wd4005)
 endif()
 
 
@@ -288,12 +291,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         -Wno-unsafe-buffer-usage 
         -Wno-float-equal 
         -Wno-gnu-line-marker 
-)
+	)
 
 if (MSVC)
     add_compile_options(/bigobj)
 else ()
     add_compile_options(-Wa,-mbig-obj)
+	# For some reason, Android doesn't support std=c++23 yet
+	target_compile_options(${PROJECT_NAME} PRIVATE -std=c++20)
 endif ()
 
 endif()

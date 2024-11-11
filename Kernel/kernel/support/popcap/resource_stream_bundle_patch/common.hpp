@@ -53,7 +53,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
             for (auto i = 0; i < data.length(); i += 2)
             {
                 auto byte_string = data.substr(i, 2);
-                auto byte_value = static_cast<uint8_t>(stoi(byte_string, nullptr, 16));
+                auto byte_value = static_cast<uint8_t>(std::stoi(byte_string, nullptr, 16));
                 result.emplace_back(byte_value);
             }
 

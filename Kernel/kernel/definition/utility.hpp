@@ -9,6 +9,7 @@
 #include "kernel/definition/basic/pointer.hpp"
 #include "kernel/definition/basic/string.hpp"
 #include "kernel/definition/basic/path.hpp"
+#include "kernel/definition/basic/converter.hpp"
 #include "kernel/definition/basic/timer.hpp"
 #include "kernel/definition/basic/image.hpp"
 #include "kernel/definition/basic/json.hpp"

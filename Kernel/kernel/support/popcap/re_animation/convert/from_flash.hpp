@@ -40,7 +40,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 				track.name = name;
 				for (auto DOMFrame = frames->FirstChildElement("DOMFrame"); DOMFrame != nullptr; DOMFrame = DOMFrame->NextSiblingElement("DOMFrame"))
 				{
-					auto frame_index = std::stoi(DOMFrame->FindAttribute("index")->Value());
+					auto frame_index = Converter::to_int32(DOMFrame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"index"}));
 					auto elements = DOMFrame->FirstChildElement("elements");
 					if (elements == nullptr)
 					{
@@ -76,12 +76,12 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 						auto d = Matrix->FindAttribute("d");
 						auto tx = Matrix->FindAttribute("tx");
 						auto ty = Matrix->FindAttribute("ty");
-						const auto &a_v = std::stod((a ? a->Value() : "1"));
-						const auto &b_v = std::stod((b ? b->Value() : "0"));
-						const auto &c_v = std::stod((c ? c->Value() : "0"));
-						const auto &d_v = std::stod((d ? d->Value() : "1"));
-						const auto &tx_v = std::stof((tx ? tx->Value() : "0"));
-						const auto &ty_v = std::stof((ty ? ty->Value() : "0"));
+						const auto &a_v = Converter::to_float64((a != nullptr ? a->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"a"}, std::string{a->Value()}));
+						const auto &b_v = Converter::to_float64((b != nullptr ? b->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"b"}, std::string{b->Value()}));
+						const auto &c_v = Converter::to_float64((c != nullptr ? c->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"c"}, std::string{c->Value()}));
+						const auto &d_v = Converter::to_float64((d != nullptr ? d->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"d"}, std::string{d->Value()}));
+						const auto &tx_v = Converter::to_float32((tx != nullptr ? tx->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"tx"}, std::string{tx->Value()}));
+						const auto &ty_v = Converter::to_float32((ty != nullptr ? ty->Value() : "0"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"ty"}, std::string{ty->Value()}));
 						const auto &skew_x = std::atan2(b_v, a_v);
 						const auto &skew_y = std::atan2(c_v, d_v);
 						auto dx = 57.2957795131;
@@ -147,7 +147,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 					{
 						auto Color = color->FirstChildElement("Color");
 						assert_conditional(Color != nullptr, fmt::format("{}", Language::get("popcap.reanim.from_flash.invalid_color")), "process");
-						auto alpha = std::stof(Color->FindAttribute("alphaMultiplier")->Value());
+						auto alpha = Converter::to_float32(Color->FindAttribute("alphaMultiplier")->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.matrix_is_not_a_valid_number")), std::string{"alphaMultiplier"}, std::string{Color->FindAttribute("alphaMultiplier")->Value()}));
 						if (initial_transform.a != alpha)
 						{
 							initial_transform.a = alpha;
@@ -159,7 +159,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 				tracks.emplace_back(track);
 			}
 			auto frameRate = document.FirstChildElement("DOMDocument")->FindAttribute("frameRate");
-			reanim.fps = std::stof(frameRate ? frameRate->Value() : "12");
+			reanim.fps = Converter::to_float32(frameRate != nullptr ? frameRate->Value() : "12", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_rate_is_not_a_integer")), std::string{frameRate->Value()}));
 			return;
 		}
 

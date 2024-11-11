@@ -740,7 +740,7 @@ namespace Sen.Script.Executor {
             switch (input) {
                 case 1n: {
                     load_module({ source: argument.source }, "whole");
-                    Console.finished(format(Kernel.Language.get("total_n_files_are_executed"), argument.source as Array<string>).length.toString());
+                    Console.finished(format(Kernel.Language.get("total_n_files_are_executed"), (argument.source as Array<string>).length));
                     break;
                 }
                 case 2n: {

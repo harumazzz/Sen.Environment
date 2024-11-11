@@ -65,8 +65,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				assert_conditional(transform_matrix != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_image_matrix")), image_name), "exchange_image_document");
 				auto a_matrix = transform_matrix->FindAttribute("a");
 				auto d_matrix = transform_matrix->FindAttribute("d");
-				transform_matrix->SetAttribute("a", to_fixed<6>((((a_matrix != nullptr ? std::stod(a_matrix->Value()) : 1.0) / old_ratio) * ratio)).data());
-				transform_matrix->SetAttribute("d", to_fixed<6>((((d_matrix != nullptr ? std::stod(d_matrix->Value()) : 1.0) / old_ratio) * ratio)).data());
+				transform_matrix->SetAttribute("a", to_fixed<6>((((a_matrix != nullptr ? Converter::to_float64(a_matrix->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"a_matrix"}, std::string{a_matrix->Value()})) : 1.0) / old_ratio) * ratio)).data());
+				transform_matrix->SetAttribute("d", to_fixed<6>((((d_matrix != nullptr ? Converter::to_float64(d_matrix->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.matrix_is_not_a_valid_number")), std::string{"d_matrix"}, std::string{d_matrix->Value()})) : 1.0) / old_ratio) * ratio)).data());
 			}
 			return;
 		}

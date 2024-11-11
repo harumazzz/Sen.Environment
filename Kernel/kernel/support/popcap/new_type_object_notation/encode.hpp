@@ -96,7 +96,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 					}
 					auto subgroups_count = is_null_object(m_data, "subgroups") ? 0x00 : m_data["subgroups"].size();
       				auto resources_count = is_null_object(m_data, "resources") ? 0x00 : m_data["resources"].size();
-					sen->writeInt32(is_null_object(m_data, "res") ? 0x00 : std::stoi(m_data["res"].get<std::string>()));
+					sen->writeInt32(is_null_object(m_data, "res") ? 0x00 : Converter::to_int32(m_data["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), m_data["res"].get<std::string>())));
 					sen->writeInt32(subgroups_count);
 					sen->writeInt32(resources_count);
 					sen->writeUint8(0x01);
@@ -116,7 +116,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 						assert_conditional(is_null_object(m_data, "resources"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.resource_must_be_null_with_composite")), "process");
 						for(auto & current : m_data["subgroups"]){
 							if(is_not_null_object(current, "res")){
-								sen->writeInt32(std::stoi(current["res"].get<std::string>()));
+								sen->writeInt32(Converter::to_int32(current["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), current["res"].get<std::string>())));
 							}
 							else{
 								sen->writeInt32(0x00);

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/application.dart';
 import 'package:sen/service/android_service.dart';
@@ -10,6 +11,7 @@ Future<void> main(
   List<String> arguments,
 ) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await WindowManager.instance.ensureInitialized();

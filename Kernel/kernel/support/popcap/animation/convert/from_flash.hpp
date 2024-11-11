@@ -163,9 +163,9 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				for (auto dom_frame = frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 				{
 					assert_conditional(dom_frame != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), sprite_name), "exchange_sprite_document");
-					auto frame_index = static_cast<int>(std::stoi(dom_frame->FindAttribute("index")->Value()));
+					auto frame_index = static_cast<int>(Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_number")), sprite_name, std::string{dom_frame->FindAttribute("index")->Value()})));
 					auto m_duration = dom_frame->FindAttribute("duration");
-					auto frame_duration = static_cast<int>(std::stoi((m_duration ? m_duration->Value() : "1")));
+					auto frame_duration = static_cast<int>(Converter::to_int32((m_duration != nullptr ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_number")), sprite_name, std::string{m_duration->Value()})));
 					auto elements = dom_frame->FirstChildElement("elements");
 					auto dom_symbol_instance = elements->FirstChildElement("DOMSymbolInstance");
 					if (dom_symbol_instance == nullptr)
@@ -351,9 +351,9 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			for (auto dom_frame = label_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 			{
 				assert_conditional(dom_frame != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), "exchange_label_info");
-				auto frame_index = std::stoi(dom_frame->FindAttribute("index")->Value());
+				auto frame_index = Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_integer")), std::string{dom_frame->FindAttribute("index")->Value()}));
 				auto m_duration = dom_frame->FindAttribute("duration");
-				auto frame_duration = static_cast<int>(std::stoi((m_duration ? m_duration->Value() : "1")));
+				auto frame_duration = static_cast<int>(Converter::to_int32((m_duration != nullptr ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()})));
 				frame_count += frame_duration;
 				auto label_name = dom_frame->FindAttribute("name");
 				assert_conditional(label_name != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info");
@@ -372,10 +372,11 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			auto dom_document = document.FirstChildElement("DOMDocument");
 			auto frame_rate = document.FirstChildElement("DOMDocument")->FindAttribute("frameRate");
-			definition.frame_rate = std::stoi(frame_rate != nullptr ? frame_rate->Value() : "24");
+			definition.frame_rate = Converter::to_int32(frame_rate != nullptr ? frame_rate->Value() : "24", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_rate_is_not_a_integer")), std::string{frame_rate->Value()}));
 			auto width = document.FirstChildElement("DOMDocument")->FindAttribute("width");
 			auto height = document.FirstChildElement("DOMDocument")->FindAttribute("height");
-			definition.size = AnimationSize(std::stoi(width != nullptr ? width->Value() : "390"), std::stoi(height != nullptr ? height->Value() : "390"));
+			definition.size = AnimationSize(Converter::to_int32(width != nullptr ? width->Value() : "390", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})), 
+			Converter::to_int32(height != nullptr ? height->Value() : "390", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})));
 			auto dom_timeline = dom_document->FirstChildElement("timelines")->FirstChildElement("DOMTimeline");
 			assert_conditional(std::string_view{dom_timeline->FindAttribute("name")->Value()} == "animation"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_dom_document");
 			auto frame_count = k_begin_index_int;
@@ -390,7 +391,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			for (auto dom_frame = action_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 			{
 				assert_conditional(dom_frame != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), "exchange_dom_document");
-				auto frame_index = std::stoi(dom_frame->FindAttribute("index")->Value());
+				auto frame_index = Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_integer")), std::string{dom_frame->FindAttribute("index")->Value()}));
 				auto action_script = dom_frame->FirstChildElement("Actionscript");
 				if (action_script == nullptr)
 				{
@@ -428,9 +429,9 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			for (auto dom_frame = instance_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 			{
 				assert_conditional(dom_frame != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), "exchange_dom_document");
-				auto frame_index = std::stoi(dom_frame->FindAttribute("index")->Value());
+				auto frame_index = Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_integer")), std::string{dom_frame->FindAttribute("index")->Value()}));
 				auto m_duration = dom_frame->FindAttribute("duration");
-				auto frame_duration = static_cast<int>(std::stoi((m_duration ? m_duration->Value() : "1")));
+				auto frame_duration = static_cast<int>(Converter::to_int32((m_duration ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()})));
 				frame_count -= frame_duration;
 			}
 			assert_conditional(frame_count == k_begin_index_int, String::format(fmt::format("{}", Language::get("popcap.animation.main_frame_has_no_vaild_length")), std::to_string(frame_count), std::to_string(k_begin_index)), "exchange_dom_document");
@@ -446,7 +447,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			tsl::ordered_map<std::string, LabelInfo> &label,
 			FrameNodeStructure &frame_node_structure) -> void
 		{
-			assert_conditional(label.size() != k_none_size, fmt::format("must has atleast one label"), "exchange_label"); // TODO.
+			assert_conditional(label.size() != k_none_size, fmt::format("{}", Language::get("popcap.animation.from_flash.animation_must_have_one_label")), "exchange_label"); 
 			auto first_label = label.begin()->first;
 			for (auto &[layer_index, frame_node_list] : label_frame_structure.at(first_label))
 			{
@@ -516,7 +517,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						}
 					}
 				}
-				assert_conditional(start_index == last_duration, fmt::format("label: {} is not match size", label_name), "exchange_label"); // TODO.
+				assert_conditional(start_index == last_duration, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.label_length_does_not_match"), label_name)), "exchange_label"); 
 			}
 			return;
 		}

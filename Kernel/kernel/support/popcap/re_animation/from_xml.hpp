@@ -22,11 +22,11 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         {
             auto fps = document->FirstChildElement("fps");
             assert_conditional(fps != nullptr, fmt::format("{}", Language::get("popcap.reanim.decode.invalid_fps_chuck")), "convert");
-            reanim.fps = std::stof(fps->FirstChild()->Value());
+            reanim.fps = Converter::to_float32(fps->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"fps"}));
             auto do_scale = document->FirstChildElement("doScale");
             if (do_scale != nullptr)
             {
-                reanim.do_scale = static_cast<int8_t>(std::stoi(do_scale->FirstChild()->Value()));
+                reanim.do_scale = static_cast<int8_t>(Converter::to_int32(do_scale->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"do_scale"})));
             }
             for (auto track = document->FirstChildElement("track"); track != nullptr; track = track->NextSiblingElement("track"))
             {
@@ -42,37 +42,37 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     auto x = transform->FirstChildElement("x");
                     if (x != nullptr)
                     {
-                        transform_info.x = std::stof(x->FirstChild()->Value());
+                        transform_info.x = Converter::to_float32(x->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"x"}));
                     }
                     auto y = transform->FirstChildElement("y");
                     if (y != nullptr)
                     {
-                        transform_info.y = std::stof(y->FirstChild()->Value());
+                        transform_info.y = Converter::to_float32(y->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"y"}));
                     }
                     auto kx = transform->FirstChildElement("kx");
                     if (kx != nullptr)
                     {
-                        transform_info.kx = std::stof(kx->FirstChild()->Value());
+                        transform_info.kx = Converter::to_float32(kx->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"kx"}));
                     }
                     auto ky = transform->FirstChildElement("ky");
                     if (ky != nullptr)
                     {
-                        transform_info.ky = std::stof(ky->FirstChild()->Value());
+                        transform_info.ky = Converter::to_float32(ky->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"ky"}));
                     }
                     auto sx = transform->FirstChildElement("sx");
                     if (sx != nullptr)
                     {
-                        transform_info.sx = std::stof(sx->FirstChild()->Value());
+                        transform_info.sx = Converter::to_float32(sx->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"sx"}));
                     }
                     auto sy = transform->FirstChildElement("sy");
                     if (sy != nullptr)
                     {
-                        transform_info.sy = std::stof(sy->FirstChild()->Value());
+                        transform_info.sy = Converter::to_float32(sy->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"sy"}));
                     }
                     auto a = transform->FirstChildElement("a");
                     if (a != nullptr)
                     {
-                        transform_info.x = std::stof(a->FirstChild()->Value());
+                        transform_info.x = Converter::to_float32(a->FirstChild()->Value(), String::format(fmt::format("{}", Language::get("popcap.reanim.invalid_argument")), std::string{"a"}));
                     }
                     auto i = transform->FirstChildElement("i");
                     if (i != nullptr)

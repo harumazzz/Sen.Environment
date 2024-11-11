@@ -227,7 +227,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 						try 
 						{
 							auto string_list = String{subgroup_id}.split("_");
-							auto resolution = std::stoi(string_list.back());
+							auto resolution = Converter::to_int32(string_list.back(), fmt::format("{}", Language::get("popcap.rsb.unpack_cipher.cannot_convert_resolution")));
 							subgroup_information.category.resolution = resolution;
 						}
 						catch (std::invalid_argument &ex) {}

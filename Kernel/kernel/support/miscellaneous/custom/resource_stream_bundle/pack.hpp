@@ -158,7 +158,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 }
                 catch (Exception &ex)
                 {
-                    assert_conditional(false, fmt::format("{} at {}", ex.what(), group_id), "exchange_packet");
+                    assert_conditional(false, fmt::format("{} at {}", ex.message(), group_id), "exchange_packet");
                 }
                 Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.version, definition.version, group_id, "popcap.rsb.custom.mismatch_scg_version");
                 Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.texture_format_category, setting.texture_format_category, group_id, "popcap.rsb.custom.mismatch_texture_format_category");

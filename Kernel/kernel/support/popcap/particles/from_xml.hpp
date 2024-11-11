@@ -37,7 +37,8 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             break;
                         }
                     }
-                    node.low_value = std::stof(data.substr(pos, pos_temp - pos));
+                    node.low_value = Converter::to_float32(data.substr(pos, pos_temp - pos), 
+                    String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"low_value"}));
                     node.low_value_is_null = node.low_value == 0.0;
                     if (data[pos_temp] == ']')
                     {
@@ -68,7 +69,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             else
                             {
                                 trim(trail_string);
-                                node.distribution = std::stoi(trail_string.substr("TodCurves("_sv.size(), trail_string.size() - "TodCurves()"_sv.size()));
+                                node.distribution = Converter::to_int32(trail_string.substr("TodCurves("_sv.size(), trail_string.size() - "TodCurves()"_sv.size()), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"distribution"}));
                             }
                             node.distribution_is_null = false;
                             pos = ++pos_temp;
@@ -81,7 +82,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                                 break;
                             }
                         }
-                        node.high_value = std::stof(data.substr(pos, pos_temp - pos));
+                        node.high_value = Converter::to_float32(data.substr(pos, pos_temp - pos), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"high_value"}));
                         node.high_value_is_null = node.high_value == 0.0;
                         pos = ++pos_temp;
                     }
@@ -101,7 +102,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             break;
                         }
                     }
-                    node.low_value = std::stof(data.substr(pos, pos_temp - pos));
+                    node.low_value = Converter::to_float32(data.substr(pos, pos_temp - pos), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"low_value"}));
                     node.high_value = node.low_value;
                     node.low_value_is_null = node.low_value == 0.0;
                     node.high_value_is_null = node.high_value == 0.0;
@@ -127,7 +128,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             break;
                         }
                     }
-                    node.time = std::stof(data.substr(pos, pos_temp - pos));
+                    node.time = Converter::to_float32(data.substr(pos, pos_temp - pos), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"time"}));
                     pos = pos_temp;
                 }
                 else
@@ -160,7 +161,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                     else
                     {
                         trim(trail_string);
-                        node.curve_type = std::stoi(trail_string.substr("TodCurves("_sv.size(), trail_string.size() - "TodCurves()"_sv.size()));
+                        node.curve_type = Converter::to_int32(trail_string.substr("TodCurves("_sv.size(), trail_string.size() - "TodCurves()"_sv.size()), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"curve_type"}));
                     }
                     node.curve_type_is_null = false;
                     pos = ++pos_temp;
@@ -231,22 +232,22 @@ namespace Sen::Kernel::Support::PopCap::Particles
                 }
                 if (auto value = emitter_element->FirstChildElement("ImageCol"); value != nullptr)
                 {
-                    emitter.image_cols = std::stoi(value->FirstChild()->ToText()->Value());
+                    emitter.image_cols = Converter::to_int32(value->FirstChild()->ToText()->Value(), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"image_cols"}));
                     emitter.image_cols_is_null = emitter.image_cols == 0;
                 }
                 if (auto value = emitter_element->FirstChildElement("ImageRow"); value != nullptr)
                 {
-                    emitter.image_rows = std::stoi(value->FirstChild()->ToText()->Value());
+                    emitter.image_rows = Converter::to_int32(value->FirstChild()->ToText()->Value(), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"image_rows"}));
                     emitter.image_rows_is_null = emitter.image_rows == 0;
                 }
                 if (auto value = emitter_element->FirstChildElement("ImageFrames"); value != nullptr)
                 {
-                    emitter.image_frames = std::stoi(value->FirstChild()->ToText()->Value());
+                    emitter.image_frames = Converter::to_int32(value->FirstChild()->ToText()->Value(), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"image_frames"}));
                     emitter.image_frames_is_null = emitter.image_frames == 1;
                 }
                 if (auto value = emitter_element->FirstChildElement("Animated"); value != nullptr)
                 {
-                    emitter.animated = std::stoi(value->FirstChild()->ToText()->Value());
+                    emitter.animated = Converter::to_int32(value->FirstChild()->ToText()->Value(), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"animated"}));
                     emitter.animated_is_null = emitter.animated == 0;
                 }
                 if (auto value = emitter_element->FirstChildElement("RandomLaunchSpin"); value != nullptr)
@@ -307,7 +308,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                     else
                     {
                         trim(type);
-                        emitter.emitter_type = std::stoi(type.substr("Emitter("_sv.size(), type.size() - "Emitter()"_sv.size()));
+                        emitter.emitter_type = Converter::to_int32(type.substr("Emitter("_sv.size(), type.size() - "Emitter()"_sv.size()), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"emitter_type"}));
                     }
                     emitter.emitter_type_is_null = false;
                 }
@@ -419,7 +420,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             else
                             {
                                 trim(type);
-                                field.field_type = std::stoi(type.substr("Field("_sv.size(), type.size() - "Field()"_sv.size()));
+                                field.field_type = Converter::to_int32(type.substr("Field("_sv.size(), type.size() - "Field()"_sv.size()), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"field_type"}));
                             }
                             field.field_type_is_null = false;
                         }
@@ -452,7 +453,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
                             else
                             {
                                 trim(type);
-                                field.field_type = std::stoi(type.substr("Field("_sv.size(), type.size() - "Field()"_sv.size()));
+                                field.field_type = Converter::to_int32(type.substr("Field("_sv.size(), type.size() - "Field()"_sv.size()), String::format(fmt::format("{}", Language::get("popcap.particles.invalid_argument")), std::string{"field_type"}));
                             }
                             field.field_type_is_null = false;
                         }

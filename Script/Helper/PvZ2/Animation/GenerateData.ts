@@ -41,7 +41,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateData {
         };
         document.image.forEach((e) => {
             const image_name = e.replace(/image\//, "").replace(/\.xml/, "");
-            const image = Kernel.Image.open(Kernel.Path.normalize(`${source}/library/media/${image_name}.png`));
+            const image = Kernel.Image.open(`${source}/library/media/${image_name}.png`);
             const distance: number = 1200 / Number(resolution);
             result.image[image_name] = {
                 id: `${image_posix}_${image_name.toUpperCase()}`,
