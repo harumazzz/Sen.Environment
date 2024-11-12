@@ -21,6 +21,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             return packet_stream.toBytes();
         }
 
+        #if WINDOWS || LINUX || MACINTOSH
+
         inline static auto process(
             DataStreamView &stream,
             BundleStructure const &definition,
@@ -46,6 +48,34 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             ResourceStreamBundle::Pack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
             return;
         }
+
+        #else
+
+        inline static auto process(
+            DataStreamView &stream,
+            BundleStructure const &definition,
+            ManifestStructure const &manifest,
+            std::string &source
+        ) -> void
+        {
+            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            for (auto &[group_id, group_information] : definition.group) {
+                for (auto &[subgroup_id, subgroup_information] : group_information.subgroup) {
+                    auto packet_structure = PacketStructure{
+                        .version = definition.version,
+                        .resource = subgroup_information.resource
+                    };
+                    Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(
+                        subgroup_information.compression, packet_structure.compression
+                    );
+                    packet_data_section_view_stored[subgroup_id] = exchange_packet(packet_structure, source);
+                }
+            }
+            ResourceStreamBundle::Pack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
+        }
+
+        #endif
+
 
     public:
         inline static auto process_whole(

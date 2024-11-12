@@ -41,7 +41,11 @@ namespace Sen::Kernel::FileSystem
 		auto file = std::ifstream(source.data());
 		#endif
         if (!file.is_open()) {
+			#if WINDOWS
 			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_file");
+			#else
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_file");
+			#endif
         }
         auto buffer = std::stringstream{};
         buffer << file.rdbuf();
@@ -62,7 +66,11 @@ namespace Sen::Kernel::FileSystem
 		auto file = std::ifstream(source.data());
 		#endif
         if (!file.is_open()) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_json");
+			#if WINDOWS
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_file");
+			#else
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_file");
+			#endif
         }
         auto buffer = std::stringstream{};
         buffer << file.rdbuf();
@@ -84,7 +92,11 @@ namespace Sen::Kernel::FileSystem
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		if (file == nullptr) {
+			#if WINDOWS
 			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(filepath.data())), std::source_location::current(), "write_json");
+			#else
+			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), std::string{filepath.data(), filepath.size()}), std::source_location::current(), "write_json");
+			#endif
 		}
 		auto dumped_content = content.dump(1, '\t');
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
@@ -114,7 +126,11 @@ namespace Sen::Kernel::FileSystem
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		if (file == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
+			#else
 			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), filepath), std::source_location::current(), "write_json");
+			#endif
 		}
 		auto dumped_content = content.dump(indent, indent_char);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
@@ -142,7 +158,11 @@ namespace Sen::Kernel::FileSystem
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		if (file == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
+			#else
 			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), filepath), std::source_location::current(), "write_json");
+			#endif
 		}
 		auto dumped_content = content.dump(1, indent_char);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
@@ -174,7 +194,11 @@ namespace Sen::Kernel::FileSystem
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		if (file == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
+			#else
 			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), filepath), std::source_location::current(), "write_json");
+			#endif
 		}
 		auto dumped_content = content.dump(indent, indent_char, ensureAscii);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
@@ -225,6 +249,9 @@ namespace Sen::Kernel::FileSystem
 		#else
 		auto file = std::wofstream(source.data(), std::ios::binary);
 		#endif
+		if (!file.is_open()) {
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::view(String::to_posix_style(source.data()))), std::source_location::current(), "write_file_by_utf16le");
+		}
 		file.imbue(utf16le_locale);
 		file << data;
 		return;

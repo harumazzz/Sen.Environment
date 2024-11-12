@@ -697,20 +697,28 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(source.data(), "rb"), Language::close_file);
 				#endif
 				if (fp == nullptr) {
+					#if WINDOWS
+					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
+					#else
 					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), source), std::source_location::current(), "read_file_as_js_arraybuffer");
+					#endif
 				}
 				#if WINDOWS
-				auto file_size = std::filesystem::file_size(std::filesystem::path{ String::utf8_to_utf16(source.data()) });
+				auto file_size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data()) });
 				#else
 				auto file_size = std::filesystem::file_size(std::filesystem::path{ source });
 				#endif
 				auto buffer = std::unique_ptr<char[], decltype(close_buffer)>((char*) std::malloc(file_size * sizeof(char)), close_buffer);
 				if (buffer == nullptr) {
+					#if WINDOWS
+					throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
+					#else
 					throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", source), std::source_location::current(), "read_file_as_js_arraybuffer");
+					#endif
 				}
 				auto result = std::fread(buffer.get(), 1, file_size, fp.get());
 				if (result != file_size) {
-					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), source), std::source_location::current(), "read_file_as_js_arraybuffer");
+					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
 				}
 				auto array_buffer = JS_NewArrayBufferCopy(ctx, reinterpret_cast<uint8_t*>(buffer.get()), file_size);
 				return array_buffer;
@@ -737,7 +745,11 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					auto ofs = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(destination.data(), "wb"), Language::close_file);
 				#endif
 				if (ofs.get() == nullptr) {
+					#if WINDOWS
+					throw Exception(fmt::format("{}", Language::get("open_write_failed"), String::to_posix_style({destination.data(), destination.size()})), std::source_location::current(), "write_file_as_arraybuffer");
+					#else
 					throw Exception(fmt::format("{}", Language::get("open_write_failed"), destination), std::source_location::current(), "write_file_as_arraybuffer");
+					#endif
 				}
 				std::fwrite(reinterpret_cast<char*>(data), 1, size, ofs.get());
 				return;

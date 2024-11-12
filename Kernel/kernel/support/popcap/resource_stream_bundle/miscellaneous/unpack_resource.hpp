@@ -21,11 +21,14 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             return;
         }
 
+        #if WINDOWS || LINUX || MACINTOSH
+
         inline static auto process(
             DataStreamView &stream,
             BundleStructure &definition,
             ManifestStructure &manifest,
-            std::string &destination) -> void
+            std::string &destination
+        ) -> void
         {
             auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
             ResourceStreamBundle::Unpack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
@@ -38,6 +41,27 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             async_process_list<void>(work_list);
             return;
         }
+
+        #else
+
+        inline static auto process(
+            DataStreamView &stream,
+            BundleStructure &definition,
+            ManifestStructure &manifest,
+            std::string &destination
+        ) -> void
+        {
+            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            ResourceStreamBundle::Unpack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
+            auto packet_definition = ResourceStreamGroup::PacketStructure{};
+            for (const auto& it : packet_data_section_view_stored) {
+                exchange_packet(it.second, destination);  
+            }
+            return;
+        }
+
+        #endif
+
 
     public:
         inline static auto process_whole(

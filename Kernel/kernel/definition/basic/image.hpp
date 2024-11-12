@@ -292,6 +292,18 @@ namespace Sen::Kernel::Definition {
 			*/
 
 			inline auto set_data(
+				std::vector<unsigned char> && data
+			) const -> void
+			{
+				thiz._data = std::move(data);
+				return;
+			}
+
+			/**
+			 * set pixel data
+			*/
+
+			inline auto copy_data(
 				const std::vector<unsigned char> & data
 			) const -> void
 			{
@@ -439,9 +451,13 @@ namespace Sen::Kernel::Definition {
 			}
 
 			inline auto normalize_32bit(
+				std::string_view source
 			) -> void
 			{
-				if (thiz.is_rgb()) {
+				if (thiz.is_rgba()) {
+					return;
+				}
+				else if (thiz.is_rgb()) {
 					auto &data = thiz.data();
 					auto color = ZList(static_cast<ZList::size_type>((data.size() / 3) * 4_size));
 					for (auto i = 0_size, j = 0_size; i < data.size(); i += 3, j += 4) {
@@ -450,10 +466,58 @@ namespace Sen::Kernel::Definition {
 						color[j + 2] = data[i + 2];
 						color[j + 3] = 0xFF_ui;
 					}
-					set_data(color);
+					copy_data(color);
 					thiz.channels = 4;
 				}
+				else if (thiz.is_grayscale_alpha()) {
+					auto &data = thiz.data();
+					auto color = ZList(static_cast<ZList::size_type>((data.size() / 2) * 4));
+					for (auto i = 0_size, j = 0_size; i < data.size(); i += 2, j += 4) {
+						color[j] = data[i];           
+						color[j + 1] = data[i];       
+						color[j + 2] = data[i];       
+						color[j + 3] = data[i + 1];   
+					}
+					copy_data(color);
+					thiz.channels = 4;
+				} 
+				else if (thiz.is_grayscale()) {
+					auto &data = thiz.data();
+					auto color = ZList(static_cast<ZList::size_type>(data.size() * 4));
+					for (auto i = 0_size, j = 0_size; i < data.size(); ++i, j += 4) {
+						color[j] = data[i];       
+						color[j + 1] = data[i];   
+						color[j + 2] = data[i];   
+						color[j + 3] = 0xFF_ui;
+					}
+					copy_data(color);
+					thiz.channels = 4;
+				}
+				else {
+					assert_conditional(false, fmt::format("{}: {}", Language::get("image_is_broken"), String::to_posix_style(std::string{source.data(), source.size()})), "normalize_32bit");
+				}
 				return;
+			}
+
+			inline auto is_grayscale_alpha(
+
+			) -> bool
+			{
+				return thiz.channels == 2;
+			}
+
+			inline auto is_grayscale(
+
+			) -> bool
+			{
+				return thiz.channels == 1;
+			}
+
+			inline auto is_rgba(
+
+			) -> bool
+			{
+				return thiz.channels == 4;
 			}
 
 			/**
@@ -731,7 +795,11 @@ namespace Sen::Kernel::Definition {
 				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(source.data(), "rb"), Language::close_file);
 				#endif
 				if(fp == nullptr){
+					#if WINDOWS
+					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{source.data(), source.size()})), std::source_location::current(), "read_png");
+					#else
 					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), source), std::source_location::current(), "read_png");
+					#endif
 				}
 				auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 				if(png_ptr == nullptr){
@@ -763,7 +831,6 @@ namespace Sen::Kernel::Definition {
 				auto interlace_type = static_cast<int>(png_get_interlace_type(png_ptr, info_ptr));
 				auto rowbytes = static_cast<int>(png_get_rowbytes(png_ptr, info_ptr));
 				png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-				assert_conditional(channels == 3 || channels == 4, fmt::format("{}: {}", Language::get("image_is_broken"), String::to_posix_style(std::string{source.data(), source.size()})), "read_png");
 				auto image = Image<int>{
 					width, 
 					height, 
@@ -774,7 +841,7 @@ namespace Sen::Kernel::Definition {
 					rowbytes,
 					data
 				};
-				image.normalize_32bit();
+				image.normalize_32bit(source);
 				return image;
 			}
 
@@ -796,7 +863,11 @@ namespace Sen::Kernel::Definition {
 				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(filepath.data(), "wb"), Language::close_file);
 				#endif
 				if(fp == nullptr){
+					#if WINDOWS
+					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_png");
+					#else
 					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), filepath), std::source_location::current(), "write_png");
+					#endif
 				}
 				auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 				if(png_ptr == nullptr){

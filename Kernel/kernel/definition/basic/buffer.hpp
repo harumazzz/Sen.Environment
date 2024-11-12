@@ -67,12 +67,16 @@ namespace Sen::Kernel::Definition
             Stream(
                 std::string_view source) : read_pos(0), write_pos(0)
             {
-#if WINDOWS
+                #if WINDOWS
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data(), L"rb"), close_file);
-#else
+                #else
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(source.data(), "rb"), close_file);
-#endif
+                #endif
+                #if WINDOWS
+                assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
+                #else
                 assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source), "Stream");
+                #endif
                 #if WINDOWS
                 auto size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data())});
                 #else
@@ -251,25 +255,30 @@ namespace Sen::Kernel::Definition
                 std::string_view path) const -> void
             {
                 {
-#if WINDOWS
+                    #if WINDOWS
                     auto filePath = std::filesystem::path(String::utf8_to_utf16(String::to_windows_style(path.data())));
-#else
+                    #else
                     auto filePath = std::filesystem::path(path);
-#endif
+                    #endif
                     if (filePath.has_parent_path())
                     {
                         std::filesystem::create_directories(filePath.parent_path());
                     }
                 }
-#if WINDOWS
+                #if WINDOWS
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8_to_utf16(path.data()).data(), L"wb"), close_file);
-#else
+                #else
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
-#endif
+                #endif
                 if (file == nullptr)
                 {
+                    #if WINDOWS
+                    throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), std::source_location::current(),
+                                    "out_file");
+                    #else
                     throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), path), std::source_location::current(),
                                     "out_file");
+                    #endif
                 }
                 std::fwrite(thiz.data.data(), 1, thiz.length, file.get());
                 return;

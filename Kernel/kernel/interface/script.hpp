@@ -6929,7 +6929,7 @@ namespace Sen::Kernel::Interface::Script
 				{
 					auto size = std::size_t{};
 					auto data = JS_GetArrayBuffer(ctx, &size, val);
-					if (!data)
+					if (data == nullptr)
 					{
 						throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
 					}

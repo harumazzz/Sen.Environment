@@ -83,7 +83,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     auto resized_image = Definition::Image<int>::resize(image_info.data, resolution_resize_ratio);
                     image_info.data.width = resized_image.width;
                     image_info.data.height = resized_image.height;
-                    image_info.data.set_data(resized_image.data());
+                    image_info.data.copy_data(resized_image.data());
                 }
             }
             for (auto &[data_id, image_info] : texture_sprite_view_stored)
@@ -138,7 +138,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     image_list[i].y = rect.y;
                     image_list[i].width = image_info.data.width;
                     image_list[i].height = image_info.data.height;
-                    image_list[i].set_data(image_info.data.data());
+                    image_list[i].copy_data(image_info.data.data());
                 }
                 auto atlas_image = Definition::Image<int>::transparent(Definition::Dimension{max_rects_bin.width, max_rects_bin.height});
                 Definition::Image<int>::join_extend(atlas_image, image_list);
@@ -201,7 +201,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 image_info.additional = image_value.additional;
                 image_info.data.width = image.width;
                 image_info.data.height = image.height;
-                image_info.data.set_data(image.data());
+                image_info.data.copy_data(image.data());
             }
             return;
         }
@@ -295,7 +295,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         image_info.additional = resource_info.additional;
                         image_info.data.width = image.width;
                         image_info.data.height = image.height;
-                        image_info.data.set_data(image.data());
+                        image_info.data.copy_data(image.data());
                         break;
                     }
                     case DataType::PopAnim:

@@ -981,7 +981,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 texture_sprite_view_stored[data_id].subgroup_id = subgroup_id;
                 texture_sprite_view_stored[data_id].data.width = image_cut.width;
                 texture_sprite_view_stored[data_id].data.height = image_cut.height;
-                texture_sprite_view_stored[data_id].data.set_data(image_cut.data());
+                texture_sprite_view_stored[data_id].data.copy_data(image_cut.data());
                 texture_sprite_view_stored[data_id].path = exchange_image_path(data_value.path);
                 texture_sprite_view_stored[data_id].additional = Sen::Kernel::Support::PopCap::Animation::Convert::ImageAdditional{
                     .x = data_value.texture_info.x,
