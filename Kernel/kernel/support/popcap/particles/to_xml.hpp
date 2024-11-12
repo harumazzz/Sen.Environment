@@ -43,7 +43,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
         }
 
         inline auto write_track_nodes(
-            const std::vector<ParticlesTrackNode> &data,
+            const List<ParticlesTrackNode> &data,
             XMLElement *element) -> void
         {
             auto string = std::string{};

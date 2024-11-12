@@ -23,7 +23,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             auto hexString = value;
             hexString.erase(std::remove(hexString.begin(), hexString.end(), ' '), hexString.end());
-            auto bytes = std::vector<uint8_t>{};
+            auto bytes = List<uint8_t>{};
             for (auto i = static_cast<unsigned int>(0); i < hexString.length(); i += 2)
             {
                 auto byteString = hexString.substr(i, 2);
@@ -521,7 +521,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             requires std::is_integral<RawValue>::value
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<uint32_t> const &value_list) -> void
+            List<uint32_t> const &value_list) -> void
         {
             exchange_list<true, RawValue>(
                 stream, value_list, [](auto &data, auto &value)
@@ -598,7 +598,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<AudioSourceSetting> const &value) -> void
+            List<AudioSourceSetting> const &value) -> void
         {
             exchange_list<true, uint32_t>(stream, value, [](auto &data, auto &value)
                                           { exchange_section_sub(data, value); });
@@ -1360,7 +1360,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<EffectU1> const &u1_value) -> void
+            List<EffectU1> const &u1_value) -> void
         {
             if (k_version >= 112_ui)
             {
@@ -1605,7 +1605,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<SoundPlaylistContainerPlaylistItem> const &playlist_value) -> void
+            List<SoundPlaylistContainerPlaylistItem> const &playlist_value) -> void
         {
             exchange_list<true, uint16_t>(stream, playlist_value, [](auto &data, auto &value)
                                           {
@@ -1618,7 +1618,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<SoundSwitchContainerObjectAttributeItem> const &object_attribute_value) -> void
+            List<SoundSwitchContainerObjectAttributeItem> const &object_attribute_value) -> void
         {
             exchange_list<true, uint32_t>(stream, object_attribute_value, [](auto &data, auto &value)
                                           {
@@ -1645,7 +1645,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<SoundSwitchContainerObjectAssignItem> const &assigned_object_value) -> void
+            List<SoundSwitchContainerObjectAssignItem> const &assigned_object_value) -> void
         {
             exchange_list<true, uint32_t>(stream, assigned_object_value, [](auto &data, auto &value)
                                           {
@@ -1660,7 +1660,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<SoundBlendContainerTrackItem> const &track_value) -> void
+            List<SoundBlendContainerTrackItem> const &track_value) -> void
         {
             exchange_list<true, uint32_t>(stream, track_value, [](auto &data, auto &value)
                                           {
@@ -1702,7 +1702,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<MusicPlaylistContainerPlaylistItem> const &playlist_value) -> void
+            List<MusicPlaylistContainerPlaylistItem> const &playlist_value) -> void
         {
             exchange_list<true, uint32_t>(stream, playlist_value, [](auto &data, auto &value)
                                           {
@@ -1725,7 +1725,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_section_sub(
             DataStreamView &stream,
-            std::vector<MusicSwitchContainerAssociationItem> &association_value) -> void
+            List<MusicSwitchContainerAssociationItem> &association_value) -> void
         {
             if (k_version < 88_ui)
             {
@@ -3308,7 +3308,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_media(
             DataStreamView &stream,
-            std::vector<uint32_t> const &value,
+            List<uint32_t> const &value,
             ChunkSign &sign,
             std::string_view source) -> void
         {
@@ -3499,7 +3499,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_hierarchy(
             DataStreamView &stream,
-            std::vector<Hierarchy> const &value) -> void
+            List<Hierarchy> const &value) -> void
         {
             exchange_list<true, uint32_t>(stream, value, [](auto &data, auto &value)
                                           {
@@ -3642,7 +3642,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
         inline static auto exchange_string_mapping(
             DataStreamView &stream,
-            std::vector<SoundBankReference> const &value) -> void
+            List<SoundBankReference> const &value) -> void
         {
             exchange_raw_constant(stream, 1_ui);
             exchange_list<true, uint32_t>(stream, value, [](auto &data, auto &value)

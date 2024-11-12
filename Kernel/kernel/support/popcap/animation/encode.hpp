@@ -83,7 +83,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
             AnimationImage const &value
         ) -> void
         {
-            stream.writeStringByUint16(String::join(std::vector<std::string>{ value.path, value.id}, vertical_bar));
+            stream.writeStringByUint16(String::join(List<std::string>{ value.path, value.id}, vertical_bar));
             if (k_version >= 4_ui) {
                 stream.writeUint16(value.dimension.width);
                 stream.writeUint16(value.dimension.height);

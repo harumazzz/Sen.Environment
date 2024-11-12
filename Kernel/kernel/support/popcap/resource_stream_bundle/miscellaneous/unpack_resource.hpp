@@ -12,7 +12,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
     {
     protected:
         inline static auto exchange_packet(
-            std::vector<uint8_t> const &packet_data,
+            List<uint8_t> const &packet_data,
             std::string destination) -> void
         {
             auto packet_stream = DataStreamView{packet_data};
@@ -30,10 +30,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             std::string &destination
         ) -> void
         {
-            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto packet_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             ResourceStreamBundle::Unpack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
             auto packet_definition = ResourceStreamGroup::PacketStructure{};
-            auto work_list = std::vector<std::future<void>>{};
+            auto work_list = List<std::future<void>>{};
             for (auto const &it : packet_data_section_view_stored)
             {
                 work_list.emplace_back(std::async(&exchange_packet, it.second, destination));
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             std::string &destination
         ) -> void
         {
-            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto packet_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             ResourceStreamBundle::Unpack::process_whole(stream, definition, manifest, packet_data_section_view_stored);
             auto packet_definition = ResourceStreamGroup::PacketStructure{};
             for (const auto& it : packet_data_section_view_stored) {

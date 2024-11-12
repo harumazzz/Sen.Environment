@@ -20,7 +20,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
             std::string_view source,
             std::string_view global_data_source,
             std::string_view media_source,
-            std::vector<uint32_t> const &media_list) -> void
+            List<uint32_t> const &media_list) -> void
         {
             auto play_music_world_id = Sen::Kernel::Support::WWise::SoundBank::Common::fnv_hash("play_music_world");
             InjectionMusicStruct definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
@@ -160,11 +160,11 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
         {
             struct GroupBank
             {
-                std::vector<Hierarchy> switches;
-                std::vector<Hierarchy> states;
+                List<Hierarchy> switches;
+                List<Hierarchy> states;
             } group_bank;
             SoundBankCreateStruct definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
-            auto exchange_group = [](SoundBankGroup const &data, std::vector<Hierarchy> &value)
+            auto exchange_group = [](SoundBankGroup const &data, List<Hierarchy> &value)
             {
                 auto hierarchy = Hierarchy{};
             };
@@ -194,7 +194,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
                     .project_id = 15202,
                     .padding = 4};
                 soundbank_information.has_hierarchy = true;
-                auto sounbank_event_list = std::vector<Hierarchy>{};
+                auto sounbank_event_list = List<Hierarchy>{};
                 for (auto &soundbank_event : soundbank.events)
                 {
                     assert_conditional(soundbank_event.type == EventActionProperty::Type::play_audio, fmt::format("{}", Language::get("wwise.soundbank.encode.only_support_play_audio_action_event")), "create_soundbank");

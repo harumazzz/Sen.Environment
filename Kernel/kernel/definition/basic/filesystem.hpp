@@ -349,7 +349,7 @@ namespace Sen::Kernel::FileSystem
 	template <typename T> requires CharacterBufferView<T> 
 	inline static auto read_binary(
 		std::string_view filepath
-	) -> std::vector<T> const
+	) -> List<T> const
 	{
 		#if WINDOWS
 		auto file = std::ifstream(String::utf8_to_utf16(fmt::format("\\\\?\\{}",
@@ -361,7 +361,7 @@ namespace Sen::Kernel::FileSystem
 		file.seekg(0, std::ios::end);
 		auto size = static_cast<std::streamsize>(file.tellg());
 		file.seekg(0, std::ios::beg);
-		auto data = std::vector<T>(size);
+		auto data = List<T>(size);
 		assert_conditional(file.read(reinterpret_cast<char*>(data.data()), size), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
 		return data;	
 	}
@@ -371,9 +371,9 @@ namespace Sen::Kernel::FileSystem
 
 	inline static auto read_directory(
 		std::string_view directory_path
-	) -> std::vector<std::string> const
+	) -> List<std::string> const
 	{
-		auto result = std::vector<std::string>{};
+		auto result = List<std::string>{};
 		#if WINDOWS
 			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
 		#else
@@ -394,9 +394,9 @@ namespace Sen::Kernel::FileSystem
 
 	inline static auto read_directory_only_file(
 		std::string_view directory_path
-	) -> std::vector<string> const
+	) -> List<string> const
 	{
-		auto result = std::vector<string>{};
+		auto result = List<string>{};
 		#if WINDOWS
 				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
 		#else
@@ -419,9 +419,9 @@ namespace Sen::Kernel::FileSystem
 
 	inline static auto read_directory_only_directory(
 		std::string_view directory_path
-	) -> std::vector<std::string> const
+	) -> List<std::string> const
 	{
-		auto result = std::vector<std::string>{};
+		auto result = List<std::string>{};
 		#if WINDOWS
 				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
 		#else
@@ -445,9 +445,9 @@ namespace Sen::Kernel::FileSystem
 
 	inline static auto read_whole_directory(
 		std::string_view directory_path
-	) -> std::vector<std::string> const
+	) -> List<std::string> const
 	{
-		auto result = std::vector<string>{};
+		auto result = List<string>{};
 		#if WINDOWS
 				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
 		#else
@@ -485,7 +485,7 @@ namespace Sen::Kernel::FileSystem
 	template <typename T> requires CharacterBufferView<T>
 	inline static auto write_binary(
 		std::string_view filepath,
-		const std::vector<T> & data
+		const List<T> & data
 	) -> void
 	{
 		#if WINDOWS
@@ -622,17 +622,17 @@ namespace Sen::Kernel::FileSystem
 
 			auto read_all (
 
-			) -> std::vector<uint8_t>
+			) -> List<uint8_t>
 			{
 				auto file_size = size();
-				auto data = std::vector<uint8_t>{};
+				auto data = List<uint8_t>{};
 				data.resize(file_size);
 				std::fread(data.data(), 1, file_size, thiz.file.get());
 				return data;
 			}
 
 			auto write_all (
-				const std::vector<uint8_t>& data
+				const List<uint8_t>& data
 			) -> void
 			{
 				std::fwrite(reinterpret_cast<char const*>(data.data()), 1, data.size(), thiz.file.get());

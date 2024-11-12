@@ -17,7 +17,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
         DataStreamView stream;
 
         inline auto read_track_nodes(
-            std::vector<ParticlesTrackNode> &value) -> bool
+            List<ParticlesTrackNode> &value) -> bool
         {
             auto count = static_cast<size_t>(stream.readInt32());
             if (count == 0_size)
@@ -54,7 +54,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 
         inline auto read_track_nodes_big(
             DataStreamViewBigEndian &stream_big,
-            std::vector<ParticlesTrackNode> &value) -> bool
+            List<ParticlesTrackNode> &value) -> bool
         {
             auto count = static_cast<size_t>(stream_big.readInt32());
             if (count == 0_size)
@@ -868,7 +868,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
         }
 
         explicit Decode(
-            std::vector<uint8_t> const &it) : stream(it)
+            List<uint8_t> const &it) : stream(it)
         {
         }
 

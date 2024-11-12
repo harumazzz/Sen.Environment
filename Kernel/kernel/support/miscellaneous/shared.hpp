@@ -18,12 +18,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
     inline static constexpr auto k_begin_index = 0_size;
 
     inline auto sub_bytes(
-        std::vector<uint8_t> const &data,
+        List<uint8_t> const &data,
         size_t const &begin,
-        size_t const &size) -> std::vector<uint8_t>
+        size_t const &size) -> List<uint8_t>
     {
         assert(begin + size <= data.size());
-        auto bytes = std::vector<std::uint8_t>{};
+        auto bytes = List<std::uint8_t>{};
         bytes.assign(data.begin() + begin, data.begin() + begin + size);
         return bytes;
     }
@@ -39,7 +39,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
 
     inline auto write_bytes(
         std::string const &destination,
-        std::vector<uint8_t> const &data
+        List<uint8_t> const &data
     ) -> void
     {
         FileSystem::create_directory(Path::getParents(destination));
@@ -205,7 +205,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
 
     template <typename T>
     inline auto async_process_list(
-        std::vector<std::future<T>> &data) -> void
+        List<std::future<T>> &data) -> void
     {
         for (auto &element : data)
         {
@@ -260,7 +260,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
                      (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
     inline static auto exchange_list(
         DataStreamView &stream,
-        std::vector<Type> &value,
+        List<Type> &value,
         Exchanger const &exchanger,
         Size... size) -> void
     {
@@ -281,7 +281,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
                      (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
     inline static auto exchange_list(
         DataStreamView &stream,
-        std::vector<Type> const &value,
+        List<Type> const &value,
         Exchanger const &exchanger) -> void
     {
         static_assert(WriteSize == true || WriteSize == false, "WriteSize must be true or false");
@@ -321,12 +321,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
                 size_t inherit_length;
                 bool has;
             };
-            auto string_list = std::vector<std::string>{};
+            auto string_list = List<std::string>{};
             for (auto &element : value)
             {
                 string_list.emplace_back(element.first);
             }
-            auto work_option = std::vector<WorkOption>(string_list.size());
+            auto work_option = List<WorkOption>(string_list.size());
             if (!string_list.empty())
             {
                 work_option[0].inherit_length = k_none_size;
@@ -336,7 +336,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
             for (auto index : Range(string_list.size()))
             {
                 auto &element_key = string_list[index];
-                auto a_string_has_child = std::vector<bool>(element_key.size() + 1);
+                auto a_string_has_child = List<bool>(element_key.size() + 1);
                 for (auto index_1 : Range(static_cast<size_t>(index + 1), string_list.size(), size_t{1}))
                 {
                     if (!work_option[index_1].has)
@@ -380,12 +380,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
                 bool has;
             };
             auto resource_information_section_offset = stream.write_pos;
-            auto string_list = std::vector<std::string>{};
+            auto string_list = List<std::string>{};
             for (auto &element : value)
             {
                 string_list.emplace_back(element.first);
             }
-            auto work_option = std::vector<WorkOption>(string_list.size());
+            auto work_option = List<WorkOption>(string_list.size());
             if (!string_list.empty())
             {
                 work_option[0] = WorkOption{
@@ -395,7 +395,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
                 for (auto index : Range(string_list.size()))
                 {
                     auto &element_key = string_list[index];
-                    auto current_string_has_child = std::vector<bool>(element_key.size() + 1);
+                    auto current_string_has_child = List<bool>(element_key.size() + 1);
                     for (auto index_1 : Range(static_cast<size_t>(index + 1), string_list.size(), size_t{1}))
                     {
                         if (!work_option[index_1].has)

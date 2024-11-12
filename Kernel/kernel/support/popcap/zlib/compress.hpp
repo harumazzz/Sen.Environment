@@ -22,8 +22,8 @@ namespace Sen::Kernel::Support::PopCap::Zlib {
 			*/
 
 			virtual auto compress(
-				const std::vector<unsigned char> & source
-			) -> std::vector<unsigned char> = 0;
+				const List<unsigned char> & source
+			) -> List<unsigned char> = 0;
 
 			// constructor
 
@@ -64,7 +64,7 @@ namespace Sen::Kernel::Support::PopCap::Zlib {
 		 */
 
 		inline auto compress(
-			const std::vector<unsigned char> &source) -> std::vector<unsigned char> override final
+			const List<unsigned char> &source) -> List<unsigned char> override final
 		{
 			auto sen = DataStreamView{};
 			// magic

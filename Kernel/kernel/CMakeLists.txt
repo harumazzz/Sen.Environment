@@ -23,10 +23,8 @@ add_library(
 	./definition/basic/json.hpp
 	./definition/basic/buffer.hpp
 	./definition/basic/array.hpp
-	./definition/basic/list.hpp
 	./definition/basic/system.hpp
 	./definition/basic/thread.hpp
-	./definition/basic/collections.hpp
 	./definition/basic/json_writer.hpp
 	./definition/basic/apng_maker.hpp
 	./definition/basic/utility.hpp
@@ -222,11 +220,12 @@ target_include_directories(
 )
 
 if (MSVC)
-target_link_libraries(
-	${PROJECT_NAME} PRIVATE
-	dirent
-)
+	target_link_libraries(
+		${PROJECT_NAME} PRIVATE
+		dirent
+	)
 endif()
+
 target_link_libraries(
 	${PROJECT_NAME} PRIVATE
 	md5

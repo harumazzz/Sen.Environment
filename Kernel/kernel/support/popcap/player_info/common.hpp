@@ -204,8 +204,8 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
             int level;
             int coins;
             int finished_adventure;
-            std::vector<int> challenge_records;
-            std::vector<int> purchases;
+            List<int> challenge_records;
+            List<int> purchases;
             int play_time_active_player;
             int play_time_inactive_player;
             int has_used_cheat_keys;
@@ -227,17 +227,17 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
             int has_seen_upsell;
             int place_holder_player_stats;
             int num_potted_plants;
-            std::vector<PottedPlantStructure> potted_plants;
-            std::vector<bool> earned_achievements;
-            std::vector<bool> shown_achievements;
+            List<PottedPlantStructure> potted_plants;
+            List<bool> earned_achievements;
+            List<bool> shown_achievements;
             bool accepted_zombatar_license;
-            std::vector<ZombatarStructure> zombatars;
+            List<ZombatarStructure> zombatars;
             bool display_save_image_messenge;
             // aditional
             bool has_zen_garden;
             bool has_achievement;
             bool has_zombatar;
-            std::vector<uint8_t> expand;
+            List<uint8_t> expand;
         };
 
         inline static auto exchange_to_version(

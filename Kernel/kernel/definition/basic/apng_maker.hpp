@@ -3,6 +3,7 @@
 #include "kernel/definition/assert.hpp"
 #include "kernel/definition/library.hpp"
 #include "kernel/definition/macro.hpp"
+#include "kernel/definition/basic/array.hpp"
 #include "kernel/definition/basic/buffer.hpp"
 #include "kernel/definition/basic/string.hpp"
 #include "kernel/definition/encryption/crc.hpp"
@@ -11,7 +12,7 @@ namespace Sen::Kernel::Definition
 {
     struct APNGMakerSetting
     {
-        std::vector<std::uint32_t> delay_frames_list{};
+        List<std::uint32_t> delay_frames_list{};
         std::uint32_t loop{};
         std::uint32_t width{};
         std::uint32_t height{};
@@ -26,7 +27,7 @@ namespace Sen::Kernel::Definition
             ) = default;
 
         APNGMakerSetting(
-            const std::vector<std::uint32_t> &delay_frames_list,
+            const List<std::uint32_t> &delay_frames_list,
             std::uint32_t loop,
             std::uint32_t width,
             std::uint32_t height,
@@ -75,7 +76,7 @@ namespace Sen::Kernel::Definition
 
         struct ImageData
         {
-            std::vector<std::vector<std::uint32_t>> pixel_list;
+            List<List<std::uint32_t>> pixel_list;
             ImageHeader meta_data;
         };
 
@@ -87,10 +88,10 @@ namespace Sen::Kernel::Definition
 
         inline static auto find_idat(
             DataStreamViewBigEndian &stream,
-            std::vector<std::vector<std::uint32_t>> &pixel_list) -> void
+            List<List<std::uint32_t>> &pixel_list) -> void
         {
 
-            auto pixel = std::vector<uint32_t>{};
+            auto pixel = List<uint32_t>{};
             auto found = 0;
             while (stream.read_pos < stream.size() - 12ull)
             {
@@ -115,15 +116,15 @@ namespace Sen::Kernel::Definition
 
         inline static auto to_uint32_vector(
             DataStreamViewBigEndian &stream,
-            std::vector<uint32_t> &pixel_list) -> void
+            List<uint32_t> &pixel_list) -> void
         {
 
             return;
         }
 
         inline static auto load_image_path(
-            const std::vector<std::string> &image_path_list,
-            std::vector<ImageData> &image_data_list) -> void
+            const List<std::string> &image_path_list,
+            List<ImageData> &image_data_list) -> void
         {
             for (const auto &image_path : image_path_list)
             {
@@ -148,16 +149,16 @@ namespace Sen::Kernel::Definition
 
     public:
         inline static auto process_fs(
-            const std::vector<std::string> &image_path_list,
+            const List<std::string> &image_path_list,
             std::string_view destination,
             APNGMakerSetting *setting) -> void
         {
-            auto image_data_list = std::vector<ImageData>{};
+            auto image_data_list = List<ImageData>{};
             load_image_path(image_path_list, image_data_list);
             if (setting->width == 0 || setting->height == 0)
             {
-                auto max_width = std::vector<uint32_t>{};
-                auto max_height = std::vector<uint32_t>{};
+                auto max_width = List<uint32_t>{};
+                auto max_height = List<uint32_t>{};
                 for (auto &image_data : image_data_list)
                 {
                     max_width.emplace_back(image_data.meta_data.width);

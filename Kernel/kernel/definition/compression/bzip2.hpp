@@ -52,10 +52,10 @@ namespace Sen::Kernel::Definition::Compression {
 			*/
 			template <typename T> requires std::is_integral<T>::value
 			inline static auto compress(
-				const std::vector<unsigned char>& input,
+				const List<unsigned char>& input,
 				T block_size,
 				T work_factor
-			) -> std::vector<unsigned char> 
+			) -> List<unsigned char> 
 			{
 				auto bzerror = int{};
 				auto strm = bz_stream{};
@@ -65,7 +65,7 @@ namespace Sen::Kernel::Definition::Compression {
 				BZ2_bzCompressInit(&strm, block_size, 0, work_factor);
 				strm.next_in = (char*)(input.data());
 				strm.avail_in = input.size();
-				auto result = std::vector<unsigned char>{};
+				auto result = List<unsigned char>{};
 				unsigned char outbuffer[CHUNK];
 				do {
 					strm.next_out = (char*)outbuffer;
@@ -86,8 +86,8 @@ namespace Sen::Kernel::Definition::Compression {
 			 * return: result after uncompress
 			*/
 			inline static auto uncompress(
-				const std::vector<unsigned char> & input
-			) -> std::vector<unsigned char> 
+				const List<unsigned char> & input
+			) -> List<unsigned char> 
 			{
 				auto bzerror = int{};
 				auto strm = bz_stream{
@@ -98,7 +98,7 @@ namespace Sen::Kernel::Definition::Compression {
 				BZ2_bzDecompressInit(&strm, 0, 0);
 				strm.next_in = (char*)input.data();
 				strm.avail_in = static_cast<unsigned int>(input.size());
-				auto result = std::vector<unsigned char>{};
+				auto result = List<unsigned char>{};
 				unsigned char outbuffer[4096];
 				do {
 					strm.next_out = reinterpret_cast<char*>(outbuffer);

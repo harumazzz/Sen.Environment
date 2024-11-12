@@ -66,7 +66,7 @@ namespace Sen::Kernel::Definition::Encryption
 				std::string_view key,
 				std::string_view iv,
 				T plain_size
-			) -> std::vector<unsigned char>
+			) -> List<unsigned char>
 			{
 				static_assert(mode == Mode::CBC || mode == Mode::CFB || mode == Mode::ECB, "mode is invalid, expected cbc, cfb or ecb");
 				assert_conditional(is_valid_block_size<std::size_t>(key.size() * 8), fmt::format("{}", Language::get("rijndael.key_size_is_not_valid")), "encrypt");
@@ -77,7 +77,7 @@ namespace Sen::Kernel::Definition::Encryption
 				rijndael->MakeKey(key.data(), iv.data(), static_cast<int>(key.size()), static_cast<int>(iv.size()));
 				auto result = std::make_unique<char[]>(plain_size);
 				rijndael->Encrypt(plain, result.get(), plain_size, static_cast<int>(mode));
-				auto m_result = std::vector<unsigned char>{reinterpret_cast<unsigned char*>(result.get()), reinterpret_cast<unsigned char*>(result.get() + plain_size)};
+				auto m_result = List<unsigned char>{reinterpret_cast<unsigned char*>(result.get()), reinterpret_cast<unsigned char*>(result.get() + plain_size)};
 				return m_result;
 			}
 
@@ -95,7 +95,7 @@ namespace Sen::Kernel::Definition::Encryption
 				std::string_view key,
 				std::string_view iv,
 				T cipher_len
-			) -> std::vector<unsigned char>
+			) -> List<unsigned char>
 			{
 				static_assert(mode == Mode::CBC || mode == Mode::CFB || mode == Mode::ECB, "mode is invalid, expected cbc, cfb or ecb");
 				assert_conditional(is_valid_block_size<std::size_t>(key.size() * 8), fmt::format("{}", Language::get("rijndael.key_size_is_not_valid")), "decrypt");
@@ -107,7 +107,7 @@ namespace Sen::Kernel::Definition::Encryption
 				rijndael->MakeKey(key.data(), iv.data(), static_cast<int>(key.size()), static_cast<int>(iv.size()));
 				auto result = std::make_unique<char[]>(cipher_len);
 				rijndael->Decrypt(cipher, result.get(), cipher_len, static_cast<int>(mode));
-				auto m_result = std::vector<unsigned char>{reinterpret_cast<unsigned char*>(result.get()), reinterpret_cast<unsigned char*>(result.get() + cipher_len)};
+				auto m_result = List<unsigned char>{reinterpret_cast<unsigned char*>(result.get()), reinterpret_cast<unsigned char*>(result.get() + cipher_len)};
 				return m_result;
 			}
 

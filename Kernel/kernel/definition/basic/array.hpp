@@ -6,286 +6,73 @@
 
 namespace Sen::Kernel {
 
-	/**
-	 * Array class: Only for static array
-	*/
+	// Vector -> List
 
-	template <class T, std::size_t n_size> 
-	class Array {
+	template <typename T>
+	using List = std::vector<T>;
 
-		public:
+	// Array -> Array
 
-			std::array<T, n_size> value;
+	template <typename T, auto size>
+	using Array = std::array<T, size>;
+	
+	template <typename T> requires std::is_integral<T>::value
+	inline static auto _make_list (
+		T* data, 
+		std::size_t size, 
+		std::function<void(T* data)> finalizer
+	) -> List<T> 
+	{
+		auto result = _make_list(data, size);  
+		finalizer(data);
+		return result;
+	}
 
-			// constructor
+	template <typename T> requires std::is_integral<T>::value
+	inline static auto _make_list (
+		T* data, 
+		std::size_t size
+	) -> List<T> 
+	{
+		auto result = List<T>{};
+		result.assign(data, data + size);  
+		return result;
+	}
 
-			Array(
+	template <typename T>
+	inline static auto make_list(
+		T* data, 
+		std::size_t size,
+		std::function<void(T* data)> finalizer
+	) -> List<T>
+	{
+		if constexpr (std::is_same<T, char>::value or std::is_same<T, uint8_t>::value) {
+			return _make_list(data, size, finalizer);
+		}
+		else {
+			auto result = make_list(data, size);
+			finalizer(data);
+			return result;
+		}
+	}
 
-			) : value{}
-			{
-
+	template <typename T>
+	inline static auto make_list(
+		T* data, 
+		std::size_t size
+	) -> List<T>
+	{
+		if constexpr (std::is_same<T, char>::value or std::is_same<T, uint8_t>::value) {
+			return _make_list(data, size);
+		}
+		else {
+			auto result = List<T>{};
+			result.reserve(size);
+			for (auto i : Range<std::size_t>(size)) {
+				result.push_back(data[i]);  
 			}
+			return result;
+		}
+	}
 
-			// destructor
-
-			~Array(
-
-			) = default;
-
-			// fill
-			
-			inline auto fill(
-				T value
-			) -> void
-			{
-				for(auto i : Range<size_t>(thiz.value.size())){
-					thiz[i] = value;
-				}
-				return;
-			}
-
-			// constructor
-
-			Array(
-				const Array & that
-			) : Array{}
-			{
-				std::copy(that.begin(), that.end(), thiz.value.begin());
-			}
-
-			// constructor
-
-			Array(
-				std::initializer_list<T> iArray
-			) 
-			{
-				std::copy(iArray.begin(), iArray.end(), value.begin());
-			}
-
-			// begin
-
-			inline auto begin(
-
-			) -> decltype(value.begin())
-			{
-				return thiz.value.begin();
-			}
-
-			// end
-
-			inline auto end(
-
-			) -> decltype(value.end())
-			{
-				return thiz.value.end();
-			}
-
-			// operator []
-
-			inline auto operator [](
-				size_t index
-			) -> T&
-			{
-				return thiz.value.at(index);
-			}
-
-			// operator =
-
-			inline auto operator =(
-				Array & that
-			) -> Array
-			{
-				auto new_array = Array<T, that.value.size()>{};
-				std::copy(that.begin(), that.end(), new_array.value.begin());
-				return new_array;
-			}
-
-			// size
-
-			inline auto size(
-
-			) const -> size_t
-			{
-				return thiz.value.size();
-			}
-
-			// operator ==
-
-			inline auto operator ==(
-				Array & that
-			) -> bool
-			{
-				if(thiz.size() != that.size()){
-					return false;
-				}
-				for(auto i : Range<size_t>(that.size())){
-					if(that[i] != thiz[i]){
-						return false;
-					}
-				}
-				return true;
-			}
-
-			// operator !=
-
-			inline auto operator !=(
-				Array & that
-			) -> bool
-			{
-				return !(thiz == that);
-			}
-
-			// for each
-			
-			inline auto forEach(
-				std::function<void(T& e, size_t i)> method
-			) -> void
-			{
-				for(auto i : Range<size_t>(thiz.value.size())){
-					method(thiz[i], i);
-				}
-				return;
-			}
-
-			// for each
-
-			inline auto forEach(
-				std::function<void(T& e)> method
-			) -> void
-			{
-				for(auto & c : thiz.value){
-					method(c);
-				}
-				return;
-			}
-
-			// map
-
-			template <typename P>
-			inline auto map(
-				std::function<P(T& e)> method
-			) -> Array<P, n_size>
-			{
-				auto arr = std::array<P, thiz.value.size()>();
-				for(auto i : Range<size_t>(thiz.value.size())){
-					arr[i] = method(thiz[i]);
-				}
-				return Array{arr};
-			}
-
-			
-			// map
-
-			template <typename P>
-			inline auto map(
-				std::function<P(T& e, size_t index)> method
-			) -> Array<P, n_size>
-			{
-				auto arr = Array<P, thiz.value.size()>{};
-				for(auto i : Range<size_t>(thiz.value.size())){
-					arr[i] = method(thiz[i], i);
-				}
-				return arr;
-			}
-
-			/**
-			 * every
-			*/
-
-			inline auto every(
-				std::function<bool(T& e)> method
-			) -> bool
-			{
-				for(auto & c : thiz){
-					if(!method(c)){
-						return false;
-					}
-				}
-				return true;
-			}
-
-			/**
-			 * every
-			*/
-
-			inline auto every(
-				std::function<bool(T& e, size_t index)> method
-			) -> bool
-			{
-				for(auto i : Range<size_t>(thiz.size())){
-					if(!method(thiz[i], i)){
-						return false;
-					}
-				}
-				return true;
-			}
-
-			/**
-			 * Sort method
-			*/
-
-			template <typename P>
-			inline auto sort(
-				std::function<P(T& a, T& b)> method
-			) -> void
-			{
-				std::sort(thiz.begin(), thiz.end(), method);
-				return;
-			}
-
-			/**
-			 * some
-			*/
-
-			inline auto some(
-				std::function<bool(T& e)> method
-			) -> bool
-			{
-				for(auto & c : thiz){
-					if(method(c)){
-						return true;
-					}
-				}
-				return false;
-			}
-
-			/**
-			 * some
-			*/
-
-			inline auto some(
-				std::function<bool(T& e, size_t index)> method
-			) -> bool
-			{
-				for(auto i : Range<size_t>(thiz.size())){
-					if(method(thiz[i], i)){
-						return true;
-					}
-				}
-				return false;
-			}
-
-			/**
-			 * <<
-			*/
-
-			friend auto operator << (
-				std::ostream& os, 
-				Array<T, n_size>& array
-			) -> std::ostream&
-			{
-				os << "[";
-				for (auto i : Range<size_t>(array.size()))
-				{
-					if(i == array.size() - 1){
-						os << array[i] << "";
-					}
-					else{
-						os << array[i] << ", ";
-					}
-				}
-				os << "]";
-				return os;
-			}
-	};
 }

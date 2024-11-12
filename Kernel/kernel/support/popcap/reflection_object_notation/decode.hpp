@@ -13,8 +13,8 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         inline static auto exchange_value(
             DataStreamView &stream,
             JsonWriter &value,
-            std::vector<std::string> &native_string_index,
-            std::vector<std::string> &unicode_string_index,
+            List<std::string> &native_string_index,
+            List<std::string> &unicode_string_index,
             TypeIdentifierEnumeration::Type const &type) -> void
         {
             static_assert(write_key == true || write_key == false, "write_key must be true or false");
@@ -348,8 +348,8 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto version = stream.readUint32();
                 assert_conditional(version == k_version, String::format(fmt::format("{}", Language::get("popcap.rton.version_is_invalid")), std::to_string(version)), "process_whole");
             }
-            auto native_string_index = std::vector<std::string>{};
-            auto unicode_string_index = std::vector<std::string>{};
+            auto native_string_index = List<std::string>{};
+            auto unicode_string_index = List<std::string>{};
             exchange_value<false>(stream, value, native_string_index, unicode_string_index, TypeIdentifierEnumeration::Type::object_begin);
             assert_conditional(stream.readString(4) == k_done_identifier, fmt::format("{}", Language::get("popcap.rton.done_invalid")), "process_whole");
             return;

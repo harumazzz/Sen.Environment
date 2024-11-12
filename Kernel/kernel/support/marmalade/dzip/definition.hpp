@@ -42,7 +42,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
     struct Resource
     {
         std::string path;
-        std::vector<Chunk> chunk;
+        List<Chunk> chunk;
     };
 
     inline auto to_json(
@@ -65,7 +65,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
 
     struct Package
     {
-        std::vector<Resource> resource;
+        List<Resource> resource;
     };
 
     inline auto to_json(

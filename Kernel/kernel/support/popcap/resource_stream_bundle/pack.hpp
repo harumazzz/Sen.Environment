@@ -90,7 +90,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                             resource_image_property_detail_manifest_information_structure.cols = resource_manifest.property["cols"_sv].get<uint16_t>();
                             resource_image_property_detail_manifest_information_structure.parent_offset = set_string(resource_manifest.property["parent"_sv].get<std::string>());
                         }
-                        auto resource_property_information_structure_list = std::vector<ResourcePropertyDetailManifestInformation>{};
+                        auto resource_property_information_structure_list = List<ResourcePropertyDetailManifestInformation>{};
                         for (auto &[property_id, property_value] : resource_manifest.property.items())
                         {
                             if (!(resource_detail_manifest_information_structure.type == 0_us && std::find(image_property_key_list.begin(), image_property_key_list.end(), property_id) != image_property_key_list.end()))
@@ -132,7 +132,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
         }
 
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value
         inline static auto process_package(
             DataStreamView &stream,
             BundleStructure const &definition,
@@ -158,8 +158,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                 simple_group_information_structure.subgroup_count = static_cast<uint32_t>(group_information.subgroup.size());
                 for (auto &[subgroup_id, subgroup_information] : group_information.subgroup)
                 {
-                    auto packet_data = std::vector<uint8_t>{};
-                    if constexpr (std::is_same_v<Args, std::map<std::string, std::vector<uint8_t>>>)
+                    auto packet_data = List<uint8_t>{};
+                    if constexpr (std::is_same_v<Args, std::map<std::string, List<uint8_t>>>)
                     {
                         packet_data = std::move(args.at(subgroup_id));
                     }
@@ -371,7 +371,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 
     public:
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value
         inline static auto process_whole(
             DataStreamView &stream,
             BundleStructure const &definition,

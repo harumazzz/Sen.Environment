@@ -3,6 +3,7 @@
 #include "kernel/definition/macro.hpp"
 #include "kernel/definition/library.hpp"
 #include "kernel/definition/assert.hpp"
+#include "kernel/definition/basic/array.hpp"
 
 namespace Sen::Kernel {
 	#pragma region concept
@@ -19,9 +20,6 @@ concept IsValidArguments = true;
 			using ThreadLimit = ThreadCount;
 			using CurrentThread = std::size_t;
 			using Mutex = std::mutex;
-		private:
-			template <typename MType>
-			using List = std::vector<MType>;
 		protected:
 			List<std::function<T(Args...)>> threads{};
 			CurrentThread _current_pointer{};

@@ -84,10 +84,10 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto color = image.color();
-			auto result = std::vector<unsigned char>{};
+			auto result = List<unsigned char>{};
 			result.reserve(color.red.size() + color.green.size() + color.blue.size() + color.alpha.size());
 			for (auto i : Range<size_t>(color.red.size()))
 			{
@@ -105,10 +105,10 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto argb(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto color = image.color();
-			auto result = std::vector<unsigned char>{};
+			auto result = List<unsigned char>{};
 			result.reserve(color.red.size() + color.green.size() + color.blue.size() + color.alpha.size());
 			for (auto i : Range<size_t>(color.red.size()))
 			{
@@ -121,7 +121,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgba_4444(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -139,7 +139,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_565(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -156,7 +156,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgba_5551(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -176,7 +176,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgba_4444_tiled(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -209,7 +209,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_565_tiled(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -241,7 +241,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgba_5551_tiled(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -274,7 +274,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_etc1(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto data = image.data();
 			auto view = std::make_unique<uint8_t[]>(static_cast<size_t>(image.area() * 3)); 
@@ -290,7 +290,7 @@ namespace Sen::Kernel::Support::Texture
 					view[index++] = data[pixel + 2];
 				}
 			}
-			auto destination = std::vector<uint8_t>(encoded_size);
+			auto destination = List<uint8_t>(encoded_size);
 			etc1_encode_image(view.get(), static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height), 3_ui, static_cast<uint32_t>(image.width * 3), destination.data());
 			auto stream = DataStreamView{};
 			stream.writeBytes(destination);
@@ -298,7 +298,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_etc1_a_8(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -317,14 +317,14 @@ namespace Sen::Kernel::Support::Texture
 					stream.writeUint8(data[pixel + 3]);
 				}
 			}
-			auto destination = std::vector<uint8_t>(encoded_size);
+			auto destination = List<uint8_t>(encoded_size);
 			etc1_encode_image(view.get(), static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height), 3_ui, static_cast<uint32_t>(image.width * 3), destination.data());
 			stream.writeBytes(destination, 0_size);
 			return stream.toBytes();
 		}
 
 		inline static auto rgb_etc1_a_palette(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto data = image.data();
 			auto view = std::make_unique<uint8_t[]>(static_cast<size_t>(image.area() * 3)); 
@@ -340,7 +340,7 @@ namespace Sen::Kernel::Support::Texture
 					view[index++] = data[pixel + 2];
 				}
 			}
-			auto destination = std::vector<uint8_t>(encoded_size);
+			auto destination = List<uint8_t>(encoded_size);
 			etc1_encode_image(view.get(), static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height), 3_ui, static_cast<uint32_t>(image.width * 3), destination.data());
 			auto stream = DataStreamView{};
 			stream.writeBytes(destination);
@@ -369,7 +369,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgba_pvrtc_4bpp(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto newWidth = image.width;
 			auto newHeight = image.height;
@@ -393,7 +393,7 @@ namespace Sen::Kernel::Support::Texture
 			{
 				newWidth = newHeight = Math::compare(newWidth, newHeight);
 			}
-			auto new_image = Image<int>(0, 0, newWidth, newWidth, std::vector<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
+			auto new_image = Image<int>(0, 0, newWidth, newWidth, List<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
 			auto source_data = new_image.data();
 			auto image_data = image.data();
 			for (auto j : Range<int>(image.height))
@@ -418,7 +418,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_pvrtc_4bpp(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto newWidth = image.width;
 			auto newHeight = image.height;
@@ -442,7 +442,7 @@ namespace Sen::Kernel::Support::Texture
 			{
 				newWidth = newHeight = Math::compare(newWidth, newHeight);
 			}
-			auto new_image = Image<int>(0, 0, newWidth, newWidth, std::vector<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
+			auto new_image = Image<int>(0, 0, newWidth, newWidth, List<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
 			auto source_data = new_image.data();
 			auto image_data = image.data();
 			for (auto j : Range<int>(image.height))
@@ -467,7 +467,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto rgb_pvrtc_4bpp_a8(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto newWidth = image.width;
 			auto newHeight = image.height;
@@ -491,7 +491,7 @@ namespace Sen::Kernel::Support::Texture
 			{
 				newWidth = newHeight = Math::compare(newWidth, newHeight);
 			}
-			auto new_image = Image<int>(0, 0, newWidth, newWidth, std::vector<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
+			auto new_image = Image<int>(0, 0, newWidth, newWidth, List<uint8_t>(pixel_area_rgba(newWidth, newWidth), 0x00));
 			auto source_data = new_image.data();
 			auto image_data = image.data();
 			for (auto j : Range<int>(image.height))
@@ -520,7 +520,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto a_8(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -532,7 +532,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto argb_1555(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -544,7 +544,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto argb_4444(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -556,7 +556,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto l_8(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -568,7 +568,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto la_44(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();
@@ -580,7 +580,7 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto la_88(
-			const Image<int> &image) -> std::vector<unsigned char>
+			const Image<int> &image) -> List<unsigned char>
 		{
 			auto stream = DataStreamView{};
 			auto data = image.data();

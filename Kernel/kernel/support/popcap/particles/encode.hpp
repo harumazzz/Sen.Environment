@@ -16,8 +16,8 @@ namespace Sen::Kernel::Support::PopCap::Particles
 
 		template <auto UseVariant>
 		inline auto encode_zlib(
-			const std::vector<unsigned char> &data
-		) -> std::vector<unsigned char>
+			const List<unsigned char> &data
+		) -> List<unsigned char>
 		{
 			static_assert(sizeof(UseVariant) == sizeof(bool));
 			static_assert(UseVariant == true or UseVariant == false);
@@ -26,7 +26,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 		}
 
 		inline auto write_track_nodes(
-			const std::vector<ParticlesTrackNode> &data) -> void
+			const List<ParticlesTrackNode> &data) -> void
 		{
 			stream.writeInt32(static_cast<int32_t>(data.size()));
 			for (auto &node : data)
@@ -42,7 +42,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 
 		inline auto write_track_nodes_big(
 			DataStreamViewBigEndian &stream_big,
-			const std::vector<ParticlesTrackNode> &data) -> void
+			const List<ParticlesTrackNode> &data) -> void
 		{
 			stream_big.writeInt32(static_cast<int32_t>(data.size()));
 			for (auto &node : data)

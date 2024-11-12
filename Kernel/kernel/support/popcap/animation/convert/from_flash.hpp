@@ -234,7 +234,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		}
 
 		inline static auto exchange_frame_node(
-			std::vector<AnimationFrame> &frame_list,
+			List<AnimationFrame> &frame_list,
 			FrameNodeStructure &frame_node_structure) -> void
 		{
 			auto model = Model{};
@@ -523,7 +523,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		}
 
 		inline static auto add_frame_if_need(
-			std::vector<AnimationFrame> &frame_list,
+			List<AnimationFrame> &frame_list,
 			int const &last_label_frame) -> void
 		{
 			auto frame_list_last_index = frame_list.size();
@@ -615,7 +615,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
 		inline static auto exchange_sprite_duplicate(
 			std::map<std::string, SpriteInfo> const &sprite,
-			std::vector<AnimationSprite> &sprite_list) -> void
+			List<AnimationSprite> &sprite_list) -> void
 		{
 			for (auto &[sprite_name, sprite_info] : sprite)
 			{

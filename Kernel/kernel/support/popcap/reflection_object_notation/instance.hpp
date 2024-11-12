@@ -59,9 +59,9 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         }
 
         inline static auto decode_fs_as_multiple_threads(
-            const std::vector<std::vector<std::string>> &paths) -> void
+            const List<List<std::string>> &paths) -> void
         {
-            auto threads = std::vector<std::thread>{};
+            auto threads = List<std::thread>{};
             auto file_mutexes = std::map<std::string, std::mutex>{};
             for (const auto &data : paths)
             {
@@ -126,9 +126,9 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         }
 
         inline static auto encode_fs_as_multiple_threads(
-            const std::vector<std::vector<std::string>> &paths) -> void
+            const List<List<std::string>> &paths) -> void
         {
-            auto threads = std::vector<std::thread>{};
+            auto threads = List<std::thread>{};
             auto file_mutexes = std::map<std::string, std::mutex>{};
             for (const auto &data : paths)
             {

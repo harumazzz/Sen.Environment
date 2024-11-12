@@ -13,7 +13,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
     {
     protected:
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value
         inline static auto process_package(
             DataStreamView &stream,
             PacketStructure const &definition,
@@ -33,8 +33,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             for (auto &resource_definition : definition.resource)
             {
                 auto resource_definition_path = toupper_back(String::to_windows_style(resource_definition.path));
-                auto resource_data = std::vector<uint8_t>{};
-                if constexpr (std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value)
+                auto resource_data = List<uint8_t>{};
+                if constexpr (std::is_same<Args, std::map<std::string, List<uint8_t>>>::value)
                 {
                     resource_data = std::move(args.at(resource_definition_path));
                 }
@@ -67,9 +67,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             stream.writeNull(compute_padding_size(stream.write_pos, k_padding_unit_size));
             information_structure_header.information_section_size = static_cast<uint32_t>(stream.write_pos);
             packet_compression_to_data(information_structure_header.resource_data_section_compression, definition.compression);
-            for (auto &current_resource_type : std::vector<std::string_view>{k_general_type_string, k_texture_type_string})
+            for (auto &current_resource_type : List<std::string_view>{k_general_type_string, k_texture_type_string})
             {
-                auto resource_data = resource_data_section_view_stored.contains(current_resource_type) ? resource_data_section_view_stored[current_resource_type].toBytes() : std::vector<uint8_t>{};
+                auto resource_data = resource_data_section_view_stored.contains(current_resource_type) ? resource_data_section_view_stored[current_resource_type].toBytes() : List<uint8_t>{};
                 auto resource_padding_size = k_none_size;
                 auto resource_data_section_offset = static_cast<uint32_t>(stream.write_pos);
                 auto resource_data_section_size_original = static_cast<uint32_t>(resource_data.size());
@@ -111,7 +111,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
     public:
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value
         inline static auto process_whole(
             DataStreamView &stream,
             PacketStructure const &value,

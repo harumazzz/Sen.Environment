@@ -8,7 +8,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 	using String = std::string;
 
 	template <typename T>
-	using List = std::vector<T>;
+	using List = List<T>;
 
 	template <typename T, size_t n>
 	using Array = std::array<T, n>;

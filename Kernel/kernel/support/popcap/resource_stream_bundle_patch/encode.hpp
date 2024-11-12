@@ -13,7 +13,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
     {
     protected:
         inline static auto test_hash(
-            std::vector<uint8_t> const &data,
+            List<uint8_t> const &data,
             std::string &hash
         ) -> void
         {
@@ -22,9 +22,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         }
 
         inline static auto process_sub(
-            std::vector<uint8_t> const &before_data,
-            std::vector<uint8_t> const &after_data
-        ) -> std::vector<uint8_t>
+            List<uint8_t> const &before_data,
+            List<uint8_t> const &after_data
+        ) -> List<uint8_t>
         {
             return Diff::VCDiff::encode<std::size_t, Diff::VCDiff::Flag::VCD_FORMAT_INTERLEAVED>(
                     reinterpret_cast<char const *>(before_data.data()), before_data.size(),
@@ -65,7 +65,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
                 auto packet_information = PacketInformation{};
                 auto packet_patch_size = k_none_size;
                 auto packet_name = packet_after_subgroup_information.id;
-                auto packet_before = std::vector<uint8_t>{};
+                auto packet_before = List<uint8_t>{};
                 if (packet_before_subgroup_information_index_map.contains(packet_name)) {
                     auto packet_before_subgroup_information_index = packet_before_subgroup_information_index_map[packet_name];
                     auto & packet_before_subgroup_information = information_section_before_structure.subgroup_information.at(packet_before_subgroup_information_index);
@@ -77,7 +77,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
                 packet_information.name = packet_name;
                 packet_information.patch_exist = static_cast<uint32_t>(packet_patch_exist);
                 packet_information.patch_size = static_cast<uint32_t>(packet_patch_size);
-                auto vcdiff_data = std::vector<uint8_t>{};
+                auto vcdiff_data = List<uint8_t>{};
                 if (packet_patch_exist) {
                     vcdiff_data = process_sub(packet_before, packet_after);
                     packet_information.patch_size = vcdiff_data.size();

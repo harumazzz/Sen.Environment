@@ -90,7 +90,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             CustomResourceInformation &resource_info,
             std::string_view destination) -> void
         {
-            auto check_rton_is_encrypted = [](std::vector<uint8_t> &data) -> bool
+            auto check_rton_is_encrypted = [](List<uint8_t> &data) -> bool
             {
                 if (data.size() == k_none_size)
                 {
@@ -108,11 +108,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             {
                 if (compare_string(packet_id, packages_string))
                 {
-                    auto resource_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+                    auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
                     packages_info.is_contain_packages = true;
                     packages_info.compression = unpack_rsg_without_definition(packet_data, resource_data_section_view_stored);
                     FileSystem::create_directory(tolower_back(fmt::format("{}/{}", destination, packages_string)));
-                    auto async_work_process = std::vector<std::future<void>>{};
+                    auto async_work_process = List<std::future<void>>{};
                     for (auto &[id, data] : resource_data_section_view_stored)
                     {
                         check_rton_is_encrypted(data) ? ++rton_encrypted_count : --rton_encrypted_count;
@@ -175,7 +175,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             std::string_view destination,
             Setting const &setting) -> void
         {
-            auto async_work_process = std::vector<std::future<void>>{};
+            auto async_work_process = List<std::future<void>>{};
             for (auto &[group_id, group_value] : resource_info.group)
             {
                 auto packet_original_information = PacketOriginalInformation{

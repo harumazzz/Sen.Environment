@@ -99,7 +99,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 			auto layers = document.NewElement("layers");
 			auto tracks_list = reanim.tracks;
 			std::reverse(tracks_list.begin(), tracks_list.end());
-			auto name_item_list = std::vector<std::string>{};
+			auto name_item_list = List<std::string>{};
 			for (auto &track : tracks_list)
 			{
 				auto index = 0;

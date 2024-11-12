@@ -55,9 +55,9 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto argb_to_rgba(
-			const std::vector<unsigned char> &color) -> std::vector<unsigned char>
+			const List<unsigned char> &color) -> List<unsigned char>
 		{
-			auto data = std::vector<unsigned char>();
+			auto data = List<unsigned char>();
 			data.reserve(color.size());
 			for (auto i : Range<size_t>(color.size(), 4))
 			{
@@ -113,7 +113,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_8888(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -128,7 +128,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto argb_8888(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height
 		) -> Image<int>
@@ -144,14 +144,14 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_4444(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height
 		) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto y : Range<int>(height))
 			{
 				for (auto x : Range<int>(width))
@@ -161,7 +161,7 @@ namespace Sen::Kernel::Support::Texture
 					auto green = (temp_pixel & 0xF00) >> 8;
 					auto blue = (temp_pixel & 0xF0) >> 4;
 					auto alpha = temp_pixel & 0xF;
-					auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel(x, y, width));
+					auto index = static_cast<List<uint8_t>::size_type>(set_pixel(x, y, width));
 					data[index] = static_cast<unsigned char>((red << 4) | red);
 					data[index + 1] = static_cast<unsigned char>((green << 4) | green);
 					data[index + 2] = static_cast<unsigned char>((blue << 4) | blue);
@@ -179,13 +179,13 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_565(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto y : Range<int>(height))
 			{
 				for (auto x : Range<int>(width))
@@ -194,7 +194,7 @@ namespace Sen::Kernel::Support::Texture
 					auto red = temp_pixel >> 11;
 					auto green = (temp_pixel & 0x7E0) >> 5;
 					auto blue = temp_pixel & 0x1F;
-					auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel(x, y, width));
+					auto index = static_cast<List<uint8_t>::size_type>(set_pixel(x, y, width));
 					data[index] = static_cast<unsigned char>((red << 3) | (red >> 2));
 					data[index + 1] = static_cast<unsigned char>((green << 2) | (green >> 4));
 					data[index + 2] = static_cast<unsigned char>((blue << 3) | (blue >> 2));
@@ -212,13 +212,13 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_5551(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto y : Range<int>(height))
 			{
 				for (auto x : Range<int>(width))
@@ -227,7 +227,7 @@ namespace Sen::Kernel::Support::Texture
 					auto red = (temp_pixel & 0xF800) >> 11;
 					auto green = (temp_pixel & 0x7E0) >> 6;
 					auto blue = (temp_pixel & 0x3E) >> 1;
-					auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel(x, y, width));
+					auto index = static_cast<List<uint8_t>::size_type>(set_pixel(x, y, width));
 					data[index] = static_cast<unsigned char>((red << 3) | (red >> 2));
 					data[index + 1] = static_cast<unsigned char>((green << 3) | (green >> 2));
 					data[index + 2] = static_cast<unsigned char>((blue << 3) | (blue >> 2));
@@ -245,13 +245,13 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_4444_tiled(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i : Range<int>(0, height, 32))
 			{
 				for (auto w : Range<int>(0, width, 32))
@@ -267,7 +267,7 @@ namespace Sen::Kernel::Support::Texture
 								auto green = (temp_pixel & 0xF00) >> 8;
 								auto blue = (temp_pixel & 0xF0) >> 4;
 								auto alpha = temp_pixel & 0xF;
-								auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel((w + k), (i + j), width));
+								auto index = static_cast<List<uint8_t>::size_type>(set_pixel((w + k), (i + j), width));
 								data[index] = static_cast<unsigned char>((red << 4) | red);
 								data[index + 1] = static_cast<unsigned char>((green << 4) | green);
 								data[index + 2] = static_cast<unsigned char>((blue << 4) | blue);
@@ -288,13 +288,13 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_565_tiled(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i : Range<int>(0, height, 32))
 			{
 				for (auto w : Range<int>(0, width, 32))
@@ -309,7 +309,7 @@ namespace Sen::Kernel::Support::Texture
 								auto red = (temp_pixel & 0xF800) >> 8;
 								auto green = (temp_pixel & 0x7E0) >> 3;
 								auto blue = (temp_pixel & 0x1F) << 3;
-								auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel((w + k), (i + j), width));
+								auto index = static_cast<List<uint8_t>::size_type>(set_pixel((w + k), (i + j), width));
 								data[index] = static_cast<unsigned char>(red);
 								data[index + 1] = static_cast<unsigned char>(green);
 								data[index + 2] = static_cast<unsigned char>(blue);
@@ -330,13 +330,13 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_5551_tiled(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i : Range<int>(0, height, 32))
 			{
 				for (auto w : Range<int>(0, width, 32))
@@ -351,7 +351,7 @@ namespace Sen::Kernel::Support::Texture
 								auto red = temp_pixel >> 11;
 								auto green = (temp_pixel & 0x7C0) >> 6;
 								auto blue = (temp_pixel & 0x3E) >> 1;
-								auto index = static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(set_pixel((w + k), (i + j), width));
+								auto index = static_cast<List<uint8_t>::size_type>(set_pixel((w + k), (i + j), width));
 								data[index] = static_cast<unsigned char>((red << 3) | (red >> 2));
 								data[index + 1] = static_cast<unsigned char>((green << 3) | (green >> 2));
 								data[index + 2] = static_cast<unsigned char>((blue << 3) | (blue >> 2));
@@ -372,7 +372,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_etc1(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -380,10 +380,10 @@ namespace Sen::Kernel::Support::Texture
 			auto encoded_size = etc1_get_encoded_data_size(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 			auto encoded_data = stream.readBytes(encoded_size);
 			auto stride = static_cast<uint32_t>(width * 3);
-			auto destination = std::vector<uint8_t>(stride * height);
+			auto destination = List<uint8_t>(stride * height);
 			etc1_decode_image(encoded_data.data(), destination.data(), static_cast<uint32_t>(width), static_cast<uint32_t>(height), 3_ui, stride);
 			auto image_square = width * height;
-			auto data = std::vector<uint8_t>(image_square * 4);
+			auto data = List<uint8_t>(image_square * 4);
 			for (auto i : Range(image_square)) {
 				data[i * 4] = destination[i * 3];
 				data[i * 4 + 1] = destination[i * 3 + 1];
@@ -401,7 +401,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_etc1_a_8(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -409,10 +409,10 @@ namespace Sen::Kernel::Support::Texture
 			auto encoded_size = etc1_get_encoded_data_size(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 			auto encoded_data = stream.readBytes(encoded_size);
 			auto stride = static_cast<uint32_t>(width * 3);
-			auto destination = std::vector<uint8_t>(stride * height);
+			auto destination = List<uint8_t>(stride * height);
 			etc1_decode_image(encoded_data.data(), destination.data(), static_cast<uint32_t>(width), static_cast<uint32_t>(height), 3_ui, stride);
 			auto image_square = width * height;
-			auto data = std::vector<uint8_t>(image_square * 4);
+			auto data = List<uint8_t>(image_square * 4);
 			for (auto i : Range(image_square)) {
 				data[i * 4] = destination[i * 3];
 				data[i * 4 + 1] = destination[i * 3 + 1];
@@ -430,7 +430,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_etc1_a_palette(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -438,7 +438,7 @@ namespace Sen::Kernel::Support::Texture
 			auto encoded_size = etc1_get_encoded_data_size(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 			auto encoded_data = stream.readBytes(encoded_size);
 			auto stride = static_cast<uint32_t>(width * 3);
-			auto destination = std::vector<uint8_t>(stride * height);
+			auto destination = List<uint8_t>(stride * height);
 			etc1_decode_image(encoded_data.data(), destination.data(), static_cast<uint32_t>(width), static_cast<uint32_t>(height), 3_ui, stride);
 			auto num = stream.readUint8();
 			auto index_table = std::make_unique<uint8_t[]>(num == 0 ? 2 : num);
@@ -461,7 +461,7 @@ namespace Sen::Kernel::Support::Texture
 			auto bitPostion = 0;
 			auto buffer = static_cast<unsigned char>(0x00);
 			auto image_square = width * height;
-			auto data = std::vector<uint8_t>(image_square * 4);
+			auto data = List<uint8_t>(image_square * 4);
 			for (auto i : Range(image_square)) {
 				data[i * 4] = destination[i * 3];
 				data[i * 4 + 1] = destination[i * 3 + 1];
@@ -479,7 +479,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgb_pvrtc_4bpp_a_8(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -506,19 +506,19 @@ namespace Sen::Kernel::Support::Texture
 			{
 				newWidth = newHeight = Math::compare(newWidth, newHeight);
 			}
-			auto packets = std::vector<PVRTC::Packet>{};
+			auto packets = List<PVRTC::Packet>{};
 			auto packets_length = ((newWidth * newHeight) >> 4);
 			for (auto i : Range<int>(packets_length)) {
 				packets.emplace_back(PVRTC::Packet{stream.readUint64()});
 			}
 			auto image_data = PVRTC::decode_4bpp(packets, newWidth);
 			if (newWidth != width || newHeight != height) {
-				auto data = std::vector<unsigned char>{};
-				data.reserve(static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(width * height) * 4);
+				auto data = List<unsigned char>{};
+				data.reserve(static_cast<List<uint8_t>::size_type>(width * height) * 4);
 				for (auto j : Range<int>(height)) {
 					for (auto i : Range<int>(width)) {
 						auto index = (j * newWidth + i) * 4;
-						data.insert(data.end(), &image_data[index], &image_data[static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(index) + 4]);
+						data.insert(data.end(), &image_data[index], &image_data[static_cast<List<uint8_t>::size_type>(index) + 4]);
 					}
 				}
 				image_data = std::move(data);
@@ -537,7 +537,7 @@ namespace Sen::Kernel::Support::Texture
 		 */
 
 		inline static auto rgba_pvrtc_4bpp(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
@@ -564,7 +564,7 @@ namespace Sen::Kernel::Support::Texture
 			{
 				newWidth = newHeight = Math::compare(newWidth, newHeight);
 			}
-			auto packets = std::vector<PVRTC::Packet>{};
+			auto packets = List<PVRTC::Packet>{};
 			auto packets_length = ((newWidth * newHeight) >> 4);
 			for (auto i : Range<int>(packets_length)) {
 				packets.emplace_back(PVRTC::Packet{stream.readUint64()});
@@ -579,13 +579,13 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto a_8(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				data[i] = Decode::NON_ALPHA;
@@ -597,13 +597,13 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto argb_1555(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				auto pixel_color = stream.readUint16();
@@ -619,13 +619,13 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto argb_4444(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				auto pixel_color = stream.readUint16();
@@ -642,13 +642,13 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto l_8(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				auto color = stream.readUint8();
@@ -661,13 +661,13 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto la_44(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				auto pixel_color = stream.readUint8();
@@ -683,14 +683,14 @@ namespace Sen::Kernel::Support::Texture
 		}
 
 		inline static auto la_88(
-			const std::vector<unsigned char> &color,
+			const List<unsigned char> &color,
 			int width,
 			int height
 		) -> Image<int>
 		{
 			auto stream = DataStreamView{color};
 			auto area = pixel_area_rgba(width, height);
-			auto data = std::vector<unsigned char>(area, 0x00);
+			auto data = List<unsigned char>(area, 0x00);
 			for (auto i = static_cast<std::size_t>(0); i < area; i += 4)
 			{
 				auto pixel_color = stream.readUint16();

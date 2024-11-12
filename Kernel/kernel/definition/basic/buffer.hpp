@@ -23,7 +23,7 @@ namespace Sen::Kernel::Definition
             static_assert(use_big_endian == true or use_big_endian == false);
 
         private:
-            std::vector<std::uint8_t> mutable data;
+            List<std::uint8_t> mutable data;
 
             std::string_view mutable file_path = ""_sv;
 
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Definition
             }
 
             Stream(
-                const std::vector<std::uint8_t> &data) : data(std::move(data)), read_pos(0), write_pos(data.size()), length(data.size())
+                const List<std::uint8_t> &data) : data(std::move(data)), read_pos(0), write_pos(data.size()), length(data.size())
             {
                 return;
             }
@@ -161,9 +161,9 @@ namespace Sen::Kernel::Definition
 
             inline auto toBytes(
 
-            ) const -> std::vector<std::uint8_t>
+            ) const -> List<std::uint8_t>
             {
-                auto bytes = std::vector<std::uint8_t>{};
+                auto bytes = List<std::uint8_t>{};
                 bytes.reserve(thiz.length);
                 bytes.assign(thiz.data.begin(), data.begin() + thiz.length);
                 return bytes;
@@ -171,21 +171,21 @@ namespace Sen::Kernel::Definition
 
             inline constexpr auto get(
 
-            ) const -> const std::vector<std::uint8_t> &
+            ) const -> const List<std::uint8_t> &
             {
                 return thiz.toBytes();
             }
 
             inline auto get(
                 size_t from,
-                size_t to) const -> std::vector<uint8_t>
+                size_t to) const -> List<uint8_t>
             {
                 if (from < 0 || to > thiz.data.size())
                 {
                     throw Exception(fmt::format("{} {} {} {}", Language::get("buffer.invalid.size"), from, Language::get("to"), to),
                                     std::source_location::current(), "get");
                 }
-                return std::vector<unsigned char>(thiz.data.begin() + from, thiz.data.begin() + to);
+                return List<unsigned char>(thiz.data.begin() + from, thiz.data.begin() + to);
             }
 
             inline constexpr auto get_read_pos(
@@ -232,7 +232,7 @@ namespace Sen::Kernel::Definition
             template <typename T>
                 requires CharacterOnView<T>
             inline auto append(
-                const std::vector<T> &m_data) const -> void
+                const List<T> &m_data) const -> void
             {
                 thiz.data.insert(thiz.data.begin() + thiz.length, m_data.begin(), m_data.end());
                 thiz.length += m_data.size();
@@ -514,7 +514,7 @@ namespace Sen::Kernel::Definition
             template <typename... Args>
                 requires(IsValidArgument<Args> && ...)
             inline auto writeBytes(
-                const std::vector<std::uint8_t> &inputBytes,
+                const List<std::uint8_t> &inputBytes,
                 Args... args) const -> void
             {
                 static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "Expected 0 or 1 argument only");
@@ -537,9 +537,9 @@ namespace Sen::Kernel::Definition
             }
 
             template <class T>
-            inline static auto set_raw_data(const T &val) -> std::vector<uint8_t>
+            inline static auto set_raw_data(const T &val) -> List<uint8_t>
             {
-                auto res = std::vector<uint8_t>(sizeof(T));
+                auto res = List<uint8_t>(sizeof(T));
                 *(reinterpret_cast<T *>(res.data())) = val;
                 if constexpr (use_big_endian)
                 {
@@ -1502,9 +1502,9 @@ namespace Sen::Kernel::Definition
 
             inline auto getBytes(
                 size_t from,
-                size_t to) const -> std::vector<std::uint8_t>
+                size_t to) const -> List<std::uint8_t>
             {
-                auto bytes = std::vector<std::uint8_t>{};
+                auto bytes = List<std::uint8_t>{};
                 bytes.assign(thiz.data.begin() + from, thiz.data.begin() + to);
                 if (use_big_endian)
                 {
@@ -1517,7 +1517,7 @@ namespace Sen::Kernel::Definition
                 requires(IsValidArgument<Args> && ...)
             inline auto readBytes(
                 std::size_t size,
-                Args... args) const -> std::vector<std::uint8_t>
+                Args... args) const -> List<std::uint8_t>
             {
                 static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "Expected 0 or 1 argument only");
                 if constexpr (sizeof...(Args) == 1)
@@ -1527,7 +1527,7 @@ namespace Sen::Kernel::Definition
                                        "readBytes");
                     thiz.read_pos = view;
                 }
-                auto bytes = std::vector<std::uint8_t>{};
+                auto bytes = List<std::uint8_t>{};
                 bytes.assign(thiz.data.begin() + thiz.read_pos, thiz.data.begin() + thiz.read_pos + size);
                 thiz.read_pos += size;
                 return bytes;

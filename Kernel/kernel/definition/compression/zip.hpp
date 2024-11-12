@@ -88,7 +88,7 @@ namespace Sen::Kernel::Definition::Compression::Zip {
 			*/
 
 			inline static auto file(
-				const std::vector<std::string> & source,
+				const List<std::string> & source,
 				std::string_view destination,
     			std::string_view root = ""_sv
 			) -> void

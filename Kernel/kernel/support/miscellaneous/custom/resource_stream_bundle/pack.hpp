@@ -22,7 +22,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         inline static auto checking_info(
             InformationStructure const &definition) -> void
         {
-            auto duplicate_packet = std::vector<string>{};
+            auto duplicate_packet = List<string>{};
             find_duplicate_elements<string>(definition.packet, duplicate_packet);
             assert_conditional(duplicate_packet.empty(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.duplicated_packet")), duplicate_packet[0]), "checking_info");
             return;
@@ -47,7 +47,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 return resfile.substr(k_begin_index, resfile.size() - ".rton"_sv.size());
             };
             auto packages_list = FileSystem::read_whole_directory(packages_source);
-            auto resource_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             auto packet_definition = PacketStructure{
                 .version = bundle.version};
             Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(packages_info.compression, packet_definition.compression);
@@ -244,7 +244,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(resource_info, result);
             }
             auto resources_name = toupper_back(fmt::format("resources{}", manifest_info.resource_additional_name));
-            auto resource_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             if (manifest_info.allow_new_type_resource)
             {
                 auto encode = Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Encode(result);

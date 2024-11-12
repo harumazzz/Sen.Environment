@@ -70,7 +70,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 value = std::pow(2, std::ceil(std::log(value) * 1.4426950408889634)); // log2e
                 return;
             };
-            auto rectangle_list = std::vector<MaxRectsAlgorithm::Rectangle>{};
+            auto rectangle_list = List<MaxRectsAlgorithm::Rectangle>{};
             auto image_width = MaxRectsAlgorithm::EDGE_MAX_VALUE;
             auto image_height = MaxRectsAlgorithm::EDGE_MAX_VALUE;
             packet_info.subgroup_content_information.texture.resolution = after_resolution;
@@ -110,7 +110,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 image_packet.dimension.height = max_rects_bin.height;
                 image_packet.additional.format = format;
                 image_packet.additional.index = i;
-                auto image_list = std::vector<Definition::Image<int>>{};
+                auto image_list = List<Definition::Image<int>>{};
                 image_list.resize(max_rects_bin.rects.size());
                 for (auto i : Range(max_rects_bin.rects.size()))
                 {
@@ -233,7 +233,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         }
 
         inline static auto exchange_animation(
-            std::vector<uint8_t> &resource_data,
+            List<uint8_t> &resource_data,
             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo const &extra,
             DataCompressedInfo &data_info,
             int const &resolution,
@@ -262,7 +262,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             std::map<std::string, PacketInformation> &packet_information,
             InformationStructure const &definition,
             std::map<std::string, SubgroupDataInformation> &general_subgroup,
-            std::vector<int> &resolution_list,
+            List<int> &resolution_list,
             std::string const &resource_source,
             bool const &animation_split_label) -> void
         {
@@ -319,7 +319,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo extra = *FileSystem::read_json(fmt::format("{}/data.json", animation_source));
                             Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(highest_resolution, extra.resolution, Path::getFileName(resource_info.path), "pvz2.scg.resolution_mismatch");
                             exchange_image_sprite(texture_sprite_view_stored, extra, resource_source, resource_info.path);
-                            auto resource_data = std::vector<uint8_t>{};
+                            auto resource_data = List<uint8_t>{};
                             exchange_animation(resource_data, extra, data_information, get_animation_resolution(definition.texture_format_category, highest_resolution), animation_source, animation_split_label);
                             packet_info.resource_data_section_view_stored[toupper_back(String::to_windows_style(data_information.path))] = std::move(resource_data);
                             packet_info.subgroup_content_information.general.data[toupper_back(resource_id)] = data_information;
@@ -344,7 +344,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         }
                         else
                         {
-                            auto resource_data = std::vector<uint8_t>{};
+                            auto resource_data = List<uint8_t>{};
                             encode_popcap_file<false>(resource_data, data_information, resource_source);
                             packet_info.resource_data_section_view_stored[toupper_back(String::to_windows_style(data_information.path))] = std::move(resource_data);
                             packet_info.subgroup_content_information.general.data[toupper_back(resource_id)] = data_information;
@@ -381,7 +381,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             std::map<std::string, PacketInformation> &packet_information,
             InformationStructure const &definition,
             std::map<std::string, SubgroupDataInformation> &general_subgroup,
-            std::vector<int> &resolution_list,
+            List<int> &resolution_list,
             std::string const &resource_source) -> void
         {
             auto highest_resolution = resolution_list.front();
@@ -476,7 +476,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         }
                         else
                         {
-                            auto resource_data = std::vector<uint8_t>{};
+                            auto resource_data = List<uint8_t>{};
                             encode_popcap_file<false>(resource_data, data_information, resource_source);
                             if (data_information.type == DataType::PopAnim)
                             {
@@ -530,7 +530,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
         template <auto encode_method_advanced>
         inline static auto encode_popcap_file(
-            std::vector<uint8_t> &resource_data,
+            List<uint8_t> &resource_data,
             DataCompressedInfo &data_information,
             std::string const &resource_source) -> void
         {
@@ -613,7 +613,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     }
                     else
                     {
-                        auto resource_data = std::vector<uint8_t>{};
+                        auto resource_data = List<uint8_t>{};
                         switch (setting.decode_method)
                         {
                         case DecodeMethod::Advanced:

@@ -15,7 +15,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
     {
     protected:
         inline static auto test_hash(
-            std::vector<uint8_t> const &data,
+            List<uint8_t> const &data,
             std::string const &hash) -> void
         {
             auto hash_test = Encryption::MD5::hash(data);
@@ -24,7 +24,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         }
 
         inline static auto process_sub(
-            std::vector<uint8_t> const &before,
+            List<uint8_t> const &before,
             DataStreamView &stream_patch,
             DataStreamView &stream_after,
             size_t const &patch_size
@@ -70,7 +70,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
                 auto packet_name = packet_after_subgroup_information.id;
                 auto packet_patch_exist = static_cast<bool>(packet_information.patch_exist);
                 auto packet_patch_size = static_cast<size_t>(packet_information.patch_size);
-                auto packet_before = std::vector<uint8_t>{};
+                auto packet_before = List<uint8_t>{};
                 if (packet_before_subgroup_information_index_map.contains(packet_name)) {
                     auto packet_before_subgroup_information_index = packet_before_subgroup_information_index_map[packet_name];
                     auto packet_before_subgroup_information = information_section_before_structure.subgroup_information.at(packet_before_subgroup_information_index);

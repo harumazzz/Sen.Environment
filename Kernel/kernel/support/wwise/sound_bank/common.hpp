@@ -172,8 +172,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             requires std::is_enum<Type>::value && true
         struct CommonPropertyMap
         {
-            std::vector<std::pair<Type, std::any>> regular;
-            std::vector<std::pair<Type, std::array<std::any, 2>>> randomizer;
+            List<std::pair<Type, std::any>> regular;
+            List<std::pair<Type, std::array<std::any, 2>>> randomizer;
         };
 
         // Type is uint8_t || enum

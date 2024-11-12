@@ -480,7 +480,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			for (auto frame_index : Range<int>(definition.main_sprite.frame.size()))
 			{
 				auto &frame = definition.main_sprite.frame[frame_index];
-				auto action_command_list = std::vector<std::string>{};
+				auto action_command_list = List<std::string>{};
 				if (frame.stop || !frame.command.empty())
 				{
 					for (auto &command : frame.command)
@@ -625,7 +625,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			exchange_simple_extra(definition, extra);
 			exchange_default_extra(extra);
-			auto image_duplicate_stored = std::map<std::string, std::vector<string>>{};
+			auto image_duplicate_stored = std::map<std::string, List<string>>{};
 			for (auto &image : definition.image)
 			{
 				auto image_name = image.path;

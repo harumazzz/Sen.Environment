@@ -4,7 +4,7 @@
 
 namespace Sen::Kernel::Support::PopCap::Animation::Convert
 {
-    using SpriteInfo = std::vector<std::string>;
+    using SpriteInfo = List<std::string>;
 
     struct Position
     {

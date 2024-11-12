@@ -60,7 +60,7 @@ namespace Sen::Kernel::Support::PopCap::Package
                 auto version = stream.readUint32();
                 assert_conditional(version == k_version, String::format(fmt::format("{}", Language::get("popcap.package.invalid_version")), std::to_string(version)), "process_package");
             }
-            auto resource_information_list = std::vector<ResourceInformation>{};
+            auto resource_information_list = List<ResourceInformation>{};
             while (true)
             {
                 auto flag = stream.readUint8();

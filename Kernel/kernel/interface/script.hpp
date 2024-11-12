@@ -688,7 +688,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto to_arraybuffer(
 				JSContext *ctx,
-				const std::vector<uint8_t> &vec) -> JSElement::ArrayBuffer
+				const List<uint8_t> &vec) -> JSElement::ArrayBuffer
 			{
 				auto array_buffer = JS_NewArrayBufferCopy(ctx, vec.data(), vec.size());
 				return array_buffer;
@@ -696,7 +696,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto to_uint8array(
 				JSContext *ctx,
-				const std::vector<uint8_t> &vec) -> JSElement::Uint8Array
+				const List<uint8_t> &vec) -> JSElement::Uint8Array
 			{
 				auto array_buffer = JS_NewArrayBufferCopy(ctx, vec.data(), vec.size());
 				auto global_obj = JS_GetGlobalObject(ctx);
@@ -1153,17 +1153,17 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto from_arraybuffer(
 				JSContext *ctx,
-				JSValue array_buffer) -> std::vector<uint8_t>
+				JSValue array_buffer) -> List<uint8_t>
 			{
-				auto byte_len = size_t{};
-				auto data = JS_GetArrayBuffer(ctx, &byte_len, array_buffer);
-				assert_conditional(byte_len != 0, fmt::format("{}", Kernel::Language::get("js.array_buffer_is_empty")), "from_arraybuffer");
-				return std::vector<uint8_t>(data, data + byte_len);
+				auto size = size_t{};
+				auto data = JS_GetArrayBuffer(ctx, &size, array_buffer);
+				assert_conditional(size != 0, fmt::format("{}", Kernel::Language::get("js.array_buffer_is_empty")), "from_arraybuffer");
+				return make_list(data, size);
 			}
 
 			inline static auto from_uint8array(
 				JSContext *ctx,
-				JSValue uint8array) -> std::vector<uint8_t>
+				JSValue uint8array) -> List<uint8_t>
 			{
 				auto array_buffer = JS_GetPropertyStr(ctx, uint8array, "buffer");
 				auto vec = from_arraybuffer(ctx, array_buffer);
@@ -2772,7 +2772,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Matrix = std::array<double, 6>;
 
-			auto constexpr matrix_from_transform(Matrix &matrix, std::vector<double> &transform) -> void
+			auto constexpr matrix_from_transform(Matrix &matrix, List<double> &transform) -> void
 			{
 				matrix = {transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]};
 			};
@@ -2850,7 +2850,7 @@ namespace Sen::Kernel::Interface::Script
 				}
 				case Value::transform:
 				{
-					return JS::Converter::to_array(ctx, std::vector<double>{s->transform.begin(), s->transform.end()});
+					return JS::Converter::to_array(ctx, List<double>{s->transform.begin(), s->transform.end()});
 				}
 				}
 			}
@@ -2948,12 +2948,12 @@ namespace Sen::Kernel::Interface::Script
 
 			using Color = std::array<double, 4>;
 
-			auto constexpr matrix_from_transform(Matrix &matrix, std::vector<double> &transform) -> void
+			auto constexpr matrix_from_transform(Matrix &matrix, List<double> &transform) -> void
 			{
 				matrix = {transform.at(0), transform.at(1), transform.at(2), transform.at(3), transform.at(4), transform.at(5)};
 			};
 
-			auto constexpr color_from_transform(Color &matrix, std::vector<double> &transform) -> void
+			auto constexpr color_from_transform(Color &matrix, List<double> &transform) -> void
 			{
 				matrix = {transform.at(0), transform.at(1), transform.at(2), transform.at(3)};
 			};
@@ -3035,11 +3035,11 @@ namespace Sen::Kernel::Interface::Script
 				}
 				case Value::transform:
 				{
-					return JS::Converter::to_array(ctx, std::vector<double>{s->transform.begin(), s->transform.end()});
+					return JS::Converter::to_array(ctx, List<double>{s->transform.begin(), s->transform.end()});
 				}
 				case Value::color:
 				{
-					return JS::Converter::to_array(ctx, std::vector<double>{s->color.begin(), s->color.end()});
+					return JS::Converter::to_array(ctx, List<double>{s->color.begin(), s->color.end()});
 				}
 				}
 			}
@@ -5088,14 +5088,15 @@ namespace Sen::Kernel::Interface::Script
 			struct Data
 			{
 
-				std::vector<std::uint8_t> value;
+				List<std::uint8_t> value;
 
 				using It = decltype(value.begin());
 
 				Data() = default;
 
 				explicit Data(
-					const std::vector<std::uint8_t> &value) : value(value)
+					List<std::uint8_t> &&value
+				) : value(std::move(value))
 				{
 				}
 
@@ -5280,12 +5281,12 @@ namespace Sen::Kernel::Interface::Script
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						auto byteLength = std::size_t{};
-						auto data = JS_GetArrayBuffer(ctx, &byteLength, argv[0]);
+						auto size = std::size_t{};
+						auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
 						if (data == nullptr) {
 							return JS_EXCEPTION;
 						}
-						s = new Data(data, data + byteLength);
+						s = new Data(make_list(data, size));
 					}
 					else {
 						JS_ThrowInternalError(ctx, "BinaryView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
@@ -6781,7 +6782,7 @@ namespace Sen::Kernel::Interface::Script
 							static_cast<int>(interlace_type),
 							static_cast<int>(channels),
 							static_cast<int>(rowbytes),
-							std::move(std::vector<uint8_t>(data, data + data_len))
+							std::move(List<uint8_t>(data, data + data_len))
 						);
 						JS_FreeValue(ctx, width_val);
 						JS_FreeValue(ctx, height_val);
@@ -6933,7 +6934,7 @@ namespace Sen::Kernel::Interface::Script
 					{
 						throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
 					}
-					s->set_data(std::vector<std::uint8_t>{data, data + size});
+					s->set_data(make_list(data, size));
 					break;
 				}
 				default:
@@ -7581,7 +7582,7 @@ namespace Sen::Kernel::Interface::Script
 				auto arrayBuffer = argv[0];
 				auto byteLength = std::size_t{};
 				auto data = JS_GetArrayBuffer(ctx, &byteLength, arrayBuffer);
-				if (!data) {
+				if (data == nullptr) {
 					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
 				}
 				for (auto i : Range(byteLength)) {
@@ -7606,7 +7607,7 @@ namespace Sen::Kernel::Interface::Script
 				auto byte_c = static_cast<std::uint8_t>(JS::Converter::get_bigint64(ctx, argv[0]));
 				auto byteLength = std::size_t{};
 				auto data = JS_GetArrayBuffer(ctx, &byteLength, arrayBuffer);
-				if (!data) {
+				if (data == nullptr) {
 					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "fill");
 				}
 				for (auto i : Range(byteLength)) {
@@ -7764,17 +7765,17 @@ namespace Sen::Kernel::Interface::Script
 				{
 					case 1:
 					{
-						Shell::callback(construct_string_list(std::vector<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}).get(), nullptr);
+						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}).get(), nullptr);
 						break;
 					}
 					case 2:
 					{
-						Shell::callback(construct_string_list(std::vector<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}).get(), nullptr);
+						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}).get(), nullptr);
 						break;
 					}
 					default:
 					{
-						Shell::callback(construct_string_list(std::vector<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}).get(), nullptr);
+						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}).get(), nullptr);
 						break;
 					}
 				}
@@ -7796,9 +7797,9 @@ namespace Sen::Kernel::Interface::Script
 		{
 			M_JS_PROXY_WRAPPER(context, {
 				try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-				Shell::callback(construct_string_list(std::vector<std::string>{std::string{"wait"}}).get(), nullptr);
+				Shell::callback(construct_string_list(List<std::string>{std::string{"wait"}}).get(), nullptr);
 				auto destination = std::make_unique<CStringView>();
-				Shell::callback(construct_string_list(std::vector<std::string>{std::string{"input"}}).get(), destination.get());
+				Shell::callback(construct_string_list(List<std::string>{std::string{"input"}}).get(), destination.get());
 				return JS::Converter::to_string(context, std::string{destination->value, static_cast<std::size_t>(destination->size)}); }, "readline"_sv);
 		}
 	}
@@ -7820,7 +7821,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv) -> JSElement::string
 		{
 			M_JS_PROXY_WRAPPER(context, {
-				auto v = std::vector<std::string>{};
+				auto v = List<std::string>{};
 				for(auto i : Range<int>(argc))
 				{
 					assert_conditional(JS_IsString(argv[i]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), i, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "join");
@@ -8587,6 +8588,7 @@ namespace Sen::Kernel::Interface::Script
 			int argc,
 			JSValueConst *argv) -> JSElement::undefined
 		{
+			using Image = Sen::Kernel::Definition::Image<int>;
 			M_JS_PROXY_WRAPPER(context, {
 				try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto source_file = JS::Converter::get_string(context, argv[0]);
@@ -8599,14 +8601,14 @@ namespace Sen::Kernel::Interface::Script
 				auto channels_val = JS_GetPropertyStr(context, obj, "channels");
 				auto rowbytes_val = JS_GetPropertyStr(context, obj, "rowbytes");
 				auto data_val = JS_GetPropertyStr(context, obj, "data");
-				auto width = int64_t{};
-				auto height = int64_t{};
-				auto bit_depth = int64_t{};
-				auto color_type = int64_t{};
-				auto interlace_type = int64_t{};
-				auto channels = int64_t{};
-				auto rowbytes = int64_t{};
-				auto data_len = size_t{};
+				auto width = std::int64_t{};
+				auto height = std::int64_t{};
+				auto bit_depth = std::int64_t{};
+				auto color_type = std::int64_t{};
+				auto interlace_type = std::int64_t{};
+				auto channels = std::int64_t{};
+				auto rowbytes = std::int64_t{};
+				auto data_len = std::size_t{};
 				JS_ToBigInt64(context, &width, width_val);
 				JS_ToBigInt64(context, &height, height_val);
 				JS_ToBigInt64(context, &bit_depth, bit_depth_val);
@@ -8615,7 +8617,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_ToBigInt64(context, &channels, channels_val);
 				JS_ToBigInt64(context, &rowbytes, rowbytes_val);
 				auto data = JS_GetArrayBuffer(context, &data_len, data_val);
-				auto image = Sen::Kernel::Definition::Image<int>(
+				auto image = Image(
 					static_cast<int>(width),
 					static_cast<int>(height),
 					static_cast<int>(bit_depth),
@@ -8623,7 +8625,7 @@ namespace Sen::Kernel::Interface::Script
 					static_cast<int>(interlace_type),
 					static_cast<int>(channels),
 					static_cast<int>(rowbytes),
-					std::move(std::vector<uint8_t>(data, data + data_len))
+					std::move(make_list(data, data_len))
 				);
 				Sen::Kernel::Definition::ImageIO::write_png(source_file, image);
 				JS_FreeValue(context, width_val);
@@ -8706,6 +8708,7 @@ namespace Sen::Kernel::Interface::Script
 			int argc,
 			JSValueConst *argv) -> JSElement::undefined
 		{
+			using Image = Sen::Kernel::Definition::Image<int>;
 			M_JS_PROXY_WRAPPER(context, {
 				try_assert(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto destination = JS::Converter::get_string(context, argv[0]);
@@ -8716,8 +8719,8 @@ namespace Sen::Kernel::Interface::Script
 				auto length_value = JS_GetPropertyStr(context, argv[2], "length");
 				auto length = JS::Converter::get_int32(context, length_value);
 				JS_FreeValue(context, length_value);
-				auto m_data = std::vector<Sen::Kernel::Definition::Image<int>>{};
-				auto x_y = std::vector<Coordinate>{};
+				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto x_y = List<Coordinate>{};
 				for (auto i : Range<int>(length)) {
 					auto current_object = JS_GetPropertyUint32(context, argv[2], i);
 					auto m_width = JS_GetPropertyStr(context, current_object, "width");
@@ -8737,12 +8740,12 @@ namespace Sen::Kernel::Interface::Script
 					auto image_height = static_cast<int>(JS::Converter::get_bigint64(context, m_height));
 					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
 					x_y.emplace_back(Coordinate{.x = image_x, .y = image_y});
-					m_data.emplace_back(Sen::Kernel::Definition::Image<int>{
+					m_data.emplace_back(Image{
 						image_x,
 						image_y,
 						image_width,
 						image_height,
-						std::move(std::vector<uint8_t>(data, data + data_len))
+						std::move(make_list(data, data_len)),
 					});
 					JS_FreeValue(context, m_width);
 					JS_FreeValue(context, m_height);
@@ -8783,8 +8786,8 @@ namespace Sen::Kernel::Interface::Script
 				auto length_value = JS_GetPropertyStr(context, argv[1], "length");
 				auto length = JS::Converter::get_int32(context, length_value);
 				JS_FreeValue(context, length_value);
-				auto m_data = std::vector<Sen::Kernel::Definition::Image<int>>{};
-				auto x_y = std::vector<Coordinate>{};
+				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto x_y = List<Coordinate>{};
 				for (auto i : Range<int>(length)) {
 					auto current_object = JS_GetPropertyUint32(context, argv[1], i);
 					auto m_width = JS_GetPropertyStr(context, current_object, "width");
@@ -8809,7 +8812,7 @@ namespace Sen::Kernel::Interface::Script
 						image_y,
 						image_width,
 						image_height,
-						std::move(std::vector<uint8_t>(data, data + data_len))
+						make_list(data, data_len),
 					});
 					JS_FreeValue(context, m_width);
 					JS_FreeValue(context, m_height);
@@ -8889,8 +8892,8 @@ namespace Sen::Kernel::Interface::Script
 				auto length_value = JS_GetPropertyStr(context, argv[1], "length");
 				auto length = JS::Converter::get_int32(context, length_value);
 				JS_FreeValue(context, length_value);
-				auto m_data = std::vector<Sen::Kernel::Definition::Image<int>>{};
-				auto x_y = std::vector<Coordinate>{};
+				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto x_y = List<Coordinate>{};
 				for (auto i : Range<int>(length)) {
 					auto current_object = JS_GetPropertyUint32(context, argv[1], i);
 					auto m_width = JS_GetPropertyStr(context, current_object, "width");
@@ -8915,7 +8918,7 @@ namespace Sen::Kernel::Interface::Script
 						image_y,
 						image_width,
 						image_height,
-						std::move(std::vector<uint8_t>(data, data + data_len))
+						make_list(data, data_len),
 					});
 					JS_FreeValue(context, m_width);
 					JS_FreeValue(context, m_height);
@@ -9081,7 +9084,7 @@ namespace Sen::Kernel::Interface::Script
 		{
 			M_JS_PROXY_WRAPPER(context, {
 				try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-				auto data = std::vector<Sen::Kernel::Definition::RectangleFileIO<int>>{};
+				auto data = List<Sen::Kernel::Definition::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length = uint32_t{};
 					JS_ToUint32(context, &length, JS_GetPropertyStr(context, argv[1], "length"));
@@ -9140,7 +9143,7 @@ namespace Sen::Kernel::Interface::Script
 			M_JS_PROXY_WRAPPER(context, {
 				try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto data = std::vector<Sen::Kernel::Definition::RectangleFileIO<int>>{};
+				auto data = List<Sen::Kernel::Definition::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length = uint32_t{};
 					JS_ToUint32(context, &length, JS_GetPropertyStr(context, argv[1], "length"));
@@ -9255,9 +9258,9 @@ namespace Sen::Kernel::Interface::Script
 			{
 				using Mode = Kernel::Definition::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
-													 const std::vector<std::uint8_t> &plain,
+													 const List<std::uint8_t> &plain,
 													 std::string_view key,
-													 std::string_view iv) -> std::vector<std::uint8_t>
+													 std::string_view iv) -> List<std::uint8_t>
 				{
 					static_assert(mode == Mode::CBC or mode == Mode::CFB or mode == Mode::ECB, "mode must be cbc or cfb or ecb");
 					return Kernel::Definition::Encryption::Rijndael::encrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
@@ -9298,9 +9301,9 @@ namespace Sen::Kernel::Interface::Script
 			{
 				using Mode = Kernel::Definition::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
-													 const std::vector<std::uint8_t> &plain,
+													 const List<std::uint8_t> &plain,
 													 std::string_view key,
-													 std::string_view iv) -> std::vector<std::uint8_t>
+													 std::string_view iv) -> List<std::uint8_t>
 				{
 					static_assert(mode == Mode::CBC or mode == Mode::CFB or mode == Mode::ECB, "mode must be cbc or cfb or ecb");
 					return Kernel::Definition::Encryption::Rijndael::decrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
@@ -9471,7 +9474,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv) -> JSValue
 			{
 				M_JS_PROXY_WRAPPER(context, {
-						auto paths = std::vector<std::vector<std::string>>{};
+						auto paths = List<List<std::string>>{};
 						for (const auto &i : Range<int>(argc))
 						{
 							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
@@ -9496,7 +9499,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv) -> JSValue
 			{
 				M_JS_PROXY_WRAPPER(context, {
-						auto paths = std::vector<std::vector<std::string>>{};
+						auto paths = List<List<std::string>>{};
 						for (const auto &i : Range<int>(argc))
 						{
 							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
@@ -11348,7 +11351,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValueConst *argv) -> JSValue
 				{
 					M_JS_PROXY_WRAPPER(context, {
-						auto paths = std::vector<std::vector<std::string>>{};
+						auto paths = List<List<std::string>>{};
 						for (const auto &i : Range<int>(argc))
 						{
 							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
@@ -11373,7 +11376,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValueConst *argv) -> JSValue
 				{
 					M_JS_PROXY_WRAPPER(context, {
-						auto paths = std::vector<std::vector<std::string>>{};
+						auto paths = List<List<std::string>>{};
 						for (const auto &i : Range<int>(argc))
 						{
 							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);

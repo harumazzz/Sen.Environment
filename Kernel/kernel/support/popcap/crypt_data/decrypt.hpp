@@ -46,10 +46,10 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 			inline auto process(
 				const DataStreamView & view,
 				std::string_view key
-			) -> std::vector<std::uint8_t>
+			) -> List<std::uint8_t>
 			{
 				auto result = DataStreamView{};
-				auto code = std::vector<uint8_t>{key.begin(), key.end()};
+				auto code = List<uint8_t>{key.begin(), key.end()};
 				assert_conditional((view.readString(BasicDefinition::magic.size()) == std::string{BasicDefinition::magic.begin(), BasicDefinition::magic.end()}), fmt::format("{}", Kernel::Language::get("popcap.crypt_data.decrypt.mismatch_magic")), "process");
             	auto size = view.readUint64();
 				if (view.size() > 0x112){

@@ -146,7 +146,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
         std::string path;
         std::string id;
         AnimationDimension dimension;
-        std::vector<double> transform;
+        List<double> transform;
     };
 
     inline static auto to_json(
@@ -311,7 +311,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
     {
     public:
         int index;
-        std::vector<double> transform;
+        List<double> transform;
         std::array<double, 4> color;
         std::array<double, 4> source_rectangle;
         int16_t sprite_frame_number = 0;
@@ -368,10 +368,10 @@ namespace Sen::Kernel::Support::PopCap::Animation
     public:
         std::string label;
         bool stop;
-        std::vector<AnimationCommand> command;
-        std::vector<int> remove;
-        std::vector<AnimationAppend> append;
-        std::vector<AnimationChange> change;
+        List<AnimationCommand> command;
+        List<int> remove;
+        List<AnimationAppend> append;
+        List<AnimationChange> change;
     };
 
     inline static auto to_json(
@@ -410,7 +410,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
     public:
         std::string name;
         AnimationWorkArea work_area;
-        std::vector<AnimationFrame> frame;
+        List<AnimationFrame> frame;
 
         explicit AnimationSprite(
             const std::string &name) : name(name)
@@ -458,8 +458,8 @@ namespace Sen::Kernel::Support::PopCap::Animation
         uint8_t frame_rate;
         AnimationPosition position;
         AnimationSize size;
-        std::vector<AnimationImage> image;
-        std::vector<AnimationSprite> sprite;
+        List<AnimationImage> image;
+        List<AnimationSprite> sprite;
         AnimationSprite main_sprite;
 
         SexyAnimation() = default;

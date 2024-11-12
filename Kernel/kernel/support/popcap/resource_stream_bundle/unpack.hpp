@@ -8,7 +8,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 {
     using namespace Definition;
 
-   // using DataSectionViewStored = std::map<std::string, std::vector<uint8_t>, decltype(&case_insensitive_compare)>;
+   // using DataSectionViewStored = std::map<std::string, List<uint8_t>, decltype(&case_insensitive_compare)>;
 
     struct Unpack : Common
     {
@@ -102,7 +102,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 
     protected:
         template <auto unpack_for_work, typename Args>
-           requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string_view>::value
+           requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string_view>::value
         inline static auto process_package(
             DataStreamView &stream,
             BundleStructure &definition,
@@ -169,7 +169,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             }
             definition.texture_information_section_size = texture_resource_information_section_block_size;
             #if WINDOWS 
-            auto async_work_process = std::vector<std::future<void>>{};
+            auto async_work_process = List<std::future<void>>{};
             #endif
             for (auto &[group_id, group_index] : information_structure.group_id)
             {
@@ -225,7 +225,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                     }
                     subgroup_information.resource = packet_structure.resource;
                     group_information.subgroup[subgroup_id] = subgroup_information;
-                    if constexpr (std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value)
+                    if constexpr (std::is_same<Args, std::map<std::string, List<uint8_t>>>::value)
                     {
                         args[subgroup_id] = std::move(packet_data);
                     }
@@ -248,7 +248,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 
     public:
         template <auto unpack_for_work = false, typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string_view>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string_view>::value
         inline static auto process_whole(
             DataStreamView &stream,
             BundleStructure &definition,

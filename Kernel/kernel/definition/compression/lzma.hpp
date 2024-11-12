@@ -54,13 +54,13 @@ namespace Sen::Kernel::Definition::Compression {
 			*/
 			template <auto level>
 			inline static auto compress(
-				const std::vector<unsigned char> &data
-			) -> std::vector<unsigned char>
+				const List<unsigned char> &data
+			) -> List<unsigned char>
 			{
 				auto destination_length = static_cast<size_t>(data.size() * 1.1 + 1024);
 				auto propsSize = static_cast<size_t>(LZMA_PROPS_SIZE);
-				auto result = std::vector<unsigned char>(destination_length);
-				auto props = std::vector<unsigned char>{0x5D, 0x00, 0x00, 0x00, 0x04};
+				auto result = List<unsigned char>(destination_length);
+				auto props = List<unsigned char>{0x5D, 0x00, 0x00, 0x00, 0x04};
 				auto sen = DataStreamView{};
 				sen.writeBytes(props);
 				sen.writeInt64(data.size());
@@ -92,8 +92,8 @@ namespace Sen::Kernel::Definition::Compression {
 			*/
 			template <auto strict = true>
 			inline static auto uncompress(
-				const std::vector<unsigned char> &data
-			) -> std::vector<unsigned char>
+				const List<unsigned char> &data
+			) -> List<unsigned char>
 			{
 				static_assert(strict == true || strict == false, "strict must be true of false");
 				auto view = DataStreamView{data};
@@ -101,7 +101,7 @@ namespace Sen::Kernel::Definition::Compression {
 				assert_conditional(property.front() == 0x5D, fmt::format("{}", Language::get("lzma.uncompress.invalid_magic")), "uncompress");
 				//assert_conditional(view.readUint32() == 67108864, fmt::format("{}", Language::get("lzma.uncompress.invalid_props")), "uncompress");
 				auto destination_length = static_cast<std::size_t>(view.readInt64());
-				auto result = std::vector<unsigned char>(destination_length);
+				auto result = List<unsigned char>(destination_length);
 				auto source_length = static_cast<size_t>(view.size() - view.read_pos);
 				auto ret = LzmaUncompress(
 					&result.front(),

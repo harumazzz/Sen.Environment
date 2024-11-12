@@ -18,8 +18,8 @@ namespace Sen::Kernel::Support::PopCap::Zlib {
 			// must override this method
 
 			virtual auto uncompress(
-				const std::vector<unsigned char> & source 
-			) -> std::vector<unsigned char> = 0;
+				const List<unsigned char> & source 
+			) -> List<unsigned char> = 0;
 
 	};
 
@@ -55,8 +55,8 @@ namespace Sen::Kernel::Support::PopCap::Zlib {
 			*/
 
 			inline auto uncompress(
-				const std::vector<unsigned char> & source 
-			) -> std::vector<unsigned char> override final
+				const List<unsigned char> & source 
+			) -> List<unsigned char> override final
 			{
 				auto sen = DataStreamView{source};
 				auto magic = sen.readUint32();

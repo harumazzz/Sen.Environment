@@ -15,11 +15,11 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
     {
     private:
         inline static auto exchange_data(
-            std::string const &value) -> std::vector<uint8_t>
+            std::string const &value) -> List<uint8_t>
         {
             auto hexString = value;
             hexString.erase(std::remove(hexString.begin(), hexString.end(), ' '), hexString.end());
-            auto bytes = std::vector<uint8_t>{};
+            auto bytes = List<uint8_t>{};
             for (auto i = static_cast<unsigned int>(0); i < hexString.length(); i += 2)
             {
                 auto byteString = hexString.substr(i, 2);
@@ -192,7 +192,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
         inline static auto exchange_purchased(
             Store const &store_value,
             ZenGarden const &zen_garden,
-            std::vector<int> &purchases
+            List<int> &purchases
         ) -> void
         {
             purchases.resize(exchange_enumeration<StoreItem, size_t>(StoreItem::pvz));
@@ -370,7 +370,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
 
         inline static auto exchange_height_of_tree(
             TreeOfWisdom const &data,
-            std::vector<int> &challenge_records
+            List<int> &challenge_records
             ) -> void
         {
             auto index = exchange_enumeration<GameMode, uint8_t>(GameMode::tree_of_wisdom);
@@ -397,7 +397,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
 
         inline static auto exchange_challenge(
             ChallengeRecord const &data,
-            std::vector<int> &value) -> void
+            List<int> &value) -> void
         {
             value.resize(exchange_enumeration<GameMode, size_t>(GameMode::adventure));
             if (data.survival.day_normal_flag) {

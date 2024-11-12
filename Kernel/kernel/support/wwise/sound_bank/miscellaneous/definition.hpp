@@ -71,7 +71,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
 
     struct MusicChild {
         std::string switches_name;
-        std::vector<MediaSource> child;
+        List<MediaSource> child;
     };
 
     inline auto to_json(
@@ -95,7 +95,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
     struct MusicInformation {
         std::string audio_name;
         MusicType type;
-        std::vector<MusicChild> child;
+        List<MusicChild> child;
     };
 
     inline auto to_json(
@@ -121,8 +121,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
     struct InjectionMusicStruct
     {
         MusicSetting setting;
-        std::vector<std::string> media;
-        std::vector<MusicInformation> music;
+        List<std::string> media;
+        List<MusicInformation> music;
     };
 
     inline auto to_json(
@@ -150,7 +150,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
 
     struct SoundBankGroup {
         std::string name;
-        std::vector<std::string> child;
+        List<std::string> child;
     };
 
     inline auto to_json(
@@ -172,8 +172,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
     }
 
     struct Position {
-        std::vector<int> group_index;
-        std::vector<int> child_index;
+        List<int> group_index;
+        List<int> child_index;
     };
 
     inline auto to_json(
@@ -197,7 +197,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
     struct PostitionSource {
         bool is_state;
         AudioSourceType media_type;
-        std::vector<Position> position;
+        List<Position> position;
     };
 
     inline auto to_json(
@@ -222,7 +222,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
 
     struct InteractiveMusic {
         PostitionSource position_source;
-        std::vector<MediaSource> media_source;
+        List<MediaSource> media_source;
     };
 
     inline auto to_json(
@@ -246,7 +246,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
     struct SoundBankEvent {
         std::string name;
         EventActionProperty::Type type;
-        std::vector<InteractiveMusic> interactive_music;
+        List<InteractiveMusic> interactive_music;
     };
 
     inline auto to_json(
@@ -271,7 +271,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
 
     struct SoundBankCreateInfo {
         std::string name;
-        std::vector<SoundBankEvent> events;
+        List<SoundBankEvent> events;
     };
 
     inline auto to_json(
@@ -294,10 +294,10 @@ namespace Sen::Kernel::Support::WWise::SoundBank::Miscellaneous
 
     struct SoundBankCreateStruct {
         MusicSetting setting;
-        std::vector<std::string> media;
-        std::vector<SoundBankGroup> switches;
-        std::vector<SoundBankGroup> states;
-        std::vector<SoundBankCreateInfo> soundbank;
+        List<std::string> media;
+        List<SoundBankGroup> switches;
+        List<SoundBankGroup> states;
+        List<SoundBankCreateInfo> soundbank;
     };
 
     inline auto to_json(

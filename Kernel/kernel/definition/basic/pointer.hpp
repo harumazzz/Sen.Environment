@@ -28,4 +28,20 @@ namespace Sen::Kernel {
 		delete[] p;
 		return;
 	};
+
+	template <typename T>
+	constexpr std::add_lvalue_reference_t<T> as_lvalue(
+		T&& value
+	) noexcept 
+	{
+		return value; 
+	}
+
+	template <typename T>
+	constexpr std::remove_reference_t<T>&&  as_rvalue(
+		T&& value
+	) noexcept 
+	{
+		return std::move(value); 
+	}
 }

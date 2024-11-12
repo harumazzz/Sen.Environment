@@ -196,7 +196,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			// constructor
 
 			explicit Decode(
-				const std::vector<uint8_t> & data
+				const List<uint8_t> & data
 			) : sen(std::make_unique<DataStreamView>(data))
 			{
 

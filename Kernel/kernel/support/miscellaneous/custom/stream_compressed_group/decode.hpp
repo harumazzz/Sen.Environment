@@ -89,7 +89,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             auto highest_resolution = definition.category.resolution.front();
             auto packet_compression = PacketCompression{};
-            auto common_subgroup_id_list = std::vector<std::string>{};
+            auto common_subgroup_id_list = List<std::string>{};
             for (auto &[id, packet_value] : packet_information)
             {
                 auto subgroup_id = exchange_subgroup_id(id, packet_value.subgroup_content_information.texture.resolution);
@@ -198,7 +198,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         }
 
         inline static auto exchange_animation(
-            std::vector<uint8_t> const &resource_data,
+            List<uint8_t> const &resource_data,
             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo &extra,
             ResourceInformation &data_info,
             std::string const &resource_destination,
@@ -285,7 +285,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             auto highest_resolution = definition.category.resolution.front();
             auto packet_compression = PacketCompression{};
             auto texture_sprite_view_stored = std::map<string, ImageSpriteInfo>{};
-            auto common_subgroup_id_list = std::vector<std::string>{};
+            auto common_subgroup_id_list = List<std::string>{};
             for (auto &[id, packet_value] : packet_information)
             {
                 if (packet_value.is_image)
@@ -445,7 +445,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
         template <auto decode_method_advanced>
         inline static auto decode_popcap_file(
-            std::vector<uint8_t> const &resource_data,
+            List<uint8_t> const &resource_data,
             ResourceInformation &resource_information,
             std::string const &resource_destination) -> void
         {

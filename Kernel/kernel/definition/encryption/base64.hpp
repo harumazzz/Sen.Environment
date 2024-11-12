@@ -83,10 +83,10 @@ namespace Sen::Kernel::Definition::Encryption {
 			*/
 
 			inline static auto encode_fs_as_multiple_thread(
-				const std::vector<std::vector<std::string>> & paths
+				const List<List<std::string>> & paths
 			) -> void 
 			{
-				auto threads = std::vector<std::thread>{};
+				auto threads = List<std::thread>{};
 				auto file_mutexes = std::unordered_map<std::string, std::mutex>{};
 				for (const auto & data : paths) {
 					threads.emplace_back([=, &file_mutexes]() { 
@@ -106,10 +106,10 @@ namespace Sen::Kernel::Definition::Encryption {
 			*/
 
 			inline static auto decode_fs_as_multiple_thread(
-				const std::vector<std::vector<std::string>> & paths
+				const List<List<std::string>> & paths
 			) -> void 
 			{
-				auto threads = std::vector<std::thread>{};
+				auto threads = List<std::thread>{};
 				auto file_mutexes = std::unordered_map<std::string, std::mutex>{};
 				for (const auto & data : paths) {
 					threads.emplace_back([=, &file_mutexes]() { 

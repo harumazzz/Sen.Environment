@@ -321,7 +321,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			inline static auto get_vector(
 				JSContext* context,
 				const JSValue & that
-			) -> std::vector<T>
+			) -> List<T>
 			{
 				auto atom = JS_NewAtomLen(context, "length", 6);
 				auto length_value = JS_GetProperty(context, that, atom);
@@ -329,7 +329,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 				auto length = Converter::get_int32(context, length_value);
 				JS_FreeValue(context, length_value);
 				if constexpr (std::is_same<T, int>::value){
-					auto m_list = std::vector<int>{};
+					auto m_list = List<int>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(JS::Converter::get_int32(context, value));
@@ -338,7 +338,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, bool>::value){
-					auto m_list = std::vector<bool>{};
+					auto m_list = List<bool>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(JS::Converter::get_bool(context, value));
@@ -347,7 +347,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr(std::is_same<T, long long>::value){
-					auto m_list = std::vector<long long>{};
+					auto m_list = List<long long>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(Converter::get_int64(context, val));
@@ -356,7 +356,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, uint32_t>::value){
-					auto m_list = std::vector<unsigned int>{};
+					auto m_list = List<unsigned int>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(Converter::get_uint32(context, val));
@@ -365,7 +365,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, uint64_t>::value){
-					auto m_list = std::vector<uint64_t>{};
+					auto m_list = List<uint64_t>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(Converter::get_uint64(context, val));
@@ -374,7 +374,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, float>::value){
-					auto m_list = std::vector<float>{};
+					auto m_list = List<float>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(Converter::get_float32(context, val));
@@ -383,7 +383,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, double>::value){
-					auto m_list = std::vector<double>{};
+					auto m_list = List<double>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(Converter::get_float64(context, val));
@@ -392,7 +392,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else {
-					auto m_list = std::vector<JSValue>{};
+					auto m_list = List<JSValue>{};
 					for (auto i : Range<int>(length)) {
 						auto val = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(val);
@@ -410,7 +410,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			inline static auto get_array(
 				JSContext* context,
 				const JSValue& that
-			) -> std::vector<T>
+			) -> List<T>
 			{
 				auto atom = JS_NewAtomLen(context, "length", 6);
 				auto length_value = JS_GetProperty(context, that, atom);
@@ -418,7 +418,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 				auto length = Converter::get_int32(context, length_value);
 				JS_FreeValue(context, length_value);
 				if constexpr (std::is_same<T, int>::value) {
-					auto m_list = std::vector<int>{};
+					auto m_list = List<int>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
@@ -427,7 +427,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, bool>::value) {
-					auto m_list = std::vector<bool>{};
+					auto m_list = List<bool>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(JS::Converter::get_bool(context, value));
@@ -436,7 +436,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, long long>::value) {
-					auto m_list = std::vector<long long>{};
+					auto m_list = List<long long>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
@@ -445,7 +445,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, uint32_t>::value) {
-					auto m_list = std::vector<unsigned int>{};
+					auto m_list = List<unsigned int>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
@@ -454,7 +454,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, uint64_t>::value) {
-					auto m_list = std::vector<uint64_t>{};
+					auto m_list = List<uint64_t>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
@@ -463,7 +463,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, float>::value) {
-					auto m_list = std::vector<float>{};
+					auto m_list = List<float>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_float32(context, value)));
@@ -472,7 +472,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else if constexpr (std::is_same<T, double>::value) {
-					auto m_list = std::vector<double>{};
+					auto m_list = List<double>{};
 					for (auto i : Range<int>(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(static_cast<T>(JS::Converter::get_float64(context, value)));
@@ -481,7 +481,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 					return m_list;
 				}
 				else {
-					auto m_list = std::vector<JSValue>{};
+					auto m_list = List<JSValue>{};
 					for (auto i : Range(length)) {
 						auto value = JS_GetPropertyUint32(context, that, i);
 						m_list.emplace_back(value);
@@ -499,14 +499,14 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			inline static auto get_vector(
 				JSContext* context,
 				const JSValue & that
-			) -> std::vector<std::string>
+			) -> List<std::string>
 			{
 				auto atom = JS_NewAtomLen(context, "length", 6);
 				auto len_val = JS_GetProperty(context, that, atom);
 				JS_FreeAtom(context, atom);
 				auto length = Converter::get_int32(context, len_val);
 				JS_FreeValue(context, len_val);
-				auto m_list = std::vector<std::string>{};
+				auto m_list = List<std::string>{};
 				for (auto i : Range<int>(length)) {
 					auto val = JS_GetPropertyUint32(context, that, i);
 					m_list.emplace_back(Converter::get_string(context, val));
@@ -523,14 +523,14 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			inline static auto get_vector(
 				JSContext* context,
 				const JSValue& that
-			) -> std::vector<std::string_view>
+			) -> List<std::string_view>
 			{
 				auto atom = JS_NewAtomLen(context, "length", 6);
 				auto len_val = JS_GetProperty(context, that, atom);
 				JS_FreeAtom(context, atom);
 				auto length = Converter::get_int32(context, len_val);
 				JS_FreeValue(context, len_val);
-				auto m_list = std::vector<std::string_view>{};
+				auto m_list = List<std::string_view>{};
 				for (auto i : Range<int>(length)) {
 					auto val = JS_GetPropertyUint32(context, that, i);
 					m_list.emplace_back(Converter::get_string(context, val));
@@ -545,7 +545,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<int32_t> & vec
+				const List<int32_t> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -561,7 +561,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<uint32_t> & vec
+				const List<uint32_t> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -577,7 +577,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext* ctx,
-				const std::vector<float>& vec
+				const List<float>& vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -593,7 +593,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext* ctx,
-				const std::vector<double>& vec
+				const List<double>& vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -609,7 +609,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<uint64_t> & vec
+				const List<uint64_t> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -625,7 +625,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<bool> & vec
+				const List<bool> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -641,7 +641,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<long long> & vec
+				const List<long long> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -657,7 +657,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				const std::vector<std::string> & vec
+				const List<std::string> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -669,7 +669,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
 			inline static auto to_array(
 				JSContext *ctx, 
-				std::vector<std::string> & vec
+				List<std::string> & vec
 			) -> JSValue
 			{
 				auto js_array = JS_NewArray(ctx);
@@ -760,18 +760,18 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 			inline static auto to_binary_list(
 				JSContext* context,
 				JSValue array_buffer
-			) -> std::vector<uint8_t>
+			) -> List<uint8_t>
 			{
-				auto byte_len = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &byte_len, array_buffer);
-				return std::vector<std::uint8_t>(data, data + byte_len);
+				auto size = std::size_t{};
+				auto data = JS_GetArrayBuffer(context, &size, array_buffer);
+				return make_list(data, size);
 			}
 
 			// C++ vector to JS ArrayBuffer
 
 			inline static auto toArrayBuffer(
 				JSContext* ctx,
-				const std::vector<uint8_t> & v
+				const List<uint8_t> & v
 			) -> JSValue
 			{
 				return JS_NewArrayBufferCopy(ctx, v.data(), v.size());

@@ -134,8 +134,8 @@ namespace Sen::Kernel::Definition
             int mutable padding;
             int mutable maxWidth = EDGE_MAX_VALUE;
             int mutable maxHeight = EDGE_MAX_VALUE;
-            std::vector<Rectangle> mutable freeRects;
-            std::vector<Rectangle> mutable rects;
+            List<Rectangle> mutable freeRects;
+            List<Rectangle> mutable rects;
             Option mutable options;
             int mutable border;
             bool mutable verticalExpand = false;
@@ -388,7 +388,7 @@ namespace Sen::Kernel::Definition
             int mutable width = EDGE_MAX_VALUE;
             int mutable height = EDGE_MAX_VALUE;
             Option mutable options;
-            std::vector<MaxRectsBin> mutable bins;
+            List<MaxRectsBin> mutable bins;
 
             MaxRectsPacker() = default;
 
@@ -419,7 +419,7 @@ namespace Sen::Kernel::Definition
              * @returns
              * @memberof MaxRectsPacker
              */
-            inline auto sort(std::vector<Rectangle> &rects, PACKING_LOGIC logic) const -> void
+            inline auto sort(List<Rectangle> &rects, PACKING_LOGIC logic) const -> void
             {
 
                 if (logic == PACKING_LOGIC::MAX_EDGE)
@@ -471,7 +471,7 @@ namespace Sen::Kernel::Definition
              * @param {Rectangle[]} rects Array of bin/rectangles
              * @memberof MaxRectsPacker
              */
-            inline auto addArray(std::vector<Rectangle> &rects) const -> void
+            inline auto addArray(List<Rectangle> &rects) const -> void
             {
                 sort(rects, options.logic);
                 for (const auto &rect : rects)

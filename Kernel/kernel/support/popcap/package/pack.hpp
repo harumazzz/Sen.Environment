@@ -22,9 +22,9 @@ namespace Sen::Kernel::Support::PopCap::Package
             }
             stream.writeInt32(Common::k_magic_package_identifier);
             stream.writeUint32(Common::k_version);
-            auto resource_information_list = std::vector<ResourceInformation>{};
-            auto resource_data_section_view_stored_list = std::vector<std::vector<uint8_t>>{};
-            auto resource_texture_use_index_list = std::vector<size_t>{};
+            auto resource_information_list = List<ResourceInformation>{};
+            auto resource_data_section_view_stored_list = List<List<uint8_t>>{};
+            auto resource_texture_use_index_list = List<size_t>{};
             for (auto &resource : definition.resource) {
                 stream.writeUint8(ResourceInformationListStateFlag::next);
                 stream.writeStringByUint8(resource.path);

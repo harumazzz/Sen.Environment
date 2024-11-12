@@ -154,7 +154,7 @@ namespace Sen::Kernel::Support::Texture {
 			#pragma region decode_whole
 
 			inline static auto decode_whole(
-				std::vector<uint8_t> const &source_binary,
+				List<uint8_t> const &source_binary,
 				int width,
 				int height,
 				Format format
@@ -247,7 +247,7 @@ namespace Sen::Kernel::Support::Texture {
 			) -> void
 			{
 				auto source_image = ImageIO::read_png(source);
-				auto result = std::vector<unsigned char>{};
+				auto result = List<unsigned char>{};
 				switch(format){
 					case Format::RGBA_8888:{
 						result = std::move(Encode::rgba(source_image));
@@ -345,7 +345,7 @@ namespace Sen::Kernel::Support::Texture {
 			inline static auto encode_whole(
 				Definition::Image<int> & source_image,
 				Format format
-			) -> std::vector<unsigned char>
+			) -> List<unsigned char>
 			{
 				switch(format){
 					case Format::RGBA_8888:{

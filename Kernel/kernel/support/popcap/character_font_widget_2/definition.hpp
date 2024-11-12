@@ -223,10 +223,10 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
     {
         public:
 			std::string name;
-			std::vector<std::string> tag_require;
-			std::vector<std::string> tag_exclude;
-			std::vector<FontKerning> kerning;
-			std::vector<FontCharacter> character;
+			List<std::string> tag_require;
+			List<std::string> tag_exclude;
+			List<FontKerning> kerning;
+			List<FontCharacter> character;
 			int multiply_red;
 			int multiply_green;
 			int multiply_blue;
@@ -252,10 +252,10 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 
 			FontLayer(
 				const std::string & name,
-				const std::vector<std::string> & tag_require,
-				const std::vector<std::string> & tag_exclude,
-				const std::vector<FontKerning> & kerning,
-				const std::vector<FontCharacter> & character,
+				const List<std::string> & tag_require,
+				const List<std::string> & tag_exclude,
+				const List<FontKerning> & kerning,
+				const List<FontCharacter> & character,
 				int multiply_red,
 				int multiply_green,
 				int multiply_blue,
@@ -388,12 +388,12 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 			int line_sepacing_offset;
 			bool initialized;
 			int default_point_size;
-			std::vector<CharacterItem> character;
-			std::vector<FontLayer> layer;
+			List<CharacterItem> character;
+			List<FontLayer> layer;
 			std::string source_file;
 			std::string error_header;
 			int point_size;
-			std::vector<std::string> tag;
+			List<std::string> tag;
 			double scale;
 			bool force_scaled_image_white;
 			bool activate_all_layer;

@@ -57,7 +57,7 @@ namespace Sen::Kernel::Definition::Diff {
 				T before_size,
 				const char* after,
 				T after_size
-			) -> std::vector<unsigned char>
+			) -> List<unsigned char>
 			{
 				static_assert(flag == open_vcdiff::VCDiffFormatExtensionFlagValues::VCD_FORMAT_CHECKSUM or flag == open_vcdiff::VCDiffFormatExtensionFlagValues::VCD_FORMAT_INTERLEAVED or open_vcdiff::VCDiffFormatExtensionFlagValues::VCD_FORMAT_JSON or open_vcdiff::VCDiffFormatExtensionFlagValues::VCD_STANDARD_FORMAT, "flag must be one of vcdiff supported format");
 				auto encoding = std::string{};
@@ -66,7 +66,7 @@ namespace Sen::Kernel::Definition::Diff {
 				if (!encoder->Encode(after, after_size, &encoding)) {
 					throw Exception(fmt::format("{}", Language::get("vcdiff.encode.failed")), std::source_location::current(), "encode");
 				}
-				return std::vector<unsigned char>(encoding.begin(), encoding.end());
+				return List<unsigned char>(encoding.begin(), encoding.end());
 			}
 
 			/**
@@ -85,7 +85,7 @@ namespace Sen::Kernel::Definition::Diff {
 				T before_size,
 				const char* patch,
 				T patch_size
-			) -> std::vector<unsigned char>
+			) -> List<unsigned char>
 			{
 				auto decoded_data = std::string{};
 				auto decoder = std::make_unique<open_vcdiff::VCDiffStreamingDecoder>();
@@ -95,7 +95,7 @@ namespace Sen::Kernel::Definition::Diff {
 				if (!decoder->DecodeChunk(patch, patch_size, &decoded_data)) {
 					throw Exception(fmt::format("{}", Language::get("vcdiff.decode.failed")), std::source_location::current(), "decode");
 				}
-				return std::vector<unsigned char>(decoded_data.data(), decoded_data.data() + decoded_data.size());
+				return List<unsigned char>(decoded_data.data(), decoded_data.data() + decoded_data.size());
 			}
 
 			/**

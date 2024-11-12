@@ -84,13 +84,13 @@ namespace Sen::Kernel::Support::PopCap::Package
         }
 
         inline static auto zip_package_uncompress(
-            std::vector<uint8_t> const &data,
+            List<uint8_t> const &data,
             std::string_view resource_directory,
-            std::vector<Resource> &value) -> void
+            List<Resource> &value) -> void
         {
             char *output_bytes = nullptr;
             auto bytes_size = size_t{0};
-            auto zip_data = std::vector<char>(data.begin(), data.end());
+            auto zip_data = List<char>(data.begin(), data.end());
             auto zip = std::unique_ptr<struct zip_t, decltype(zip_stream_deleter)>(zip_stream_open(zip_data.data(), zip_data.size(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'r'), zip_stream_deleter);
             int zip_index, zip_size = zip_entries_total(zip.get());
             for (zip_index = 0; zip_index < zip_size; ++zip_index)
@@ -99,7 +99,7 @@ namespace Sen::Kernel::Support::PopCap::Package
                 {
                     const char *name = zip_entry_name(zip.get());
                     zip_entry_read(zip.get(), (void **)&output_bytes, &bytes_size);
-                    write_bytes(fmt::format("{}/{}", resource_directory, name), std::vector<uint8_t>(output_bytes, output_bytes + bytes_size));
+                    write_bytes(fmt::format("{}/{}", resource_directory, name), List<uint8_t>(output_bytes, output_bytes + bytes_size));
                     value.emplace_back(Resource{.path = std::string{name}, .time = k_time});
                 }
                 zip_entry_close(zip.get());
@@ -111,7 +111,7 @@ namespace Sen::Kernel::Support::PopCap::Package
         inline static auto zip_package_compress(
             DataStreamView &stream,
             std::string_view resource_directory,
-            std::vector<Resource> const &value) -> void
+            List<Resource> const &value) -> void
         {
             char *output_bytes = nullptr;
             auto bytes_size = 0_size;
@@ -129,7 +129,7 @@ namespace Sen::Kernel::Support::PopCap::Package
                 zip_entry_close(zip.get());
             }
             zip_stream_copy(zip.get(), (void **)&output_bytes, &bytes_size);
-            auto stream_bytes = std::vector<uint8_t>(output_bytes, output_bytes + bytes_size);
+            auto stream_bytes = List<uint8_t>(output_bytes, output_bytes + bytes_size);
             stream.writeBytes(stream_bytes);
             delete output_bytes;
             return;

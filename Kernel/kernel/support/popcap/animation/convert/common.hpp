@@ -88,7 +88,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             Color color;
         };
 
-        using FrameNodeList = std::vector<FrameNode>;
+        using FrameNodeList = List<FrameNode>;
 
         inline auto static to_json_2(
             nlohmann::ordered_json &nlohmann_json_j,
@@ -122,15 +122,15 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         struct AnimationNameList
         {
-            std::vector<string> image;
-            std::vector<string> sprite;
+            List<string> image;
+            List<string> sprite;
         };
 
         struct LabelInfo
         {
             int start;
             int duration;
-            std::vector<int> layer_index_list;
+            List<int> layer_index_list;
         };
 
         struct PackageLibrary
@@ -266,7 +266,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
         }
 
         inline static auto exchange_transform_from_variant_to_standard(
-            std::vector<double> const &data,
+            List<double> const &data,
             Transform &value) -> void
         {
             if (data.size() == 2_size)
@@ -295,13 +295,13 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         inline static auto exchange_transform_from_standard_to_variant(
             Transform const &data,
-            std::vector<double> &value) -> void
+            List<double> &value) -> void
         {
             if (data[0] == data[3] && data[1] == -data[2])
             {
                 if (data[0] == 1.0 && data[1] == 0.0)
                 {
-                    value = std::vector<double>{data[4], data[5]};
+                    value = List<double>{data[4], data[5]};
                     return;
                 }
                 auto cos = data[0];
@@ -310,16 +310,16 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
                                                                                          : -1.0);
                 if (number_is_equal(std::sin(radian), sin, 1e-2) && number_is_equal(std::cos(radian), cos, 1e-2))
                 {
-                    value = std::vector<double>{radian, data[4], data[5]};
+                    value = List<double>{radian, data[4], data[5]};
                     return;
                 }
             }
-            value = std::vector<double>{data[0], data[1], data[2], data[3], data[4], data[5]};
+            value = List<double>{data[0], data[1], data[2], data[3], data[4], data[5]};
             return;
         }
 
         inline static auto exchange_tranform_from_rotate_to_standard(
-            std::vector<double> const &data,
+            List<double> const &data,
             Transform &value) -> void
         {
             assert_conditional(data.size() == 3_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"3"}, std::to_string(data.size())), "exchange_tranform_from_rotate_to_standard");
@@ -340,7 +340,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         inline static auto exchange_transform_from_standard_to_rotate(
             Transform const &data,
-            std::vector<double> &value) -> void
+            List<double> &value) -> void
         {
             assert_conditional(data[0] == data[3] && data[1] == -data[2], fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform")), "exchange_transform_from_standard_to_rotate");
             auto cos = data[0];
@@ -348,12 +348,12 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             auto radian = std::atan(sin / cos) + k_pi * (cos >= 0.0 ? 0.0 : sin >= 0 ? +1.0
                                                                                      : -1.0);
             assert_conditional(number_is_equal(std::sin(radian), sin, 1e-2) && number_is_equal(std::cos(radian), cos, 1e-2), fmt::format("{}", Language::get("popcap.animation.radian_is_wrong")), "exchange_transform_from_standard_to_rotate");
-            value = std::vector<double>{radian, data[4], data[5]};
+            value = List<double>{radian, data[4], data[5]};
             return;
         }
 
         inline static auto exchange_tranform_by_copy(
-            std::vector<double> const &data,
+            List<double> const &data,
             Transform &value) -> void
         {
             assert_conditional(data.size() == 6_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
@@ -363,10 +363,10 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         inline static auto exchange_tranform_by_copy(
             Transform const &data,
-            std::vector<double> &value) -> void
+            List<double> &value) -> void
         {
             assert_conditional(data.size() == 6_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
-            value = std::vector<double>{data[0], data[1], data[2], data[3], data[4], data[5]};
+            value = List<double>{data[0], data[1], data[2], data[3], data[4], data[5]};
             return;
         }
 
@@ -426,7 +426,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         template <typename T>
         inline static auto get_index(
-            const std::vector<T> &v,
+            const List<T> &v,
             T k) -> int
         {
             static_assert(sizeof(T) != 0);
@@ -474,7 +474,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         template <typename T, typename E>
         inline static auto check_element_in_vector(
-            const std::vector<T> &v,
+            const List<T> &v,
             const E &e) -> bool
         {
             static_assert(sizeof(T) != 0);

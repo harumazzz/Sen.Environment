@@ -152,7 +152,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         // TextureFormatCategory texture_format_category;
         PackagesInfo packages_info;
         ManifestGroupInfo manifest_info;
-        std::vector<std::string> packet;
+        List<std::string> packet;
     };
 
     inline auto to_json(

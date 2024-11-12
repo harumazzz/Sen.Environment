@@ -590,7 +590,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         }
 
         explicit Decode(
-            std::vector<uint8_t> data) : stream(data)
+            List<uint8_t> data) : stream(data)
         {
         }
 

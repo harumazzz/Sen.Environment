@@ -14,7 +14,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			using Type = Polinomial;
 
 		private:
-			using Buffer = std::vector<uint8_t>;
+			using Buffer = List<uint8_t>;
 
 			template <typename T, auto size>
 			using ByteArray = std::array<T, size>;
@@ -96,7 +96,7 @@ namespace Sen::Kernel::Definition::Encryption {
 
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -116,7 +116,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -135,7 +135,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -154,7 +154,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -173,7 +173,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -192,7 +192,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -211,7 +211,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -230,7 +230,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -249,7 +249,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -268,7 +268,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint32_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint32_t
 				{
 					return CRC32::compute<CRC32::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -291,7 +291,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -308,7 +308,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -325,7 +325,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -342,7 +342,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -359,7 +359,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -376,7 +376,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -393,7 +393,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -410,7 +410,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -427,7 +427,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -444,7 +444,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint8_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint8_t
 				{
 					return CRC8::compute<CRC8::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -466,7 +466,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -484,7 +484,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -502,7 +502,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -520,7 +520,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -538,7 +538,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -556,7 +556,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -574,7 +574,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -592,7 +592,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -610,7 +610,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -628,7 +628,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -646,7 +646,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -664,7 +664,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -682,7 +682,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -700,7 +700,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -718,7 +718,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -736,7 +736,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -754,7 +754,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -772,7 +772,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -790,7 +790,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -808,7 +808,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -826,7 +826,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -844,7 +844,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);
@@ -862,7 +862,7 @@ namespace Sen::Kernel::Definition::Encryption {
 			
 				constexpr static auto compute(
 					std::uint16_t initial, 
-					const std::vector<uint8_t> & buffer
+					const List<uint8_t> & buffer
 				) -> std::uint16_t
 				{
 					return CRC16::compute<CRC16::Type, typename decltype(TABLE)::value_type, TABLE.size()>(TABLE, initial, buffer);

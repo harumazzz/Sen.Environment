@@ -754,10 +754,10 @@ namespace Sen::Kernel {
 
 			inline constexpr auto split(
 				std::string_view delimiter
-			) -> std::vector<std::string> const
+			) -> List<std::string> const
 			{
 				auto str = thiz.value;
-				auto result = std::vector<std::string>{};
+				auto result = List<std::string>{};
 				auto pos = std::string::size_type(0);
 				auto token = std::string{};
 				while ((pos = str.find(delimiter)) != std::string::npos) {
@@ -878,9 +878,9 @@ namespace Sen::Kernel {
 			inline constexpr static auto split(
 				std::string str,
 				std::string_view delimiter
-			) -> std::vector<string> const
+			) -> List<string> const
 			{
-				auto result = std::vector<string>{};
+				auto result = List<string>{};
 				auto pos = string::size_type(0);
 				auto token = string{};
 				while ((pos = str.find(delimiter)) != string::npos) {
@@ -934,7 +934,7 @@ namespace Sen::Kernel {
 			*/
 
 			inline static auto join(
-				const std::vector<string> &data,
+				const List<string> &data,
 			    std::string_view delimiter
 			) -> std::string const
 			{
@@ -1136,7 +1136,7 @@ namespace Sen::Kernel {
 					encoding_ascii,
 				};
 
-				auto boms = std::vector<std::string>{
+				auto boms = List<std::string>{
 					std::string("\x00\x00\xFE\xFF", 4),
 					std::string("\xFF\xFE\x00\x00", 4),
 					std::string("\xFE\xFF", 2),

@@ -472,28 +472,28 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 	struct PopCapRenderEffects
 	{
 		public:
-			std::vector<Block1> block_1;
-			std::vector<Block2> block_2;
-			std::vector<Block3> block_3;
-			std::vector<Block4> block_4;
-			std::vector<Block5> block_5;
-			std::vector<Block6> block_6;
-			std::vector<Block7> block_7;
-			std::vector<Block8> block_8;
+			List<Block1> block_1;
+			List<Block2> block_2;
+			List<Block3> block_3;
+			List<Block4> block_4;
+			List<Block5> block_5;
+			List<Block6> block_6;
+			List<Block7> block_7;
+			List<Block8> block_8;
 
 			explicit PopCapRenderEffects(
 
 			) = default;
 
 			explicit PopCapRenderEffects(
-				std::vector<Block1> block_1,
-				std::vector<Block2> block_2,
-				std::vector<Block3> block_3,
-				std::vector<Block4> block_4,
-				std::vector<Block5> block_5,
-				std::vector<Block6> block_6,
-				std::vector<Block7> block_7,
-				std::vector<Block8> block_8
+				List<Block1> block_1,
+				List<Block2> block_2,
+				List<Block3> block_3,
+				List<Block4> block_4,
+				List<Block5> block_5,
+				List<Block6> block_6,
+				List<Block7> block_7,
+				List<Block8> block_8
 			)
 			{
 				thiz.block_1 = std::move(block_1);

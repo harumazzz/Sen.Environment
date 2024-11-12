@@ -240,7 +240,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
     {
         uint32_t version;
         Common::PacketCompression compression;
-        std::vector<Resource> resource;
+        List<Resource> resource;
     };
 
     inline auto to_json(

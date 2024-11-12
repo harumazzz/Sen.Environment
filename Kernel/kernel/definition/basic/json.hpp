@@ -13,9 +13,9 @@ namespace Sen::Kernel::Definition {
 
 		inline static auto keys(
 			const nlohmann::ordered_json &data
-		) -> std::vector<std::string>
+		) -> List<std::string>
 		{
-			auto result = std::vector<std::string>();
+			auto result = List<std::string>();
 			for(auto &[key, value] : data.items()){
 				result.push_back(key);
 			}
@@ -103,9 +103,9 @@ namespace Sen::Kernel::Definition {
 		template <typename T, typename U> 
 		inline static auto keys(
 			std::map<T, U> & map
-		) -> std::vector<T>
+		) -> List<T>
 		{
-			auto keys = std::vector<T>{};
+			auto keys = List<T>{};
 			for (auto & [key, value] : map) {
 				keys.emplace_back(key);
 			}
@@ -116,9 +116,9 @@ namespace Sen::Kernel::Definition {
 		template <typename T, typename U> 
 		inline static auto keys(
 			std::unordered_map<T, U> & map
-		) -> std::vector<T>
+		) -> List<T>
 		{
-			auto keys = std::vector<T>{};
+			auto keys = List<T>{};
 			for (auto & [key, value] : map) {
 				keys.emplace_back(key);
 			}

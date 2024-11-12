@@ -52,7 +52,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                 auto & resource_definition = definition.resource[resource_index];
                 resource_definition.path = String::to_posix_style(fmt::format("{}/{}", information_structure.resource_directory[static_cast<size_t>(resource_information_structure.directory_index)], information_structure.resource_file[resource_index]));
                 resource_definition.chunk.resize(resource_information_structure.chunk_index.size());
-                auto chunk_data_list = std::vector<std::vector<uint8_t>>{resource_information_structure.chunk_index.size()};
+                auto chunk_data_list = List<List<uint8_t>>{resource_information_structure.chunk_index.size()};
                 for (auto chunk_index : Range(resource_information_structure.chunk_index.size())) {
                     auto & chunk_information_structure = information_structure.chunk_information[static_cast<size_t>(resource_information_structure.chunk_index[chunk_index])];
                     auto & chunk_definition = resource_definition.chunk[chunk_index];

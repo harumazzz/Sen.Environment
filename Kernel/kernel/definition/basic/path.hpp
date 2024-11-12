@@ -234,7 +234,7 @@ namespace Sen::Kernel::Path
 			}
 
 			inline static auto join(
-				const std::vector<std::string> & args
+				const List<std::string> & args
 			) -> std::string
 			{
 				auto result = std::filesystem::path{};

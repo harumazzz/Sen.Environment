@@ -3,6 +3,7 @@
 #include "kernel/definition/assert.hpp"
 #include "kernel/definition/library.hpp"
 #include "kernel/definition/macro.hpp"
+#include "kernel/definition/basic/array.hpp"
 
 namespace Sen::Kernel::Definition {
 
@@ -161,19 +162,19 @@ namespace Sen::Kernel::Definition {
 
 			// red (i = 0)
 
-			std::vector<unsigned char> red;
+			List<unsigned char> red;
 
 			// green (i = 1)
 
-			std::vector<unsigned char> green;
+			List<unsigned char> green;
 
 			// blue (i = 2)
 
-			std::vector<unsigned char> blue;
+			List<unsigned char> blue;
 
 			// alpha (i = 3)
 
-			std::vector<unsigned char> alpha;
+			List<unsigned char> alpha;
 			
 			// destructor
 
@@ -199,7 +200,7 @@ namespace Sen::Kernel::Definition {
 
 			// pixel data should not be accessible
 			
-			std::vector<unsigned char> mutable _data;
+			List<unsigned char> mutable _data;
 
 		public:
 
@@ -222,9 +223,46 @@ namespace Sen::Kernel::Definition {
 				T interlace_type, 
 				T channels, 
 				T rowbytes, 
-				const std::vector<unsigned char> & data
+				List<unsigned char> && data
 			) : 
 			Rectangle<T>(0, 0, width, height), 
+			bit_depth(bit_depth),
+			color_type(color_type), 
+			interlace_type(interlace_type), 
+			channels(channels), 
+			rowbytes(rowbytes), 
+			_data(std::move(data))
+			{
+
+			}
+
+			Image(
+				Image&& that
+			) noexcept
+				: Rectangle<T>(std::move(that)),
+				bit_depth(std::move(that.bit_depth)),
+				color_type(std::move(that.color_type)),
+				interlace_type(std::move(that.interlace_type)),
+				channels(std::move(that.channels)),
+				rowbytes(std::move(that.rowbytes)),
+				_data(std::move(that._data))
+			{
+
+			}
+
+			explicit constexpr Image(
+				T x,
+				T y,
+				T width, 
+				T height, 
+				T bit_depth, 
+				T color_type, 
+				T interlace_type, 
+				T channels, 
+				T rowbytes, 
+				const List<unsigned char> & data
+			) : 
+			Rectangle<T>(x, y, width, height), 
 			bit_depth(bit_depth),
 			color_type(color_type), 
 			interlace_type(interlace_type), 
@@ -241,21 +279,7 @@ namespace Sen::Kernel::Definition {
 
 			explicit constexpr Image(
 				const Image &that
-			) : Image<T>(that.width, that.height, that.bit_depth, that.color_type, that.interlace_type, that.channels, that.rowbytes, that.data())
-			{
-
-			}
-
-			Image(
-				Image&& that
-			) noexcept
-				: Rectangle<T>(std::move(that)),
-				bit_depth(std::move(that.bit_depth)),
-				color_type(std::move(that.color_type)),
-				interlace_type(std::move(that.interlace_type)),
-				channels(std::move(that.channels)),
-				rowbytes(std::move(that.rowbytes)),
-				_data(std::move(that._data))
+			) : Image<T>(0, 0, that.width, that.height, that.bit_depth, that.color_type, that.interlace_type, that.channels, that.rowbytes, that.data())
 			{
 
 			}
@@ -282,7 +306,7 @@ namespace Sen::Kernel::Definition {
 
 			inline auto data(
 
-			) const -> const std::vector<unsigned char> & 
+			) const -> const List<unsigned char> & 
 			{
 				return thiz._data;
 			}
@@ -292,7 +316,7 @@ namespace Sen::Kernel::Definition {
 			*/
 
 			inline auto set_data(
-				std::vector<unsigned char> && data
+				List<unsigned char> && data
 			) const -> void
 			{
 				thiz._data = std::move(data);
@@ -304,7 +328,7 @@ namespace Sen::Kernel::Definition {
 			*/
 
 			inline auto copy_data(
-				const std::vector<unsigned char> & data
+				const List<unsigned char> & data
 			) const -> void
 			{
 				thiz._data = std::move(data);
@@ -348,7 +372,7 @@ namespace Sen::Kernel::Definition {
 				T y,
 				T width,
 				T height,
-				const std::vector<unsigned char>& data
+				const List<unsigned char>& data
 			) : Rectangle<T>(x, y, width, height), _data(std::move(data))
 			{
 			}
@@ -369,7 +393,7 @@ namespace Sen::Kernel::Definition {
 
 			) = default;
 
-			using ZList = std::vector<uint8_t>;
+			using ZList = List<uint8_t>;
 
 			/**
 			 * get the image dimension
@@ -399,7 +423,7 @@ namespace Sen::Kernel::Definition {
 				for (auto j : Range<int>(rectangle.y, rectangle.y + rectangle.height, 1)) {
 					for (auto i : Range<int>(rectangle.x, rectangle.x + rectangle.width, 1)) {
 						auto index = (j * image.width + i) * 4;
-						data.insert(data.end(), &image.data()[index], &image.data()[static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(index) + 4]);
+						data.insert(data.end(), &image.data()[index], &image.data()[static_cast<List<uint8_t>::size_type>(index) + 4]);
 					}
 				}
 				return Image<int>(0, 0, rectangle.width, rectangle.height, std::move(data));
@@ -414,7 +438,7 @@ namespace Sen::Kernel::Definition {
 				const Dimension<T>& dimension
 			) -> Image<T>
 			{
-				return Image<T>(0, 0, dimension.width, dimension.height, std::vector<unsigned char>(dimension.area() * 4, 0x00));
+				return Image<T>(0, 0, dimension.width, dimension.height, List<unsigned char>(dimension.area() * 4, 0x00));
 			}
 
 			/**
@@ -426,7 +450,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join(
 				Image<T>& source,
-				const std::vector<Image<T>>& data
+				const List<Image<T>>& data
 			) -> void
 			{
 				auto source_data = source.data();
@@ -529,7 +553,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join_extend(
 				Image<T>& source,
-				std::vector<Image<T>>& data
+				List<Image<T>>& data
 			) -> void
 			{
 				auto source_data = source.data();
@@ -580,7 +604,7 @@ namespace Sen::Kernel::Definition {
 			{
 				auto new_width = static_cast<int>(Math::ceil(source.width * percent));
 				auto new_height = static_cast<int>(Math::ceil(source.height * percent));
-				auto resized_image_data = std::vector<unsigned char>(new_width * new_height * 4);
+				auto resized_image_data = List<unsigned char>(new_width * new_height * 4);
 				for (auto j : Range<int>(new_height)) {
 					for (auto i : Range<int>(new_width)) {
 						auto old_i = static_cast<int>(i / percent);
@@ -609,7 +633,7 @@ namespace Sen::Kernel::Definition {
 			{
 				auto width_percent = static_cast<float>(new_width) / static_cast<float>(source.width);
 				auto height_percent = static_cast<float>(new_height) / static_cast<float>(source.height);
-				auto resized_image_data = std::vector<unsigned char>(new_width * new_height * 4);
+				auto resized_image_data = List<unsigned char>(new_width * new_height * 4);
 				for (auto j : Range<int>(new_height)) {
 					for (auto i : Range<int>(new_width)) {
 						auto old_i = static_cast<int>(i / width_percent);
@@ -636,7 +660,7 @@ namespace Sen::Kernel::Definition {
 			{
 				auto new_width = static_cast<int>(std::abs(image.width * std::cos(angle)) + std::abs(image.height * std::sin(angle)));
 				auto new_height = static_cast<int>(std::abs(image.height * std::cos(angle)) + std::abs(image.width * std::sin(angle)));
-				auto data = std::vector<unsigned char>(new_width * new_height * 4, 0);
+				auto data = List<unsigned char>(new_width * new_height * 4, 0);
 				auto center_x = static_cast<double>(image.width) / 2.0;
 				auto center_y = static_cast<double>(image.height) / 2.0;
 				for (auto j : Range<int>(new_height)) {
@@ -681,7 +705,7 @@ namespace Sen::Kernel::Definition {
 					0.0, 
 					nullptr
 				);
-				auto vec = std::vector<uint8_t>(data.get(), data.get() + area);
+				auto vec = List<uint8_t>(data.get(), data.get() + area);
 				return Image<int>(0, 0, new_width, new_height, std::move(vec));
 			}
 	};
@@ -758,10 +782,10 @@ namespace Sen::Kernel::Definition {
 	struct RectangleFileIOList : RectangleFileIO<T> {
 		public:
 			std::string source;
-			std::vector<RectangleFileIO<T>> data;
+			List<RectangleFileIO<T>> data;
 			RectangleFileIOList(
 				const std::string& source,
-				std::vector<RectangleFileIO<T>> data
+				List<RectangleFileIO<T>> data
 			) : source(source), data(std::move(data))
 			{
 
@@ -817,7 +841,7 @@ namespace Sen::Kernel::Definition {
 				png_init_io(png_ptr, fp.get());
 				png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
 				auto row_pointers = png_get_rows(png_ptr, info_ptr);
-				auto data = std::vector<unsigned char>();
+				auto data = List<unsigned char>();
 				auto width = static_cast<int>(png_get_image_width(png_ptr, info_ptr));
 				auto height = static_cast<int>(png_get_image_height(png_ptr, info_ptr));
 				auto bit_depth = static_cast<int>(png_get_bit_depth(png_ptr, info_ptr));
@@ -839,7 +863,7 @@ namespace Sen::Kernel::Definition {
 					interlace_type,
 					channels,
 					rowbytes,
-					data
+					std::move(data)
 				};
 				image.normalize_32bit(source);
 				return image;
@@ -898,7 +922,7 @@ namespace Sen::Kernel::Definition {
 					PNG_COMPRESSION_TYPE_DEFAULT, 
 					PNG_FILTER_TYPE_DEFAULT
 				);
-				auto row_pointers = std::vector<png_bytep>(data.height);
+				auto row_pointers = List<png_bytep>(data.height);
 				for (auto y : Range<int>(data.height)) {
 					row_pointers[y] = const_cast<unsigned char*>(&data.data()[y * data.width * 4]);
 				}
@@ -938,7 +962,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto cut_pngs(
 				std::string_view source,
-				const std::vector<RectangleFileIO<int>> & data
+				const List<RectangleFileIO<int>> & data
 			) -> void
 			{
 				auto image = ImageIO::read_png(source);
@@ -958,11 +982,11 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto cut_pngs_asynchronous(
 				std::string_view source,
-				const std::vector<RectangleFileIO<int>> & data
+				const List<RectangleFileIO<int>> & data
 			) -> void
 			{
 				auto image = ImageIO::read_png(source);
-				auto process = std::vector<std::future<void>>{};
+				auto process = List<std::future<void>>{};
 				for (auto &c : data) {
 					process.push_back(std::async(std::launch::async, [&]{
 						ImageIO::write_png(c.destination, Image<int>::cut(image, c));
@@ -1004,7 +1028,7 @@ namespace Sen::Kernel::Definition {
 			inline static auto join_png(
 				std::string_view destination,
 				const Dimension<int> & dimension,
-				const std::vector<Image<int>> & data
+				const List<Image<int>> & data
 			) -> void
 			{
 				auto source = Image<int>::transparent(dimension);
@@ -1023,7 +1047,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join(
 				Image<int> & destination,
-				const std::vector<Image<int>>& data
+				const List<Image<int>>& data
 			) -> void
 			{
 				Image<int>::join(destination, data);
@@ -1040,7 +1064,7 @@ namespace Sen::Kernel::Definition {
 
 			inline static auto join_extend(
 				Image<int> & destination,
-				std::vector<Image<int>>& data
+				List<Image<int>>& data
 			) -> void
 			{
 				Image<int>::join_extend(destination, data);

@@ -74,7 +74,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
 
         struct ResourceInformation {
             uint16_t directory_index;
-            std::vector<uint16_t> chunk_index;
+            List<uint16_t> chunk_index;
         };
 
 
@@ -175,12 +175,12 @@ namespace Sen::Kernel::Support::Marmalade::DZip
 
         struct Information {
             ArchiveSetting archive_setting;
-            std::vector<std::string> resource_file;
-            std::vector<std::string> resource_directory;
-            std::vector<ResourceInformation> resource_information;
+            List<std::string> resource_file;
+            List<std::string> resource_directory;
+            List<ResourceInformation> resource_information;
             ChunkSetting chunk_setting;
-            std::vector<ChunkInformation> chunk_information;
-            std::vector<ArchiveResourceInformation> archive_resource_information;
+            List<ChunkInformation> chunk_information;
+            List<ArchiveResourceInformation> archive_resource_information;
         };
     };
 }

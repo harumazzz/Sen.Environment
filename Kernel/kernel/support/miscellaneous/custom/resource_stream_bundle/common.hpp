@@ -10,7 +10,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
-    using DataSectionViewStored = std::map<std::string, std::vector<uint8_t>>;
+    using DataSectionViewStored = std::map<std::string, List<uint8_t>>;
 
     struct Common
     {
@@ -60,8 +60,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
 
         template <typename T>
         inline static auto find_duplicate_elements(
-            std::vector<T> const &data,
-            std::vector<T> &value) -> void
+            List<T> const &data,
+            List<T> &value
+        ) -> void
         {
             auto new_data = std::move(data);
             std::sort(new_data.begin(), new_data.end());
@@ -79,7 +80,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         }
 
         inline static auto unpack_rsg_without_definition(
-            std::vector<uint8_t> const &data,
+            List<uint8_t> const &data,
             DataSectionViewStored &value
         ) -> uint32_t
         {

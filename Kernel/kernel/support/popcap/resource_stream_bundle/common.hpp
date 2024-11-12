@@ -244,7 +244,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
         struct SimpleGroupInformation
         {
             std::string id;
-            std::vector<SimpleSubgroupInformation> subgroup_information;
+            List<SimpleSubgroupInformation> subgroup_information;
             uint32_t subgroup_count;
         };
 
@@ -459,10 +459,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             HeaderInformaiton header;
             std::map<std::string, uint32_t> resource_path;
             std::map<std::string, uint32_t> subgroup_id;
-            std::vector<SimpleGroupInformation> group_information;
+            List<SimpleGroupInformation> group_information;
             std::map<std::string, uint32_t> group_id;
-            std::vector<BasicSubgroupInformation> subgroup_information;
-            std::vector<PoolInformation> pool_information;
+            List<BasicSubgroupInformation> subgroup_information;
+            List<PoolInformation> pool_information;
             std::map<size_t, TextureInfomation> texture_resource_information; // fix index;
         };
 
@@ -653,7 +653,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             uint32_t locale;
             uint32_t id_offset;
             uint32_t resource_count;
-            std::vector<ResourceBasicManifestInformation> resource_information;
+            List<ResourceBasicManifestInformation> resource_information;
         };
 
         inline static auto exchange_to_subgroup_manifest(
@@ -692,7 +692,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             uint32_t id_offset;
             uint32_t subgroup_count;
             uint32_t subgroup_information_size;
-            std::vector<SubgroupBasicManifestInformation> subgroup_information;
+            List<SubgroupBasicManifestInformation> subgroup_information;
         };
 
         inline static auto exchange_to_group_manifest(

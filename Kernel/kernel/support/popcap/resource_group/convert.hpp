@@ -97,7 +97,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 				auto result = nlohmann::ordered_json {
 					{"type", subgroup["res"]}
 				};
-				auto atlas = std::vector<nlohmann::ordered_json>{};
+				auto atlas = List<nlohmann::ordered_json>{};
 				for(auto & element : subgroup["resources"]){
 					if(element.find("atlas") != element.end() && element["atlas"].get<bool>()){
 						atlas.emplace_back(element);
@@ -118,14 +118,14 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					else {
 						atlas_data =  nlohmann::ordered_json{
 							{"type", parent["type"].get<std::string>()},
-							{"path", String::join(parent["path"].get<std::vector<std::string>>(), Common::PosixStyle)},
+							{"path", String::join(parent["path"].get<List<std::string>>(), Common::PosixStyle)},
 							{"dimension", nlohmann::ordered_json {
 								{"width", parent["width"].get<int>() },
 								{"height", parent["height"].get<int>() }
 							}}
 						};
 					}
-					auto children_in_current_parent = std::vector<nlohmann::ordered_json>{};
+					auto children_in_current_parent = List<nlohmann::ordered_json>{};
 					for(auto & element : subgroup["resources"]) {
 						if(element.find("parent") != element.end() and element["parent"].get<std::string>() == parent["id"].get<std::string>()) {
 							children_in_current_parent.emplace_back(element);
@@ -149,7 +149,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 						else {
 							children_data = nlohmann::ordered_json {
 								{"type", element["type"].get<std::string>()},
-								{"path", String::join(element["path"].get<std::vector<std::string>>(), Common::PosixStyle)},
+								{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle)},
 								{
 									"default", nlohmann::ordered_json {
 										{"ax", element["ax"].get<int>()},
@@ -214,7 +214,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					else {
 						sub_data = nlohmann::ordered_json {
 							{"type", element["type"].get<std::string>()},
-							{"path", String::join(element["path"].get<std::vector<std::string>>(), Common::PosixStyle) }
+							{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle) }
 						};
 					}
 					data[element["id"].get<std::string>()] = sub_data;

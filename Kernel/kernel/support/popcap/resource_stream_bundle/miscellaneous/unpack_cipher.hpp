@@ -66,7 +66,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 		}
 
 		inline static auto exchange_packet(
-            std::vector<uint8_t> const &packet_data,
+            List<uint8_t> const &packet_data,
             std::string destination
         ) -> void
         {

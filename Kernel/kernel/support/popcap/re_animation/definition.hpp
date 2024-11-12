@@ -213,7 +213,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct ReanimTrack
     {
         std::string name;
-        std::vector<ReanimTransform> transforms;
+        List<ReanimTransform> transforms;
     };
 
     inline auto to_json(
@@ -238,7 +238,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     {
         int8_t do_scale;
         float fps;
-        std::vector<ReanimTrack> tracks;
+        List<ReanimTrack> tracks;
     };
 
     inline auto to_json(

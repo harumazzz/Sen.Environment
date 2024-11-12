@@ -52,7 +52,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 				(*cfw2_json).initialized = view->readBoolean();
 				(*cfw2_json).default_point_size = view->readInt32();
 				auto characterCount = view->readUint32();
-				(*cfw2_json).character = std::vector<CharacterItem>();
+				(*cfw2_json).character = List<CharacterItem>();
 				for (auto i : Range<uint32_t>(characterCount)) {
 					(*cfw2_json).character.emplace_back(CharacterItem{
 						view->readCharByInt16(),
@@ -60,21 +60,21 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 					});
 				}
 				auto layer_count = view->readUint32();
-            	(*cfw2_json).layer = std::vector<FontLayer>{};
+            	(*cfw2_json).layer = List<FontLayer>{};
 				for (auto i : Range<uint32_t>(layer_count)) {
 					auto name = view->readStringByInt32();
 					auto tag_require_count = view->readUint32();
-					auto tag_require =  std::vector<std::string>{};
+					auto tag_require =  List<std::string>{};
 					for (auto k : Range<uint32_t>(tag_require_count)) {
 						tag_require.emplace_back(view->readStringByInt32());
 					}
 					auto tag_exclude_count = view->readUint32();
-					auto tag_exclude = std::vector<std::string>{};
+					auto tag_exclude = List<std::string>{};
 					for (auto k : Range<uint32_t>(tag_exclude_count)) {
 						tag_exclude.emplace_back(view->readStringByInt32());
 					}
 					auto kerning_count = view->readUint32();
-					auto kerning = std::vector<FontKerning>{};
+					auto kerning = List<FontKerning>{};
 					for (auto k : Range<uint32_t>(kerning_count)) {
 						kerning.emplace_back(FontKerning {
 							view->readCharByInt16(),
@@ -82,7 +82,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 						});
 					}
 					auto character_count = view->readUint32();
-					auto character = std::vector<FontCharacter>{};
+					auto character = List<FontCharacter>{};
 					for (auto k : Range<uint32_t>(character_count)) {
 						character.emplace_back(FontCharacter {
 							view->readCharByInt16(),

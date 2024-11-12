@@ -496,7 +496,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         bool is_state;
         uint32_t group;
         uint32_t default_item;
-        std::vector<uint32_t> association;
+        List<uint32_t> association;
     };
 
     inline auto to_json(
@@ -844,7 +844,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t index;
         MusicTrackClipCurveItemType type;
-        std::vector<CoordinatePoint> point;
+        List<CoordinatePoint> point;
     };
 
     inline auto to_json(
@@ -919,8 +919,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicTrackClip
     {
         uint32_t u1;
-        std::vector<MusicTrackClipItem> item;
-        std::vector<MusicTrackClipCurveItem> curve;
+        List<MusicTrackClipItem> item;
+        List<MusicTrackClipCurveItem> curve;
     };
 
     inline auto to_json(
@@ -1377,7 +1377,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct AudioEffectSetting
     {
         std::array<bool, 5> bypass;
-        std::vector<AudioEffectSettingItem> item;
+        List<AudioEffectSettingItem> item;
     };
 
     inline auto to_json(
@@ -1452,7 +1452,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct AudioMetadataSetting
     {
-        std::vector<AudioMetadataSettingItem> item;
+        List<AudioMetadataSettingItem> item;
     };
 
     inline auto to_json(
@@ -1668,8 +1668,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         bool pick_new_path_when_sound_start;
         bool loop;
         uint32_t transition_time;
-        std::vector<AudioPositioningSettingListenerRoutingPositionSourceAutomationPoint> point;
-        std::vector<AudioPositioningSettingListenerRoutingPositionSourceAutomationPath> path;
+        List<AudioPositioningSettingListenerRoutingPositionSourceAutomationPoint> point;
+        List<AudioPositioningSettingListenerRoutingPositionSourceAutomationPath> path;
     };
 
     inline auto to_json(
@@ -1926,7 +1926,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         PropertyCategory u1;
         uint32_t u2;
         CoordinateMode mode;
-        std::vector<CoordinatePoint> point;
+        List<CoordinatePoint> point;
     };
 
     inline auto to_json(
@@ -1965,7 +1965,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct RealTimeParameterControlSetting
     {
-        std::vector<RealTimeParameterControlSettingItem> item;
+        List<RealTimeParameterControlSettingItem> item;
     };
 
     inline auto to_json(
@@ -2057,7 +2057,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t group;
         TimePoint change_occur_at;
-        std::vector<StateSettingApplyItem> apply;
+        List<StateSettingApplyItem> apply;
     };
 
     inline auto to_json(
@@ -2084,8 +2084,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct StateSetting
     {
-        std::vector<StateSettingAttribute> attribute;
-        std::vector<StateSettingItem> item;
+        List<StateSettingAttribute> attribute;
+        List<StateSettingItem> item;
     };
 
     inline auto to_json(
@@ -2352,7 +2352,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicTransitionSettingItemSource
     {
-        std::vector<uint32_t> id;
+        List<uint32_t> id;
         TimePoint exit_source_at;
         uint32_t exit_source_at_custom_cue_match;
         bool play_post_exit;
@@ -2387,7 +2387,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicTransitionSettingItemDestination
     {
-        std::vector<uint32_t> id;
+        List<uint32_t> id;
         MusicTransitionSettingJumpMode jump_to;
         MusicTransitionSettingSynchronizeMode synchronize_to;
         bool play_pre_entry;
@@ -2504,7 +2504,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicTransitionSetting
     {
-        std::vector<MusicTransitionSettingItem> item;
+        List<MusicTransitionSettingItem> item;
     };
 
     inline auto to_json(
@@ -2806,7 +2806,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicTrack
     {
         uint32_t parent;
-        std::vector<AudioSourceSetting> source;
+        List<AudioSourceSetting> source;
         MusicTrackPlaybackSetting playback_setting;
         MusicTrackStream stream;
         AudioVoice voice;
@@ -3022,7 +3022,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct StatefulPropertySetting
     {
-        std::vector<StatefulPropertySettingItem> value;
+        List<StatefulPropertySettingItem> value;
     };
 
     inline auto to_json(
@@ -3789,7 +3789,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t target;
         EventActionMode mode;
-        std::vector<EventActionException> exception;
+        List<EventActionException> exception;
         EventActionScope scope;
         uint32_t u1;
 
@@ -4085,7 +4085,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct Event
     {
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
     };
 
     inline auto to_json(
@@ -4174,8 +4174,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t probability;
         AudioAssociationSettingMode mode;
-        std::vector<AudioAssociationSettingArgument> argument;
-        std::vector<AudioAssociationSettingPath> path;
+        List<AudioAssociationSettingArgument> argument;
+        List<AudioAssociationSettingPath> path;
     };
 
     inline auto to_json(
@@ -4385,7 +4385,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct AttenuationCurve
     {
         CoordinateMode mode;
-        std::vector<CoordinatePoint> point;
+        List<CoordinatePoint> point;
     };
 
     inline auto to_json(
@@ -4455,7 +4455,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct Attenuation
     {
         AttenuationApplySetting apply;
-        std::vector<AttenuationCurve> curve;
+        List<AttenuationCurve> curve;
         bool height_spread;
         AttenuationCone cone;
         RealTimeParameterControlSetting real_time_parameter_control;
@@ -4708,7 +4708,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         std::string expand;
         RealTimeParameterControlSetting real_time_parameter_control;
         StateSetting state;
-        std::vector<EffectU1> u1;
+        List<EffectU1> u1;
     };
 
     inline auto to_json(
@@ -4755,7 +4755,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         std::string expand;
         RealTimeParameterControlSetting real_time_parameter_control;
         StateSetting state;
-        std::vector<EffectU1> u1;
+        List<EffectU1> u1;
     };
 
     inline auto to_json(
@@ -4802,7 +4802,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         std::string expand;
         RealTimeParameterControlSetting real_time_parameter_control;
         StateSetting state;
-        std::vector<EffectU1> u1;
+        List<EffectU1> u1;
         AudioEffectSetting effect;
     };
 
@@ -5004,7 +5004,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t recovery_time;
         float maximum_ducking_volume;
-        std::vector<BusAutomaticDuckingSettingBus> bus;
+        List<BusAutomaticDuckingSettingBus> bus;
     };
 
     inline auto to_json(
@@ -5848,7 +5848,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         AudioPlayTypeSetting type_setting;
         AudioPlayMode mode;
         AudioPlayModeSetting mode_setting;
-        std::vector<SoundPlaylistContainerPlaylistItem> playlist;
+        List<SoundPlaylistContainerPlaylistItem> playlist;
     };
 
     inline auto to_json(
@@ -5890,7 +5890,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t parent;
         AudioSourceSetting source;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         SoundPlaylistContainerPlaybackSetting playback_setting;
         AudioVoice voice;
         AudioVoiceVolumeGainSetting voice_volume_gain;
@@ -6119,7 +6119,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct SoundSwitchContainerObjectAssignItem
     {
         uint32_t item;
-        std::vector<uint32_t> object;
+        List<uint32_t> object;
     };
 
     inline auto to_json(
@@ -6147,8 +6147,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         RandomizableValue<float> initial_delay;
         AudioPlayMode mode;
         AudioSwitcherSetting switcher;
-        std::vector<SoundSwitchContainerObjectAttributeItem> object_attribute;
-        std::vector<SoundSwitchContainerObjectAssignItem> object_assign;
+        List<SoundSwitchContainerObjectAttributeItem> object_attribute;
+        List<SoundSwitchContainerObjectAssignItem> object_assign;
     };
 
     inline auto to_json(
@@ -6188,7 +6188,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t parent;
         AudioSourceSetting source;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         SoundSwitchContainerPlaybackSetting playback_setting;
         AudioVoice voice;
         AudioVoiceVolumeGainSetting voice_volume_gain;
@@ -6379,7 +6379,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct SoundBlendContainerTrackChildItem
     {
         uint32_t id;
-        std::vector<CoordinatePoint> point;
+        List<CoordinatePoint> point;
     };
 
     inline auto to_json(
@@ -6407,7 +6407,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         uint32_t id;
         RealTimeParameterControlSetting real_time_parameter_control;
         Parameter cross_fade;
-        std::vector<SoundBlendContainerTrackChildItem> child;
+        List<SoundBlendContainerTrackChildItem> child;
     };
 
     inline auto to_json(
@@ -6438,7 +6438,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         RandomizableValue<float> initial_delay;
         AudioPlayMode mode;
-        std::vector<SoundBlendContainerTrackItem> track;
+        List<SoundBlendContainerTrackItem> track;
     };
 
     inline auto to_json(
@@ -6479,7 +6479,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t parent;
         AudioSourceSetting source;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         SoundBlendContainerPlaybackSetting playback_setting;
         AudioVoice voice;
         AudioVoiceVolumeGainSetting voice_volume_gain;
@@ -6691,7 +6691,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t parent;
         AudioSourceSetting source;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         ActorMixerPlaybackSetting playback_setting;
         AudioVoice voice;
         AudioVoiceVolumeGainSetting voice_volume_gain;
@@ -6910,7 +6910,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicSegmentCue
     {
-        std::vector<MusicSegmentCueItem> item;
+        List<MusicSegmentCueItem> item;
     };
 
     inline auto to_json(
@@ -7064,7 +7064,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicStingerSetting
     {
-        std::vector<MusicStingerSettingItem> item;
+        List<MusicStingerSettingItem> item;
     };
 
     inline auto to_json(
@@ -7088,7 +7088,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicSegment
     {
         uint32_t parent;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         MusicSegmentPlaybackSetting playback_setting;
         AudioTimeSetting time_setting;
         AudioVoice voice;
@@ -7333,7 +7333,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicPlaylistContainerPlaybackSetting
     {
         float speed;
-        std::vector<MusicPlaylistContainerPlaylistItem> playlist;
+        List<MusicPlaylistContainerPlaylistItem> playlist;
     };
 
     inline auto to_json(
@@ -7365,7 +7365,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicPlaylistContainer
     {
         uint32_t parent;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         MusicPlaylistContainerPlaybackSetting playback_setting;
         AudioTimeSetting time_setting;
         AudioVoice voice;
@@ -7600,7 +7600,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         float speed;
         bool continue_playing_on_switch_change;
         AudioSwitcherSetting switcher;
-        std::vector<MusicSwitchContainerAssociationItem> association_list;
+        List<MusicSwitchContainerAssociationItem> association_list;
         AudioAssociationSetting association;
     };
 
@@ -7647,7 +7647,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct MusicSwitchContainer
     {
         uint32_t parent;
-        std::vector<uint32_t> child;
+        List<uint32_t> child;
         MusicSwitchContainerPlaybackSetting playback_setting;
         AudioTimeSetting time_setting;
         AudioVoice voice;
@@ -8436,7 +8436,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         bool enable;
         CoordinateMode mode;
-        std::vector<CoordinatePoint> point;
+        List<CoordinatePoint> point;
     };
 
     inline auto to_json(
@@ -8504,7 +8504,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         uint16_t maximum_voice_instance; //TODO.
         ObstructionSettingBundle obstruction;
         ObstructionSettingBundle occlusion;
-        std::vector<PlugInReference> plug_in;
+        List<PlugInReference> plug_in;
     };
 
     inline auto to_json(
@@ -8588,7 +8588,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t id;
         uint32_t default_transition;
-        std::vector<StateGroupCustomTransition> custom_transition;
+        List<StateGroupCustomTransition> custom_transition;
     };
 
     inline auto to_json(
@@ -8617,7 +8617,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t id;
         Parameter parameter;
-        std::vector<CoordinateIDPoint> point;
+        List<CoordinateIDPoint> point;
     };
 
     inline auto to_json(
@@ -8736,10 +8736,10 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct GameSynchronization
     {
-        std::vector<StateGroup> state_group;
-        std::vector<SwitchGroup> switch_group;
-        std::vector<GameParameter> game_parameter;
-        std::vector<GameSynchronizationU1> u1;
+        List<StateGroup> state_group;
+        List<SwitchGroup> switch_group;
+        List<GameParameter> game_parameter;
+        List<GameSynchronizationU1> u1;
     };
 
     inline auto to_json(
@@ -8775,11 +8775,11 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     struct SoundBankInformation
     {
         BankHeader bank_header;
-        std::vector<uint32_t> media;
-        std::vector<SoundBankReference> reference;
+        List<uint32_t> media;
+        List<SoundBankReference> reference;
         Setting setting;
         GameSynchronization game_synchronization;
-        std::vector<Hierarchy> hierarchy;
+        List<Hierarchy> hierarchy;
         bool has_media = false;
         bool has_reference = false;
         bool has_setting = false;

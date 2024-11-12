@@ -17,7 +17,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 
     protected:
         inline auto read_track_nodes(
-            std::vector<ParticlesTrackNode> &value,
+            List<ParticlesTrackNode> &value,
             const std::string &data) -> bool
         {
             auto pos = 0_size;

@@ -14,7 +14,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
         inline static auto exchange_packet(
             PacketStructure const &packet_structure,
             std::string source
-        ) -> std::vector<uint8_t>
+        ) -> List<uint8_t>
         {
             auto packet_stream = DataStreamView{};
             ResourceStreamGroup::Pack::process_whole(packet_stream, packet_structure, source);
@@ -29,7 +29,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             ManifestStructure const &manifest,
             std::string &source) -> void
         {
-            auto work_map = std::map<std::string, std::future<std::vector<uint8_t>>>{};
+            auto work_map = std::map<std::string, std::future<List<uint8_t>>>{};
             for (auto &[group_id, group_information] : definition.group)
             {
                 for (auto &[subgroup_id, subgroup_information] : group_information.subgroup)
@@ -41,7 +41,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
                     work_map[subgroup_id] = std::async(&exchange_packet, packet_structure, source);
                 }
             }
-            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto packet_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             for (auto &[subgroup_id, future]: work_map) {
                 packet_data_section_view_stored[subgroup_id] = future.get();
             }
@@ -58,7 +58,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
             std::string &source
         ) -> void
         {
-            auto packet_data_section_view_stored = std::map<std::string, std::vector<uint8_t>>{};
+            auto packet_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             for (auto &[group_id, group_information] : definition.group) {
                 for (auto &[subgroup_id, subgroup_information] : group_information.subgroup) {
                     auto packet_structure = PacketStructure{

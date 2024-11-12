@@ -53,7 +53,7 @@ namespace Sen::Kernel::Support::PopCap::Package
         PackagePlatformEnumeration::Type package_platform;
         bool zlib_compression;
         // bool windows_path_separate;
-        std::vector<Resource> resource;
+        List<Resource> resource;
     };
 
     inline auto to_json(

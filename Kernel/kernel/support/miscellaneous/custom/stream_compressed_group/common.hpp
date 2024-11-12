@@ -111,7 +111,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     {
                         for (auto &resource : element["resources"])
                         {
-                            resource["path"].get<std::vector<std::string>>();
+                            resource["path"].get<List<std::string>>();
                         }
                     }
                 }
@@ -140,7 +140,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 }
                 else
                 {
-                    value.data[id].path = String::join(resource["path"].get<std::vector<std::string>>(), k_posix_style);
+                    value.data[id].path = String::join(resource["path"].get<List<std::string>>(), k_posix_style);
                 }
             }
             return;
@@ -153,7 +153,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             static_assert(sizeof(use_string_for_style) == sizeof(bool));
             static_assert(use_string_for_style == true or use_string_for_style == false);
-            auto atlas = std::vector<nlohmann::ordered_json>{};
+            auto atlas = List<nlohmann::ordered_json>{};
             for (auto &element : data)
             {
                 if (element.find("atlas") != element.end() && element["atlas"].get<bool>())
@@ -170,11 +170,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 }
                 else
                 {
-                    atlas_data.path = String::join(parent["path"].get<std::vector<std::string>>(), k_posix_style);
+                    atlas_data.path = String::join(parent["path"].get<List<std::string>>(), k_posix_style);
                 }
                 atlas_data.dimension.width = parent["width"].get<int>();
                 atlas_data.dimension.height = parent["height"].get<int>();
-                auto children_in_current_parent = std::vector<nlohmann::ordered_json>{};
+                auto children_in_current_parent = List<nlohmann::ordered_json>{};
                 for (auto &element : data)
                 {
                     if (element.find("parent") != element.end() and element["parent"].get<std::string>() == parent["id"].get<std::string>())
@@ -191,7 +191,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     }
                     else
                     {
-                        children_data.path = String::join(element["path"].get<std::vector<std::string>>(), k_posix_style);
+                        children_data.path = String::join(element["path"].get<List<std::string>>(), k_posix_style);
                     }
                     children_data.type = exchange_data_type(element["type"].get<std::string>());
                     children_data.texture_info.ax = element["ax"].get<int>();
@@ -665,7 +665,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             bool is_image;
             bool is_removed;
             SubgroupCompressedInfo subgroup_content_information;
-            std::map<std::string, std::vector<uint8_t>> resource_data_section_view_stored;
+            std::map<std::string, List<uint8_t>> resource_data_section_view_stored;
             PacketStructure packet_structure;
         };
 
@@ -1039,7 +1039,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             bool is_image;
             // uint32_t compression_flag;
-            std::vector<uint8_t> packet_data;
+            List<uint8_t> packet_data;
             SubgroupCompressedInfo info;
         };
 
@@ -1056,7 +1056,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             PacketOriginalInformation const &packet_information) -> void
         {
             auto resource_packet_view_stored = DataStreamView{};
-            auto subgroup_information_list = std::vector<SubgroupInformation>{};
+            auto subgroup_information_list = List<SubgroupInformation>{};
             for (auto &[subgroup_id, subgroup_value] : packet_information.subgroup)
             {
                 auto subgroup_information = SubgroupInformation{
@@ -1135,7 +1135,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             {
                 assert_conditional(false, fmt::format("{}", Language::get("pvz2.scg.invalid_texture_format_category")), "exchange_stream_resource_group");
             }
-            auto subgroup_information_list = std::vector<SubgroupInformation>{};
+            auto subgroup_information_list = List<SubgroupInformation>{};
             stream.read_pos = header_information.subgroup_information_section_offset;
             subgroup_information_list.resize(header_information.subgroup_information_section_block_count);
             exchange_list(stream, subgroup_information_list, &exchange_to_subgroup);

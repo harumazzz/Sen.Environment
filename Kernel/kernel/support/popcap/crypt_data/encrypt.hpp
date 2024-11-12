@@ -42,13 +42,13 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 			inline auto process(
 				const DataStreamView & view,
 				std::string_view key
-			) -> std::vector<std::uint8_t>
+			) -> List<std::uint8_t>
 			{
             	auto size = view.size();
 				auto result = DataStreamView{};
 				result.append<uint8_t, BasicDefinition::magic.size()>(BasicDefinition::magic);
 				result.writeUint64(size);
-				auto code = std::vector<uint8_t>{key.begin(), key.end()};
+				auto code = List<uint8_t>{key.begin(), key.end()};
 				if (size >= 0x100)
 				{
 					auto index = 0;

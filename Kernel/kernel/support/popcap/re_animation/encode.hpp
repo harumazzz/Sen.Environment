@@ -14,8 +14,8 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     protected:
         template <auto UseVariant>
 		inline auto encode_zlib(
-			const std::vector<unsigned char> &data
-		) -> std::vector<unsigned char>
+			const List<unsigned char> &data
+		) -> List<unsigned char>
 		{
 			static_assert(sizeof(UseVariant) == sizeof(bool));
 			static_assert(UseVariant == true or UseVariant == false);

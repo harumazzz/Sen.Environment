@@ -2,6 +2,7 @@
 
 #include "kernel/definition/library.hpp"
 #include "kernel/definition/macro.hpp"
+#include "kernel/definition/basic/array.hpp"
 
 namespace Sen::Kernel::Interface {
 
@@ -31,9 +32,9 @@ namespace Sen::Kernel::Interface {
 
 	inline static auto convert_parameter_to_vector_string(
 		Parameter* param
-	) -> std::vector<std::string>
+	) -> List<std::string>
 	{
-        auto result = std::vector<std::string> {};
+        auto result = List<std::string> {};
         for (auto i : Range<size_t>(param->size)){
             result.emplace_back(std::string {param->data[i].data, param->data[i].size});
         }

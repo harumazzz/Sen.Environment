@@ -56,7 +56,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
     {
         SimpleCategoryInformation category;
         uint32_t compression;
-        std::vector<Resource> resource;
+        List<Resource> resource;
     };
 
     inline auto to_json(

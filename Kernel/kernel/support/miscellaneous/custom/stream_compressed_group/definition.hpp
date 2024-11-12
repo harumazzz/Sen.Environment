@@ -488,7 +488,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
     struct GroupCategoryInfo
     {
-        std::vector<int> resolution;
+        List<int> resolution;
         int format;
     };
 

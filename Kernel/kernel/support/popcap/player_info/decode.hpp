@@ -15,7 +15,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
     {
     private:
         inline static auto exchange_data(
-            std::vector<uint8_t> const &buffer) -> std::string
+            List<uint8_t> const &buffer) -> std::string
         {
             auto oss = std::ostringstream{};
             for (const auto &byte : buffer)
@@ -191,7 +191,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
         }
 
         inline static auto exchange_purchased(
-            std::vector<int> const &purchases,
+            List<int> const &purchases,
             Store &store_value,
             ZenGarden &zen_garden) -> void
         {
@@ -479,7 +479,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
         }
 
         inline static auto exchange_height_of_tree(
-            std::vector<int> const &challenge_records,
+            List<int> const &challenge_records,
             TreeOfWisdom &value) -> void
         {
             auto index = exchange_enumeration<GameMode, uint8_t>(GameMode::tree_of_wisdom);
@@ -491,7 +491,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
         }
 
         inline static auto exchange_challenge(
-            std::vector<int> const &challenge_records,
+            List<int> const &challenge_records,
             ChallengeRecord &value) -> void
         {
             for (auto i : Range(exchange_enumeration<GameMode, size_t>(GameMode::adventure)))

@@ -1129,7 +1129,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
         StinkyTheSnail stinky;
         TreeOfWisdom tree_of_wisdom;
         ZenGardenPurchased purchased;
-        std::vector<PottedPlant> potted_plants;
+        List<PottedPlant> potted_plants;
     };
 
     inline auto to_json(
@@ -1762,7 +1762,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
     {
         bool accepted_zombatar_license;
         bool display_save_image_messenge;
-        std::vector<ZombatarValue> value;
+        List<ZombatarValue> value;
     };
 
     inline auto to_json(
@@ -1930,7 +1930,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
     struct SummaryInfo
     {
         int version;
-        std::vector<UserDetail> users;
+        List<UserDetail> users;
     };
 
     inline auto to_json(

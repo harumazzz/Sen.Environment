@@ -35,7 +35,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         };
 
         inline static auto bytes_to_hex_string(
-            std::vector<uint8_t> const &data) -> std::string
+            List<uint8_t> const &data) -> std::string
         {
             std::stringstream result;
             for (auto &v : data)
@@ -47,9 +47,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
             return result.str();
         }
 
-        inline static auto hex_string_to_bytes(const std::string &data) -> std::vector<uint8_t>
+        inline static auto hex_string_to_bytes(const std::string &data) -> List<uint8_t>
         {
-            auto result = std::vector<uint8_t>{};
+            auto result = List<uint8_t>{};
             for (auto i = 0; i < data.length(); i += 2)
             {
                 auto byte_string = data.substr(i, 2);
@@ -125,7 +125,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         }
 
         inline static auto indexing_subgroup_information_by_id(
-            std::vector<ResourceStreamBundle::Common::BasicSubgroupInformation> &list,
+            List<ResourceStreamBundle::Common::BasicSubgroupInformation> &list,
             std::map<std::string, size_t> &index_map) -> void
         {
             for (auto index : Range(list.size()))

@@ -14,7 +14,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
     {
     protected:
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value || std::is_same<Args, bool>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value || std::is_same<Args, bool>::value
         inline static auto process_package(
             DataStreamView &stream,
             PacketStructure &definition,
@@ -30,10 +30,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             CompiledMapData::decode(stream, information_structure_header.resource_information_section_offset, information_structure_header.resource_information_section_size, resource_information_structure, &exchange_to_resource_infomation);
             packet_compression_from_data(information_structure_header.resource_data_section_compression, definition.compression);
             definition.resource.reserve(resource_information_structure.size());
-            auto resource_data_section_view_stored_map = std::unordered_map<std::string_view, std::vector<std::uint8_t>>{};
+            auto resource_data_section_view_stored_map = std::unordered_map<std::string_view, List<std::uint8_t>>{};
             if constexpr (!(std::is_same<Args, bool>::value))
             {
-                for (auto &current_resource_type : std::vector<std::string_view>{k_general_type_string, k_texture_type_string})
+                for (auto &current_resource_type : List<std::string_view>{k_general_type_string, k_texture_type_string})
                 {
                     auto resource_data_section_offset = k_begin_index;
                     auto resource_data_section_size = k_none_size;
@@ -92,7 +92,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
                 if constexpr (!(std::is_same<Args, bool>::value))
                 {
                     auto resource_data = sub_bytes(resource_data_section_view_stored_map[resource_type_string], resource_information.resource_data_section_offset, resource_information.resource_data_section_size);
-                    if constexpr (std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value)
+                    if constexpr (std::is_same<Args, std::map<std::string, List<uint8_t>>>::value)
                     {
                         args[resource_path] = std::move(resource_data);
                     }
@@ -111,7 +111,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
     public:
         template <typename Args>
-            requires std::is_same<Args, std::map<std::string, std::vector<uint8_t>>>::value || std::is_same<Args, std::string>::value || std::is_same<Args, bool>::value
+            requires std::is_same<Args, std::map<std::string, List<uint8_t>>>::value || std::is_same<Args, std::string>::value || std::is_same<Args, bool>::value
         inline static auto process_whole(
             DataStreamView &stream,
             PacketStructure &definition,

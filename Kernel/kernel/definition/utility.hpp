@@ -5,6 +5,7 @@
 #include "kernel/definition/macro.hpp"
 // basic
 #include "kernel/definition/basic/math.hpp"
+#include "kernel/definition/basic/array.hpp"
 #include "kernel/definition/basic/filesystem.hpp"
 #include "kernel/definition/basic/pointer.hpp"
 #include "kernel/definition/basic/string.hpp"
@@ -15,7 +16,6 @@
 #include "kernel/definition/basic/json.hpp"
 #include "kernel/definition/basic/json_writer.hpp"
 #include "kernel/definition/basic/buffer.hpp"
-#include "kernel/definition/basic/collections.hpp"
 #include "kernel/definition/basic/system.hpp"
 #include "kernel/definition/basic/thread.hpp"
 #include "kernel/definition/basic/apng_maker.hpp"
