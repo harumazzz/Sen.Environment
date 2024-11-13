@@ -14,23 +14,21 @@
 
 -   [Terminal for Macintosh](https://developer.apple.com/library/archive/documentation/OpenSource/Conceptual/ShellScripting/Introduction/Introduction.html)
 
--   [MSVC 19.38 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
+-   [MSVC 19.40 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
 
--   [Clang 17.0 for Linux](https://llvm.org/)
+-   [Clang 19.1 for Linux](https://llvm.org/)
 
--   [Clang 17.0 for Macintosh](https://llvm.org/)
+-   [Clang 19.1 for Macintosh](https://llvm.org/)
 
--   [Clang 14.0 for Android (NDK r26.1)](https://developer.android.com/ndk/downloads)
+-   [Clang 18.0 for Android (NDK r27.1)](https://developer.android.com/ndk/downloads)
 
--   [Clang 17.0 for iPhone](https://llvm.org/)
+-   [Clang 19.1 for iPhone](https://llvm.org/)
 
 ## Dependencies
 
--   [quickjs](https://github.com/bellard/quickjs/): JavaScript Engine used by `Kernel`, for `Clang`
+-   [quickjs](https://github.com/quickjs-ng/quickjs): JavaScript Engine used by `Kernel`
 
--   [quickjs.c_smile](https://github.com/c-smile/quickjspp/): JavaScript Engine used by `Kernel`, for `MSVC`
-
--   [libpng](http://www.libpng.org/pub/png/libpng.html): PNG Decode/Encode
+-   [libpng](http://www.libpng.org/pub/png/libpng.html): PNG Support
 
 -   [zlib](https://www.zlib.net/): Zlib compress/uncompress
 
@@ -54,13 +52,9 @@
 
 -   [Rijndael](#): Rijndael encrypt/decrypt
 
--   [etcpak](https://github.com/wolfpld/etcpak): ETC1 Encode algorithm
-
 -   [zip](https://github.com/kuba--/zip): zip compress/uncompress
 
 -   [lzma](https://www.7-zip.org/sdk.html): lzma compress/uncompress
-
--   [ETCPACK](https://github.com/Ericsson/ETCPACK): ETC1 Decode algorithm
 
 -   [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64): Base64 Encode/Decode
 
@@ -76,18 +70,17 @@
 
 -   [tsl](https://github.com/Tessil/ordered-map): Actual ordered map for C++ comes with support of First-in-first-out
 
+-   [etc1](https://developer.android.com/guide/playcore/asset-delivery/texture-compression): Google Standard ETC1 for encode/decode image
+
 ## Modification
 
 -   To make sure all the libraries work perfectly fine with `Kernel`, there are some modification compare to original project. All modification will be added `Haruma :: Add`, `Haruma :: Change`, `Haruma :: Delete`
 
--   Special thanks to [TwinStar](https://github.com/twinkles-twinstar/) for his modification on some libraries which makes all the process easier.
+-   Special thanks to [TwinStar](https://github.com/twinstar6980) for his modification on some libraries which makes all the process easier.
 
 -   All the modification has been made:
 
-|                           Library                           |                    Modification                    |
-| :---------------------------------------------------------: | :------------------------------------------------: |
-|       [quickjs](https://github.com/bellard/quickjs/)        |         Adapt some `ES2022/ES2023` methods         |
-|   [quickjs.c_smile](https://github.com/c-smile/quickjspp)   |         Adapt some `ES2022/ES2023` methods         |
-|         [etcpak](https://github.com/wolfpld/etcpak)         | Added `PubDecodeETCRGB` methods in `BlockData.cpp` |
-|              [simdjson](https://simdjson.org)               |     Fix issues with opening Unicode file path      |
-| [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main) |      Fix some issues when assigning JS class       |
+|                           Library                           |               Modification                |
+| :---------------------------------------------------------: | :---------------------------------------: |
+|              [simdjson](https://simdjson.org)               | Fix issues with opening Unicode file path |
+| [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main) |  Fix some issues when assigning JS class  |

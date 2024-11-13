@@ -53,4 +53,14 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Shell PROPERTY CXX_STANDARD 20)
 endif()
 set(CMAKE_CXX_STANDARD 23)
-# TODO: Add tests and install targets if needed.
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if (MSVC)
+    add_compile_options(/std:c++latest)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")
+endif()
+
+if (MSVC)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=0x0A00)
+endif()

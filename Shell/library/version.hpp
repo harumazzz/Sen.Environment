@@ -4,6 +4,6 @@
 
 namespace Sen::Shell {
 
-	inline auto constexpr version = 2;
+	inline auto constexpr version = 3;
 
 }

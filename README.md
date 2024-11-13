@@ -10,7 +10,7 @@
 
 # Platform Support
 
--   Fully supports `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 6+`
+-   Fully supports `Windows 10 or later x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 6+`
 
 # Modules
 

@@ -32,4 +32,4 @@
 
 # Acknowledgement
 
--   [TwinStar](https://github.com/twinkles-twinstar/): The source code of the `pick_path` method has been adapted from the `ShellCLI` source code of this project.
+-   [TwinStar](https://github.com/twinstar6980): The source code of the `pick_path` method has been adapted from the `ShellCLI` source code of this project.

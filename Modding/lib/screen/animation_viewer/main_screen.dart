@@ -277,6 +277,8 @@ class _AnimationViewerState extends State<AnimationViewer> {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        forceMaterialTransparency:
+            Platform.isWindows || Platform.isLinux || Platform.isMacOS,
         title: Text(los.animation_viewer),
         actions: [
           IconButton(

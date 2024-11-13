@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,6 +27,8 @@ class MediaScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+          forceMaterialTransparency:
+              Platform.isWindows || Platform.isLinux || Platform.isMacOS,
           automaticallyImplyLeading: false,
           centerTitle: true,
           backgroundColor: Colors.transparent,

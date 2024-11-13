@@ -32,11 +32,11 @@ MAIN{
             for (auto i = 1; i < argc; ++i) {
                 command += " \"" + std::string(argv[i]) + "\"";
             }
-            system(command.c_str());
+            std::system(command.c_str());
         #endif
     }
     catch (const std::runtime_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::println(std::cout, "error found: {}", e.what());
     }
     std::system("pause");
     return -1;
