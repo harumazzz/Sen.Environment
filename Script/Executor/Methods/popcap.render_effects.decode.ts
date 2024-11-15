@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RenderEffects.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.RenderEffects.decode_fs(argument.source, argument.destination!);

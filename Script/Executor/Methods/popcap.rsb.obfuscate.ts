@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.Obfuscate {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bin`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate.process_fs(argument.source, argument.destination!);

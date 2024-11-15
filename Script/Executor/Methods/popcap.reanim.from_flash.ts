@@ -41,14 +41,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.FromFlash {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.ReAnimation.FromFlash.convert_fs(argument.source, argument.destination!);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, true);
             },
             is_enabled: true,
             configuration: undefined!,

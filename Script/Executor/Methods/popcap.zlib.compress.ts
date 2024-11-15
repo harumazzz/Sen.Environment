@@ -47,6 +47,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Zlib.Compress {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bin`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_boolean(argument, "use_64_bit_variant", this.configuration, Kernel.Language.get("popcap.zlib.compress.use_64_bit_variant"));
                 clock.start_safe();

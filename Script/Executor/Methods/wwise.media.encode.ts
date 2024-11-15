@@ -68,15 +68,13 @@ namespace Sen.Script.Executor.Methods.WWise.Media.Encode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.wem`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "format", this.configuration, Detail.format(), Kernel.Language.get("wwise.media.audio_format"));
                 clock.start_safe();
                 Sen.Script.Support.Wwise.Media.Encode.process_fs(argument.source, argument.destination!, argument.format! as Sen.Script.Support.Wwise.Media.Common.Format);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,

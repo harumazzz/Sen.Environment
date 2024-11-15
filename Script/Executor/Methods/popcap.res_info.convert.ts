@@ -42,6 +42,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResInfo.Convert {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.dirname(argument.source)}/resources.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.ResInfo.convert_fs(argument.source, argument.destination!);

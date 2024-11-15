@@ -41,14 +41,12 @@ namespace Sen.Script.Executor.Methods.WWise.Media.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.wav`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Sen.Script.Support.Wwise.Media.Decode.process_fs(argument.source, argument.destination!);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,

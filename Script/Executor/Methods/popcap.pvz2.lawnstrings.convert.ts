@@ -92,6 +92,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PvZ2.LawnStrings.Convert {
                 load_bigint(argument, "source_type", this.configuration, Detail.type(), Kernel.Language.get("popcap.pvz2.lawnstrings.convert.source_type"));
                 load_bigint(argument, "destination_type", this.configuration, Detail.type(), Kernel.Language.get("popcap.pvz2.lawnstrings.destination.destination_type"));
                 defined_or_default(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.${Detail.extension(argument.destination_type!)}`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Support.PopCap.LawnStrings.Convert.process_fs(argument.source, argument.destination!, argument.source_type!, argument.destination_type!);

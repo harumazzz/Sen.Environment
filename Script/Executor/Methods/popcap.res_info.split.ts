@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResInfo.Split {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.info`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.ResInfo.split_fs(argument.source, argument.destination!);

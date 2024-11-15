@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.ForceDecode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstraints.process_fs(argument.source, argument.destination!);

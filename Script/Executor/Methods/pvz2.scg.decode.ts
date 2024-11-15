@@ -63,6 +63,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.package`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 load_boolean(argument, "enable_debug", this.configuration, Kernel.Language.get("pvz2.scg.enable_debug"));
                 const generic = Detail.generic();

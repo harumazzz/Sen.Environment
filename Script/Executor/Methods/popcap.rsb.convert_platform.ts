@@ -74,6 +74,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.ToIOS {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bundle`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "generic", this.configuration, Detail.generic(), Kernel.Language.get("popcap.rsb.convert_platform.platform_convert"));
                 clock.start_safe();

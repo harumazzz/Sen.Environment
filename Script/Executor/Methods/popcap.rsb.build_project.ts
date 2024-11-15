@@ -102,6 +102,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", Kernel.Path.except_extension(argument.source));
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "generic", this.configuration, Script.Executor.Methods.PopCap.RSB.InitProject.Detail.generic(), Kernel.Language.get("popcap.rsb.custom.generic"));
                 const packages_info: PackagesInfo | null = (Kernel.JSON.deserialize_fs(`${argument.source}/data.json`) as any).packages_info;

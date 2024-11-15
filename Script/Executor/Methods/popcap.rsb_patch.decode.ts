@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSBPatch.Decode {
                 Console.obtained(argument.source);
                 argument.before_file = Console.path(Kernel.Language.get("popcap.rsb_patch.decode.before_file"), "file");
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.rsb`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.RSBPatch.decode_fs(argument.source, argument.before_file!, argument.destination!);

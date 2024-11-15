@@ -72,6 +72,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.InitProject {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bundle`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 load_bigint(argument, "generic", this.configuration, Detail.generic(), Kernel.Language.get("popcap.rsb.custom.generic"));
                 load_boolean(argument, "only_high_resolution", this.configuration, Kernel.Language.get("popcap.rsb.init_project.only_high_resolution"));

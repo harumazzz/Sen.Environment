@@ -83,6 +83,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.dirname(argument.source)}/res.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "layout", this.configuration, Detail.style(), Kernel.Language.get("popcap.atlas.split.style"));
                 clock.start_safe();

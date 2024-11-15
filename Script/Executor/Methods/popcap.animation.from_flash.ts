@@ -46,6 +46,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlash {
                 } else {
                     defined_or_default<Argument, string>(argument, "destination", `${argument.source}.pam.json`);
                 }
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_boolean(argument, "has_label", this.configuration, Kernel.Language.get("popcap.animation.extract_label"));
                 clock.start_safe();

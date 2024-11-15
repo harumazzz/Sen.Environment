@@ -42,6 +42,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToAPNG {
                 Console.obtained(argument.source);
                 Console.output(argument.source!);
                 defined_or_default<Argument, string>(argument, "destination", Kernel.Path.resolve(`${argument.source}.animation`));
+                check_overwrite(argument as { destination: string }, "directory");
                 if (argument.media === undefined) {
                     argument.media = Console.path(Kernel.Language.get("popcap.animation.to_apng.input_media"), "directory");
                 }

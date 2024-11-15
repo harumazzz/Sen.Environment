@@ -51,6 +51,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.DecryptAndDecode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_string(argument, "key", this.configuration, Kernel.Language.get("popcap.rton.decrypt.key"));
                 load_string(argument, "iv", this.configuration, Kernel.Language.get("popcap.rton.decrypt.iv"));

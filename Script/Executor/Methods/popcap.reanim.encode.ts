@@ -68,6 +68,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ReAnimation.Encode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.compiled`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 Console.argument(Kernel.Language.get("popcap.reanim.encode.generic"));
                 configurate_or_input(argument, "platform", Detail.platform());
@@ -75,9 +76,6 @@ namespace Sen.Script.Executor.Methods.PopCap.ReAnimation.Encode {
                 Kernel.Support.PopCap.ReAnimation.encode_fs(argument.source, argument.destination!, argument.platform!);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,

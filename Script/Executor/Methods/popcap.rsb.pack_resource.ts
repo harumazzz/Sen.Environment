@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.PackResource {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", Kernel.Path.except_extension(argument.source));
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.RSB.pack_resource(argument.source, argument.destination!);

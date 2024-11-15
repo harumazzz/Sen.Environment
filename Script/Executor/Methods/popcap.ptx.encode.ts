@@ -120,6 +120,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.ptx`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "format", this.configuration, Detail.format(), Kernel.Language.get("popcap.ptx.encode.format"));
                 clock.start_safe();

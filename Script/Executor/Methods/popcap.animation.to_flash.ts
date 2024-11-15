@@ -67,6 +67,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToFlash {
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.xfl`);
                 Console.output(argument.destination!);
+                check_overwrite(argument as { destination: string }, "directory");
                 load_bigint(argument, "resolution", this.configuration, Detail.resolution(), Kernel.Language.get("popcap.animation.to_flash.resolution"));
                 load_boolean(argument, "has_label", this.configuration, Kernel.Language.get("popcap.animation.extract_label"));
                 clock.start_safe();

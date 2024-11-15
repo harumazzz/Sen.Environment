@@ -38,3 +38,20 @@
 #include "kernel/definition/compression/bzip2.hpp"
 #include "kernel/definition/javascript/runtime.hpp"
 #include "kernel/definition/diff/vcdiff.hpp"
+
+namespace Sen::Kernel {
+
+	template <typename U> requires std::is_class<U>::value 
+	&& (std::is_same<U, nlohmann::ordered_json>::value || std::is_same<U, nlohmann::json>::value)
+	inline auto is_defined (
+		const U &json,
+		std::string_view key,
+		std::string_view error
+	) -> void
+	{
+		if (!json.contains(key)) {
+            throw Exception{std::string{error.data(), error.size()}, std::source_location::current(), "is_defined"};
+        }
+	}
+
+}

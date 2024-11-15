@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.UnpackResource {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bundle`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.RSB.unpack_resource(argument.source, argument.destination!);

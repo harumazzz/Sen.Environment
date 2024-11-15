@@ -67,6 +67,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.DecodeAndToFlash {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.xfl`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 Console.argument(Kernel.Language.get("popcap.reanim.decode.generic"));
                 configurate_or_input(argument, "platform", Detail.platform());
@@ -74,9 +75,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.DecodeAndToFlash {
                 Kernel.Support.PopCap.ReAnimation.Instance.to_flash(argument.source, argument.destination!, argument.platform!);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,

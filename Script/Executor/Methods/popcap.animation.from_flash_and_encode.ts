@@ -44,6 +44,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlashAndEncode {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", Kernel.Path.except_extension(argument.source));
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_boolean(argument, "has_label", this.configuration, Kernel.Language.get("popcap.animation.extract_label"));
                 clock.start_safe();
@@ -52,7 +53,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlashAndEncode {
                 return;
             },
             batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
+                return basic_batch(this, argument, true);
             },
             is_enabled: true,
             configuration: undefined!,

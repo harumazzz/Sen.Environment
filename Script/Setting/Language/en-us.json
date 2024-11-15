@@ -734,5 +734,8 @@
     "popcap.animation.from_flash.color_is_not_a_valid_number": "Color property {} is not a correct number, got: {}",
     "popcap.animation.from_flash.matrix_is_not_a_valid_number": "Matrix property {} is not a correct number, got: {}",
     "popcap.reanim.matrix_is_not_a_valid_number": "Matrix property {} is not a correct number, got: {}",
-    "popcap.rsb.unpack_cipher.cannot_convert_resolution": "Cannot convert resolution"
+    "popcap.rsb.unpack_cipher.cannot_convert_resolution": "Cannot convert resolution",
+    "js.skip_argument_input": "Skip argument input",
+    "js.file_already_exists": "File \"{}\" already exists, it will be overwritten...",
+    "js.directory_already_exists": "Directory \"{}\" already exists, it's files will be overwritten if the name is duplicated"
 }

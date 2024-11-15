@@ -51,6 +51,7 @@ namespace Sen.Script.Executor.Methods.PopCap.CompiledText.Encode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.bin`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_string(argument, "key", this.configuration, Kernel.Language.get("popcap.compiled_text.encode.key"));
                 load_string(argument, "iv", this.configuration, Kernel.Language.get("popcap.compiled_text.encode.iv"));
@@ -62,7 +63,7 @@ namespace Sen.Script.Executor.Methods.PopCap.CompiledText.Encode {
             },
             is_enabled: true,
             configuration: undefined!,
-            filter: ["file", /(.+)\.bin$/i],
+            filter: ["file", /(.+)\.(bin|txt)$/i],
             option: 20n,
         });
         return;

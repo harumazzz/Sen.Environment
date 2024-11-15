@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", Kernel.Path.resolve(`${argument.source}.bin`));
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Encryption.Base64.decode_fs(argument.source, argument.destination!);

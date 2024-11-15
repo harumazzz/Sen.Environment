@@ -33,7 +33,8 @@ namespace Sen::Kernel::Support::Marmalade::DZip
 
     inline auto from_json(
         const nlohmann::ordered_json &nlohmann_json_j,
-        Chunk &nlohmann_json_t) -> void
+        Chunk &nlohmann_json_t
+    ) -> void
     {
         nlohmann_json_t.flag = magic_enum_cast<ChunkFlagEnum>(nlohmann_json_j.at("flag").get<std::string>());
         return;

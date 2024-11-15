@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PAK.Unpack {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.data_package`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.PAK.unpack_fs(argument.source, argument.destination!);

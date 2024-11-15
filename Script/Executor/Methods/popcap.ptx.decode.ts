@@ -131,6 +131,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.png`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 load_bigint(argument, "format", this.configuration, Detail.format(), Kernel.Language.get("popcap.ptx.decode.format"));
                 argument.size = {} as any;

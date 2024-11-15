@@ -71,6 +71,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PlayerInfo.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 //Console.argument(Kernel.Language.get("popcap.particles.decode.generic"));
                 // configurate_or_input(argument, "platform", Detail.platform());
@@ -78,9 +79,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PlayerInfo.Decode {
                 Kernel.Support.PopCap.PlayerInfo.decode_fs(argument.source, argument.destination!);
                 clock.stop_safe();
                 return;
-            },
-            batch_forward(argument: BatchArgument): void {
-                return basic_batch(this, argument, false);
             },
             is_enabled: true,
             configuration: undefined!,

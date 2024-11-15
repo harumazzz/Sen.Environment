@@ -59,6 +59,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.PackByResInfo {
                 is_valid_source(argument, true);
                 Console.obtained(argument.source);
                 defined_or_default(argument, "destination", `${Kernel.Path.dirname(argument.source)}`);
+                check_overwrite(argument as { destination: string }, "directory");
                 Console.output(argument.destination!);
                 argument.size = {} as any;
                 argument.detail = {} as any;

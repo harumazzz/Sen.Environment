@@ -361,6 +361,10 @@ namespace Sen.Script.Executor {
         return BigInt(input);
     }
 
+    export function input_option(rule: Array<bigint>): bigint {
+        return input_integer([0n, ...rule]);
+    }
+
     /**
      * ----------------------------------------------------------
      * JavaScript Executor Implement
@@ -498,13 +502,7 @@ namespace Sen.Script.Executor {
             Console.display(`${Kernel.Language.get("execution_argument")}:`, argument, Definition.Console.Color.CYAN);
         } else {
             Console.send(`${Kernel.Language.get("execution_argument")}:`, Definition.Console.Color.CYAN);
-            argument.forEach(function call_print(e): void {
-                if (Shell.is_gui()) {
-                    Kernel.Console.print(e);
-                } else {
-                    Kernel.Console.print(`    ${e}`);
-                }
-            });
+            argument.forEach(print_argument);
         }
         return;
     }
@@ -539,6 +537,14 @@ namespace Sen.Script.Executor {
         }
     }
 
+    export function print_argument(e: string): void {
+        if (Shell.is_gui()) {
+            Kernel.Console.print(e);
+        } else {
+            Kernel.Console.print(`    ${e}`);
+        }
+    }
+
     export function load_module<Argument extends Base>(argument: Argument, load: ExecuteType): void {
         let modules: Map<bigint, string> = new Map<bigint, string>();
         const query = (
@@ -565,6 +571,7 @@ namespace Sen.Script.Executor {
         });
         display_argument(argument.source as string | string[]);
         Console.send(`${Kernel.Language.get("execution_argument")}: ${Kernel.Language.get("js.input_an_method_to_start")}`, Definition.Console.Color.CYAN);
+        print_statement(Kernel.Language.get("js.skip_argument_input"), 0n);
         modules = new Map([...modules.entries()].sort((a, b) => Number(a[0] - b[0])));
         modules.forEach(print_statement);
         const view: Array<bigint> = Array.from(modules.keys());
@@ -578,7 +585,8 @@ namespace Sen.Script.Executor {
                 break;
             }
             default: {
-                const input_value: bigint = input_integer(view);
+                const input_value: bigint = input_option(view);
+                if (input_value === 0n) return;
                 execute<Argument>(argument, modules.get(input_value)!, Forward.DIRECT, load);
             }
         }
@@ -725,17 +733,10 @@ namespace Sen.Script.Executor {
                 else Kernel.Console.print(`    ${i + 1}. ${e}`);
             });
             Console.send(format(`${Kernel.Language.get("js.obtained_argument")}:`, (argument.source as string).length), Definition.Console.Color.CYAN);
-            if (Shell.is_gui()) {
-                Kernel.Console.print(`${1n}. ${Kernel.Language.get("js.process_whole")}`);
-                Kernel.Console.print(`${2n}. ${Kernel.Language.get("js.process_in_queue")}`);
-                Kernel.Console.print(`${3n}. ${Kernel.Language.get("popcap.atlas.split_by_resource_group")}`);
-                Kernel.Console.print(`${4n}. ${Kernel.Language.get("popcap.atlas.split_by_res_info")}`);
-            } else {
-                Kernel.Console.print(`    ${1n}. ${Kernel.Language.get("js.process_whole")}`);
-                Kernel.Console.print(`    ${2n}. ${Kernel.Language.get("js.process_in_queue")}`);
-                Kernel.Console.print(`    ${3n}. ${Kernel.Language.get("popcap.atlas.split_by_resource_group")}`);
-                Kernel.Console.print(`    ${4n}. ${Kernel.Language.get("popcap.atlas.split_by_res_info")}`);
-            }
+            print_statement(Kernel.Language.get("js.process_whole"), 1n);
+            print_statement(Kernel.Language.get("js.process_in_queue"), 2n);
+            print_statement(Kernel.Language.get("popcap.atlas.split_by_resource_group"), 3n);
+            print_statement(Kernel.Language.get("popcap.atlas.split_by_res_info"), 4n);
             const input: bigint = input_integer([1n, 2n, 3n, 4n]);
             switch (input) {
                 case 1n: {
@@ -744,7 +745,7 @@ namespace Sen.Script.Executor {
                     break;
                 }
                 case 2n: {
-                    load_module({ source: argument.source }, "simple");
+                    (argument.source as Array<string>).forEach((e) => load_module({ source: e }, "simple"));
                     break;
                 }
                 case 3n: {
@@ -762,6 +763,20 @@ namespace Sen.Script.Executor {
             });
         }
         return;
+    }
+
+    export function check_overwrite<
+        Argument extends {
+            destination: string;
+        },
+    >(argument: Argument, type: "file" | "directory"): void {
+        let message = null as string | null;
+        if (type === "file" && Kernel.FileSystem.is_file(argument.destination)) {
+            message = format(Kernel.Language.get("js.file_already_exists"), argument.destination);
+        } else if (type === "directory" && Kernel.FileSystem.is_directory(argument.destination)) {
+            message = format(Kernel.Language.get("js.directory_already_exists"), argument.destination);
+        }
+        if (message !== null) Console.warning(message);
     }
 
     export function basic_batch<

@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.Encode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${Kernel.Path.except_extension(argument.source)}.rton`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 clock.start_safe();
                 Kernel.Support.PopCap.RTON.encode_fs(argument.source, argument.destination!);

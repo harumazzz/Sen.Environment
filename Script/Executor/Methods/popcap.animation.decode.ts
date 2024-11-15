@@ -41,6 +41,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.Decode {
                 is_valid_source(argument, false);
                 Console.obtained(argument.source);
                 defined_or_default<Argument, string>(argument, "destination", `${argument.source}.json`);
+                check_overwrite(argument as { destination: string }, "file");
                 Console.output(argument.destination!);
                 Executor.clock.start_safe();
                 Kernel.Support.PopCap.Animation.decode_fs(argument.source, argument.destination!);
