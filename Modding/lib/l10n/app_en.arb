@@ -99,5 +99,17 @@
     "edit": "Edit",
     "delete": "Delete",
     "start_message": "Wave Start Message",
-    "count": "Count"
+    "count": "Count",
+    "detail": "Detail",
+    "done": "Done",
+    "successfully_applied_your_configuration": "Successfully applied your configuration!",
+    "confirmation": "Confirmation",
+    "confirm_apply_configuration": "Are you sure want to apply configuration?",
+    "backup_configuration": "Backup Confirmation",
+    "upload_configuration": "Upload configuration",
+    "save_configuration": "Save Configuration",
+    "load_configuration": "Load Configuration",
+    "apply_configuration": "Apply Configuration",
+    "info": "Info",
+    "configuration_has_been_loaded": "Configuration has been loaded"
 }

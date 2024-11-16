@@ -111,7 +111,7 @@ class _LowTidePageState extends State<LowTidePage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
-                            SizedBox(height: 20.0),
+                            const SizedBox(height: 20.0),
                             _customTextField(
                               controller: _xStart,
                               labelText: los.column_start,
@@ -139,7 +139,8 @@ class _LowTidePageState extends State<LowTidePage> {
                             _customTextField(
                               controller: _delay,
                               labelText: los.delay_between_groups,
-                              keyboardType: TextInputType.numberWithOptions(
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
                                 decimal: true,
                               ),
                               inputFormatters: [
@@ -154,17 +155,17 @@ class _LowTidePageState extends State<LowTidePage> {
                                 labelText: los.start_message,
                               ),
                             ),
-                            SizedBox(height: 10.0),
+                            const SizedBox(height: 10.0),
                           ],
                         ),
                       ),
                     ),
-                    SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    const SizedBox(height: 10.0),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: Divider(thickness: 1.0),
                     ),
-                    SizedBox(height: 10.0),
+                    const SizedBox(height: 10.0),
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
@@ -183,7 +184,7 @@ class _LowTidePageState extends State<LowTidePage> {
                               controller: _zombie,
                               zombies: widget.zombies,
                             ),
-                            SizedBox(height: 10.0),
+                            const SizedBox(height: 10.0),
                             _customTextField(
                               controller: _count,
                               labelText: los.count,
@@ -196,7 +197,7 @@ class _LowTidePageState extends State<LowTidePage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {

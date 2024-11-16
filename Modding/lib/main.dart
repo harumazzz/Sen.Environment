@@ -26,8 +26,8 @@ Future<void> main(
     AndroidService.initialize();
   }
   runApp(
-    ProviderScope(
-      child: const Application(),
+    const ProviderScope(
+      child: Application(),
     ),
   );
 }

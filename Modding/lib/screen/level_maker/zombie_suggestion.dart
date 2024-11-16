@@ -93,7 +93,7 @@ class _ZombieSelectionState extends State<ZombieSelection> {
                 focusNode: focusNode,
               ),
             ),
-            SizedBox(width: 20),
+            const SizedBox(width: 20),
             Tooltip(
               message: los.pick_a_zombie,
               child: IconButton(
@@ -123,7 +123,7 @@ class _ZombieSelectionState extends State<ZombieSelection> {
                     ),
                   );
                 },
-                icon: Icon(Symbols.add_2),
+                icon: const Icon(Symbols.add_2),
               ),
             ),
           ],

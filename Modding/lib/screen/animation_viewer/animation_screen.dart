@@ -316,7 +316,9 @@ class _AnimationScreenState extends State<AnimationScreen>
                         _isPause = !_isPause;
                         if (_isPause) {
                           _animationController.stop();
-                        } else {
+                          return;
+                        }
+                        if (_animationController.duration != null) {
                           _animationController.forward();
                         }
                       });

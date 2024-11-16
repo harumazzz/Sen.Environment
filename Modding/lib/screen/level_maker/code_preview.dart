@@ -43,7 +43,7 @@ class CodePreview extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              JsonEncoder.withIndent('\t').convert(_buildPreview()),
+              const JsonEncoder.withIndent('\t').convert(_buildPreview()),
             ),
           ),
         ),

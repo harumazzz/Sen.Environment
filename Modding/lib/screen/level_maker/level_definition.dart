@@ -52,7 +52,7 @@ class LevelDefinition extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Table(
-            columnWidths: {
+            columnWidths: const {
               0: IntrinsicColumnWidth(),
               1: IntrinsicColumnWidth(),
             },
@@ -107,7 +107,7 @@ class LevelDefinition extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
-                  SizedBox(width: 15.0),
+                  const SizedBox(width: 15.0),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Align(
@@ -139,7 +139,7 @@ class LevelDefinition extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
-        SizedBox(width: 15.0),
+        const SizedBox(width: 15.0),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: widget,

@@ -30,7 +30,7 @@ class _WaveManagerState extends State<WaveManager> {
   void _scrollDown() {
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration: Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 500),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -113,7 +113,7 @@ class _WaveManagerState extends State<WaveManager> {
           });
           _scrollDown();
         },
-        child: Icon(Symbols.add),
+        child: const Icon(Symbols.add),
       ),
     );
   }
@@ -174,7 +174,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Symbols.waves),
+              leading: const Icon(Symbols.waves),
               title: Text('${los.wave} ${widget.index}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -209,7 +209,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                       ),
                     ],
                   ),
-                  SizedBox(width: 15.0),
+                  const SizedBox(width: 15.0),
                   Tooltip(
                     message: los.expand,
                     child: ExpandIcon(
@@ -221,12 +221,12 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                       isExpanded: _isExpanded,
                     ),
                   ),
-                  SizedBox(width: 15.0),
+                  const SizedBox(width: 15.0),
                   Tooltip(
                     message: los.delete,
                     child: IconButton(
                       onPressed: widget.onDelete,
-                      icon: Icon(Symbols.delete),
+                      icon: const Icon(Symbols.delete),
                     ),
                   ),
                 ],
@@ -238,8 +238,10 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                   final index = e.key;
                   final element = e.value;
                   return Container(
-                    margin:
-                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
                     child: ListTile(
                       leading: Icon(_exchangeEvent(element),
                           color: Colors.blueAccent),
@@ -252,10 +254,10 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                             child: IconButton(
                               onPressed: () =>
                                   widget.onNavigate(element, widget.index),
-                              icon: Icon(Symbols.edit),
+                              icon: const Icon(Symbols.edit),
                             ),
                           ),
-                          SizedBox(width: 8.0),
+                          const SizedBox(width: 8.0),
                           Tooltip(
                             message: los.delete,
                             child: IconButton(
@@ -264,7 +266,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                                   widget.wave.removeAt(index);
                                 });
                               },
-                              icon: Icon(Symbols.delete),
+                              icon: const Icon(Symbols.delete),
                             ),
                           ),
                         ],

@@ -20,13 +20,18 @@ class FileService {
     return result;
   }
 
-  static Future<String?> saveFile() async {
+  static Future<String?> saveFile({
+    String? suggestedName,
+  }) async {
     var outputFile = null as String?;
     if (Platform.isWindows ||
         Platform.isLinux ||
         Platform.isMacOS ||
         Platform.isIOS) {
-      outputFile = (await file_selector.getSaveLocation())?.path;
+      outputFile = (await file_selector.getSaveLocation(
+        suggestedName: suggestedName,
+      ))
+          ?.path;
     }
     if (Platform.isAndroid) {
       outputFile = (await AndroidService.saveFileFromDocument());

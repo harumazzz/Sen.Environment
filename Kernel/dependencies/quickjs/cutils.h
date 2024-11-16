@@ -49,9 +49,17 @@ extern "C" {
 #elif defined(_WIN32)
 #include <windows.h>
 #endif
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(EMSCRIPTEN) && !defined(__wasi__)
 #include <errno.h>
 #include <pthread.h>
+#endif
+
+#if defined(__SANITIZE_ADDRESS__)
+# define __ASAN__ 1
+#elif defined(__has_feature)
+# if __has_feature(address_sanitizer)
+#  define __ASAN__ 1
+# endif
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -96,11 +104,6 @@ static void *__builtin_frame_address(unsigned int level) {
 #define NEG_INF (-1.0/0.0)
 #endif
 
-#define xglue(x, y) x ## y
-#define glue(x, y) xglue(x, y)
-#define stringify(s)    tostring(s)
-#define tostring(s)     #s
-
 #ifndef offsetof
 #define offsetof(type, field) ((size_t) &((type *)0)->field)
 #endif
@@ -115,10 +118,10 @@ static void *__builtin_frame_address(unsigned int level) {
 #define container_of(ptr, type, member) ((type *)((uint8_t *)(ptr) - offsetof(type, member)))
 #endif
 
-#if !defined(_MSC_VER) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#define minimum_length(n)  static n
+#if defined(_MSC_VER)
+#define minimum_length(n) n
 #else
-#define minimum_length(n)  n
+#define minimum_length(n) static n
 #endif
 
 typedef int BOOL;
@@ -486,7 +489,8 @@ enum {
 };
 int utf8_scan(const char *buf, size_t len, size_t *plen);
 size_t utf8_encode_len(uint32_t c);
-size_t utf8_encode(uint8_t *buf, uint32_t c);
+// Haruma : Modify
+size_t utf8_encode(uint8_t* buf, uint32_t c);
 uint32_t utf8_decode_len(const uint8_t *p, size_t max_len, const uint8_t **pp);
 uint32_t utf8_decode(const uint8_t *p, const uint8_t **pp);
 size_t utf8_decode_buf8(uint8_t *dest, size_t dest_len, const char *src, size_t src_len);
@@ -545,14 +549,17 @@ static inline uint8_t to_upper_ascii(uint8_t c) {
 }
 
 extern char const digits36[36];
-size_t u32toa(char buf[minimum_length(11)], uint32_t n);
-size_t i32toa(char buf[minimum_length(12)], int32_t n);
-size_t u64toa(char buf[minimum_length(21)], uint64_t n);
-size_t i64toa(char buf[minimum_length(22)], int64_t n);
-size_t u32toa_radix(char buf[minimum_length(33)], uint32_t n, unsigned int base);
-size_t i32toa_radix(char buf[minimum_length(34)], int32_t n, unsigned base);
-size_t u64toa_radix(char buf[minimum_length(65)], uint64_t n, unsigned int base);
-size_t i64toa_radix(char buf[minimum_length(66)], int64_t n, unsigned int base);
+// Haruma : Modify 
+// In order to support llvm clang, size for static array is not supported in C++ Standard project
+// In this case, we change to an pointer which accepts any size
+size_t u32toa(char* buf, uint32_t n);
+size_t i32toa(char* buf, int32_t n);
+size_t u64toa(char* buf, uint64_t n);
+size_t i64toa(char* buf, int64_t n);
+size_t u32toa_radix(char* buf, uint32_t n, unsigned int base);
+size_t i32toa_radix(char* buf, int32_t n, unsigned base);
+size_t u64toa_radix(char* buf, uint64_t n, unsigned int base);
+size_t i64toa_radix(char* buf, int64_t n, unsigned int base);
 
 void rqsort(void *base, size_t nmemb, size_t size,
             int (*cmp)(const void *, const void *, void *),

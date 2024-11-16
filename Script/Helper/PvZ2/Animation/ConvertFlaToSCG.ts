@@ -230,7 +230,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
         };
         const symbol_name = dom["@attributes"]["name"] as string;
         container.sprite_container[symbol_name] = sprite_name;
-        container.sprite_list.push(Sen.Kernel.XML.serialize(sprite_document));
+        container.sprite_list.push(Kernel.XML.serialize(sprite_document));
         return k_name;
     }
 

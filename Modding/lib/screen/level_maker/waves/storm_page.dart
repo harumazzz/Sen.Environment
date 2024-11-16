@@ -218,7 +218,7 @@ class _StormPageState extends State<StormPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
-                            SizedBox(height: 20.0),
+                            const SizedBox(height: 20.0),
                             TextField(
                               controller: _xStart,
                               decoration: InputDecoration(
@@ -226,7 +226,7 @@ class _StormPageState extends State<StormPage> {
                               ),
                               enabled: false,
                             ),
-                            SizedBox(height: 10.0),
+                            const SizedBox(height: 10.0),
                             TextField(
                               controller: _xEnd,
                               decoration: InputDecoration(
@@ -245,7 +245,8 @@ class _StormPageState extends State<StormPage> {
                             _customTextField(
                               controller: _delay,
                               labelText: los.delay_between_groups,
-                              keyboardType: TextInputType.numberWithOptions(
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
                                 decimal: true,
                               ),
                               inputFormatters: [
@@ -262,9 +263,9 @@ class _StormPageState extends State<StormPage> {
                                 FilteringTextInputFormatter.digitsOnly,
                               ],
                             ),
-                            SizedBox(height: 10.0),
+                            const SizedBox(height: 10.0),
                             _stormEvent(),
-                            SizedBox(height: 10.0),
+                            const SizedBox(height: 10.0),
                             Text(
                               los.zombie,
                               style: Theme.of(context)
@@ -274,7 +275,7 @@ class _StormPageState extends State<StormPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
-                            SizedBox(height: 20.0),
+                            const SizedBox(height: 20.0),
                             _LevelLawn(
                               onTap: _onLevelLawnSpawn,
                               cellItems: _cellItems,
@@ -283,7 +284,7 @@ class _StormPageState extends State<StormPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {

@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/screen/setting/backup_setting.dart';
 import 'package:sen/screen/setting/translator_page.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/file_service.dart';
@@ -253,6 +255,14 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     );
   }
 
+  void _onBackupConfiguration() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const BackupSetting(),
+      ),
+    );
+  }
+
   Translator _exchangeTranslator(String name) {
     return switch (name) {
       'haruma' => Translator(
@@ -426,6 +436,13 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                 title: Text(los.toolchain),
                 subtitle: Text(toolchainPath()),
                 onTap: _onChangeToolChain,
+                enabled: !Platform.isAndroid,
+              ),
+              ListTile(
+                leading: const Icon(Symbols.backup),
+                title: const Text('Backup configuration'),
+                subtitle: const Text('Backup tool configuration'),
+                onTap: _onBackupConfiguration,
               ),
             ],
           ),

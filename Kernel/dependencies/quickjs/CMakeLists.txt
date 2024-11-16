@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 
 project(
     quickjs 
-    VERSION 0.6.1 
+    VERSION 0.7.0 
     HOMEPAGE_URL https://github.com/quickjs-ng/quickjs
     LANGUAGES C
 )
@@ -54,8 +54,14 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -std=c11)
 endif()
 
+set_source_files_properties(
+    ${QUICKJS_SOURCES}
+    PROPERTIES LANGUAGE C
+)
+
 if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX _WINSOCKAPI_ _UCRT_NOISY_NAN)
+	target_compile_options(${PROJECT_NAME} PRIVATE /wd4005)
     
     if (MSVC)
         target_compile_options(

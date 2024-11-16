@@ -9,7 +9,7 @@ class MapEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Map Editor'),
+        title: const Text('Map Editor'),
       ),
     );
   }

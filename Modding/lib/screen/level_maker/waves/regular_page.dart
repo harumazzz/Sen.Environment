@@ -26,7 +26,7 @@ class _RegularPageState extends State<RegularPage> {
       appBar: AppBar(
         title: Text('${los.wave} ${widget.index}'),
       ),
-      body: Column(
+      body: const Column(
         children: [],
       ),
     );
