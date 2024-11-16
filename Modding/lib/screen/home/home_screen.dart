@@ -14,6 +14,9 @@ import 'package:page_transition/page_transition.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/widget/animated_floating.dart';
 
+part 'grid_card.dart';
+part 'list_card.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -72,11 +75,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildUI() {
     final los = AppLocalizations.of(context)!;
-    final setting = ref.watch(settingProvider);
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       final screenWidth = MediaQuery.of(context).size.width;
       const itemWidth = 250.0;
       final crossAxisCount = (screenWidth / itemWidth).floor();
+
       return GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
@@ -85,53 +88,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          return Tooltip(
-            message: item.title,
-            child: Card(
-              clipBehavior: Clip.none,
-              child: InkWell(
-                splashColor: Colors.blue.withAlpha(30),
-                onTap: setting.isValid
-                    ? () {
-                        Navigator.push(
-                          context,
-                          PageTransition(
-                            duration: const Duration(milliseconds: 300),
-                            type: PageTransitionType.rightToLeft,
-                            child: item.onWidget(),
-                          ),
-                        );
-                      }
-                    : null,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedFloating(child: item.icon),
-                      const SizedBox(height: 8),
-                      Text(
-                        item.title,
-                        textAlign: TextAlign.center,
-                        maxLines: 4,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.description,
-                        textAlign: TextAlign.center,
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 15),
-                      setting.isValid
-                          ? Container()
-                          : Text(los.toolchain_is_invalid),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          return GridCard(
+            item: item,
+            isValid: ref.watch(settingProvider).isValid,
+            invalidMessage: los.toolchain_is_invalid,
           );
         },
       );
@@ -140,60 +100,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Card(
-              clipBehavior: Clip.hardEdge,
-              child: InkWell(
-                splashColor: Colors.blue.withAlpha(30),
-                onTap: setting.isValid
-                    ? () {
-                        Navigator.push(
-                          context,
-                          PageTransition(
-                            duration: const Duration(milliseconds: 300),
-                            type: PageTransitionType.rightToLeft,
-                            child: item.onWidget(),
-                          ),
-                        );
-                      }
-                    : null,
-                child: ListTile(
-                  leading: item.icon,
-                  title: Text(
-                    item.title,
-                    maxLines: 4,
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 2),
-                      Text(
-                        item.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      setting.isValid
-                          ? Container()
-                          : Text(los.toolchain_is_invalid),
-                    ],
-                  ),
-                  onTap: setting.isValid
-                      ? () {
-                          Navigator.push(
-                            context,
-                            PageTransition(
-                              duration: const Duration(milliseconds: 300),
-                              type: PageTransitionType.rightToLeft,
-                              child: item.onWidget(),
-                            ),
-                          );
-                        }
-                      : null,
-                ),
-              ),
-            ),
+          return ListCard(
+            item: item,
+            isValid: ref.watch(settingProvider).isValid,
+            invalidMessage: los.toolchain_is_invalid,
           );
         },
       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/home/home_screen.dart';
+import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -27,6 +28,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
 
   final List<Widget> _destinations = const [
     HomeScreen(),
+    MiscellaenousScreen(),
     SettingScreen(),
   ];
 
@@ -55,6 +57,11 @@ class _RootScreenState extends ConsumerState<RootScreen> {
             label: los.home,
           ),
           NavigationDestination(
+            icon: const Icon(Icons.miscellaneous_services_outlined),
+            selectedIcon: const Icon(Icons.miscellaneous_services_sharp),
+            label: los.miscellaneous,
+          ),
+          NavigationDestination(
             icon: const Icon(Icons.settings_outlined),
             selectedIcon: const Icon(Icons.settings),
             label: los.settings,
@@ -81,6 +88,11 @@ class _RootScreenState extends ConsumerState<RootScreen> {
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home_filled),
             label: Text(los.home),
+          ),
+          NavigationRailDestination(
+            icon: const Icon(Icons.miscellaneous_services_outlined),
+            selectedIcon: const Icon(Icons.miscellaneous_services_sharp),
+            label: Text(los.miscellaneous),
           ),
           NavigationRailDestination(
             icon: const Icon(Icons.settings_outlined),
