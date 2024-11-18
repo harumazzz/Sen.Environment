@@ -231,7 +231,7 @@ class _DirectionWrapper {
 }
 
 class _AddFrostWind extends StatefulWidget {
-  _AddFrostWind({
+  const _AddFrostWind({
     required this.frostWind,
     required this.map,
   });
@@ -345,7 +345,7 @@ class __AddFrostWindState extends State<_AddFrostWind> {
 }
 
 class _EditFrostWind extends StatefulWidget {
-  _EditFrostWind({
+  const _EditFrostWind({
     required this.frostWind,
     required this.map,
     required this.index,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/service/file_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -59,11 +60,11 @@ class _LevelOptionsState extends State<LevelOptions>
           return const SizedBox(
             width: 40,
             height: 40,
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator.adaptive(),
           );
         }
         if (snapshot.hasError) {
-          return const Icon(Icons.error);
+          return const Icon(Symbols.error);
         }
         final image = snapshot.data!;
         final imageWidget = Image(

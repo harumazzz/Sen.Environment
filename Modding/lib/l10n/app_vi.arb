@@ -138,5 +138,7 @@
     "tide_coordinate": "Tide Coordinate",
     "jam_wave": "Jam Wave",
     "notification_event": "Notification Event",
-    "loading_error": "Loading Error"
+    "loading_error": "Loading Error",
+    "please_configure_resource_location": "Please configure resource location in setting to load this module",
+    "resource_location": "Resource Location"
 }

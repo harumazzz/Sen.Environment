@@ -10,8 +10,8 @@ class LevelModule {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['notificationEvent'] = this.notificationEvent;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['notificationEvent'] = notificationEvent;
     return data;
   }
 }

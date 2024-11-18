@@ -1,14 +1,16 @@
 part of 'home_screen.dart';
 
 class ListCard extends StatelessWidget {
-  final dynamic item;
+  final Item item;
   final bool isValid;
   final String invalidMessage;
+  final void Function()? onSetting;
 
   const ListCard({
     required this.item,
     required this.isValid,
     required this.invalidMessage,
+    this.onSetting,
     super.key,
   });
 
@@ -18,8 +20,12 @@ class ListCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Card(
         clipBehavior: Clip.hardEdge,
-        child: InkWell(
-          splashColor: Colors.blue.withAlpha(30),
+        child: ListTile(
+          leading: item.icon,
+          title: Text(
+            item.title,
+            maxLines: 4,
+          ),
           onTap: isValid
               ? () {
                   Navigator.push(
@@ -32,31 +38,31 @@ class ListCard extends StatelessWidget {
                   );
                 }
               : null,
-          child: ListTile(
-            leading: item.icon,
-            title: Text(
-              item.title,
-              maxLines: 4,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 2),
-                Text(
-                  item.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                isValid
-                    ? Container()
-                    : Text(
-                        invalidMessage,
-                        textAlign: TextAlign.start,
-                      ),
-              ],
-            ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 2),
+              Text(
+                item.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              isValid
+                  ? Container()
+                  : Text(
+                      invalidMessage,
+                      textAlign: TextAlign.start,
+                    ),
+            ],
           ),
+          trailing: onSetting != null
+              ? IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {},
+                  tooltip: AppLocalizations.of(context)!.settings,
+                )
+              : const SizedBox.shrink(),
         ),
       ),
     );

@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
-import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/provider/level_provider.dart';
 import 'package:sen/screen/level_maker/code_preview.dart';
 import 'package:sen/screen/level_maker/level_definition.dart';
 import 'package:sen/screen/level_maker/level_initializer.dart';
@@ -50,8 +50,13 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
   }
 
   Future<void> _loadResources() async {
-    final setting = ref.read(settingProvider).toolChain;
-    _resource = '$setting/resource/level_maker';
+    final setting = ref.read(levelProvider).resourceLocation;
+    if (setting == null || setting.isEmpty) {
+      throw Exception(
+        AppLocalizations.of(context)!.please_configure_resource_location,
+      );
+    }
+    _resource = setting;
 
     _plants = await FileService.readDirectoryAsync(
       source: '$_resource/plant',
