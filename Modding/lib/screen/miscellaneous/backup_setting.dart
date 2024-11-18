@@ -171,6 +171,32 @@ class _BackupSettingState extends State<BackupSetting> {
     );
   }
 
+  void _applyChange(
+    Map<String, dynamic> current,
+    Map<String, dynamic> config,
+  ) {
+    for (var key in config.keys) {
+      if (current.containsKey(key)) {
+        current[key] = config[key];
+      }
+    }
+  }
+
+  void _onApplyChange({
+    required String toolChain,
+  }) {
+    final configuration = '$toolChain/Script/Executor/Configuration';
+    for (var e in _configuration!.entries) {
+      if (e.value is Map<String, dynamic> &&
+          (e.value as Map<String, dynamic>).isNotEmpty) {
+        final destination = '$configuration/${e.key}.json';
+        final current = FileService.readJson(source: destination);
+        _applyChange(current, e.value);
+        FileService.writeJson(source: destination, data: current);
+      }
+    }
+  }
+
   void _onConfirm({
     required String toolChain,
   }) async {
@@ -184,13 +210,7 @@ class _BackupSettingState extends State<BackupSetting> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              final destination = '$toolChain/Script/Executor/Configuration';
-              for (var e in _configuration!.entries) {
-                FileService.writeJson(
-                  source: '$destination/${e.key}.json',
-                  data: e.value,
-                );
-              }
+              _onApplyChange(toolChain: toolChain);
               _onSuccess(message: los.successfully_applied_your_configuration);
             },
             child: Text(los.yes),

@@ -4,8 +4,8 @@ part 'wave/spawn.dart';
 part 'wave/regular_wave.dart';
 part 'wave/low_tide.dart';
 part 'wave/storm_event.dart';
+part 'wave/parachute_rain.dart';
 
-// TODO : Implement Parachute Rain
 // TODO : Implement Spider Rain
 // TODO : Implement Raiding Party
 // TODO : Implement Ground Spawn

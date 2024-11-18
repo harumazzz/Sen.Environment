@@ -64,9 +64,9 @@ class _LowTidePageState extends State<LowTidePage> {
     super.dispose();
   }
 
-  Widget _customTextField({
-    required TextEditingController controller,
+  Widget _buildFormField({
     required String labelText,
+    required TextEditingController controller,
     required TextInputType keyboardType,
     required List<TextInputFormatter> inputFormatters,
   }) {
@@ -77,6 +77,55 @@ class _LowTidePageState extends State<LowTidePage> {
         decoration: InputDecoration(labelText: labelText),
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
+        validator: (value) {
+          if (value == null) {
+            return AppLocalizations.of(context)!.value_cannot_be_null;
+          }
+          if (value.isEmpty) {
+            return AppLocalizations.of(context)!.value_cannot_be_empty;
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  void _onSave() {
+    if (_formKey.currentState!.validate()) {
+      widget.wave.replaceWith(
+        xStart: int.parse(_xStart.text),
+        xEnd: int.parse(_xEnd.text),
+        count: int.parse(_count.text),
+        delay: double.parse(_delay.text),
+        groupSize: int.parse(_groupSize.text),
+        message: _message.text,
+        zombieType: _zombie.text,
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
+  Widget _buildCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20.0),
+            ...children,
+          ],
+        ),
       ),
     );
   }
@@ -84,6 +133,7 @@ class _LowTidePageState extends State<LowTidePage> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('${los.wave} ${widget.index}: ${los.low_tide}'),
@@ -95,139 +145,73 @@ class _LowTidePageState extends State<LowTidePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Column(
+                _buildCard(
+                  title: los.entry,
                   children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              los.entry,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            _customTextField(
-                              controller: _xStart,
-                              labelText: los.column_start,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                            _customTextField(
-                              controller: _xEnd,
-                              labelText: los.column_end,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                            _customTextField(
-                              controller: _groupSize,
-                              labelText: los.group_size,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                            _customTextField(
-                              controller: _delay,
-                              labelText: los.delay_between_groups,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d*'),
-                                ),
-                              ],
-                            ),
-                            TextField(
-                              controller: _message,
-                              decoration: InputDecoration(
-                                labelText: los.start_message,
-                              ),
-                            ),
-                            const SizedBox(height: 10.0),
-                          ],
-                        ),
-                      ),
+                    _buildFormField(
+                      labelText: los.column_start,
+                      controller: _xStart,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     ),
-                    const SizedBox(height: 10.0),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Divider(thickness: 1.0),
+                    _buildFormField(
+                      labelText: los.column_end,
+                      controller: _xEnd,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     ),
-                    const SizedBox(height: 10.0),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              los.zombie,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            ZombieSelection(
-                              controller: _zombie,
-                              zombies: widget.zombies,
-                            ),
-                            const SizedBox(height: 10.0),
-                            _customTextField(
-                              controller: _count,
-                              labelText: los.count,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    _buildFormField(
+                      labelText: los.group_size,
+                      controller: _groupSize,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     ),
-                    const SizedBox(height: 20.0),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          widget.wave.replaceWith(
-                            xStart: int.parse(_xStart.text),
-                            xEnd: int.parse(_xEnd.text),
-                            count: int.parse(_count.text),
-                            delay: double.parse(_delay.text),
-                            groupSize: int.parse(_groupSize.text),
-                            message: _message.text,
-                            zombieType: _zombie.text,
-                          );
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 20.0,
-                            ),
-                            child: Text(
-                              los.save,
-                            ),
-                          ),
-                        ),
-                      ),
+                    _buildFormField(
+                      labelText: los.delay_between_groups,
+                      controller: _delay,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+                      ],
+                    ),
+                    TextField(
+                      controller: _message,
+                      decoration: InputDecoration(labelText: los.start_message),
                     ),
                   ],
+                ),
+                const SizedBox(height: 10.0),
+                const Divider(thickness: 1.0),
+                const SizedBox(height: 10.0),
+                _buildCard(
+                  title: los.zombie,
+                  children: [
+                    ZombieSelection(
+                      controller: _zombie,
+                      zombies: widget.zombies,
+                    ),
+                    const SizedBox(height: 10.0),
+                    _buildFormField(
+                      labelText: los.count,
+                      controller: _count,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
+                ElevatedButton(
+                  onPressed: _onSave,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Text(los.save),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
+import 'package:sen/screen/level_maker/waves/parachute_page.dart';
 import 'package:sen/screen/level_maker/waves/regular_page.dart';
 import 'package:sen/screen/level_maker/waves/storm_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -47,36 +50,39 @@ class _WaveManagerState extends State<WaveManager> {
     super.dispose();
   }
 
-  void _waveNavigate(
-    Wave wave,
-    int index,
-  ) async {
-    var state = null as Widget?;
-    if (wave is RegularWave) {
-      state = RegularPage(
-        wave: wave,
-        index: index,
+  void _waveNavigate(Wave wave, int index) async {
+    final waveTypeToPageBuilder = {
+      RegularWave: () => RegularPage(wave: wave as RegularWave, index: index),
+      LowTide: () => LowTidePage(
+            zombies: widget.zombies,
+            wave: wave as LowTide,
+            index: index,
+          ),
+      StormEvent: () => StormPage(
+            resource: widget.resource,
+            wave: wave as StormEvent,
+            index: index,
+            zombies: widget.zombies,
+          ),
+      ParachuteRain: () => ParachutePage(
+            wave: wave as ParachuteRain,
+            index: index,
+            zombies: widget.zombies,
+          ),
+    };
+
+    final pageBuilder = waveTypeToPageBuilder[wave.runtimeType];
+
+    if (pageBuilder != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => pageBuilder(),
+        ),
       );
-    } else if (wave is LowTide) {
-      state = LowTidePage(
-        zombies: widget.zombies,
-        wave: wave,
-        index: index,
-      );
-    } else if (wave is StormEvent) {
-      state = StormPage(
-        resource: widget.resource,
-        wave: wave,
-        index: index,
-        zombies: widget.zombies,
-      );
+      setState(() {});
+    } else {
+      log('Unsupported wave type: ${wave.runtimeType}');
     }
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => state!,
-      ),
-    );
-    setState(() {});
   }
 
   @override
@@ -141,12 +147,13 @@ class _ExpandedWave extends StatefulWidget {
 
 class __ExpandedWaveState extends State<_ExpandedWave> {
   IconData _exchangeEvent(Wave wave) {
-    if (wave is RegularWave) {
-      return Symbols.circle;
-    } else if (wave is StormEvent) {
-      return Symbols.storm;
-    }
-    return Symbols.waves;
+    final waveTypeToIcon = {
+      RegularWave: Symbols.circle,
+      StormEvent: Symbols.storm,
+      LowTide: Symbols.waves,
+      ParachuteRain: Symbols.paragliding,
+    };
+    return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
 
   bool _isExpanded = false;
@@ -154,15 +161,14 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
   String _exchangeEventName(MapEntry<int, Wave> e, int index) {
     final value = e.value;
     final los = AppLocalizations.of(context)!;
-    if (value is RegularWave) {
-      return '${los.wave} $index: ${los.regular_wave}';
-    } else if (value is LowTide) {
-      return '${los.wave} $index: ${los.low_tide}';
-    } else if (value is StormEvent) {
-      return '${los.wave} $index: ${los.storm_event}';
-    } else {
-      return '${los.wave} $index';
-    }
+    final waveTypeToLocalization = {
+      RegularWave: los.regular_wave,
+      LowTide: los.low_tide,
+      StormEvent: los.storm_event,
+      ParachuteRain: los.parachute_rain,
+    };
+    final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
+    return '${los.wave} $index: $waveTypeName';
   }
 
   @override
@@ -204,6 +210,14 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
                         onTap: () {
                           setState(() {
                             widget.wave.add(StormEvent.withDefault());
+                          });
+                        },
+                      ),
+                      PopupMenuItem<String>(
+                        child: Text(los.parachute_rain),
+                        onTap: () {
+                          setState(() {
+                            widget.wave.add(ParachuteRain.withDefault());
                           });
                         },
                       ),
