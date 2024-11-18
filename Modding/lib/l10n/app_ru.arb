@@ -135,5 +135,8 @@
     "dino_wave": "Dino Wave",
     "dino_type": "Dino Type",
     "tidal_change": "Tidal Change",
-    "tide_coordinate": "Tide Coordinate"
+    "tide_coordinate": "Tide Coordinate",
+    "jam_wave": "Jam Wave",
+    "notification_event": "Notification Event",
+    "loading_error": "Loading Error"
 }

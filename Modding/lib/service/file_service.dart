@@ -20,6 +20,18 @@ class FileService {
     return result;
   }
 
+  static Future<List<String>> readDirectoryAsync({
+    required String source,
+    required bool recursive,
+  }) async {
+    final dir = Directory(source);
+    List<String> result = [];
+    await for (var entity in dir.list(recursive: recursive)) {
+      result.add(entity.path);
+    }
+    return result;
+  }
+
   static Future<String?> saveFile({
     String? suggestedName,
   }) async {
@@ -76,6 +88,13 @@ class FileService {
   }) {
     var file = File(source);
     return file.readAsBytesSync();
+  }
+
+  static Future<Uint8List> readBufferAsync({
+    required String source,
+  }) async {
+    var file = File(source);
+    return await file.readAsBytes();
   }
 
   static void writeBuffer({

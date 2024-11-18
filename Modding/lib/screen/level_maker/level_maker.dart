@@ -34,6 +34,8 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
   late String _resource;
   List<String> _plants = [], _zombies = [], _gridItems = [], _dinos = [];
 
+  late LevelModule _levelModule;
+
   @override
   void initState() {
     super.initState();
@@ -45,28 +47,37 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
     _musicType = MusicType.normal;
     _waves = [];
     _hasSunFalling = true;
+  }
+
+  Future<void> _loadResources() async {
     final setting = ref.read(settingProvider).toolChain;
     _resource = '$setting/resource/level_maker';
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _plants = FileService.readDirectory(
-          source: '$_resource/plant',
-          recursive: false,
-        );
-        _zombies = FileService.readDirectory(
-          source: '$_resource/zombie',
-          recursive: false,
-        );
-        _gridItems = FileService.readDirectory(
-          source: '$_resource/item',
-          recursive: false,
-        );
-        _dinos = FileService.readDirectory(
-          source: '$_resource/dino',
-          recursive: false,
-        );
-      });
-    });
+
+    _plants = await FileService.readDirectoryAsync(
+      source: '$_resource/plant',
+      recursive: false,
+    );
+    _zombies = await FileService.readDirectoryAsync(
+      source: '$_resource/zombie',
+      recursive: false,
+    );
+    _gridItems = await FileService.readDirectoryAsync(
+      source: '$_resource/item',
+      recursive: false,
+    );
+    _dinos = await FileService.readDirectoryAsync(
+      source: '$_resource/dino',
+      recursive: false,
+    );
+
+    _levelModule = LevelModule.fromJson(
+      FileService.readJson(source: '$_resource/level_module.json'),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -82,70 +93,82 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(los.level_maker),
         bottom: TabBar(
           controller: _tabController,
           tabs: const <Widget>[
-            Tab(
-              icon: Icon(Symbols.settings),
-            ),
-            Tab(
-              icon: Icon(Symbols.grid_3x3),
-            ),
-            Tab(
-              icon: Icon(Symbols.waves),
-            ),
-            Tab(
-              icon: Icon(Symbols.code_blocks),
-            ),
+            Tab(icon: Icon(Symbols.settings)),
+            Tab(icon: Icon(Symbols.grid_3x3)),
+            Tab(icon: Icon(Symbols.waves)),
+            Tab(icon: Icon(Symbols.code_blocks)),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          LevelDefinition(
-            levelNameController: _levelNameController,
-            levelDescriptionController: _levelDescriptionController,
-            lawnMowerController: _lawnMowerController,
-            levelStageController: _levelStageController,
-            musicType: _musicType,
-            onChangeMusicType: (newValue) {
-              if (newValue == null) return;
-              setState(() {
-                _musicType = newValue;
-              });
-            },
-            hasSunFalling: _hasSunFalling,
-            onToggleSunFalling: (bool? newValue) {
-              if (newValue == null) return;
-              setState(() {
-                _hasSunFalling = newValue;
-              });
-            },
-          ),
-          LevelInitializer(
-            plants: _plants,
-            zombies: _zombies,
-            gridItem: _gridItems,
-          ),
-          WaveManager(
-            resource: _resource,
-            waves: _waves,
-            zombies: _zombies,
-            dinos: _dinos,
-          ),
-          CodePreview(
-            levelNameController: _levelNameController,
-            levelDescriptionController: _levelDescriptionController,
-            levelStageController: _levelStageController,
-            lawnMowerController: _lawnMowerController,
-            hasSunFalling: _hasSunFalling,
-            musicType: _musicType,
-          ),
-        ],
+      body: FutureBuilder<void>(
+        future: _loadResources(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                '${los.loading_error}: ${snapshot.error}',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            );
+          } else {
+            return TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                LevelDefinition(
+                  levelNameController: _levelNameController,
+                  levelDescriptionController: _levelDescriptionController,
+                  lawnMowerController: _lawnMowerController,
+                  levelStageController: _levelStageController,
+                  musicType: _musicType,
+                  onChangeMusicType: (newValue) {
+                    if (newValue == null) return;
+                    setState(() {
+                      _musicType = newValue;
+                    });
+                  },
+                  hasSunFalling: _hasSunFalling,
+                  onToggleSunFalling: (bool? newValue) {
+                    if (newValue == null) return;
+                    setState(() {
+                      _hasSunFalling = newValue;
+                    });
+                  },
+                ),
+                LevelInitializer(
+                  plants: _plants,
+                  zombies: _zombies,
+                  gridItem: _gridItems,
+                ),
+                WaveManager(
+                  resource: _resource,
+                  waves: _waves,
+                  zombies: _zombies,
+                  dinos: _dinos,
+                  levelModule: _levelModule,
+                ),
+                CodePreview(
+                  levelNameController: _levelNameController,
+                  levelDescriptionController: _levelDescriptionController,
+                  levelStageController: _levelStageController,
+                  lawnMowerController: _lawnMowerController,
+                  hasSunFalling: _hasSunFalling,
+                  musicType: _musicType,
+                ),
+              ],
+            );
+          }
+        },
       ),
     );
   }

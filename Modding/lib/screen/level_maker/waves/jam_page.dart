@@ -2,26 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/model/wave.dart';
 
-class TidalPage extends StatefulWidget {
-  const TidalPage({
+class JamPage extends StatefulWidget {
+  const JamPage({
     super.key,
     required this.index,
     required this.wave,
+    required this.notificationEvent,
   });
 
   final int index;
-  final TidalChange wave;
+  final List<String> notificationEvent;
+  final JamWave wave;
 
   @override
-  State<TidalPage> createState() => _TidalPageState();
+  State<JamPage> createState() => _JamPageState();
 }
 
-class _TidalPageState extends State<TidalPage> {
-  late int _changeAmount;
+class _JamPageState extends State<JamPage> {
+  late String _notificationEvent;
 
   @override
   void initState() {
-    _changeAmount = widget.wave.changeAmount;
+    _notificationEvent = widget.wave.notificationEvent;
     super.initState();
   }
 
@@ -36,7 +38,7 @@ class _TidalPageState extends State<TidalPage> {
 
   AppBar _buildAppBar(AppLocalizations los) {
     return AppBar(
-      title: Text('${los.wave} ${widget.index}: ${los.tidal_change}'),
+      title: Text('${los.wave} ${widget.index}: ${los.jam_wave}'),
     );
   }
 
@@ -93,16 +95,16 @@ class _TidalPageState extends State<TidalPage> {
   Widget _buildDropdownRow(AppLocalizations los) {
     return Row(
       children: [
-        Text('${los.tide_coordinate}:'),
+        Text('${los.notification_event}:'),
         const SizedBox(width: 15.0),
         Expanded(
-          child: DropdownButton<int>(
+          child: DropdownButton<String>(
             items: _buildDropdownItems(),
-            value: _changeAmount,
-            onChanged: (int? value) {
+            value: _notificationEvent,
+            onChanged: (String? value) {
               if (value != null) {
                 setState(() {
-                  _changeAmount = value;
+                  _notificationEvent = value;
                 });
               }
             },
@@ -112,12 +114,12 @@ class _TidalPageState extends State<TidalPage> {
     );
   }
 
-  List<DropdownMenuItem<int>> _buildDropdownItems() {
-    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        .map<DropdownMenuItem<int>>(
+  List<DropdownMenuItem<String>> _buildDropdownItems() {
+    return widget.notificationEvent
+        .map<DropdownMenuItem<String>>(
           (e) => DropdownMenuItem(
             value: e,
-            child: Text(e.toString()),
+            child: Text(e),
           ),
         )
         .toList();
@@ -137,7 +139,7 @@ class _TidalPageState extends State<TidalPage> {
   }
 
   void _onSubmit() {
-    widget.wave.replaceWith(changeAmount: _changeAmount);
+    widget.wave.replaceWith(notificationEvent: _notificationEvent);
     Navigator.of(context).pop();
   }
 }

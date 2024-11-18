@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/waves/dino_page.dart';
 import 'package:sen/screen/level_maker/waves/frost_wind_page.dart';
+import 'package:sen/screen/level_maker/waves/jam_page.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
 import 'package:sen/screen/level_maker/waves/raiding_party_page.dart';
@@ -21,6 +22,7 @@ class WaveManager extends StatefulWidget {
     required this.zombies,
     required this.resource,
     required this.dinos,
+    required this.levelModule,
   });
 
   final List<List<Wave>> waves;
@@ -30,6 +32,8 @@ class WaveManager extends StatefulWidget {
   final String resource;
 
   final List<String> dinos;
+
+  final LevelModule levelModule;
 
   @override
   State<WaveManager> createState() => _WaveManagerState();
@@ -98,6 +102,11 @@ class _WaveManagerState extends State<WaveManager> {
       TidalChange: () => TidalPage(
             wave: wave as TidalChange,
             index: index,
+          ),
+      JamWave: () => JamPage(
+            wave: wave as JamWave,
+            index: index,
+            notificationEvent: widget.levelModule.notificationEvent!,
           ),
     };
 
@@ -186,6 +195,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       FrostWind: Symbols.tornado,
       DinoWave: Symbols.pets,
       TidalChange: Symbols.surfing,
+      JamWave: Symbols.celebration,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -203,6 +213,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       FrostWind: los.frost_wind,
       DinoWave: los.dino_wave,
       TidalChange: los.tidal_change,
+      JamWave: los.jam_wave,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -377,6 +388,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.frost_wind: () => FrostWind.withDefault(),
       los.dino_wave: () => DinoWave.withDefault(),
       los.tidal_change: () => TidalChange.withDefault(),
+      los.jam_wave: () => JamWave.withDefault(),
     };
   }
 }
