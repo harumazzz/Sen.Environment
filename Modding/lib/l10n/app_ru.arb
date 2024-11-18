@@ -117,6 +117,8 @@
     "parachute_rain": "Parachute Rain",
     "value_cannot_be_null": "Value cannot be null",
     "value_must_be_an_integer": "Value must be an integer",
+    "value_must_be_an_float": "Value must be an float",
     "value_cannot_be_empty": "Value cannot be empty",
-    "fall_time": "Fall time"
+    "fall_time": "Fall time",
+    "spider_rain": "Spider Rain"
 }

@@ -6,6 +6,7 @@ import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
 import 'package:sen/screen/level_maker/waves/regular_page.dart';
+import 'package:sen/screen/level_maker/waves/spider_page.dart';
 import 'package:sen/screen/level_maker/waves/storm_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -66,6 +67,11 @@ class _WaveManagerState extends State<WaveManager> {
           ),
       ParachuteRain: () => ParachutePage(
             wave: wave as ParachuteRain,
+            index: index,
+            zombies: widget.zombies,
+          ),
+      SpiderRain: () => SpiderPage(
+            wave: wave as SpiderRain,
             index: index,
             zombies: widget.zombies,
           ),
@@ -134,11 +140,8 @@ class _ExpandedWave extends StatefulWidget {
   });
 
   final List<Wave> wave;
-
   final void Function(Wave wave, int index) onNavigate;
-
   final void Function() onDelete;
-
   final int index;
 
   @override
@@ -146,17 +149,18 @@ class _ExpandedWave extends StatefulWidget {
 }
 
 class __ExpandedWaveState extends State<_ExpandedWave> {
+  bool _isExpanded = false;
+
   IconData _exchangeEvent(Wave wave) {
     final waveTypeToIcon = {
       RegularWave: Symbols.circle,
       StormEvent: Symbols.storm,
       LowTide: Symbols.waves,
       ParachuteRain: Symbols.paragliding,
+      SpiderRain: Symbols.falling,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
-
-  bool _isExpanded = false;
 
   String _exchangeEventName(MapEntry<int, Wave> e, int index) {
     final value = e.value;
@@ -166,6 +170,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       LowTide: los.low_tide,
       StormEvent: los.storm_event,
       ParachuteRain: los.parachute_rain,
+      SpiderRain: los.spider_rain,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -179,119 +184,163 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       child: Card(
         child: Column(
           children: [
-            ListTile(
-              leading: const Icon(Symbols.waves),
-              title: Text('${los.wave} ${widget.index}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PopupMenuButton<String>(
-                    onSelected: (String item) {},
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        child: Text(los.regular_wave),
-                        onTap: () {
-                          setState(() {
-                            widget.wave.add(RegularWave(zombies: []));
-                          });
-                        },
-                      ),
-                      PopupMenuItem<String>(
-                        child: Text(los.low_tide),
-                        onTap: () {
-                          setState(() {
-                            widget.wave.add(LowTide.withDefault());
-                          });
-                        },
-                      ),
-                      PopupMenuItem<String>(
-                        child: Text(los.sandstorm),
-                        onTap: () {
-                          setState(() {
-                            widget.wave.add(StormEvent.withDefault());
-                          });
-                        },
-                      ),
-                      PopupMenuItem<String>(
-                        child: Text(los.parachute_rain),
-                        onTap: () {
-                          setState(() {
-                            widget.wave.add(ParachuteRain.withDefault());
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 15.0),
-                  Tooltip(
-                    message: los.expand,
-                    child: ExpandIcon(
-                      onPressed: (value) {
-                        setState(() {
-                          _isExpanded = !value;
-                        });
-                      },
-                      isExpanded: _isExpanded,
-                    ),
-                  ),
-                  const SizedBox(width: 15.0),
-                  Tooltip(
-                    message: los.delete,
-                    child: IconButton(
-                      onPressed: widget.onDelete,
-                      icon: const Icon(Symbols.delete),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (_isExpanded)
-              ...widget.wave.asMap().entries.map(
-                (e) {
-                  final index = e.key;
-                  final element = e.value;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 4.0,
-                    ),
-                    child: ListTile(
-                      leading: Icon(_exchangeEvent(element),
-                          color: Colors.blueAccent),
-                      title: Text(_exchangeEventName(e, widget.index)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Tooltip(
-                            message: los.edit,
-                            child: IconButton(
-                              onPressed: () =>
-                                  widget.onNavigate(element, widget.index),
-                              icon: const Icon(Symbols.edit),
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          Tooltip(
-                            message: los.delete,
-                            child: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  widget.wave.removeAt(index);
-                                });
-                              },
-                              icon: const Icon(Symbols.delete),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+            _buildHeader(context, los),
+            if (_isExpanded) _buildWaveList(context, los),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildHeader(
+    BuildContext context,
+    AppLocalizations los,
+  ) {
+    final waveFactories = _waveFactories(los);
+    return ListTile(
+      leading: const Icon(Symbols.waves),
+      title: Text('${los.wave} ${widget.index}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPopupMenuButton(waveFactories),
+          const SizedBox(width: 15.0),
+          _buildExpandIcon(los),
+          const SizedBox(width: 15.0),
+          _buildDeleteButton(los),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPopupMenuButton(
+    Map<String, Function()> waveFactories,
+  ) {
+    return PopupMenuButton<String>(
+      onSelected: (String item) {
+        final waveFactory = waveFactories[item];
+        if (waveFactory != null) {
+          setState(() {
+            widget.wave.add(waveFactory());
+          });
+        }
+      },
+      itemBuilder: (BuildContext context) => waveFactories.entries
+          .map(
+            (entry) => PopupMenuItem<String>(
+              value: entry.key,
+              child: Text(entry.key),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildExpandIcon(
+    AppLocalizations los,
+  ) {
+    return Tooltip(
+      message: los.expand,
+      child: ExpandIcon(
+        onPressed: (value) {
+          setState(() {
+            _isExpanded = !value;
+          });
+        },
+        isExpanded: _isExpanded,
+      ),
+    );
+  }
+
+  Widget _buildDeleteButton(
+    AppLocalizations los,
+  ) {
+    return Tooltip(
+      message: los.delete,
+      child: IconButton(
+        onPressed: widget.onDelete,
+        icon: const Icon(Symbols.delete),
+      ),
+    );
+  }
+
+  Widget _buildWaveList(
+    BuildContext context,
+    AppLocalizations los,
+  ) {
+    return Column(
+      children: widget.wave.asMap().entries.map(
+        (e) {
+          final index = e.key;
+          final element = e.value;
+          return _buildWaveItem(e, index, element, los);
+        },
+      ).toList(),
+    );
+  }
+
+  Widget _buildWaveItem(
+    MapEntry<int, Wave> e,
+    int index,
+    Wave element,
+    AppLocalizations los,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      child: ListTile(
+        leading: Icon(_exchangeEvent(element), color: Colors.blueAccent),
+        title: Text(_exchangeEventName(e, widget.index)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildEditButton(element, los),
+            const SizedBox(width: 8.0),
+            _buildDeleteWaveButton(index, los),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditButton(
+    Wave element,
+    AppLocalizations los,
+  ) {
+    return Tooltip(
+      message: los.edit,
+      child: IconButton(
+        onPressed: () => widget.onNavigate(element, widget.index),
+        icon: const Icon(Symbols.edit),
+      ),
+    );
+  }
+
+  Widget _buildDeleteWaveButton(
+    int index,
+    AppLocalizations los,
+  ) {
+    return Tooltip(
+      message: los.delete,
+      child: IconButton(
+        onPressed: () {
+          setState(() {
+            widget.wave.removeAt(index);
+          });
+        },
+        icon: const Icon(Symbols.delete),
+      ),
+    );
+  }
+
+  Map<String, Function()> _waveFactories(
+    AppLocalizations los,
+  ) {
+    return {
+      los.regular_wave: () => RegularWave(zombies: []),
+      los.low_tide: () => LowTide.withDefault(),
+      los.sandstorm: () => StormEvent.withDefault(),
+      los.parachute_rain: () => ParachuteRain.withDefault(),
+      los.spider_rain: () => SpiderRain.withDefault(),
+    };
   }
 }
