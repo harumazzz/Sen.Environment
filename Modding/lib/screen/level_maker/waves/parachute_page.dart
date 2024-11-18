@@ -199,14 +199,18 @@ class _ParachutePageState extends State<ParachutePage> {
                       controller: _fallTimeController,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+                      ],
                     ),
                     _buildFormField(
                       labelText: '${los.group_size}:',
                       controller: _groupSizeController,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+                      ],
                     ),
                     TextField(
                       controller: _messageController,
@@ -232,7 +236,7 @@ class _ParachutePageState extends State<ParachutePage> {
                     width: double.infinity,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Center(child: Text(los.okay)),
+                      child: Center(child: Text(los.save)),
                     ),
                   ),
                 ),

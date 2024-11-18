@@ -6,8 +6,8 @@ part 'wave/low_tide.dart';
 part 'wave/storm_event.dart';
 part 'wave/parachute_rain.dart';
 part 'wave/spider_rain.dart';
+part 'wave/raiding_party.dart';
 
-// TODO : Implement Raiding Party
 // TODO : Implement Ground Spawn
 // TODO : Implement Necromancy
 // TODO : Implement Grid Spawn

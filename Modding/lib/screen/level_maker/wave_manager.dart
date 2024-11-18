@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
+import 'package:sen/screen/level_maker/waves/raiding_party_page.dart';
 import 'package:sen/screen/level_maker/waves/regular_page.dart';
 import 'package:sen/screen/level_maker/waves/spider_page.dart';
 import 'package:sen/screen/level_maker/waves/storm_page.dart';
@@ -74,6 +75,10 @@ class _WaveManagerState extends State<WaveManager> {
             wave: wave as SpiderRain,
             index: index,
             zombies: widget.zombies,
+          ),
+      RaidingParty: () => RaidingPartyPage(
+            wave: wave as RaidingParty,
+            index: index,
           ),
     };
 
@@ -158,6 +163,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       LowTide: Symbols.waves,
       ParachuteRain: Symbols.paragliding,
       SpiderRain: Symbols.falling,
+      RaidingParty: Symbols.rainy_heavy,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -171,6 +177,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       StormEvent: los.storm_event,
       ParachuteRain: los.parachute_rain,
       SpiderRain: los.spider_rain,
+      RaidingParty: los.raiding_party,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -341,6 +348,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.sandstorm: () => StormEvent.withDefault(),
       los.parachute_rain: () => ParachuteRain.withDefault(),
       los.spider_rain: () => SpiderRain.withDefault(),
+      los.raiding_party: () => RaidingParty.withDefault(),
     };
   }
 }
