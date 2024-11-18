@@ -12,6 +12,7 @@ import 'package:sen/screen/level_maker/waves/regular_page.dart';
 import 'package:sen/screen/level_maker/waves/spider_page.dart';
 import 'package:sen/screen/level_maker/waves/storm_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/screen/level_maker/waves/tidal_page.dart';
 
 class WaveManager extends StatefulWidget {
   const WaveManager({
@@ -93,6 +94,10 @@ class _WaveManagerState extends State<WaveManager> {
             wave: wave as DinoWave,
             index: index,
             dino: widget.dinos,
+          ),
+      TidalChange: () => TidalPage(
+            wave: wave as TidalChange,
+            index: index,
           ),
     };
 
@@ -180,6 +185,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       RaidingParty: Symbols.rainy_heavy,
       FrostWind: Symbols.tornado,
       DinoWave: Symbols.pets,
+      TidalChange: Symbols.surfing,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -196,6 +202,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       RaidingParty: los.raiding_party,
       FrostWind: los.frost_wind,
       DinoWave: los.dino_wave,
+      TidalChange: los.tidal_change,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -369,6 +376,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.raiding_party: () => RaidingParty.withDefault(),
       los.frost_wind: () => FrostWind.withDefault(),
       los.dino_wave: () => DinoWave.withDefault(),
+      los.tidal_change: () => TidalChange.withDefault(),
     };
   }
 }

@@ -133,5 +133,7 @@
     "add": "Add",
     "close": "Close",
     "dino_wave": "Dino Wave",
-    "dino_type": "Dino Type"
+    "dino_type": "Dino Type",
+    "tidal_change": "Tidal Change",
+    "tide_coordinate": "Tide Coordinate"
 }

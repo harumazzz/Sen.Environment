@@ -8,12 +8,12 @@ part 'wave/spider_rain.dart';
 part 'wave/raiding_party.dart';
 part 'wave/frost_wind.dart';
 part 'wave/dino_wave.dart';
+part 'wave/tidal_change.dart';
 
 // TODO : Implement Ground Spawn
 // TODO : Implement Necromancy
 // TODO : Implement Grid Spawn
 // TODO : Implement Portal Spawn
-// TODO : Implement Tide
 // TODO : Implement Jam
 // TODO : Implement Conveyor
 
