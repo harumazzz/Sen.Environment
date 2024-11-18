@@ -63,11 +63,39 @@ class _FrostWindPageState extends State<FrostWindPage> {
                 leading: const Icon(Symbols.circle, color: Colors.cyan),
                 title: Text('${e.key}'),
                 subtitle: Text(makeDescription(e.value)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _onEdit(index: e.key),
+                      icon: Tooltip(
+                        message: los.edit,
+                        child: const Icon(Symbols.edit),
+                      ),
+                    ),
+                    const SizedBox(width: 15.0),
+                    IconButton(
+                      onPressed: () => _onDelete(index: e.key),
+                      icon: Tooltip(
+                        message: los.delete,
+                        child: const Icon(Symbols.delete),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         )
         .toList();
+  }
+
+  void _onDelete({
+    required int index,
+  }) {
+    setState(() {
+      _frostWind.winds.removeAt(index);
+    });
   }
 
   Future<void> _onSaveFinish() async {
@@ -107,7 +135,7 @@ class _FrostWindPageState extends State<FrostWindPage> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(los.okay),
+            child: Text(los.close),
           ),
           TextButton(
             onPressed: () {
@@ -116,6 +144,42 @@ class _FrostWindPageState extends State<FrostWindPage> {
               setState(() {});
             },
             child: Text(los.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onEdit({
+    required int index,
+  }) async {
+    final los = AppLocalizations.of(context)!;
+    final state = <String, void Function()?>{
+      'onEdit': null,
+    };
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(los.edit),
+        content: _EditFrostWind(
+          frostWind: _frostWind,
+          map: state,
+          index: index,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(los.close),
+          ),
+          TextButton(
+            onPressed: () {
+              state['onEdit']?.call();
+              Navigator.of(context).pop();
+              setState(() {});
+            },
+            child: Text(los.edit),
           ),
         ],
       ),
@@ -193,6 +257,128 @@ class __AddFrostWindState extends State<_AddFrostWind> {
     _row = 1;
     widget.map['onAdd'] = () {
       widget.frostWind.winds.add(Wind(row: _row, direction: _direction));
+    };
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _directions = [
+      _DirectionWrapper(
+        direction: 'left',
+        locale: AppLocalizations.of(context)!.left,
+      ),
+      _DirectionWrapper(
+        direction: 'right',
+        locale: AppLocalizations.of(context)!.right,
+      ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final los = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(los.direction),
+            const SizedBox(width: 15.0),
+            Expanded(
+              child: DropdownButton<String>(
+                items: _directions
+                    .map<DropdownMenuItem<String>>(
+                      (e) => DropdownMenuItem<String>(
+                        value: e.direction,
+                        child: Text(e.locale),
+                      ),
+                    )
+                    .toList(),
+                value: _direction,
+                onChanged: (String? value) {
+                  if (value == null) return;
+                  setState(() {
+                    _direction = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Text(los.row),
+            const SizedBox(width: 15.0),
+            Expanded(
+              child: DropdownButton<int>(
+                items: _rows
+                    .map<DropdownMenuItem<int>>(
+                      (e) => DropdownMenuItem<int>(
+                        value: e,
+                        child: Text(e.toString()),
+                      ),
+                    )
+                    .toList(),
+                value: _row,
+                onChanged: (int? value) {
+                  if (value == null) return;
+                  setState(() {
+                    _row = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _EditFrostWind extends StatefulWidget {
+  _EditFrostWind({
+    required this.frostWind,
+    required this.map,
+    required this.index,
+  });
+
+  final FrostWind frostWind;
+
+  final int index;
+
+  final Map<String, void Function()?> map;
+
+  @override
+  State<_EditFrostWind> createState() => __EditFrostWindState();
+}
+
+class __EditFrostWindState extends State<_EditFrostWind> {
+  late final List<_DirectionWrapper> _directions;
+  final List<int> _rows = [1, 2, 3, 4, 5];
+
+  late Wind wind;
+
+  late String _direction;
+
+  late int _row;
+
+  @override
+  void initState() {
+    wind = widget.frostWind.winds[widget.index];
+    _direction = wind.direction;
+    _row = wind.row;
+    widget.map['onEdit'] = () {
+      widget.frostWind.winds[widget.index] =
+          Wind(row: _row, direction: _direction);
     };
     super.initState();
   }

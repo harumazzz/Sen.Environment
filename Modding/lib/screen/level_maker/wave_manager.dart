@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
+import 'package:sen/screen/level_maker/waves/dino_page.dart';
 import 'package:sen/screen/level_maker/waves/frost_wind_page.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
@@ -18,6 +19,7 @@ class WaveManager extends StatefulWidget {
     required this.waves,
     required this.zombies,
     required this.resource,
+    required this.dinos,
   });
 
   final List<List<Wave>> waves;
@@ -25,6 +27,8 @@ class WaveManager extends StatefulWidget {
   final List<String> zombies;
 
   final String resource;
+
+  final List<String> dinos;
 
   @override
   State<WaveManager> createState() => _WaveManagerState();
@@ -84,6 +88,11 @@ class _WaveManagerState extends State<WaveManager> {
       FrostWind: () => FrostWindPage(
             wave: wave as FrostWind,
             index: index,
+          ),
+      DinoWave: () => DinoPage(
+            wave: wave as DinoWave,
+            index: index,
+            dino: widget.dinos,
           ),
     };
 
@@ -170,6 +179,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       SpiderRain: Symbols.falling,
       RaidingParty: Symbols.rainy_heavy,
       FrostWind: Symbols.tornado,
+      DinoWave: Symbols.pets,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -185,6 +195,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       SpiderRain: los.spider_rain,
       RaidingParty: los.raiding_party,
       FrostWind: los.frost_wind,
+      DinoWave: los.dino_wave,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -357,6 +368,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.spider_rain: () => SpiderRain.withDefault(),
       los.raiding_party: () => RaidingParty.withDefault(),
       los.frost_wind: () => FrostWind.withDefault(),
+      los.dino_wave: () => DinoWave.withDefault(),
     };
   }
 }

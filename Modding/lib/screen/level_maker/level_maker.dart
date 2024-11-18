@@ -32,7 +32,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
   late MusicType _musicType;
 
   late String _resource;
-  List<String> _plants = [], _zombies = [], _gridItems = [];
+  List<String> _plants = [], _zombies = [], _gridItems = [], _dinos = [];
 
   @override
   void initState() {
@@ -59,6 +59,10 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
         );
         _gridItems = FileService.readDirectory(
           source: '$_resource/item',
+          recursive: false,
+        );
+        _dinos = FileService.readDirectory(
+          source: '$_resource/dino',
           recursive: false,
         );
       });
@@ -131,6 +135,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
             resource: _resource,
             waves: _waves,
             zombies: _zombies,
+            dinos: _dinos,
           ),
           CodePreview(
             levelNameController: _levelNameController,

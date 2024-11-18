@@ -130,5 +130,8 @@
     "left": "Left",
     "right": "Right",
     "save_finish": "Save finish",
-    "add": "Add"
+    "add": "Add",
+    "close": "Close",
+    "dino_wave": "Dino Wave",
+    "dino_type": "Dino Type"
 }
