@@ -489,8 +489,7 @@ enum {
 };
 int utf8_scan(const char *buf, size_t len, size_t *plen);
 size_t utf8_encode_len(uint32_t c);
-// Haruma : Modify
-size_t utf8_encode(uint8_t* buf, uint32_t c);
+size_t utf8_encode(uint8_t buf[minimum_length(UTF8_CHAR_LEN_MAX)], uint32_t c);
 uint32_t utf8_decode_len(const uint8_t *p, size_t max_len, const uint8_t **pp);
 uint32_t utf8_decode(const uint8_t *p, const uint8_t **pp);
 size_t utf8_decode_buf8(uint8_t *dest, size_t dest_len, const char *src, size_t src_len);
@@ -549,17 +548,14 @@ static inline uint8_t to_upper_ascii(uint8_t c) {
 }
 
 extern char const digits36[36];
-// Haruma : Modify 
-// In order to support llvm clang, size for static array is not supported in C++ Standard project
-// In this case, we change to an pointer which accepts any size
-size_t u32toa(char* buf, uint32_t n);
-size_t i32toa(char* buf, int32_t n);
-size_t u64toa(char* buf, uint64_t n);
-size_t i64toa(char* buf, int64_t n);
-size_t u32toa_radix(char* buf, uint32_t n, unsigned int base);
-size_t i32toa_radix(char* buf, int32_t n, unsigned base);
-size_t u64toa_radix(char* buf, uint64_t n, unsigned int base);
-size_t i64toa_radix(char* buf, int64_t n, unsigned int base);
+size_t u32toa(char buf[minimum_length(11)], uint32_t n);
+size_t i32toa(char buf[minimum_length(12)], int32_t n);
+size_t u64toa(char buf[minimum_length(21)], uint64_t n);
+size_t i64toa(char buf[minimum_length(22)], int64_t n);
+size_t u32toa_radix(char buf[minimum_length(33)], uint32_t n, unsigned int base);
+size_t i32toa_radix(char buf[minimum_length(34)], int32_t n, unsigned base);
+size_t u64toa_radix(char buf[minimum_length(65)], uint64_t n, unsigned int base);
+size_t i64toa_radix(char buf[minimum_length(66)], int64_t n, unsigned int base);
 
 void rqsort(void *base, size_t nmemb, size_t size,
             int (*cmp)(const void *, const void *, void *),

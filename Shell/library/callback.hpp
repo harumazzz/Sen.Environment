@@ -2,7 +2,7 @@
 
 #include "library/macro.hpp"
 #include "library/dialog.hpp"
-#include "version.hpp"
+#include "library/version.hpp"
 
 namespace Sen::Shell {
 	
@@ -126,9 +126,8 @@ namespace Sen::Shell {
 	{
 		auto result = StringList::to_vector(*list);
 		assert_conditional(result.size() >= 1, "argument must be greater than 1");
+		MemoryBuffer::release();
 		if (result[0] == "display") {
-			delete[] copy;
-			copy = nullptr;
 			assert_conditional(result.size() >= 2, "argument must be greater than 2");
 			switch (result.size()) {
 				case 2: {
@@ -147,28 +146,39 @@ namespace Sen::Shell {
 			return;
 		}
 		if (result[0] == "input") {
-			delete[] copy;
-			copy = nullptr;
 			auto c = Console::input();
-			copy = new char[c.size() + 1];
-			std::memcpy(copy, c.data(), c.size());
-			copy[c.size()] = '\0';
-			destination->size = c.size();
-			destination->value = copy;
+			if (c.size() > 0) {
+				MemoryBuffer::allocate(c.size());
+				std::memcpy(MemoryBuffer::get(), c.data(), c.size());
+				destination->size = c.size();
+				destination->value = MemoryBuffer::get();
+			}
+			else {
+				destination->size = 0;
+				destination->value = "";
+			}
 			return;
 		}
 		if (result[0] == "is_gui") {
-			delete[] copy;
-			copy = nullptr;
 			destination->value = "0";
 			destination->size = 1;
 			return;
 		}
 		if (result[0] == "wait") {
 			#if WINDOWS
-					auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-					SetConsoleTextAttribute(hConsole, Sen::Shell::Interactive::Color::CYAN);
-					std::cout << "● " << std::flush;
+					auto state_b = BOOL{};
+					auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+					auto handle_mode = DWORD{};
+					SetConsoleTextAttribute(handle, Sen::Shell::Interactive::Color::CYAN);
+					auto state = GetConsoleMode(handle, &handle_mode);
+					if (state) {
+						auto text = "● ";
+						auto text_16 = utf8_to_utf16(text);
+						state_b = WriteConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), nullptr, nullptr);
+					} 
+					else {
+						std::cout << "● " << std::flush;
+					}
 			#else
 					std::cout << "\033[36m● \033[0m";
 			#endif
@@ -182,19 +192,14 @@ namespace Sen::Shell {
 			return;
 		}
 		if (result[0] == "version") {
-			delete[] copy;
-			copy = nullptr;
 			auto version = std::to_string(Sen::Shell::version);
-			copy = new char[version.size() + 1];
-			std::memcpy(copy, version.data(), version.size());
-			copy[version.size()] = '\0';
+			MemoryBuffer::allocate(version.size());
+			std::memcpy(MemoryBuffer::get(), version.data(), version.size());
 			destination->size = version.size();
-			destination->value = copy;
+			destination->value = MemoryBuffer::get();
 			return;
 		}
 		if (result[0] == "host") {
-			delete[] copy;
-			copy = nullptr;
 			assert_conditional(result.size() >= 5, "argument must be greater than 5");
 			auto svr = Server{};
 			svr.Get(std::format("/{}", result[1]), [&](const Request&, Response& res) {
@@ -204,25 +209,21 @@ namespace Sen::Shell {
 			return;
 		}
 		if (result[0] == "pick_file") {
-			delete[] copy;
-			copy = nullptr;
 			#if WINDOWS
 				auto raw_selection = Dialog::pick_path(false, false);
 				if (!raw_selection.empty()) {
-					copy = new char[raw_selection[0].size() + 1];
-					std::memcpy(copy, raw_selection[0].data(), raw_selection[0].size());
-					copy[raw_selection[0].size()] = '\0';
+					MemoryBuffer::allocate(static_cast<std::size_t>(raw_selection[0].size() + 1));
+					std::memcpy(MemoryBuffer::get(), raw_selection[0].data(), raw_selection[0].size());
 					destination->size = raw_selection[0].size();
-					destination->value = copy;
+					destination->value = MemoryBuffer::get();
 				}
 			#elif LINUX || MACINTOSH
 				auto raw_selection = tinyfd_openFileDialog("", nullptr, 0, nullptr, nullptr, false);
 				if (raw_selection != nullptr) {
-					copy = new char[std::strlen(raw_selection) + 1];
-					std::memcpy(copy, raw_selection, strlen(raw_selection));
-					copy[std::strlen(raw_selection)] = '\0';
+					MemoryBuffer::allocate(static_cast<std::size_t>(std::strlen(raw_selection) + 1));
+					std::memcpy(MemoryBuffer::get(), raw_selection, strlen(raw_selection));
 					destination->size = std::strlen(raw_selection);
-					destination->value = copy;
+					destination->value = MemoryBuffer::get();
 				}
 			#else
 				throw std::runtime_error{ "invalid method" };
@@ -230,32 +231,26 @@ namespace Sen::Shell {
 			return;
 		}
 		if (result[0] == "pick_directory") {
-			delete[] copy;
-			copy = nullptr;
 			#if WINDOWS
 			auto raw_selection = Dialog::pick_path(true, false);
 			if (!raw_selection.empty()) {
-				copy = new char[raw_selection[0].size() + 1];
-				std::memcpy(copy, raw_selection[0].data(), raw_selection[0].size());
-				copy[raw_selection[0].size()] = '\0';
+				MemoryBuffer::allocate(static_cast<std::size_t>(raw_selection[0].size() + 1));
+				std::memcpy(MemoryBuffer::get(), raw_selection[0].data(), raw_selection[0].size());
 				destination->size = raw_selection[0].size();
-				destination->value = copy;
+				destination->value = MemoryBuffer::get();
 			}
 			#elif LINUX || MACINTOSH
 			auto raw_selection = tinyfd_selectFolderDialog("", nullptr);
 			if (raw_selection != nullptr) {
-				copy = new char[strlen(raw_selection) + 1];
-				std::memcpy(copy, raw_selection, strlen(raw_selection));
-				copy[std::strlen(raw_selection)] = '\0';
+				MemoryBuffer::allocate(static_cast<std::size_t>(strlen(raw_selection) + 1));
+				std::memcpy(MemoryBuffer::get(), raw_selection, strlen(raw_selection));
 				destination->size = std::strlen(raw_selection);
-				destination->value = copy;
+				destination->value = MemoryBuffer::get();
 			}
 			#endif
 			return;
 		}
 		if (result[0] == "push_notification") {
-			delete[] copy;
-			copy = nullptr;
 			assert_conditional(result.size() >= 3, "argument must be greater than 3");
 			tinyfd_notifyPopup(result[1].data(), result[2].data(), "info");
 			return;

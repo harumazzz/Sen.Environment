@@ -82,19 +82,52 @@ using CStringList = StringList;
 
 typedef void(*ShellCallback)(CStringList* list, CStringView* destination);
 
-namespace Sen::Shell {
+class MemoryBuffer {
+public:
+    MemoryBuffer(std::size_t size) {
+		this->allocate(size);
+	}
 
-}
+    ~MemoryBuffer() {
+        this->release();
+    }
 
-#if WINDOWS
-#define KERNEL_DEFAULT L".\\Kernel.dll"
-#elif MACINTOSH || IPHONE
-#define KERNEL_DEFAULT "Kernel.dylib"
-#elif ANDROID || LINUX
-#define KERNEL_DEFAULT "libKernel.so"
-#endif
+	inline static auto release(
 
-char* copy = new char[1];
+	) -> void
+	{
+		if (buffer != nullptr) {
+			delete[] buffer;
+			buffer = nullptr;
+		}
+	}
+
+	inline static auto has_value (
+
+	) -> bool
+	{
+		return buffer != nullptr;
+	}
+
+	inline static auto allocate(
+		std::size_t size
+	) -> void {
+		if (has_value()) {
+			release();
+		}
+		buffer = new char[size];
+		buffer[size - 1] = '\0';
+	}
+
+    inline static auto get(
+
+	) -> char* {
+        return buffer;
+    }
+
+private:
+    inline static char* buffer{nullptr};
+};
 
 typedef int (*execute)
 (CStringView* script, CStringList* argument, ShellCallback m_callback);
@@ -103,3 +136,8 @@ typedef int (*execute)
 	if(!(condition)) {\
 		throw std::runtime_error(message); \
 	}
+
+
+namespace Sen::Shell {
+
+}

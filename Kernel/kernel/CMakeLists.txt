@@ -294,17 +294,20 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 if (MSVC)
     add_compile_options(/bigobj)
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++23)
 else ()
     add_compile_options(-Wa,-mbig-obj)
 	# For some reason, Android doesn't support std=c++23 yet
 	target_compile_options(${PROJECT_NAME} PRIVATE -std=c++20)
 endif ()
 
+
+
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
 	target_compile_definitions(

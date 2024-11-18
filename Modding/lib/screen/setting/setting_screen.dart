@@ -30,8 +30,9 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
         _hasPermission = hasPermission;
       });
     });
-    _controller =
-        TextEditingController(text: ref.read(settingProvider).toolChain);
+    _controller = TextEditingController(
+      text: ref.read(settingProvider).toolChain,
+    );
   }
 
   @override

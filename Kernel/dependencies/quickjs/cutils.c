@@ -246,9 +246,7 @@ size_t utf8_encode_len(uint32_t c)
    No null byte is stored after the encoded bytes.
    Return value is in range 1..4
  */
-// Haruma : Modify
-// Original: size_t utf8_encode(uint8_t buf[SIZE], uint32_t c)
-size_t utf8_encode(uint8_t* buf, uint32_t c)
+size_t utf8_encode(uint8_t buf[minimum_length(UTF8_CHAR_LEN_MAX)], uint32_t c)
 {
     if (c < 0x80) {
         buf[0] = c;

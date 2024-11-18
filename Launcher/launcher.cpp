@@ -10,7 +10,7 @@ using namespace Sen::Launcher;
 MAIN{
     try {
         #ifdef _WIN32
-            auto home = get_executable_path();
+            auto home = current_home();
             if (home.empty()) {
                 throw std::runtime_error{"Failed to get the executable path."};
             }
@@ -22,7 +22,7 @@ MAIN{
             }
             execute_windows_command(shell_path, arguments);
         #else
-            auto home = get_executable_path();
+            auto home = current_home();
             if (home.empty()) {
                 throw std::runtime_error{"Failed to get the executable path."};
                 return 1;

@@ -22,9 +22,6 @@ namespace Sen::Shell {
 			source.data(),
 			source.data() + source.size()
 		);
-		if (converter.converted() != source.size()) {
-			throw std::runtime_error("utf16 string is not equals to utf8");
-		}
 		return reinterpret_cast<std::u8string&>(result);
 	}
 

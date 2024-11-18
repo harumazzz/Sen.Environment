@@ -3,7 +3,7 @@
 
 #ifdef _WIN32
 namespace Sen::Launcher {
-	auto get_executable_path(
+	auto current_home(
 	) -> std::wstring 
 	{
 		wchar_t path[MAX_PATH];

@@ -2,7 +2,7 @@
 
 #ifndef _WIN32
 namespace Sen::Launcher {
-	auto get_executable_path(
+	auto current_home(
 	) -> std::string {
 		char path[PATH_MAX];
 		auto count = readlink("/proc/self/exe", path, sizeof(path));

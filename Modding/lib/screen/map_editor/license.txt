@@ -1,0 +1,32 @@
+Copyright (c) 2024 Haruma
+
+This license governs the use, distribution, and modification of the project Map Editor. By accessing or using this Software, you agree to the terms set forth in this agreement.
+
+1. Ownership
+The Software and all associated intellectual property rights are owned by Haruma-VN. All rights not expressly granted in this agreement are reserved by the Owner.
+
+2. Prohibited Actions
+Unless explicitly authorized in writing by the Owner:
+
+You may not use, copy, distribute, or host the Software.
+You may not modify, merge, adapt, or create derivative works based on the Software.
+You may not sublicense, lease, or rent the Software.
+3. Permitted Actions
+Certain actions may be permitted under specific written agreements with the Owner. These include, but are not limited to:
+
+Non-commercial use for educational or research purposes.
+Use in demonstrations or evaluations.
+Redistribution as part of a specific partnership agreement with Haruma-VN.
+Such permissions must be obtained through written authorization from the Owner, who reserves the right to deny any request.
+
+4. Requesting Permission
+No Requesting Permission. All Permission are denied.
+
+5. No Warranty
+The Software is provided "AS IS," without warranty of any kind, express or implied. The Owner shall not be held liable for any damages arising from the use or inability to use the Software.
+
+6. Termination
+This license is effective until terminated. Violation of any terms of this agreement will result in automatic termination of your rights under this license. Upon termination, you must immediately cease all use of the Software and destroy all copies in your possession.
+
+7. Governing Law
+This agreement is governed by the laws of US Government Rule. Any disputes arising from this agreement shall be resolved in the courts of United State.

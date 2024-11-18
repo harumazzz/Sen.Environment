@@ -1,5 +1,4 @@
 ﻿#include "kernel/interface/callback.hpp"
-
 using namespace Sen::Kernel;
 
 M_EXPORT_API
