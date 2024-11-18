@@ -122,5 +122,13 @@
     "fall_time": "Fall time",
     "spider_rain": "Spider Rain",
     "raiding_party": "Raiding Party",
-    "swashbuckler_count": "Swashbuckler Count"
+    "swashbuckler_count": "Swashbuckler Count",
+    "frost_wind": "Frost Wind",
+    "direction": "Direction",
+    "row": "Row",
+    "add_new_frost_wind": "Add new frost wind",
+    "left": "Left",
+    "right": "Right",
+    "save_finish": "Save finish",
+    "add": "Add"
 }

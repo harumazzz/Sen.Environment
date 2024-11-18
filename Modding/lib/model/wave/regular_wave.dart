@@ -26,3 +26,13 @@ class RegularWave implements Wave {
     };
   }
 }
+
+class Spawn {
+  final int row;
+  final String typename;
+
+  Spawn({
+    required this.row,
+    required this.typename,
+  });
+}
