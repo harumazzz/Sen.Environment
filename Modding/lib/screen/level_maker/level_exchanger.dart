@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:sen/model/level.dart';
+import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/music_type.dart';
 
 class LevelExchanger {
@@ -8,16 +12,18 @@ class LevelExchanger {
   final TextEditingController levelStageController;
   final TextEditingController lawnMowerController;
   final bool hasSunFalling;
+  final List<List<Wave>> waves;
 
   final MusicType musicType;
 
-  LevelExchanger({
+  const LevelExchanger({
     required this.levelNameController,
     required this.levelDescriptionController,
     required this.levelStageController,
     required this.lawnMowerController,
     required this.hasSunFalling,
     required this.musicType,
+    required this.waves,
   });
 
   dynamic _buildLevelDefinition() {
@@ -60,11 +66,24 @@ class LevelExchanger {
     return result;
   }
 
+  List<dynamic> _buildLevelWave() {
+    final destination = [];
+    for (var wave in waves.asMap().entries) {
+      final waveIndex = wave.key + 1;
+      final waveValue = wave.value;
+      for (var e in waveValue.asMap().entries) {
+        destination.add(e.value.toJson('Wave${waveIndex}Event${e.key}'));
+      }
+    }
+    return destination;
+  }
+
   Level buildLevel() {
     return Level(
       version: 1,
       objects: [
         _buildLevelDefinition(),
+        ..._buildLevelWave(),
       ],
     );
   }

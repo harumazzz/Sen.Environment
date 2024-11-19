@@ -57,11 +57,13 @@ class StormEvent implements Wave {
         "ColumnEnd": columnEnd,
         "TimeBetweenGroups": timeBetweenGroups,
         "GroupSize": groupSize,
-        "Zombies": zombies.map(
-          (e) => {
-            "Type": "RTID($e@ZombieTypes)",
-          },
-        ),
+        "Zombies": zombies
+            .map(
+              (e) => {
+                "Type": "RTID($e@ZombieTypes)",
+              },
+            )
+            .toList(),
       },
     };
   }

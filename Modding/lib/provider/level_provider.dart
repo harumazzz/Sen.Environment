@@ -6,16 +6,21 @@ final levelProvider = StateNotifierProvider<LevelProvider, LevelState>(
 );
 
 class LevelState {
-  String? resourceLocation;
+  final String? resourceLocation;
+  final bool isLoading;
+
   LevelState({
     this.resourceLocation,
+    this.isLoading = true,
   });
 
   LevelState copyWith({
     String? resourceLocation,
+    bool? isLoading,
   }) {
     return LevelState(
       resourceLocation: resourceLocation ?? this.resourceLocation,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
@@ -29,6 +34,7 @@ class LevelProvider extends StateNotifier<LevelState> {
     final prefs = await SharedPreferences.getInstance();
     state = state.copyWith(
       resourceLocation: prefs.getString('resourceLocation'),
+      isLoading: false,
     );
   }
 

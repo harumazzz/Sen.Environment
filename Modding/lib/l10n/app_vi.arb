@@ -140,5 +140,10 @@
     "notification_event": "Notification Event",
     "loading_error": "Loading Error",
     "please_configure_resource_location": "Please configure resource location in setting to load this module",
-    "resource_location": "Resource Location"
+    "resource_location": "Resource Location",
+    "portal_wave": "Portal Wave",
+    "portal_column": "Portal Column",
+    "portal_row": "Portal Row",
+    "portal_type": "Portal Type",
+    "pick_a_portal": "Pick a portal"
 }

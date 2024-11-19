@@ -16,12 +16,14 @@ class RegularWave implements Wave {
       "objclass": "SpawnZombiesJitteredWaveActionProps",
       "objdata": {
         "AdditionalPlantfood": additionalPlantfood,
-        "Zombies": zombies.map(
-          (e) => {
-            "Row": e.row,
-            "Type": "RTID(${e.typename}@ZombieTypes)",
-          },
-        ),
+        "Zombies": zombies
+            .map(
+              (e) => {
+                "Row": e.row,
+                "Type": "RTID(${e.typename}@ZombieTypes)",
+              },
+            )
+            .toList(),
       }
     };
   }

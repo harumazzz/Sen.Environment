@@ -50,11 +50,17 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
   }
 
   Future<void> _loadResources() async {
+    final los = AppLocalizations.of(context)!;
+    await Future.doWhile(() async {
+      if (ref.read(levelProvider).isLoading) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        return true;
+      }
+      return false;
+    });
     final setting = ref.read(levelProvider).resourceLocation;
     if (setting == null || setting.isEmpty) {
-      throw Exception(
-        AppLocalizations.of(context)!.please_configure_resource_location,
-      );
+      throw Exception(los.please_configure_resource_location);
     }
     _resource = setting;
 
@@ -169,6 +175,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
                   lawnMowerController: _lawnMowerController,
                   hasSunFalling: _hasSunFalling,
                   musicType: _musicType,
+                  wave: _waves,
                 ),
               ],
             );

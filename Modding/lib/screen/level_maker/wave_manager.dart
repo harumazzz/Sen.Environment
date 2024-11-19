@@ -8,6 +8,7 @@ import 'package:sen/screen/level_maker/waves/frost_wind_page.dart';
 import 'package:sen/screen/level_maker/waves/jam_page.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
+import 'package:sen/screen/level_maker/waves/portal_page.dart';
 import 'package:sen/screen/level_maker/waves/raiding_party_page.dart';
 import 'package:sen/screen/level_maker/waves/regular_page.dart';
 import 'package:sen/screen/level_maker/waves/spider_page.dart';
@@ -108,6 +109,11 @@ class _WaveManagerState extends State<WaveManager> {
             index: index,
             notificationEvent: widget.levelModule.notificationEvent!,
           ),
+      PortalWave: () => PortalPage(
+            wave: wave as PortalWave,
+            index: index,
+            portal: widget.levelModule.portal!,
+          ),
     };
 
     final pageBuilder = waveTypeToPageBuilder[wave.runtimeType];
@@ -118,7 +124,9 @@ class _WaveManagerState extends State<WaveManager> {
           builder: (context) => pageBuilder(),
         ),
       );
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } else {
       log('Unsupported wave type: ${wave.runtimeType}');
     }
@@ -196,6 +204,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       DinoWave: Symbols.pets,
       TidalChange: Symbols.surfing,
       JamWave: Symbols.celebration,
+      PortalWave: Symbols.priority_high,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -214,6 +223,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       DinoWave: los.dino_wave,
       TidalChange: los.tidal_change,
       JamWave: los.jam_wave,
+      PortalWave: los.portal_wave,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -381,7 +391,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
     return {
       los.regular_wave: () => RegularWave(zombies: []),
       los.low_tide: () => LowTide.withDefault(),
-      los.sandstorm: () => StormEvent.withDefault(),
+      los.storm_event: () => StormEvent.withDefault(),
       los.parachute_rain: () => ParachuteRain.withDefault(),
       los.spider_rain: () => SpiderRain.withDefault(),
       los.raiding_party: () => RaidingParty.withDefault(),
@@ -389,6 +399,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.dino_wave: () => DinoWave.withDefault(),
       los.tidal_change: () => TidalChange.withDefault(),
       los.jam_wave: () => JamWave.withDefault(),
+      los.portal_wave: () => PortalWave.withDefault(),
     };
   }
 }

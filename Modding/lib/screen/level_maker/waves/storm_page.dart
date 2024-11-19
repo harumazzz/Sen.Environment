@@ -141,6 +141,27 @@ class _StormPageState extends State<StormPage> {
     );
   }
 
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool enabled = true,
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+        ),
+        enabled: enabled,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+      ),
+    );
+  }
+
   Future<void> _onLevelLawnSpawn(
     int row,
     int col,
@@ -188,6 +209,49 @@ class _StormPageState extends State<StormPage> {
     );
   }
 
+  Widget _buildCard(String title, List<Widget> children) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 20.0),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return ElevatedButton(
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          widget.wave.replaceWith(
+            additionalPlantfood: int.parse(_plantfood.text),
+            columnStart: _columnStart,
+            columnEnd: _columnEnd,
+            eventName: _eventName,
+            groupSize: int.parse(_groupSize.text),
+            timeBetweenGroups: double.parse(_delay.text),
+            zombies: _zombies,
+          );
+          Navigator.of(context).pop();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20.0),
+        child: Center(child: Text(AppLocalizations.of(context)!.save)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
@@ -202,120 +266,64 @@ class _StormPageState extends State<StormPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Column(
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              los.entry,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            TextField(
-                              controller: _xStart,
-                              decoration: InputDecoration(
-                                label: Text(los.column_start),
-                              ),
-                              enabled: false,
-                            ),
-                            const SizedBox(height: 10.0),
-                            TextField(
-                              controller: _xEnd,
-                              decoration: InputDecoration(
-                                label: Text(los.column_end),
-                              ),
-                              enabled: false,
-                            ),
-                            _customTextField(
-                              controller: _groupSize,
-                              labelText: los.group_size,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                            _customTextField(
-                              controller: _delay,
-                              labelText: los.delay_between_groups,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d*'),
-                                ),
-                              ],
-                            ),
-                            _customTextField(
-                              controller: _plantfood,
-                              labelText: los.additional_plantfood,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                            ),
-                            const SizedBox(height: 10.0),
-                            _stormEvent(),
-                            const SizedBox(height: 10.0),
-                            Text(
-                              los.zombie,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            _LevelLawn(
-                              onTap: _onLevelLawnSpawn,
-                              cellItems: _cellItems,
-                            ),
-                          ],
+                _buildCard(
+                  los.entry,
+                  [
+                    _buildTextField(
+                      controller: _xStart,
+                      label: los.column_start,
+                      enabled: false,
+                    ),
+                    _buildTextField(
+                      controller: _xEnd,
+                      label: los.column_end,
+                      enabled: false,
+                    ),
+                    _buildTextField(
+                      controller: _groupSize,
+                      label: los.group_size,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+                    _buildTextField(
+                      controller: _delay,
+                      label: los.delay_between_groups,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*\.?\d*'),
                         ),
-                      ),
+                      ],
+                    ),
+                    _buildTextField(
+                      controller: _plantfood,
+                      label: los.additional_plantfood,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+                    const SizedBox(height: 10.0),
+                    _stormEvent(),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      los.zombie,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 20.0),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          widget.wave.replaceWith(
-                            additionalPlantfood: int.parse(_plantfood.text),
-                            columnStart: _columnStart,
-                            columnEnd: _columnEnd,
-                            eventName: _eventName,
-                            groupSize: int.parse(_groupSize.text),
-                            timeBetweenGroups: double.parse(_delay.text),
-                            zombies: _zombies,
-                          );
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 20.0,
-                            ),
-                            child: Text(
-                              los.save,
-                            ),
-                          ),
-                        ),
-                      ),
+                    _LevelLawn(
+                      onTap: _onLevelLawnSpawn,
+                      cellItems: _cellItems,
                     ),
                   ],
                 ),
+                const SizedBox(height: 20.0),
+                _buildSaveButton(),
               ],
             ),
           ),

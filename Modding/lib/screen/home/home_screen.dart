@@ -200,13 +200,11 @@ class __LevelMakerConfigurationState
   @override
   void initState() {
     super.initState();
+    _resourceLocationController = TextEditingController(text: '');
   }
 
   @override
   void didChangeDependencies() {
-    _resourceLocationController = TextEditingController(
-      text: ref.read(levelProvider).resourceLocation ?? '',
-    );
     super.didChangeDependencies();
   }
 
@@ -238,6 +236,14 @@ class __LevelMakerConfigurationState
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
+    if (ref.watch(levelProvider).isLoading) {
+      return const CircularProgressIndicator.adaptive();
+    } else {
+      final value = ref.watch(levelProvider).resourceLocation;
+      if (value != null) {
+        _resourceLocationController.text = value;
+      }
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 12.0,

@@ -43,12 +43,14 @@ extension FrostWindReplaceWith on FrostWind {
     winds
       ..clear()
       ..addAll(
-        other.winds.map(
-          (Wind wind) => Wind(
-            row: wind.row,
-            direction: wind.direction,
-          ),
-        ),
+        other.winds
+            .map(
+              (Wind wind) => Wind(
+                row: wind.row,
+                direction: wind.direction,
+              ),
+            )
+            .toList(),
       );
   }
 }
