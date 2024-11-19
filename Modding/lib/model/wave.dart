@@ -12,6 +12,7 @@ part 'wave/tidal_change.dart';
 part 'wave/jam_wave.dart';
 part 'wave/portal_wave.dart';
 part 'wave/ground_spawn.dart';
+part 'wave/necromancy.dart';
 part 'wave/level_module.dart';
 
 // TODO : Implement Necromancy

@@ -36,6 +36,8 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
 
   late LevelModule _levelModule;
 
+  bool _isLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -84,11 +86,9 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
     _levelModule = LevelModule.fromJson(
       FileService.readJson(source: '$_resource/level_module.json'),
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+    setState(() {
+      _isLoaded = true;
+    });
   }
 
   @override
@@ -118,22 +118,8 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
           ],
         ),
       ),
-      body: FutureBuilder<void>(
-        future: _loadResources(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                '${los.loading_error}: ${snapshot.error}',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            );
-          } else {
-            return TabBarView(
+      body: _isLoaded
+          ? TabBarView(
               controller: _tabController,
               children: <Widget>[
                 LevelDefinition(
@@ -178,10 +164,26 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
                   wave: _waves,
                 ),
               ],
-            );
-          }
-        },
-      ),
+            )
+          : FutureBuilder<void>(
+              future: _loadResources(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      '${los.loading_error}: ${snapshot.error}',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
     );
   }
 }
