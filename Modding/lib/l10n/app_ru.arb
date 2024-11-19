@@ -150,5 +150,7 @@
     "necromancy": "Necromancy",
     "zombie_spawn_wait_time": "Zombie Spawn Wait Time",
     "suppress_action_if_no_grid_items_found": "Suppress Action If No Grid Items Found",
-    "grid_type": "Grid Type"
+    "grid_type": "Grid Type",
+    "message": "Message",
+    "notification": "Notification"
 }

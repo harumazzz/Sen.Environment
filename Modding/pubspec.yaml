@@ -35,6 +35,8 @@ dependencies:
     shimmer: ^3.0.0
     connectivity_plus: ^6.1.0
     dio: ^5.7.0
+    firebase_core: ^3.8.0
+    cloud_firestore: ^5.5.0
 dev_dependencies:
     flutter_test:
         sdk: flutter

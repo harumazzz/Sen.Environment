@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "769586089598",
+    "project_id": "sen-environment-ec078",
+    "storage_bucket": "sen-environment-ec078.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:769586089598:android:4f297b607020f64192522f",
+        "android_client_info": {
+          "package_name": "com.haruma.sen.environment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARsR4UuC94Ulv0FxHltJtke5S5tod66gw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

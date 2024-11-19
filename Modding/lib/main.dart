@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/application.dart';
+import 'package:sen/firebase_options.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/connection_service.dart';
 import 'package:sen/service/notification_service.dart';
@@ -27,6 +29,9 @@ Future<void> main(
   if (Platform.isAndroid) {
     AndroidService.initialize();
   }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     const ProviderScope(
       child: Application(),
