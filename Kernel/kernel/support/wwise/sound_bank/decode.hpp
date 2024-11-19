@@ -265,7 +265,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             DataStreamView &stream,
             Args &...args) -> void
         {
-            exchange_bit(k_begin_index, std::bitset<static_cast<size_t>(sizeof(RawValue) * 8_size)>(static_cast<u_long>(stream.read_of<RawValue>())), args...);
+            exchange_bit(k_begin_index, std::bitset<static_cast<size_t>(sizeof(RawValue) * 8_size)>(static_cast<unsigned long>(stream.read_of<RawValue>())), args...);
             return;
         }
 

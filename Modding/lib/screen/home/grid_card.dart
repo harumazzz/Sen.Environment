@@ -37,6 +37,7 @@ class GridCard extends StatelessWidget {
                     }
                   : null,
               child: Container(
+                width: 250.0,
                 margin: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

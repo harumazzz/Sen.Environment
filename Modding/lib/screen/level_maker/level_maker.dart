@@ -127,6 +127,7 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
                   levelDescriptionController: _levelDescriptionController,
                   lawnMowerController: _lawnMowerController,
                   levelStageController: _levelStageController,
+                  levelModule: _levelModule,
                   musicType: _musicType,
                   onChangeMusicType: (newValue) {
                     if (newValue == null) return;

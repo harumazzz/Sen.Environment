@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/music_type.dart';
 
 class LevelDefinition extends StatelessWidget {
@@ -13,6 +14,7 @@ class LevelDefinition extends StatelessWidget {
     required this.onChangeMusicType,
     required this.hasSunFalling,
     required this.onToggleSunFalling,
+    required this.levelModule,
   });
 
   String _exchangeMusicType(BuildContext context, MusicType music) {
@@ -32,6 +34,8 @@ class LevelDefinition extends StatelessWidget {
 
   final TextEditingController lawnMowerController;
 
+  final LevelModule levelModule;
+
   final MusicType musicType;
 
   final void Function(MusicType? newValue) onChangeMusicType;
@@ -39,6 +43,44 @@ class LevelDefinition extends StatelessWidget {
   final bool hasSunFalling;
 
   final void Function(bool? newValue) onToggleSunFalling;
+
+  Widget _autoCompleter(
+    List<String> options,
+    TextEditingController controller,
+  ) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text == '') {
+          return const Iterable<String>.empty();
+        }
+        return options.where(
+          (String option) {
+            return option.contains(textEditingValue.text.toLowerCase());
+          },
+        );
+      },
+      onSelected: (String e) {
+        controller.text = e;
+      },
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController textEditingController,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
+        if (textEditingController.text.isEmpty) {
+          textEditingController.text = controller.text;
+        }
+        if (textEditingController.text != controller.text) {
+          controller.text = textEditingController.text;
+        }
+        return TextField(
+          controller: textEditingController,
+          focusNode: focusNode,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,23 +106,22 @@ class LevelDefinition extends StatelessWidget {
                     controller: levelNameController,
                   )),
               _buildTableRow(
-                  context,
-                  los.level_description,
-                  TextField(
-                    controller: levelDescriptionController,
-                  )),
+                context,
+                los.level_description,
+                TextField(
+                  controller: levelDescriptionController,
+                ),
+              ),
               _buildTableRow(
-                  context,
-                  los.level_stage,
-                  TextField(
-                    controller: levelStageController,
-                  )),
+                context,
+                los.level_stage,
+                _autoCompleter(levelModule.stage!, levelStageController),
+              ),
               _buildTableRow(
-                  context,
-                  los.lawn_mower,
-                  TextField(
-                    controller: lawnMowerController,
-                  )),
+                context,
+                los.lawn_mower,
+                _autoCompleter(levelModule.mower!, lawnMowerController),
+              ),
               _buildTableRow(
                   context,
                   los.level_music,

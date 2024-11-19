@@ -33,6 +33,8 @@ dependencies:
     flutter_dotenv: ^5.2.1
     google_generative_ai: ^0.4.6
     shimmer: ^3.0.0
+    connectivity_plus: ^6.1.0
+    dio: ^5.7.0
 dev_dependencies:
     flutter_test:
         sdk: flutter

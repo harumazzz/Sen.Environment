@@ -4,34 +4,17 @@ namespace Sen.Script.Helper.PvZ2.Permanent.ErasePlantLevels {
      */
     export interface PlantLevels extends Record<string, unknown> {
         objects: Array<{
+            aliases: [string];
             objdata: {
                 UsesLeveling?: boolean;
                 LevelCoins?: Array<bigint>;
                 LevelXP?: Array<bigint>;
                 LevelCap?: bigint;
                 PlantTier?: Array<bigint>;
+                FloatStats: any;
+                StringStats: any;
             };
         }>;
-    }
-
-    /**
-     *
-     * @param obj Object
-     */
-
-    export function erase_of(obj: Record<string, unknown>) {
-        const keys = Object.keys(obj);
-        keys.forEach((e) => {
-            if (is_actual_object(obj[e])) {
-                erase_of(obj[e] as Record<string, unknown>);
-            }
-            if (is_array(obj[e])) {
-                (obj[e] as Array<unknown>).length = 1;
-                if (is_actual_object((obj[e] as any)[0])) {
-                    erase_of((obj[e] as Array<unknown>)[0] as Record<string, unknown>);
-                }
-            }
-        });
     }
 
     /**
@@ -42,12 +25,27 @@ namespace Sen.Script.Helper.PvZ2.Permanent.ErasePlantLevels {
      */
     export function process(source: string, ripe: string): void {
         const json: PlantLevels = Kernel.JSON.deserialize_fs(source);
-        for (const obj of json.objects) {
+        for (let obj of json.objects) {
+            for (let stat of obj.objdata.FloatStats) {
+                if (stat.Values.length > 1) {
+                    stat.Values.splice(1);
+                }
+            }
+            if (obj.objdata.StringStats) {
+                for (let stat of obj.objdata.StringStats) {
+                    if (stat.Values.length > 1) {
+                        stat.Values.splice(1);
+                    }
+                }
+            }
             obj.objdata.LevelCap = 1n;
-            obj.objdata.UsesLeveling = false;
-            erase_of(obj.objdata);
-            obj.objdata.LevelXP = [];
             obj.objdata.LevelCoins = [];
+            obj.objdata.LevelXP = [];
+            obj.objdata.UsesLeveling = false;
+            if ("PlantTier" in obj.objdata && obj.objdata.PlantTier!.length > 1) {
+                obj.objdata.PlantTier!.length = 1;
+            }
+            Console.output(`Leveling removed for: ${obj.aliases[0]}`);
         }
         Kernel.JSON.serialize_fs<PlantLevels>(ripe, json, 1, false);
         return;

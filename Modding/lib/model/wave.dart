@@ -15,7 +15,6 @@ part 'wave/ground_spawn.dart';
 part 'wave/necromancy.dart';
 part 'wave/level_module.dart';
 
-// TODO : Implement Necromancy
 // TODO : Implement Grid Spawn
 // TODO : Implement Conveyor
 

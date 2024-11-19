@@ -239,11 +239,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     auto image_destination = destination;
                     auto &image_info = texture_sprite_view_stored[image_value.id];
                     auto image_path = (!image_value.path.empty() ? image_value.path : image_name);
-                    if (image_path.starts_with("../"_sv))
+                    if (image_path.find("./"_sv))
                     { // fix chinese pam
                         /*
                         image_destination = Path::getParents(image_destination);
-                        image_path = image_path.substr("../"_sv.size(), image_path.size() - "../"_sv.size());
+                        image_path = image                    if (image_path.starts_with("../"_sv))
+../"_sv.size());
                         */
                         image_path = Path::getFileNameWithoutExtension(image_path);
                         if (image_path == image_name)

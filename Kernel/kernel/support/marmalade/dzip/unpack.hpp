@@ -60,7 +60,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     stream.read_pos = static_cast<size_t>(chunk_information_structure.offset);
                     chunk_data.resize(static_cast<size_t>(chunk_information_structure.size_uncompressed));
                     auto chunk_size_compressed = static_cast<size_t>(chunk_information_structure.size_compressed);
-                    auto chunk_flag = std::bitset<ChunkFlag::k_count>{static_cast<u_long>(chunk_information_structure.flag)};
+                    auto chunk_flag = std::bitset<ChunkFlag::k_count>{static_cast<unsigned long>(chunk_information_structure.flag)};
                     assert_conditional(!chunk_flag.test(ChunkFlag::unused_2), fmt::format("{}", Language::get("marmalade.dzip.invalid_bitset_unused_2")), "process_package");
                     auto chunk_ok = false;
                     if (chunk_flag.test(ChunkFlag::combuf)) {
