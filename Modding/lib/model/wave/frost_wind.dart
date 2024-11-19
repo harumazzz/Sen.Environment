@@ -25,10 +25,10 @@ class FrostWind implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "FrostWindWaveActionProps",
-      "objdata": {
-        "Winds": [
+      'aliases': [aliasesName],
+      'objclass': 'FrostWindWaveActionProps',
+      'objdata': {
+        'Winds': [
           ...winds.map(
             (Wind e) => e.toJson(),
           ),
@@ -67,8 +67,8 @@ class Wind {
 
   dynamic toJson() {
     return {
-      "Direction": direction,
-      "Row": (row - 1).toString(),
+      'Direction': direction,
+      'Row': (row - 1).toString(),
     };
   }
 }

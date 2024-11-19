@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:sen/model/level.dart';
 import 'package:sen/model/wave.dart';
@@ -28,29 +25,29 @@ class LevelExchanger {
 
   dynamic _buildLevelDefinition() {
     final result = {
-      "objclass": "LevelDefinition",
-      "objdata": {
-        "Description": levelDescriptionController.text,
-        "Loot": "RTID(DefaultLoot@LevelModules)",
-        "Modules": [
-          "RTID(StandardIntro@LevelModules)",
-          "RTID(ZombiesDeadWinCon@LevelModules)",
-          "RTID(DefaultZombieWinCondition@LevelModules)",
-          "RTID(DefaultSunDropper@LevelModules)",
+      'objclass': 'LevelDefinition',
+      'objdata': {
+        'Description': levelDescriptionController.text,
+        'Loot': 'RTID(DefaultLoot@LevelModules)',
+        'Modules': [
+          'RTID(StandardIntro@LevelModules)',
+          'RTID(ZombiesDeadWinCon@LevelModules)',
+          'RTID(DefaultZombieWinCondition@LevelModules)',
+          'RTID(DefaultSunDropper@LevelModules)',
         ],
-        "Name": levelNameController.text,
-        "StageModule": 'RTID(${levelStageController.text}@LevelModules)',
+        'Name': levelNameController.text,
+        'StageModule': 'RTID(${levelStageController.text}@LevelModules)',
       }
     };
     final lawnMower = lawnMowerController.text;
     if (lawnMower != 'SaveMowers') {
       ((result['objdata'] as dynamic)['Modules'] as List<dynamic>).add(
-        "RTID($lawnMower@LevelModules)",
+        'RTID($lawnMower@LevelModules)',
       );
     }
     if (hasSunFalling) {
       ((result['objdata'] as dynamic)['Modules'] as List<dynamic>).add(
-        "RTID(DefaultSunDropper@LevelModules)",
+        'RTID(DefaultSunDropper@LevelModules)',
       );
     }
     switch (musicType) {

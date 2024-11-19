@@ -42,25 +42,25 @@ class StormEvent implements Wave {
         columnStart = 0,
         columnEnd = 0,
         timeBetweenGroups = 0.5,
-        eventName = "sandstorm",
+        eventName = 'sandstorm',
         groupSize = 1,
         zombies = [];
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "StormZombieSpawnerProps",
-      "objdata": {
-        "AdditionalPlantfood": "0",
-        "Type": eventName,
-        "ColumnStart": columnStart,
-        "ColumnEnd": columnEnd,
-        "TimeBetweenGroups": timeBetweenGroups,
-        "GroupSize": groupSize,
-        "Zombies": zombies
+      'aliases': [aliasesName],
+      'objclass': 'StormZombieSpawnerProps',
+      'objdata': {
+        'AdditionalPlantfood': '0',
+        'Type': eventName,
+        'ColumnStart': columnStart,
+        'ColumnEnd': columnEnd,
+        'TimeBetweenGroups': timeBetweenGroups,
+        'GroupSize': groupSize,
+        'Zombies': zombies
             .map(
               (e) => {
-                "Type": "RTID($e@ZombieTypes)",
+                'Type': 'RTID($e@ZombieTypes)',
               },
             )
             .toList(),

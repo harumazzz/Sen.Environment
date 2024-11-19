@@ -145,5 +145,6 @@
     "portal_column": "Portal Column",
     "portal_row": "Portal Row",
     "portal_type": "Portal Type",
-    "pick_a_portal": "Pick a portal"
+    "pick_a_portal": "Pick a portal",
+    "ground_spawn": "Ground Spawn"
 }

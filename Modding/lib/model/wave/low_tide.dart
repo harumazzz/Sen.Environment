@@ -49,16 +49,16 @@ class LowTide implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "BeachStageEventZombieSpawnerProps",
-      "objdata": {
-        "ColumnStart": xStart,
-        "ColumnEnd": xEnd,
-        "ZombieCount": count,
-        "GroupSize": groupSize,
-        "TimeBetweenGroups": delay.toString(),
-        "ZombieName": zombieType,
-        "WaveStartMessage": message,
+      'aliases': [aliasesName],
+      'objclass': 'BeachStageEventZombieSpawnerProps',
+      'objdata': {
+        'ColumnStart': xStart,
+        'ColumnEnd': xEnd,
+        'ZombieCount': count,
+        'GroupSize': groupSize,
+        'TimeBetweenGroups': delay.toString(),
+        'ZombieName': zombieType,
+        'WaveStartMessage': message,
       },
     };
   }

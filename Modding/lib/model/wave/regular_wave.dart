@@ -12,15 +12,15 @@ class RegularWave implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "SpawnZombiesJitteredWaveActionProps",
-      "objdata": {
-        "AdditionalPlantfood": additionalPlantfood,
-        "Zombies": zombies
+      'aliases': [aliasesName],
+      'objclass': 'SpawnZombiesJitteredWaveActionProps',
+      'objdata': {
+        'AdditionalPlantfood': additionalPlantfood,
+        'Zombies': zombies
             .map(
               (e) => {
-                "Row": e.row,
-                "Type": "RTID(${e.typename}@ZombieTypes)",
+                'Row': e.row,
+                'Type': 'RTID(${e.typename}@ZombieTypes)',
               },
             )
             .toList(),

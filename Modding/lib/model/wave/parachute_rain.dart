@@ -61,17 +61,17 @@ class ParachuteRain implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "ParachuteRainZombieSpawnerProps",
-      "objdata": {
-        "ColumnStart": columnStart,
-        "ColumnEnd": columnEnd,
-        "GroupSize": groupSize,
-        "TimeBetweenGroups": timeBetweenGroups.toString(),
-        "ZombieFallTime": fallTime.toString(),
-        "SpiderZombieName": typename,
-        "SpiderCount": count,
-        "WaveStartMessage": message,
+      'aliases': [aliasesName],
+      'objclass': 'ParachuteRainZombieSpawnerProps',
+      'objdata': {
+        'ColumnStart': columnStart,
+        'ColumnEnd': columnEnd,
+        'GroupSize': groupSize,
+        'TimeBetweenGroups': timeBetweenGroups.toString(),
+        'ZombieFallTime': fallTime.toString(),
+        'SpiderZombieName': typename,
+        'SpiderCount': count,
+        'WaveStartMessage': message,
       },
     };
   }

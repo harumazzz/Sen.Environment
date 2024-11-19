@@ -11,9 +11,9 @@ part 'wave/dino_wave.dart';
 part 'wave/tidal_change.dart';
 part 'wave/jam_wave.dart';
 part 'wave/portal_wave.dart';
+part 'wave/ground_spawn.dart';
 part 'wave/level_module.dart';
 
-// TODO : Implement Ground Spawn
 // TODO : Implement Necromancy
 // TODO : Implement Grid Spawn
 // TODO : Implement Conveyor

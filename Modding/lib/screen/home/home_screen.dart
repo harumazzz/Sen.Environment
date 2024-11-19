@@ -186,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _LevelMakerConfiguration extends ConsumerStatefulWidget {
-  const _LevelMakerConfiguration({super.key});
+  const _LevelMakerConfiguration();
 
   @override
   ConsumerState<_LevelMakerConfiguration> createState() =>

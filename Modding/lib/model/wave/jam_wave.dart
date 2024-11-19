@@ -18,10 +18,10 @@ class JamWave implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "SpawnZombiesJitteredWaveActionProps",
-      "objdata": {
-        "NotificationEvents": [notificationEvent]
+      'aliases': [aliasesName],
+      'objclass': 'SpawnZombiesJitteredWaveActionProps',
+      'objdata': {
+        'NotificationEvents': [notificationEvent]
       }
     };
   }

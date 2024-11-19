@@ -7,8 +7,8 @@ import 'package:sen/screen/level_maker/zombie_suggestion.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/service/file_service.dart';
 
-class StormPage extends StatefulWidget {
-  const StormPage({
+class GroundPage extends StatefulWidget {
+  const GroundPage({
     super.key,
     required this.wave,
     required this.index,
@@ -16,24 +16,21 @@ class StormPage extends StatefulWidget {
     required this.resource,
   });
 
-  final StormEvent wave;
+  final GroundSpawn wave;
   final List<String> zombies;
   final String resource;
   final int index;
 
   @override
-  State<StormPage> createState() => _StormPageState();
+  State<GroundPage> createState() => _GroundPageState();
 }
 
-class _StormPageState extends State<StormPage> {
+class _GroundPageState extends State<GroundPage> {
   late TextEditingController _xStart;
   late TextEditingController _xEnd;
-  late TextEditingController _groupSize;
-  late TextEditingController _delay;
   late TextEditingController _plantfood;
   late GlobalKey<FormState> _formKey;
-  late String _eventName;
-  late List<String> _zombies;
+  late List<Spawn> _zombies;
   late TextEditingController _zombie;
 
   late Map<int, MemoryImage> _cellItems;
@@ -42,14 +39,10 @@ class _StormPageState extends State<StormPage> {
   void initState() {
     _xStart = TextEditingController(text: widget.wave.columnStart.toString());
     _xEnd = TextEditingController(text: widget.wave.columnEnd.toString());
-    _groupSize = TextEditingController(text: widget.wave.groupSize.toString());
-    _delay =
-        TextEditingController(text: widget.wave.timeBetweenGroups.toString());
     _plantfood =
-        TextEditingController(text: widget.wave.additionalPlantfood.toString());
+        TextEditingController(text: widget.wave.additionalPlantFood.toString());
     _zombie = TextEditingController();
     _formKey = GlobalKey<FormState>();
-    _eventName = widget.wave.eventName;
     _zombies = [...widget.wave.zombies];
     _cellItems = {};
     _initCellItems();
@@ -76,9 +69,9 @@ class _StormPageState extends State<StormPage> {
           ? _columnEnd
           : random.nextInt((_columnEnd - _columnStart)) +
               int.parse(_xStart.text);
-      final row = random.nextInt(5);
+      final row = zombie.row;
       final index = row * 9 + col;
-      final state = '${widget.resource}/zombie/$zombie.png';
+      final state = '${widget.resource}/zombie/${zombie.typename}.png';
       _cellItems[index] = MemoryImage(FileService.readBuffer(source: state));
     }
   }
@@ -87,43 +80,9 @@ class _StormPageState extends State<StormPage> {
   void dispose() {
     _xStart.dispose();
     _xEnd.dispose();
-    _groupSize.dispose();
-    _delay.dispose();
     _plantfood.dispose();
     _zombie.dispose();
     super.dispose();
-  }
-
-  Widget _stormEvent() {
-    setEventChange(String? newEvent) {
-      if (newEvent == null) return;
-      setState(() {
-        _eventName = newEvent;
-      });
-    }
-
-    final los = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-          child: RadioListTile<String>(
-            value: 'sandstorm',
-            groupValue: _eventName,
-            onChanged: setEventChange,
-            title: Text(los.sandstorm),
-          ),
-        ),
-        Expanded(
-          child: RadioListTile<String>(
-            value: 'snowstorm',
-            groupValue: _eventName,
-            onChanged: setEventChange,
-            title: Text(los.snowstorm),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildTextField({
@@ -178,7 +137,7 @@ class _StormPageState extends State<StormPage> {
             if (_columnEnd < _columnStart) {
               _columnEnd = _columnStart;
             }
-            _zombies.add(value);
+            _zombies.add(Spawn(row: row, typename: value));
             Navigator.of(context).pop();
           },
         ),
@@ -219,12 +178,9 @@ class _StormPageState extends State<StormPage> {
       onPressed: () {
         if (_formKey.currentState!.validate()) {
           widget.wave.replaceWith(
-            additionalPlantfood: int.parse(_plantfood.text),
+            additionalPlantFood: int.parse(_plantfood.text),
             columnStart: _columnStart,
             columnEnd: _columnEnd,
-            eventName: _eventName,
-            groupSize: int.parse(_groupSize.text),
-            timeBetweenGroups: double.parse(_delay.text),
             zombies: _zombies,
           );
           Navigator.of(context).pop();
@@ -242,7 +198,7 @@ class _StormPageState extends State<StormPage> {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('${los.wave} ${widget.index}: ${los.storm_event}'),
+        title: Text('${los.wave} ${widget.index}: ${los.ground_spawn}'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -265,25 +221,6 @@ class _StormPageState extends State<StormPage> {
                       enabled: false,
                     ),
                     _buildTextField(
-                      controller: _groupSize,
-                      label: los.group_size,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                    ),
-                    _buildTextField(
-                      controller: _delay,
-                      label: los.delay_between_groups,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d*'),
-                        ),
-                      ],
-                    ),
-                    _buildTextField(
                       controller: _plantfood,
                       label: los.additional_plantfood,
                       keyboardType: TextInputType.number,
@@ -291,8 +228,6 @@ class _StormPageState extends State<StormPage> {
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                     ),
-                    const SizedBox(height: 10.0),
-                    _stormEvent(),
                     const SizedBox(height: 10.0),
                     Text(
                       los.zombie,

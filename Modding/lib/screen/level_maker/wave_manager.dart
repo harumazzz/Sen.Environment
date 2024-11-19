@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/waves/dino_page.dart';
 import 'package:sen/screen/level_maker/waves/frost_wind_page.dart';
+import 'package:sen/screen/level_maker/waves/ground_page.dart';
 import 'package:sen/screen/level_maker/waves/jam_page.dart';
 import 'package:sen/screen/level_maker/waves/low_tide_page.dart';
 import 'package:sen/screen/level_maker/waves/parachute_page.dart';
@@ -114,6 +115,12 @@ class _WaveManagerState extends State<WaveManager> {
             index: index,
             portal: widget.levelModule.portal!,
           ),
+      GroundSpawn: () => GroundPage(
+            wave: wave as GroundSpawn,
+            index: index,
+            resource: widget.resource,
+            zombies: widget.zombies,
+          ),
     };
 
     final pageBuilder = waveTypeToPageBuilder[wave.runtimeType];
@@ -205,6 +212,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       TidalChange: Symbols.surfing,
       JamWave: Symbols.celebration,
       PortalWave: Symbols.priority_high,
+      GroundSpawn: Symbols.grass,
     };
     return waveTypeToIcon[wave.runtimeType] ?? Symbols.waves;
   }
@@ -224,6 +232,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       TidalChange: los.tidal_change,
       JamWave: los.jam_wave,
       PortalWave: los.portal_wave,
+      GroundSpawn: los.ground_spawn,
     };
     final waveTypeName = waveTypeToLocalization[value.runtimeType] ?? '';
     return '${los.wave} $index: $waveTypeName';
@@ -400,6 +409,7 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       los.tidal_change: () => TidalChange.withDefault(),
       los.jam_wave: () => JamWave.withDefault(),
       los.portal_wave: () => PortalWave.withDefault(),
+      los.ground_spawn: () => GroundSpawn.withDefault(),
     };
   }
 }

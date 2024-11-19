@@ -18,12 +18,12 @@ class TidalChange implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "TidalChangeWaveActionProps",
-      "objdata": {
-        "TidalChange": {
-          "ChangeAmount": 9 - changeAmount,
-          "ChangeType": "absolute",
+      'aliases': [aliasesName],
+      'objclass': 'TidalChangeWaveActionProps',
+      'objdata': {
+        'TidalChange': {
+          'ChangeAmount': 9 - changeAmount,
+          'ChangeType': 'absolute',
         }
       }
     };

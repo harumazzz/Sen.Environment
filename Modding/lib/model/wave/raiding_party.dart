@@ -29,12 +29,12 @@ class RaidingParty implements Wave {
   @override
   dynamic toJson(String aliasesName) {
     return {
-      "aliases": [aliasesName],
-      "objclass": "RaidingPartyZombieSpawnerProps",
-      "objdata": {
-        "SwashbucklerCount": count,
-        "GroupSize": groupSize,
-        "TimeBetweenGroups": delayBetweenGroup,
+      'aliases': [aliasesName],
+      'objclass': 'RaidingPartyZombieSpawnerProps',
+      'objdata': {
+        'SwashbucklerCount': count,
+        'GroupSize': groupSize,
+        'TimeBetweenGroups': delayBetweenGroup,
       },
     };
   }
