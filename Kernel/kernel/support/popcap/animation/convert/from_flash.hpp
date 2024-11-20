@@ -165,7 +165,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					assert_conditional(dom_frame != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), sprite_name), "exchange_sprite_document");
 					auto frame_index = static_cast<int>(Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_number")), sprite_name, std::string{dom_frame->FindAttribute("index")->Value()})));
 					auto m_duration = dom_frame->FindAttribute("duration");
-					auto frame_duration = static_cast<int>(Converter::to_int32((m_duration != nullptr ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_number")), sprite_name, std::string{m_duration->Value()})));
+					auto frame_duration = m_duration != nullptr ? static_cast<int>(Converter::to_int32(m_duration->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_number")), sprite_name, std::string{m_duration->Value()}))) : 1;
 					auto elements = dom_frame->FirstChildElement("elements");
 					auto dom_symbol_instance = elements->FirstChildElement("DOMSymbolInstance");
 					if (dom_symbol_instance == nullptr)
@@ -353,7 +353,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				assert_conditional(dom_frame != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), "exchange_label_info");
 				auto frame_index = Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_integer")), std::string{dom_frame->FindAttribute("index")->Value()}));
 				auto m_duration = dom_frame->FindAttribute("duration");
-				auto frame_duration = static_cast<int>(Converter::to_int32((m_duration != nullptr ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()})));
+				auto frame_duration = m_duration != nullptr ? static_cast<int>(Converter::to_int32(m_duration->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()}))) : 1;
 				frame_count += frame_duration;
 				auto label_name = dom_frame->FindAttribute("name");
 				assert_conditional(label_name != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info");
@@ -372,11 +372,11 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			auto dom_document = document.FirstChildElement("DOMDocument");
 			auto frame_rate = document.FirstChildElement("DOMDocument")->FindAttribute("frameRate");
-			definition.frame_rate = Converter::to_int32(frame_rate != nullptr ? frame_rate->Value() : "24", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_rate_is_not_a_integer")), std::string{frame_rate->Value()}));
+			definition.frame_rate = frame_rate != nullptr ? Converter::to_int32(frame_rate->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_rate_is_not_a_integer")), std::string{frame_rate->Value()})) : 24;
 			auto width = document.FirstChildElement("DOMDocument")->FindAttribute("width");
 			auto height = document.FirstChildElement("DOMDocument")->FindAttribute("height");
-			definition.size = AnimationSize(Converter::to_int32(width != nullptr ? width->Value() : "390", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})), 
-			Converter::to_int32(height != nullptr ? height->Value() : "390", String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})));
+			definition.size = AnimationSize(width != nullptr ? Converter::to_int32(width->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})) : 390, 
+			height != nullptr ? Converter::to_int32(height->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})) : 390);
 			auto dom_timeline = dom_document->FirstChildElement("timelines")->FirstChildElement("DOMTimeline");
 			assert_conditional(std::string_view{dom_timeline->FindAttribute("name")->Value()} == "animation"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_dom_document");
 			auto frame_count = k_begin_index_int;
@@ -431,7 +431,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				assert_conditional(dom_frame != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMFrame")), "exchange_dom_document");
 				auto frame_index = Converter::to_int32(dom_frame->FindAttribute("index")->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_index_is_not_a_integer")), std::string{dom_frame->FindAttribute("index")->Value()}));
 				auto m_duration = dom_frame->FindAttribute("duration");
-				auto frame_duration = static_cast<int>(Converter::to_int32((m_duration ? m_duration->Value() : "1"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()})));
+				auto frame_duration = m_duration != nullptr ? static_cast<int>(Converter::to_int32(m_duration->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()}))) : 1;
 				frame_count -= frame_duration;
 			}
 			assert_conditional(frame_count == k_begin_index_int, String::format(fmt::format("{}", Language::get("popcap.animation.main_frame_has_no_vaild_length")), std::to_string(frame_count), std::to_string(k_begin_index)), "exchange_dom_document");

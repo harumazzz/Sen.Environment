@@ -205,7 +205,7 @@ namespace Sen::Kernel::Definition
             inline auto change_read_pos(
                 const std::size_t &pos) const -> void
             {
-                assert_conditional(pos <= thiz.size(), String::format(fmt::format("{}", Language::get("read_position_cannot_be_smaller_than_size")), std::to_string(pos), std::to_string(thiz.size())), "position");
+                assert_conditional(pos <= thiz.size(), String::format(fmt::format("{}: {}", Language::get("read_position_cannot_be_smaller_than_size"), thiz.file_path), std::to_string(pos), std::to_string(thiz.size())), "position");
                 thiz.read_pos = pos;
                 return;
             }
@@ -1679,7 +1679,7 @@ namespace Sen::Kernel::Definition
             {
                 if (thiz.read_pos + sizeof(T) > thiz.size())
                 {
-                    throw Exception(fmt::format("{}, {}: thiz.read_pos + sizeof(T) <= thiz.size(), {}: {} + {} <= {}", Language::get("offset_outside_bounds_of_data_stream"), Language::get("conditional"), Language::get("but_received"), thiz.read_pos, sizeof(T), thiz.size()),
+                    throw Exception(fmt::format("{}, {}: thiz.read_pos + sizeof(T) <= thiz.size(), {}: {} + {} <= {}, source: {}", Language::get("offset_outside_bounds_of_data_stream"), Language::get("conditional"), Language::get("but_received"), thiz.read_pos, sizeof(T), thiz.size(), thiz.file_path),
                                     std::source_location::current(), "read");
                 }
                 auto value = T{0};
