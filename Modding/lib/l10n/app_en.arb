@@ -152,5 +152,6 @@
     "suppress_action_if_no_grid_items_found": "Suppress Action If No Grid Items Found",
     "grid_type": "Grid Type",
     "message": "Message",
-    "notification": "Notification"
+    "notification": "Notification",
+    "version": "Version"
 }

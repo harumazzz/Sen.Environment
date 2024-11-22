@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/setting/translator_page.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/file_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/widget/hyperlink.dart';
 
 class SettingScreen extends ConsumerStatefulWidget {
   const SettingScreen({super.key});
@@ -364,6 +367,22 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     setState(() {});
   }
 
+  Widget _makeCustomizeRow({
+    required String title,
+    required String description,
+    required String link,
+  }) {
+    return Row(
+      children: [
+        Text('$title: '),
+        Hyperlink(
+          title: description,
+          link: link,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
@@ -428,6 +447,46 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                 subtitle: Text(toolchainPath()),
                 onTap: _onChangeToolChain,
                 enabled: !Platform.isAndroid,
+              ),
+              AboutListTile(
+                icon: const Icon(Symbols.info),
+                applicationIcon: Image.asset(
+                  'assets/images/logo.png',
+                  width: 50,
+                  height: 50,
+                ),
+                applicationName: BuildDistribution.kApplicationName,
+                aboutBoxChildren: [
+                  Text('${los.version}: ${BuildDistribution.version}'),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Copyright © ${DateTime.now().year} ${BuildDistribution.kApplicationName}. All Rights Reserved.',
+                    style: const TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Project is under GPLv3 License.',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 10),
+                  _makeCustomizeRow(
+                    title: 'Official Website',
+                    description: 'Website',
+                    link: 'https://haruma-vn.github.io/Sen.Environment/',
+                  ),
+                  const SizedBox(height: 10),
+                  _makeCustomizeRow(
+                    title: 'Repo',
+                    description: 'GitHub',
+                    link: 'https://github.com/Haruma-VN/Sen.Environment',
+                  ),
+                  const SizedBox(height: 10),
+                  _makeCustomizeRow(
+                    title: 'Discord',
+                    description: 'Server',
+                    link: 'https://discord.com/invite/C2Xr2kaBYJ',
+                  ),
+                ],
               ),
             ],
           ),
