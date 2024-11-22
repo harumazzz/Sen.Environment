@@ -36,7 +36,9 @@
 #include "kernel/definition/compression/zip.hpp"
 #include "kernel/definition/compression/lzma.hpp"
 #include "kernel/definition/compression/bzip2.hpp"
+#include "kernel/definition/javascript/value.hpp"
 #include "kernel/definition/javascript/runtime.hpp"
+#include "kernel/definition/javascript/converter.hpp"
 #include "kernel/definition/diff/vcdiff.hpp"
 
 namespace Sen::Kernel {

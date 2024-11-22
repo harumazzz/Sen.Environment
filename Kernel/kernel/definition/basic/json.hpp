@@ -37,64 +37,6 @@ namespace Sen::Kernel::Definition {
 			}
 			return result;
 		}
-
-
-		template <typename T>
-		struct Nullable {
-
-			std::unique_ptr<T> value;
-			bool is_null;
-
-			Nullable(
-			) : is_null(false), value(std::make_unique<T>(nullptr))
-			{
-
-			}
-
-			~Nullable() = default;
-
-			Nullable(T& value) : value(std::make_unique<T>(value))
-			{
-
-			}
-
-			Nullable(Nullable&& that) = delete;
-
-			auto operator =(Nullable&& that)->Nullable & = delete;
-
-		};
-
-		template <typename T>
-		inline auto to_json(
-			nlohmann::ordered_json& nlohmann_json_j,
-			const Nullable<T>& nlohmann_json_t
-		) -> void
-		{
-			if (nlohmann_json_t.is_null) {
-				nlohmann_json_j = nullptr;
-			}
-			else {
-				nlohmann_json_j = *(nlohmann_json_t.value);
-			}
-			return;
-		}
-
-		template <typename T>
-		inline auto from_json(
-			const nlohmann::ordered_json& nlohmann_json_j,
-			Nullable<T>& nlohmann_json_t
-		) -> void
-		{
-
-			if (nlohmann_json_j.is_null()) {
-				nlohmann_json_t.is_null = true;
-			}
-			else {
-				nlohmann_json_t.is_null = false;
-				*nlohmann_json_t.value = std::make_unique<T>(nlohmann_json_j);
-			}
-			return;
-		}
 	}
 
 	namespace Map {

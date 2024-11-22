@@ -1,816 +1,342 @@
 #pragma once
 
-#include "kernel/dependencies/quickjs.hpp"
-#include "kernel/definition/macro.hpp"
-#include "kernel/definition/library.hpp"
-#include "kernel/definition/assert.hpp"
+#include "kernel/definition/javascript/value.hpp"
+#include "kernel/definition/javascript/runtime.hpp"
 
 namespace Sen::Kernel::Definition::JavaScript::Converter {
 
-	namespace JS = Sen::Kernel::Definition::JavaScript;
+    namespace Detail {
 
-			/**
-			 * JS String to C++ String
-			*/
-			inline static auto get_string(
-				JSContext* context,
-				const JSValue & that
-			) -> std::string
-			{
-				auto size = std::size_t{};
-				auto c_str = JS_ToCStringLen(context, &size, that);
-				auto str = std::string { c_str, size };
-				JS_FreeCString(context, c_str);
-				return str;
+        inline auto handle_conversion_error(JSContext* context, const JSValue& value, const std::string& type) -> void {
+            throw Exception(fmt::format("Failed to convert JS value to {}", type), std::source_location::current(), "handle_conversion_error");
+        }
+
+    }
+
+	inline static auto get_string(JSContext* context, const JSValue& value) -> std::string {
+        auto size = std::size_t{};
+        auto c_str = JS_ToCStringLen(context, &size, value);
+        if (c_str == nullptr) {
+			Detail::handle_conversion_error(context, value, "get_string");
+		}
+        auto str = std::string { c_str, size };
+        JS_FreeCString(context, c_str);
+        return str;
+    }
+
+    inline static auto get_int32(JSContext* context, const JSValue& value) -> int32_t {
+        auto result = int32_t{};
+        if (JS_ToInt32(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_int32");
+		}
+        return result;
+    }
+
+    inline static auto get_float64(JSContext* context, const JSValue& value) -> double {
+        auto result = double{};
+        if (JS_ToFloat64(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_float64");
+		}
+        return result;
+    }
+
+	inline static auto get_float32(JSContext* context, const JSValue& value) -> float {
+        auto result = double{};
+        if (JS_ToFloat64(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_float32");
+		}
+        return static_cast<float>(result);
+    }
+
+    inline static auto get_int64(JSContext* context, const JSValue& value) -> int64_t {
+        auto result = int64_t{};
+        if (JS_ToInt64(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_int64");
+		}
+        return result;
+    }
+
+    inline static auto get_bigint64(JSContext* context, const JSValue& value) -> int64_t {
+        auto result = int64_t{};
+        if (JS_ToBigInt64(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_bigint64");
+		}
+        return result;
+    }
+
+    inline static auto get_uint32(JSContext* context, const JSValue& value) -> uint32_t {
+        auto result = uint32_t{};
+        if (JS_ToUint32(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_uint32");
+		}
+        return result;
+    }
+
+	inline static auto get_uint64(JSContext* context, const JSValue& value) -> uint64_t {
+        auto result = uint64_t{};
+        if (JS_ToIndex(context, &result, value) < 0) {
+			Detail::handle_conversion_error(context, value, "get_uint64");
+		}
+        return result;
+    }
+
+    inline static auto get_bool(JSContext* context, const JSValue& value) -> bool {
+        return static_cast<bool>(JS_ToBool(context, value));
+    }
+
+    inline static auto to_string(JSContext* context, std::string_view content) -> JSValue {
+        return JS_NewStringLen(context, content.data(), content.size());
+    }
+
+    inline static auto to_bool(JSContext* context, bool value) -> JSValue {
+        return JS_NewBool(context, value ? 1 : 0);
+    }
+
+    inline static auto to_number(JSContext* context, int32_t value) -> JSValue {
+        return JS_NewInt32(context, value);
+    }
+
+    inline static auto to_number(JSContext* context, double value) -> JSValue {
+        return JS_NewFloat64(context, value);
+    }
+
+    inline static auto to_number(JSContext* context, uint32_t value) -> JSValue {
+        return JS_NewUint32(context, value);
+    }
+
+    inline static auto to_number(JSContext* context, int64_t value) -> JSValue {
+        return JS_NewInt64(context, value);
+    }
+
+    inline static auto to_number(JSContext* context, uint64_t value) -> JSValue {
+        return JS_NewBigUint64(context, value);
+    }
+
+	template <typename T>
+    inline static auto to_bigint(JSContext* context, T value) -> JSValue {
+        if constexpr (std::is_same<T, uint64_t>::value) {
+            return JS_NewBigUint64(context, value);
+        } else if constexpr (std::is_integral<T>::value) {
+            return JS_NewBigInt64(context, static_cast<int64_t>(value));
+        }
+    }
+
+	#if WINDOWS
+    inline static auto get_undefined() -> JSValue { return JS_UNDEFINED; }
+    inline static auto get_null() -> JSValue { return JS_NULL; }
+    #else
+    inline static constexpr auto get_undefined() -> JSValue { return JS_UNDEFINED; }
+    inline static constexpr auto get_null() -> JSValue { return JS_NULL; }
+    #endif
+
+	template <typename T>
+	inline static auto get_vector(JSContext* context, const JSValue& that) -> List<T> {
+		auto atom = Atom{context, "length"};
+		auto length_value = JS_GetProperty(context, that, atom.value);
+		auto length = Converter::get_int32(context, length_value);
+		JS_FreeValue(context, length_value);
+		auto m_list = List<T>{};
+		for (auto i : Range<int>(length)) {
+			auto value = JS_GetPropertyUint32(context, that, i);
+			if constexpr (std::is_same<T, int>::value) {
+				m_list.emplace_back(Converter::get_int32(context, value));
+			} else if constexpr (std::is_same<T, bool>::value) {
+				m_list.emplace_back(Converter::get_bool(context, value));
+			} else if constexpr (std::is_same<T, long long>::value) {
+				m_list.emplace_back(Converter::get_int64(context, value));
+			} else if constexpr (std::is_same<T, uint32_t>::value) {
+				m_list.emplace_back(Converter::get_uint32(context, value));
+			} else if constexpr (std::is_same<T, uint64_t>::value) {
+				m_list.emplace_back(Converter::get_uint64(context, value));
+			} else if constexpr (std::is_same<T, float>::value) {
+				m_list.emplace_back(Converter::get_float32(context, value));
+			} else if constexpr (std::is_same<T, double>::value) {
+				m_list.emplace_back(Converter::get_float64(context, value));
+			} else if constexpr (std::is_same<T, std::string>::value) {
+				m_list.emplace_back(Converter::get_string(context, value));
+			} else {
+				m_list.emplace_back(value);
+			}
+			JS_FreeValue(context, value);
+		}
+		return m_list;
+	}
+
+	template <typename T>
+	inline static auto get_array(JSContext* context, const JSValue& that) -> List<T> {
+		auto atom = Atom{context, "length"};
+		auto length_value = JS_GetProperty(context, that, atom.value);
+		auto length = Converter::get_int32(context, length_value);
+		JS_FreeValue(context, length_value);
+		auto m_list = List<T>{};
+		for (auto i : Range<int>(length)) {
+			auto value = JS_GetPropertyUint32(context, that, i);
+			if constexpr (std::is_same<T, int>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_bigint64(context, value)));
+			} else if constexpr (std::is_same<T, bool>::value) {
+				m_list.emplace_back(Converter::get_bool(context, value));
+			} else if constexpr (std::is_same<T, long long>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_bigint64(context, value)));
+			} else if constexpr (std::is_same<T, uint32_t>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_bigint64(context, value)));
+			} else if constexpr (std::is_same<T, uint64_t>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_bigint64(context, value)));
+			} else if constexpr (std::is_same<T, float>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_float32(context, value)));
+			} else if constexpr (std::is_same<T, double>::value) {
+				m_list.emplace_back(static_cast<T>(Converter::get_float64(context, value)));
+			} else {
+				m_list.emplace_back(value);
 			}
 
+			JS_FreeValue(context, value);
+		}
+		return m_list;
+	}
 
+	template <>
+	inline static auto get_vector<std::string>(JSContext* context, const JSValue& that) -> List<std::string> {
+		auto atom = Atom{context, "length"};
+		auto len_val = JS_GetProperty(context, that, atom.value);
+		auto length = Converter::get_int32(context, len_val);
+		JS_FreeValue(context, len_val);
+		auto m_list = List<std::string>{};
+		for (auto i : Range<int>(length)) {
+			auto val = JS_GetPropertyUint32(context, that, i);
+			m_list.emplace_back(Converter::get_string(context, val));
+			JS_FreeValue(context, val);
+		}
+		return m_list;
+	}
 
-			/**
-			 * JS Number to C++ Int32
-			*/
+	template <>
+	inline static auto get_vector<std::string_view>(JSContext* context, const JSValue& that) -> List<std::string_view> {
+		auto atom = Atom{context, "length"};
+		auto len_val = JS_GetProperty(context, that, atom.value);
+		auto length = Converter::get_int32(context, len_val);
+		JS_FreeValue(context, len_val);
+		auto m_list = List<std::string_view>{};
+		for (auto i : Range<int>(length)) {
+			auto val = JS_GetPropertyUint32(context, that, i);
+			m_list.emplace_back(Converter::get_string(context, val));
+			JS_FreeValue(context, val);
+		}
+		return m_list;
+	}
 
-			inline static auto get_int32(
-				JSContext* context,
-				const JSValue & that
-			) -> int32_t
-			{
-				auto m_value = int32_t{};
-				if(JS_ToInt32(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_int")), std::source_location::current(), "get_int32");
-				}
-				return m_value;
+	template <typename T>
+	inline static auto to_array(JSContext* ctx, const List<T>& vec) -> JSValue {
+		auto js_array = JS_NewArray(ctx);
+		for (auto i : Range<std::size_t>(vec.size())) {
+			if constexpr (std::is_same<T, int>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewInt32(ctx, vec[i]));
+			} else if constexpr (std::is_same<T, uint32_t>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigInt64(ctx, static_cast<int64_t>(vec[i])));
+			} else if constexpr (std::is_same<T, float>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewFloat64(ctx, static_cast<double>(vec[i])));
+			} else if constexpr (std::is_same<T, double>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewFloat64(ctx, vec[i]));
+			} else if constexpr (std::is_same<T, uint64_t>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigUint64(ctx, vec[i]));
+			} else if constexpr (std::is_same<T, bool>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewBool(ctx, vec[i]));
+			} else if constexpr (std::is_same<T, long long>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigInt64(ctx, vec[i]));
+			} else if constexpr (std::is_same<T, std::string>::value) {
+				JS_SetPropertyUint32(ctx, js_array, i, JS_NewString(ctx, vec[i].c_str()));
 			}
+		}
+		return js_array;
+	}
 
-			/**
-			 * JS Number to C++ Float64
-			*/
 
-			inline static auto get_float64(
-				JSContext* context,
-				const JSValue & that
-			) -> double
-			{
-				auto m_value = double{};
-				if(JS_ToFloat64(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_double")), std::source_location::current(), "get_float64");
-				}
-				return m_value;
-			}
+	inline static auto constexpr close_buffer = [](auto buffer)
+	{ 
+		std::free(buffer); 
+		return; 
+	};
 
-			/**
-			 * Should not use this
-			 * JS Number to C++ Float32
-			*/
-
-			inline static auto get_float32(
-				JSContext* context,
-				const JSValue & that
-			) -> float
-			{
-				auto m_value = double{};
-				if(JS_ToFloat64(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_float")), std::source_location::current(), "get_float32");
-				}
-				return static_cast<float>(m_value);
-			}
-
-			/**
-			 * JS Number to C++ Int64
-			*/
-
-			inline static auto get_int64(
-				JSContext* context,
-				const JSValue & that
-			) -> int64_t
-			{
-				auto m_value = int64_t{};
-				if(JS_ToInt64(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_long_long")), std::source_location::current(), "get_int64");
-				}
-				return m_value;
-			}
-
-			/**
-			 * JS Number to C++ Int64
-			*/
-
-			inline static auto get_bigint64(
-				JSContext* context,
-				const JSValue & that
-			) -> int64_t
-			{
-				auto m_value = int64_t{};
-				if(JS_ToBigInt64(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_bigint_to_long_long")), std::source_location::current(), "get_bigint64");
-				}
-				return m_value;
-			}
-
-			/**
-			 * JS Number to C++ Uint32
-			*/
-
-			inline static auto get_uint32(
-				JSContext* context,
-				const JSValue & that
-			) -> uint32_t
-			{
-				auto m_value = uint32_t{};
-				if(JS_ToUint32(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_unsigned_int")), std::source_location::current(), "get_uint32");
-				}
-				return m_value;
-			}
-
-			/**
-			 * JS Number to C++ Uint64
-			*/
-
-			inline static auto get_uint64(
-				JSContext* context,
-				const JSValue & that
-			) -> uint64_t
-			{
-				auto m_value = uint64_t{};
-				if(JS_ToIndex(context, &m_value, that) < 0){
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_convert_number_to_unsigned_long_long")), std::source_location::current(), "get_uint64");
-				}
-				return m_value;
-			}
-
-			/**
-			 * C++ String to JS String
-			 * Because StringView is cheap
-			*/
-
-			inline static auto to_string(
-				JSContext* context,
-				std::string_view content
-			) -> JSValue
-			{
-				return JS_NewStringLen(context, content.data(), content.size());
-			}
-
-			/**
-			 * C++ Bool to JS Bool
-			*/
-
-			inline static auto to_bool(
-				JSContext* context,
-				bool value
-			) -> JSValue
-			{
-				return JS_NewBool(context, value ? 1 : 0);
-			}
-
-			/**
-			 * C++ Int32 to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				int32_t value
-			) -> JSValue
-			{
-				return JS_NewInt32(context, value);
-			}
-
-			/**
-			 * C++ Float to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				float value
-			) -> JSValue
-			{
-				return JS_NewFloat64(context, static_cast<double>(value));
-			}
-
-			/**
-			 * C++ Int32 to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				double value
-			) -> JSValue
-			{
-				return JS_NewFloat64(context, value);
-			}
-
-			/**
-			 * C++ Int64 to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				int64_t value
-			) -> JSValue
-			{
-				return JS_NewInt64(context, value);
-			}
-
-			/**
-			 * C++ Uint32 to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				uint32_t value
-			) -> JSValue
-			{
-				return JS_NewUint32(context, value);
-			}
-
-			/**
-			 * C++ Uint64 to JS Number
-			*/
-
-			inline static auto to_number(
-				JSContext* context,
-				uint64_t value
-			) -> JSValue
-			{
-				return JS_NewBigUint64(context, value);
-			}
-
-			
-			template <typename T> requires std::is_integral<T>::value
-			inline static auto to_bigint(
-				JSContext* context,
-				T value
-			) -> JSValue
-			{
-				if constexpr (std::is_same<T, std::uint64_t>::value) {
-					return JS_NewBigUint64(context, value);
-				}
-				else {
-					return JS_NewBigInt64(context, static_cast<int64_t>(value));
-				}
-			}
-
-			/**
-			 * JS Number to C++ boolean
-			*/
-
-			inline static auto get_bool(
-				JSContext* context,
-				const JSValue & that
-			) -> bool
-			{
-				return static_cast<bool>(JS_ToBool(context, that));
-			}
-
+	inline static auto read_file_as_js_arraybuffer(
+		JSContext *ctx, 
+		std::string_view source
+	) -> JSValue
+	{
+		#if WINDOWS
+		auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8_to_utf16(source.data()).data(), L"rb"), Language::close_file);
+		#else
+		auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(source.data(), "rb"), Language::close_file);
+		#endif
+		if (fp == nullptr) {
 			#if WINDOWS
-
-			/**
-			 * Return JS Undefined
-			*/
-
-			inline static auto get_undefined(
-
-			) -> JSValue
-			{
-				return JS_UNDEFINED;
-			}
-
-			/**
-			 * Return JS Null
-			*/
-
-			inline static auto get_null(
-
-			) -> JSValue
-			{
-				return JS_NULL;
-			}
-
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
 			#else
-
-			/**
-			 * Return JS Undefined
-			*/
-
-			inline static constexpr auto get_undefined(
-
-			) -> JSValue
-			{
-				return JS_UNDEFINED;
-			}
-
-			/**
-			 * Return JS Null
-			*/
-
-			inline static constexpr auto get_null(
-
-			) -> JSValue
-			{
-				return JS_NULL;
-			}
-			
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), source), std::source_location::current(), "read_file_as_js_arraybuffer");
 			#endif
+		}
+		#if WINDOWS
+		auto file_size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data()) });
+		#else
+		auto file_size = std::filesystem::file_size(std::filesystem::path{ source });
+		#endif
+		auto buffer = std::unique_ptr<char[], decltype(close_buffer)>((char*) std::malloc(file_size * sizeof(char)), close_buffer);
+		if (buffer == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
+			#else
+			throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", source), std::source_location::current(), "read_file_as_js_arraybuffer");
+			#endif
+		}
+		auto result = std::fread(buffer.get(), 1, file_size, fp.get());
+		if (result != file_size) {
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
+		}
+		auto array_buffer = JS_NewArrayBufferCopy(ctx, reinterpret_cast<uint8_t*>(buffer.get()), file_size);
+		return array_buffer;
+	}
 
-			/**
-			 * Convert JS Array to C++ Vector
-			*/
-
-			template <typename T>
-			inline static auto get_vector(
-				JSContext* context,
-				const JSValue & that
-			) -> List<T>
-			{
-				auto atom = JS_NewAtomLen(context, "length", 6);
-				auto length_value = JS_GetProperty(context, that, atom);
-				JS_FreeAtom(context, atom);
-				auto length = Converter::get_int32(context, length_value);
-				JS_FreeValue(context, length_value);
-				if constexpr (std::is_same<T, int>::value){
-					auto m_list = List<int>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(JS::Converter::get_int32(context, value));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, bool>::value){
-					auto m_list = List<bool>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(JS::Converter::get_bool(context, value));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr(std::is_same<T, long long>::value){
-					auto m_list = List<long long>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(Converter::get_int64(context, val));
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, uint32_t>::value){
-					auto m_list = List<unsigned int>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(Converter::get_uint32(context, val));
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, uint64_t>::value){
-					auto m_list = List<uint64_t>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(Converter::get_uint64(context, val));
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, float>::value){
-					auto m_list = List<float>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(Converter::get_float32(context, val));
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, double>::value){
-					auto m_list = List<double>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(Converter::get_float64(context, val));
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-				else {
-					auto m_list = List<JSValue>{};
-					for (auto i : Range<int>(length)) {
-						auto val = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(val);
-						JS_FreeValue(context, val);
-					}
-					return m_list;
-				}
-			}
-
-			/**
-			 * Convert JS Array to C++ Vector
-			*/
-
-			template <typename T>
-			inline static auto get_array(
-				JSContext* context,
-				const JSValue& that
-			) -> List<T>
-			{
-				auto atom = JS_NewAtomLen(context, "length", 6);
-				auto length_value = JS_GetProperty(context, that, atom);
-				JS_FreeAtom(context, atom);
-				auto length = Converter::get_int32(context, length_value);
-				JS_FreeValue(context, length_value);
-				if constexpr (std::is_same<T, int>::value) {
-					auto m_list = List<int>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, bool>::value) {
-					auto m_list = List<bool>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(JS::Converter::get_bool(context, value));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, long long>::value) {
-					auto m_list = List<long long>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, uint32_t>::value) {
-					auto m_list = List<unsigned int>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, uint64_t>::value) {
-					auto m_list = List<uint64_t>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_bigint64(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, float>::value) {
-					auto m_list = List<float>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_float32(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else if constexpr (std::is_same<T, double>::value) {
-					auto m_list = List<double>{};
-					for (auto i : Range<int>(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(static_cast<T>(JS::Converter::get_float64(context, value)));
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-				else {
-					auto m_list = List<JSValue>{};
-					for (auto i : Range(length)) {
-						auto value = JS_GetPropertyUint32(context, that, i);
-						m_list.emplace_back(value);
-						JS_FreeValue(context, value);
-					}
-					return m_list;
-				}
-			}
-
-			/**
-			 * Convert JS Array to C++ Vector of String
-			*/
-
-			template <>
-			inline static auto get_vector(
-				JSContext* context,
-				const JSValue & that
-			) -> List<std::string>
-			{
-				auto atom = JS_NewAtomLen(context, "length", 6);
-				auto len_val = JS_GetProperty(context, that, atom);
-				JS_FreeAtom(context, atom);
-				auto length = Converter::get_int32(context, len_val);
-				JS_FreeValue(context, len_val);
-				auto m_list = List<std::string>{};
-				for (auto i : Range<int>(length)) {
-					auto val = JS_GetPropertyUint32(context, that, i);
-					m_list.emplace_back(Converter::get_string(context, val));
-    				JS_FreeValue(context, val);
-				}
-				return m_list;
-			}
-
-			/**
-			 * Convert JS Array to C++ Vector of String View
-			*/
-
-			template <>
-			inline static auto get_vector(
-				JSContext* context,
-				const JSValue& that
-			) -> List<std::string_view>
-			{
-				auto atom = JS_NewAtomLen(context, "length", 6);
-				auto len_val = JS_GetProperty(context, that, atom);
-				JS_FreeAtom(context, atom);
-				auto length = Converter::get_int32(context, len_val);
-				JS_FreeValue(context, len_val);
-				auto m_list = List<std::string_view>{};
-				for (auto i : Range<int>(length)) {
-					auto val = JS_GetPropertyUint32(context, that, i);
-					m_list.emplace_back(Converter::get_string(context, val));
-					JS_FreeValue(context, val);
-				}
-				return m_list;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<int32_t> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewInt32(ctx, vec[i]));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<uint32_t> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigInt64(ctx, static_cast<int64_t>(vec[i])));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext* ctx,
-				const List<float>& vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewFloat64(ctx, static_cast<float>(vec[i])));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext* ctx,
-				const List<double>& vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewFloat64(ctx, static_cast<double>(vec[i])));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<uint64_t> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigUint64(ctx, vec[i]));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<bool> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewBool(ctx, vec[i]));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<long long> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewBigInt64(ctx, vec[i]));
-				}
-				return js_array;
-			}
-
-			/**
-			 * Convert Vector to JS Array
-			*/
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				const List<std::string> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewStringLen(ctx, vec[i].data(), vec[i].size()));
-				}
-				return js_array;
-			}
-
-			inline static auto to_array(
-				JSContext *ctx, 
-				List<std::string> & vec
-			) -> JSValue
-			{
-				auto js_array = JS_NewArray(ctx);
-				for (auto i : Range<size_t>(vec.size())) {
-					JS_SetPropertyUint32(ctx, js_array, i, JS_NewStringLen(ctx, vec[i].data(), vec[i].size()));
-				}
-				return js_array;
-			}
-
-			inline static auto constexpr close_buffer = [](auto buffer)
-			{ free(buffer); return; };
-
-			/**
-			 * Read and return JS ArrayBuffer
-			*/
-
-			inline static auto read_file_as_js_arraybuffer(
-				JSContext *ctx, 
-				std::string_view source
-			) -> JSValue
-			{
-				#if WINDOWS
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8_to_utf16(source.data()).data(), L"rb"), Language::close_file);
+	inline static auto write_file_as_arraybuffer(
+		JSContext* ctx,
+		std::string_view destination,
+		const JSValue& that
+	) -> void
+	{
+		auto size = size_t{};
+		auto data = JS_GetArrayBuffer(ctx, &size, that);
+		if (data == nullptr) {
+			throw Exception(fmt::format("{}", Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "write_file_as_arraybuffer");
+		}
+		#if WINDOWS
+			auto ofs = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(destination.data()))).data(), L"wb"), Language::close_file);
+		#else
+			auto ofs = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(destination.data(), "wb"), Language::close_file);
+		#endif
+		if (ofs.get() == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("{}", Language::get("open_write_failed"), String::to_posix_style({destination.data(), destination.size()})), std::source_location::current(), "write_file_as_arraybuffer");
 				#else
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(source.data(), "rb"), Language::close_file);
-				#endif
-				if (fp == nullptr) {
-					#if WINDOWS
-					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
-					#else
-					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), source), std::source_location::current(), "read_file_as_js_arraybuffer");
-					#endif
-				}
-				#if WINDOWS
-				auto file_size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data()) });
-				#else
-				auto file_size = std::filesystem::file_size(std::filesystem::path{ source });
-				#endif
-				auto buffer = std::unique_ptr<char[], decltype(close_buffer)>((char*) std::malloc(file_size * sizeof(char)), close_buffer);
-				if (buffer == nullptr) {
-					#if WINDOWS
-					throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
-					#else
-					throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", source), std::source_location::current(), "read_file_as_js_arraybuffer");
-					#endif
-				}
-				auto result = std::fread(buffer.get(), 1, file_size, fp.get());
-				if (result != file_size) {
-					throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");
-				}
-				auto array_buffer = JS_NewArrayBufferCopy(ctx, reinterpret_cast<uint8_t*>(buffer.get()), file_size);
-				return array_buffer;
-			}
+			throw Exception(fmt::format("{}", Language::get("open_write_failed"), destination),std::source_location::current(), "write_file_as_arraybuffer");
+			#endif
+		}
+		std::fwrite(reinterpret_cast<char*>(data), 1, size, ofs.get());
+		return;
+		}
 
-			/**
-			 * JS ArrayBuffer write to file
-			*/
-
-			inline static auto write_file_as_arraybuffer(
-				JSContext* ctx,
-				std::string_view destination,
-				const JSValue& that
-			) -> void
-			{
-				auto size = size_t{};
-				auto data = JS_GetArrayBuffer(ctx, &size, that);
-				if (data == nullptr) {
-					throw Exception(fmt::format("{}", Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "write_file_as_arraybuffer");
-				}
-				#if WINDOWS
-					auto ofs = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(destination.data()))).data(), L"wb"), Language::close_file);
-				#else
-					auto ofs = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(destination.data(), "wb"), Language::close_file);
-				#endif
-				if (ofs.get() == nullptr) {
-					#if WINDOWS
-					throw Exception(fmt::format("{}", Language::get("open_write_failed"), String::to_posix_style({destination.data(), destination.size()})), std::source_location::current(), "write_file_as_arraybuffer");
-					#else
-					throw Exception(fmt::format("{}", Language::get("open_write_failed"), destination), std::source_location::current(), "write_file_as_arraybuffer");
-					#endif
-				}
-				std::fwrite(reinterpret_cast<char*>(data), 1, size, ofs.get());
-				return;
-			}
-
-			// JS ArrayBuffer to C++ uint8_t vector
-
-			inline static auto to_binary_list(
-				JSContext* context,
-				JSValue array_buffer
-			) -> List<uint8_t>
-			{
-				auto size = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &size, array_buffer);
-				return make_list(data, size);
-			}
-
-			// C++ vector to JS ArrayBuffer
-
-			inline static auto toArrayBuffer(
-				JSContext* ctx,
-				const List<uint8_t> & v
-			) -> JSValue
-			{
-				return JS_NewArrayBufferCopy(ctx, v.data(), v.size());
-			}
+		inline static auto to_binary_list(
+			JSContext* context,
+			JSValue array_buffer
+		) -> List<uint8_t>
+		{
+			auto size = std::size_t{};
+			auto data = JS_GetArrayBuffer(context, &size, array_buffer);
+			return make_list(data, size);
+		}
 
 
-			/**
-			 * Convert JSValue to std::unordered_map
-			*/
-
-			inline static auto get_map(
-				JSContext *ctx, 
-				JSValueConst val
-			) -> std::unordered_map<std::string, std::string>
-			{
-				auto result = std::unordered_map<std::string, std::string>{};
-				if (JS_IsObject(val)) {
-					auto tab = static_cast<JSPropertyEnum *>(nullptr);
-					auto tab_len = uint32_t{};
-					if (JS_GetOwnPropertyNames(ctx, &tab, &tab_len, val, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY) == 0) {
-						for (auto i : Range<uint32_t>(tab_len)) {
-							auto atom = tab[i].atom;
-							auto prop_val = JS_GetProperty(ctx, val, atom);
-							if (JS_IsString(prop_val)) {
-								auto prop_key = JS_AtomToCString(ctx, atom);
-								auto str_len = std::strlen(prop_key);
-								auto prop_str_val = JS_ToCStringLen(ctx, &str_len, prop_val);
-								if (prop_key != nullptr && prop_str_val != nullptr) {
-									result[prop_key] = prop_str_val;
-								}
-								JS_FreeCString(ctx, prop_key);
-								JS_FreeCString(ctx, prop_str_val);
-							}
-							JS_FreeValue(ctx, prop_val);
-							JS_FreeAtom(ctx, atom);
-						}
-						js_free(ctx, tab);
-					}
-				}
-				return result;
-			}
+		inline static auto toArrayBuffer(
+			JSContext* ctx,
+			const List<uint8_t> & v
+		) -> JSValue
+		{
+			return JS_NewArrayBufferCopy(ctx, v.data(), v.size());
+		}
 }
