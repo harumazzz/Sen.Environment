@@ -155,7 +155,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			auto last_node_frame = k_begin_index_int;
 			for (auto dom_layer = layers->LastChildElement("DOMLayer"); dom_layer != nullptr; dom_layer = dom_layer->PreviousSiblingElement("DOMLayer"))
 			{
-				assert_conditional(dom_layer != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMLayer")), sprite_name, std::string{dom_layer_index}), "exchange_sprite_document");
+				assert_conditional(dom_layer != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_DOMLayer")), sprite_name, std::to_string(dom_layer_index)), "exchange_sprite_document");
 				auto frames = dom_layer->FirstChildElement("frames");
 				assert_conditional(frames != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_frames"), std::to_string(dom_layer_index)), sprite_name), "exchange_sprite_document");
 				auto &frame_node_list = frame_node_structure[dom_layer_index];
@@ -177,7 +177,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					auto match_result = std::smatch{};
 					auto regex_result = std::regex_search(library_item_name, match_result, name_match);
 					assert_conditional(regex_result, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_name_match")), sprite_name, std::to_string(frame_index)), "exchange_sprite_document");
-					assert_conditional(match_result[0] == match_result[1], String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.mismatch_name_match")), sprite_name. std::to_string(dom_layer_index), library_item_name, std::string{"sprite or image"}), "exchange_sprite_document");
+					assert_conditional(match_result[0] == match_result[1], String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.mismatch_name_match")), sprite_name, std::to_string(dom_layer_index), library_item_name, std::string{"sprite or image"}), "exchange_sprite_document");
 					auto is_sprite = match_result[0].str() == "sprite";
 					auto resource_name = library_item_name.substr(match_result[0].str().size() + 1_size);
 					auto resource = k_native_index;
@@ -201,7 +201,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					if (matrix != nullptr)
 					{
 						auto x_matrix = matrix->FirstChildElement("Matrix");
-						assert_conditional(x_matrix != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_matrix")), sprite_name. std::to_string(dom_layer_index)), "exchange_sprite_document");
+						assert_conditional(x_matrix != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_matrix")), sprite_name, std::to_string(dom_layer_index)), "exchange_sprite_document");
 						exchange_transform(x_matrix, frame_node.transform);
 					}
 					else
