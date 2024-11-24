@@ -669,7 +669,7 @@ namespace Sen::Kernel::Interface {
 				javascript.register_object(Script::Class::Character::register_class<unsigned char>);
 				// WideCharacter
 				javascript.register_object(Script::Class::Character::register_class<wchar_t>);
-				// // DimensionView
+				// DimensionView
 				javascript.register_object(Script::Class::DimensionView::register_class);
 				// Rectangle
 				javascript.register_object(Script::Class::Rectangle::register_class);
