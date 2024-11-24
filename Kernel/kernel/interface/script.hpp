@@ -45,6 +45,22 @@ namespace Sen::Kernel::Interface::Script
 	 */
 
 	namespace JS = Sen::Kernel::Definition::JavaScript;
+
+	inline auto constexpr get_property_string = JS::Converter::get_property_string;
+
+	inline auto constexpr get_property_int32 = JS::Converter::get_property_int32;
+
+	inline auto constexpr get_property_float64 = JS::Converter::get_property_float64;
+
+	inline auto constexpr get_property_float32 = JS::Converter::get_property_float32;
+
+	inline auto constexpr get_property_int64 = JS::Converter::get_property_int64;
+
+	inline auto constexpr get_property_bigint64 = JS::Converter::get_property_bigint64;
+
+	inline auto constexpr get_property_uint64 = JS::Converter::get_property_uint64;
+
+	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
 	
 	/**
 	 * ----------------------------------------
@@ -230,7 +246,7 @@ namespace Sen::Kernel::Interface::Script
 				}
 				default:
 				{
-					return JS::Converter::get_undefined();
+					return JS_UNDEFINED;
 				}
 			}
 		}
@@ -303,11 +319,15 @@ namespace Sen::Kernel::Interface::Script
 					auto json = nlohmann::ordered_json::object();
 					auto *tab = static_cast<JSPropertyEnum *>(nullptr);
 					auto tab_size = uint32_t{};
-					if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY) == 0)
+					if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0)
 					{
 						for (auto i : Range<uint32_t>(tab_size))
 						{
 							auto key = JS_AtomToCString(context, tab[i].atom);
+							if (key == nullptr) {
+								JS_FreeAtom(context, tab[i].atom);
+								continue;
+							}
 							auto val = JS_GetProperty(context, value, tab[i].atom);
 							if (JS_VALUE_GET_TAG(val) != JS_TAG_UNDEFINED)
 							{
@@ -390,7 +410,7 @@ namespace Sen::Kernel::Interface::Script
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[3]);
 				auto result = json.dump(indent, '\t', ensure_ascii);
 				Sen::Kernel::FileSystem::write_file(destination, result);
-				return JS::Converter::get_undefined();
+				return JS_UNDEFINED;
 			});
 		}
 	}
@@ -413,7 +433,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "load_language");
 				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "load_language");
 				Sen::Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
-				return JS::Converter::get_undefined();
+				return JS_UNDEFINED;
 			});
 		}
 
@@ -537,7 +557,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, fmt::format("{}", Kernel::Language::get("data_stream_view_cannot_be_initialize")).data());
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -657,7 +678,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(ctx, this_val, argc, argv, "size", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "size");
 					return JS::Converter::to_bigint<uint64_t>(ctx, s->size());
 				});
 			}
@@ -673,7 +693,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(ctx, this_val, argc, argv, "capacity", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "capacity");
 					return JS::Converter::to_bigint<uint64_t>(ctx, s->capacity());
 				});
 			}
@@ -727,7 +746,8 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::Uint8Array {
 				auto array_buffer = JS_NewArrayBufferCopy(ctx, vec.data(), vec.size());
 				auto global_obj = JS_GetGlobalObject(ctx);
-				auto uint8array_ctor = JS_GetPropertyStr(ctx, global_obj, "Uint8Array");
+				auto atom = Atom{ctx, "Uint8Array"};
+				auto uint8array_ctor = JS_GetProperty(ctx, global_obj, atom.value);
 				JSValue args[] = {array_buffer};
 				auto uint8array = JS_CallConstructor(ctx, uint8array_ctor, 1, args);
 				JS_FreeValue(ctx, global_obj);
@@ -748,7 +768,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(ctx, this_val, argc, argv, "toUint8Array", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "toUint8Array");
 					return to_uint8array(ctx, s->toBytes());
 				});
 			}
@@ -764,7 +783,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(ctx, this_val, argc, argv, "toArrayBuffer", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "toArrayBuffer");
 					return to_arraybuffer(ctx, s->toBytes());
 				});
 			}
@@ -818,7 +836,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(ctx, this_val, argc, argv, "toString", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "toString");
 					return JS::Converter::to_string(ctx, s->toString());
 				});
 			}
@@ -1100,12 +1117,13 @@ namespace Sen::Kernel::Interface::Script
 				return make_list(data, size);
 			}
 
-			inline static auto from_uint8array(
+			inline static auto from_uint8array (
 				JSContext *ctx,
 				JSValue uint8array
 			) -> List<uint8_t>
 			{
-				auto array_buffer = JS_GetPropertyStr(ctx, uint8array, "buffer");
+				auto atom = Atom{ctx, "buffer"};
+				auto array_buffer = JS_GetProperty(ctx, uint8array, atom.value);
 				auto vec = from_arraybuffer(ctx, array_buffer);
 				JS_FreeValue(ctx, array_buffer);
 				return vec;
@@ -2210,7 +2228,6 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
 				return handle<T>(ctx, this_val, argc, argv, "readDouble", [&](Data<T>* s) {
-					assert_conditional(argc == 0, fmt::format("argument expected 0, received: {}", argc), "close");
 					s->close();
 					return JS_UNDEFINED;
 				});
@@ -2357,7 +2374,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "Constructor for Boolean class does not match, expected 1 argument");
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -2443,7 +2461,8 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(Data));
 				auto s = std::make_unique<Data>(T);
-				auto proto = JS_GetPropertyStr(ctx, this_val, "prototype");
+				auto atom = Atom{ctx, "prototype"};
+				auto proto = JS_GetProperty(ctx, this_val, atom.value);
 				if (JS_IsException(proto)) {
 					return JS_EXCEPTION;
 				}
@@ -2524,7 +2543,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "Constructor for Image class does not match, expected 3 argument, got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -2728,7 +2748,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "Constructor for Sprite class does not match, expected 4 argument, got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -2919,7 +2940,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "FileInputStream cannot be initialized because argument does not satisfy constructor");
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -2974,7 +2996,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "close", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "close");
 					s->close();
 					return JS_UNDEFINED;
 				});
@@ -2988,7 +3009,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "size", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "size");
 					return JS::Converter::to_bigint<std::uint64_t>(ctx, s->size());
 				});
 			}
@@ -3001,7 +3021,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "read", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read");
 					return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->read()));
 				});
 			}
@@ -3014,7 +3033,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::ArrayBuffer
 			{
 				return handle(ctx, this_val, argc, argv, "read_all", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_all");
 					auto data = s->read_all();
 					return JS_NewArrayBufferCopy(ctx, data.data(), data.size());
 				});
@@ -3103,7 +3121,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "FileOutputStream cannot be initialized because the constructor does not satisfy the argument count");
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -3158,7 +3177,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "close", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "close");
 					s->close();
 					return JS_UNDEFINED;
 				});
@@ -3172,7 +3190,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "size", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "size");
 					return JS::Converter::to_bigint(ctx, s->size());
 				});
 			}
@@ -3288,7 +3305,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "FileStream cannot be initialized because expected argument count = 1 but got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -3343,7 +3361,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "close", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "close");
 					s->close();
 					return JS_UNDEFINED;
 				});
@@ -3357,7 +3374,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "size", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "size");
 					return JS::Converter::to_bigint(ctx, s->size());
 				});
 			}
@@ -3398,7 +3414,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "read", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read");
 					return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->read()));
 				});
 			}
@@ -3411,7 +3426,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::ArrayBuffer
 			{
 				return handle(ctx, this_val, argc, argv, "read_all", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_all");
 					auto data = s->read_all();
 					return JS_NewArrayBufferCopy(ctx, data.data(), data.size());
 				});
@@ -3491,17 +3505,11 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(ctx, "constructor", [&](){
-					auto s = static_cast<Data*>(nullptr);
+					auto s = new Data();
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
-					if (argc == 0) {
-						s = new Data();
-					}
-					else {
-						JS_ThrowInternalError(ctx, "JsonWriter cannot be initialized because the number of argument is not valid. Expected: %d, got: %d", 0, argc);
-						return JS_EXCEPTION;
-					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -3556,7 +3564,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "clear", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "clear");
 					s->Clear();
 					return JS_UNDEFINED;
 				});
@@ -3570,7 +3577,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::string
 			{
 				return handle(ctx, this_val, argc, argv, "toString", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "toString");
 					return JS::Converter::to_string(ctx, s->ToString());
 				});
 			}
@@ -3583,7 +3589,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "writeStartArray", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeStartArray");
 					s->WriteStartArray();
 					return JS_UNDEFINED;
 				});
@@ -3597,7 +3602,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "writeEndArray", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeEndArray");
 					s->WriteEndArray();
 					return JS_UNDEFINED;
 				});
@@ -3611,7 +3615,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "writeStartObject", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeStartObject");
 					s->WriteStartObject();
 					return JS_UNDEFINED;
 				});
@@ -3625,7 +3628,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "writeEndObject", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeEndObject");
 					s->WriteEndObject();
 					return JS_UNDEFINED;
 				});
@@ -3653,7 +3655,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return handle(ctx, this_val, argc, argv, "writeNull", [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeNull");
 					s->WriteNull();
 					return JS_UNDEFINED;
 				});
@@ -3826,7 +3827,8 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						s = new Data<T>();
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -4054,7 +4056,8 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						s = new Data();
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -4255,7 +4258,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "Size class cannot be initialized because number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -4434,7 +4438,8 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						s = new Data<T>();
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -4667,7 +4672,8 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -4883,7 +4889,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "size", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "size");
 					return JS::Converter::to_bigint<uint64_t>(ctx, s->value.size());
 				});
 			}
@@ -4896,7 +4901,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::bigint
 			{
 				return handle(ctx, this_val, argc, argv, "capacity", [&](Data* s){
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "capacity");
 					return JS::Converter::to_bigint<uint64_t>(ctx, s->value.capacity());
 				});
 			}
@@ -4952,8 +4956,7 @@ namespace Sen::Kernel::Interface::Script
 					m_function_name = "stream_view";
 				}
 				return handle(ctx, this_val, argc, argv, m_function_name, [&](Data* s) {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), m_function_name);
-					auto sub = new Definition::DataStreamView<use_big_endian>(s->value);
+					auto sub = new Definition::Buffer::Stream<use_big_endian>(s->value);
 					auto global_obj = JS_GetGlobalObject(ctx);
 					auto atom_1 = Atom{ctx, "Sen"};
 					auto sen_obj = JS_GetProperty(ctx, global_obj, atom_1.value);
@@ -5006,7 +5009,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "BinaryView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -5073,7 +5077,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSDefine::BinaryView
 			{
 				return proxy_wrapper(ctx, "instance", [&]() {
-					assert_conditional(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data>();
 					auto atom_proto = Atom{ctx, "prototype"};
 					auto proto = JS_GetProperty(ctx, this_val, atom_proto.value);
@@ -5118,8 +5121,6 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		// Canvas Support
-
 		namespace Canvas
 		{
 
@@ -5130,25 +5131,14 @@ namespace Sen::Kernel::Interface::Script
 				inline static JSClassID class_id;
 			};
 
-			inline static auto finalizer(
-				JSRuntime *rt,
-				JSValue val) -> void
-			{
-				auto s = static_cast<Data *>(JS_GetOpaque(val, Detail::class_id));
-				if (s != nullptr)
-				{
-					delete s;
-				}
-				return;
-			}
-
 			inline static auto constructor(
 				JSContext *ctx,
 				JSValueConst new_target,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
+				return proxy_wrapper(ctx, "constructor", [&]() {
 					auto s = static_cast<Data*>(nullptr);
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::Canvas{};
@@ -5159,7 +5149,8 @@ namespace Sen::Kernel::Interface::Script
 						JS_ThrowInternalError(ctx, "Canvas class cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 2, argc);
 						return JS_EXCEPTION;
 					}
-					proto = JS_GetPropertyStr(ctx, new_target, "prototype");
+					auto atom = Atom{ctx, "prototype"};
+					proto = JS_GetProperty(ctx, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
@@ -5173,776 +5164,561 @@ namespace Sen::Kernel::Interface::Script
 				fail:
 					js_free(ctx, s);
 					JS_FreeValue(ctx, obj);
-					return JS_EXCEPTION; }, "proxy_constructor");
+					return JS_EXCEPTION;
+				});
 			}
 
-			/*
-				Current class
-			*/
+			inline auto constexpr _class_name( 
 
-			inline static auto this_class = JSClassDef{
-				.class_name = "Canvas",
-				.finalizer = finalizer,
-			};
+			) -> std::string_view
+			{
+				return "Canvas";
+			}
 
-			/*
-				Scale
-			*/
+			inline static auto this_class = make_class_definition<Data>(
+				_class_name(),
+				Detail::class_id
+			);
 
-			inline static auto scale(
+			inline static auto handle (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
+				JSValueConst *argv,
+				std::string_view method_name,
+				std::function<JSValue(Data*)> method
+			) -> JSValue {
+				return proxy_wrapper(ctx, method_name, [&](){
 					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					s->scale(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
-					return JS_UNDEFINED; }, "scale"_sv);
+					return method(s);
+				});
 			}
 
-			/*
-				Rotate
-			*/
-
-			inline static auto rotate(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->rotate(JS::Converter::get_float32(ctx, argv[0]));
-					return JS_UNDEFINED; }, "rotate"_sv);
-			}
-
-			/*
-				Translate
-			*/
-
-			inline static auto translate(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->translate(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
-					return JS_UNDEFINED; }, "translate"_sv);
-			}
-
-			/*
-				Transform
-			*/
-
-			inline static auto transform(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
-					return JS_UNDEFINED; }, "transform"_sv);
-			}
-
-			/*
-				Set Transform
-			*/
-
-			inline static auto set_transform(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
-					return JS_UNDEFINED; }, "set_transform"_sv);
-			}
-
-			/*
-				Set global data
-			*/
-
-			inline static auto set_global_alpha(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
-					return JS_UNDEFINED; }, "set_global_alpha"_sv);
-			}
-
-			/*
-				Set shadow color
-			*/
-
-			inline static auto set_shadow_color(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_shadow_color(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "set_shadow_color"_sv);
-			}
-
-			/*
-				Set line width
-			*/
-
-			inline static auto set_line_width(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_line_width(JS::Converter::get_float32(ctx, argv[0]));
-					return JS_UNDEFINED; }, "set_line_width"_sv);
-			}
-
-			/*
-				Set shadow blur
-			*/
-
-			inline static auto set_shadow_blur(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
-					return JS_UNDEFINED; }, "set_shadow_blur"_sv);
-			}
-
-			/*
-				Set miter limit
-			*/
-
-			inline static auto set_miter_limit(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_miter_limit(JS::Converter::get_float32(ctx, argv[0]));
-					return JS_UNDEFINED; }, "set_miter_limit"_sv);
-			}
-
-			// Perhaps use
-
-			using brush_type = canvas_ity::brush_type;
-
-			/*
-				Set color
-			*/
-
-			inline static auto set_color(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_color(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
-					return JS_UNDEFINED; }, "set_color"_sv);
-			}
-
-			/*
-				Set linear gradient
-			*/
-
-			inline static auto set_linear_gradient(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_linear_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
-					return JS_UNDEFINED; }, "set_linear_gradient"_sv);
-			}
-
-			/*
-				Set radial gradient
-			*/
-
-			inline static auto set_radial_gradient(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 7, fmt::format("{} 7, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->set_radial_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]), JS::Converter::get_float32(ctx, argv[6]));
-					return JS_UNDEFINED; }, "set_radial_gradient"_sv);
-			}
-
-			/*
-				Add color stop
-			*/
-
-			inline static auto add_color_stop(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->add_color_stop(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
-					return JS_UNDEFINED; }, "add_color_stop"_sv);
-			}
-
-			/*
-				Begin path
-			*/
-
-			inline static auto begin_path(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->begin_path();
-					return JS_UNDEFINED; }, "begin_path"_sv);
-			}
-
-			/*
-				Move to
-			*/
-
-			inline static auto move_to(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->move_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
-					return JS_UNDEFINED; }, "move_to"_sv);
-			}
-
-			/*
-				Close path
-			*/
-
-			inline static auto close_path(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->close_path();
-					return JS_UNDEFINED; }, "close_path"_sv);
-			}
-
-			/*
-				Line to
-			*/
-
-			inline static auto line_to(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->line_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
-					return JS_UNDEFINED; }, "line_to"_sv);
-			}
-
-			/*
-				quadratic_curve_to
-			*/
-
-			inline static auto quadratic_curve_to(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->quadratic_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "quadratic_curve_to"_sv);
-			}
-
-			/*
-				bezier_curve_to
-			*/
-
-			inline static auto bezier_curve_to(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->bezier_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
-					return JS_UNDEFINED; }, "bezier_curve_to"_sv);
-			}
-
-			/*
-				arc_to
-			*/
-
-			inline static auto arc_to(
-				JSContext *ctx,
-				JSValueConst this_val,
-				int argc,
-				JSValueConst *argv) -> JSElement::undefined
-			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					s->arc_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
-					return JS_UNDEFINED; }, "arc_to"_sv);
-			}
-
-			// Set image color
-
-			inline static auto set_image_color(
+			inline static auto scale (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "scale", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
+					s->scale(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					return JS_UNDEFINED;
+				});
+			}
+
+
+			inline static auto rotate (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "rotate", [&](Data* s) {
+					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
+					s->rotate(JS::Converter::get_float32(ctx, argv[0]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto translate (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "translate", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "translate");
+					s->translate(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto transform (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "transform", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "transform");
+					s->transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_transform (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_transform", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_transform");
+					s->set_transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_global_alpha (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_global_alpha", [&](Data* s) {
+					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_global_alpha");
+					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_shadow_color (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_shadow_color", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_color");
+					s->set_shadow_color(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_line_width (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_line_width", [&](Data* s) {
+					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_line_width");
+					s->set_line_width(JS::Converter::get_float32(ctx, argv[0]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_shadow_blur (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_shadow_blur", [&](Data* s) {
+					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_blur");
+					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_miter_limit (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_miter_limit", [&](Data* s) {
+					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_miter_limit");
+					s->set_miter_limit(JS::Converter::get_float32(ctx, argv[0]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			using brush_type = canvas_ity::brush_type;
+
+			inline static auto set_color (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_color", [&](Data* s) {
+					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_color");
+					s->set_color(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_linear_gradient (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_linear_gradient", [&](Data* s) {
+					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_linear_gradient");
+					s->set_linear_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_radial_gradient (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_radial_gradient", [&](Data* s) {
+					assert_conditional(argc == 7, fmt::format("{} 7, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_radial_gradient");
+					s->set_radial_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]), JS::Converter::get_float32(ctx, argv[6]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto add_color_stop (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "add_color_stop", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "add_color_stop");
+					s->add_color_stop(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto begin_path (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "begin_path", [&](Data* s) {
+					s->begin_path();
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto move_to (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "move_to", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "move_to");
+					s->move_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto close_path (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "close_path", [&](Data* s) {
+					s->close_path();
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto line_to (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "line_to", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "line_to");
+					s->line_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto quadratic_curve_to (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "quadratic_curve_to", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "quadratic_curve_to");
+					s->quadratic_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto bezier_curve_to (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "bezier_curve_to", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "bezier_curve_to");
+					s->bezier_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto arc_to (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "arc_to", [&](Data* s) {
+					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc_to");
+					s->arc_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					return JS_UNDEFINED;
+				});
+			}
+
+			inline static auto set_image_color (
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv
+			) -> JSElement::undefined
+			{
+				return handle(ctx, this_val, argc, argv, "set_image_color", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_image_color");
 					s->set_image_color(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
 					return JS_UNDEFINED; 
-				}, "set_image_color"_sv);
+				});
 			}
 
-			/*
-				arc
-			*/
-
-			inline static auto arc(
+			inline static auto arc (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "arc", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc");
 					s->arc(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_bool(ctx, argv[5]));
-					return JS_UNDEFINED; }, "arc"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				rectangle
-			*/
-
-			inline static auto rectangle(
+			inline static auto rectangle (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "rectangle", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rectangle");
 					s->rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "rectangle"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				fill
-			*/
-
-			inline static auto fill(
+			inline static auto fill (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "fill", [&](Data* s) {
 					s->fill();
-					return JS_UNDEFINED; }, "fill"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				stroke
-			*/
-
-			inline static auto stroke(
+			inline static auto stroke (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "stroke", [&](Data* s) {
 					s->stroke();
-					return JS_UNDEFINED; }, "stroke"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				clip
-			*/
-
-			inline static auto clip(
+			inline static auto clip (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "clip", [&](Data* s) {
 					s->clip();
-					return JS_UNDEFINED; }, "clip"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				is_point_in_path
-			*/
-
-			inline static auto is_point_in_path(
+			inline static auto is_point_in_path (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::boolean
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return JS::Converter::to_bool(ctx, s->is_point_in_path(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]))); }, "is_point_in_path"_sv);
+				return handle(ctx, this_val, argc, argv, "is_point_in_path", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_point_in_path");
+					return JS::Converter::to_bool(ctx, s->is_point_in_path(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1])));
+				});
 			}
 
-			/*
-				clear rectangle
-			*/
-
-			inline static auto clear_rectangle(
+			inline static auto clear_rectangle (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "clear_rectangle", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "clear_rectangle");
 					s->clear_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "clear_rectangle"_sv);
+					return JS_UNDEFINED;
+				});
 			}
-
-			/*
-				fill rectangle
-			*/
 
 			inline static auto fill_rectangle(
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "fill_rectangle", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill_rectangle");
 					s->fill_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "fill_rectangle"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				stroke rectangle
-			*/
-
-			inline static auto stroke_rectangle(
+			inline static auto stroke_rectangle (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "stroke_rectangle", [&](Data* s) {
+					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "stroke_rectangle");
 					s->stroke_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
-					return JS_UNDEFINED; }, "stroke_rectangle"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				set font
-			*/
-
-			inline static auto set_font(
+			inline static auto set_font (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::boolean
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "set_font", [&](Data* s) {
+					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_font");
 					auto size = std::size_t{};
 					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					return JS::Converter::to_bool(ctx, s->set_font(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), size)); }, "set_font"_sv);
+					return JS::Converter::to_bool(ctx, s->set_font(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), size));
+				});
 			}
 
-			/*
-				draw image
-			*/
-
-			inline static auto draw_image(
+			inline static auto draw_image (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 8, fmt::format("{} 8, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "draw_image", [&](Data* s) {
+					assert_conditional(argc == 8, fmt::format("{} 8, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "draw_image");
 					auto size = std::size_t{};
 					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					s->draw_image(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), 
-						static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])),
-						static_cast<float>(JS::Converter::get_float32(ctx, argv[4])), static_cast<float>(JS::Converter::get_float32(ctx, argv[5])),
-						static_cast<float>(JS::Converter::get_float32(ctx, argv[6])), static_cast<float>(JS::Converter::get_float32(ctx, argv[7])));
-					return JS::Converter::get_undefined(); }, "draw_image"_sv);
+					s->draw_image(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<float>(JS::Converter::get_float32(ctx, argv[4])), static_cast<float>(JS::Converter::get_float32(ctx, argv[5])), static_cast<float>(JS::Converter::get_float32(ctx, argv[6])), static_cast<float>(JS::Converter::get_float32(ctx, argv[7])));
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				get_image_data
-			*/
-
-			inline static auto get_image_data(
+			inline static auto get_image_data (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "get_image_data", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_image_data");
 					auto size = std::size_t{};
 					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					s->get_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])),
-						static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])),
-						static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
-					return JS::Converter::get_undefined(); }, "get_image_data"_sv);
+					if (data == nullptr) {
+						return JS_EXCEPTION;
+					}
+					s->get_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				put_image_data
-			*/
-
-			inline static auto put_image_data(
+			inline static auto put_image_data (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "put_image_data", [&](Data* s) {
+					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "put_image_data");
 					auto size = std::size_t{};
 					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					s->put_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])),
-						static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])),
-						static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
-					return JS::Converter::get_undefined(); }, "put_image_data"_sv);
+					s->put_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				save
-			*/
-
-			inline static auto save(
+			inline static auto save (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "save", [&](Data* s) {
 					s->save();
-					return JS_UNDEFINED; }, "save"_sv);
+					return JS_UNDEFINED;
+				});
 			}
 
-			/*
-				restore
-			*/
-
-			inline static auto restore(
+			inline static auto restore (
 				JSContext *ctx,
 				JSValueConst this_val,
 				int argc,
-				JSValueConst *argv) -> JSElement::undefined
+				JSValueConst *argv
+			) -> JSElement::undefined
 			{
-				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+				return handle(ctx, this_val, argc, argv, "restore", [&](Data* s) {
 					s->restore();
-					return JS_UNDEFINED; }, "restore"_sv);
+					return JS_UNDEFINED;
+				});
 			}
-
-			// Function
 
 			inline static const JSCFunctionListEntry proto_functions[] = {
 				JS_CPPFUNC_DEF("scale", 2, scale),
@@ -5984,14 +5760,13 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("set_image_color", 2, set_image_color),
 			};
 
-			// Proxy call
-
 			inline static auto register_class(
-				JSContext *ctx) -> void
+				JSContext *ctx
+			) -> void
 			{
 				JS_NewClassID(JS_GetRuntime(ctx), &(Detail::class_id));
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), Detail::class_id, &this_class) == 0, "Canvas class register failed", "register_class");
-				auto class_name = "Canvas"_sv;
+				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
 				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
@@ -5999,9 +5774,8 @@ namespace Sen::Kernel::Interface::Script
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
 				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = JS_NewAtomLen(ctx, class_name.data(), class_name.size());
-				JS_DefinePropertyValue(ctx, obj2, atom, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeAtom(ctx, atom);
+				auto atom = Atom{ctx, class_name};
+				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
 				JS_FreeValue(ctx, global_obj);
 				JS_FreeValue(ctx, obj1);
 				JS_FreeValue(ctx, obj2);
@@ -6398,26 +6172,12 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		// Because Image is duplicated with the namespace
-
 		namespace ImageView
 		{
 
 			using Data = Kernel::Definition::Image<int>;
 
 			inline static JSClassID class_id;
-
-			inline static auto finalizer(
-				JSRuntime *rt,
-				JSValue val) -> void
-			{
-				auto s = static_cast<Data *>(JS_GetOpaque(val, class_id));
-				if (s != nullptr)
-				{
-					delete s;
-				}
-				return;
-			}
 
 			enum Magic
 			{
@@ -6504,6 +6264,18 @@ namespace Sen::Kernel::Interface::Script
 					js_free(ctx, s);
 					JS_FreeValue(ctx, obj);
 					return JS_EXCEPTION; }, "proxy_constructor");
+			}
+
+			inline static auto finalizer(
+				JSRuntime *rt,
+				JSValue val) -> void
+			{
+				auto s = static_cast<Data *>(JS_GetOpaque(val, class_id));
+				if (s != nullptr)
+				{
+					delete s;
+				}
+				return;
 			}
 
 			/*
@@ -6648,7 +6420,6 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv) -> JSElement::bigint
 			{
 				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
@@ -6667,7 +6438,6 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv) -> JSElement::bigint
 			{
 				M_JS_PROXY_WRAPPER(ctx, {
-					try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
@@ -6980,7 +6750,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(JS_IsBigInt(context, argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_bigint")), "sleep");
 				auto time = JS::Converter::get_bigint64(context, argv[0]);
 				Sen::Kernel::Definition::Timer::sleep(time);
-				return JS::Converter::get_undefined(); }, "sleep"_sv);
+				return JS_UNDEFINED; }, "sleep"_sv);
 		}
 
 		/**
@@ -6997,7 +6767,6 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv) -> JSElement::number
 		{
 			M_JS_PROXY_WRAPPER(context, {
-				try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto current = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 				return JS::Converter::to_number(context, current); }, "now"_sv);
 		}
@@ -7039,7 +6808,7 @@ namespace Sen::Kernel::Interface::Script
 					auto patch_file = JS::Converter::get_string(context, argv[2]);
 					auto flag = JS::Converter::get_int32(context, argv[3]);
 					Sen::Kernel::Definition::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Sen::Kernel::Definition::Diff::VCDiff::Flag>(flag));
-					return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+					return JS_UNDEFINED; }, "encode_fs"_sv);
 			}
 
 			/**
@@ -7061,7 +6830,7 @@ namespace Sen::Kernel::Interface::Script
 					auto patch_file = JS::Converter::get_string(context, argv[1]);
 					auto after_file = JS::Converter::get_string(context, argv[2]);
 					Sen::Kernel::Definition::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
-					return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+					return JS_UNDEFINED; }, "decode_fs"_sv);
 			}
 
 		}
@@ -7256,7 +7025,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto array_buffer = argv[1];
 				JS::Converter::write_file_as_arraybuffer(context, destination, array_buffer);
-				return JS::Converter::get_undefined(); }, "out"_sv);
+				return JS_UNDEFINED; }, "out"_sv);
 		}
 
 		/*
@@ -7336,7 +7105,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "run");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				Sen::Kernel::Process::run(source);
-				return JS::Converter::get_undefined(); }, "run"_sv);
+				return JS_UNDEFINED; }, "run"_sv);
 		}
 
 		/**
@@ -7471,7 +7240,7 @@ namespace Sen::Kernel::Interface::Script
 						break;
 					}
 				}
-				return JS::Converter::get_undefined(); }, "print"_sv);
+				return JS_UNDEFINED; }, "print"_sv);
 		}
 
 		/**
@@ -7488,7 +7257,6 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv) -> JSElement::string
 		{
 			M_JS_PROXY_WRAPPER(context, {
-				try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				Shell::callback(construct_string_list(List<std::string>{std::string{"wait"}}).get(), nullptr);
 				auto destination = std::make_unique<CStringView>();
 				Shell::callback(construct_string_list(List<std::string>{std::string{"input"}}).get(), destination.get());
@@ -7560,7 +7328,6 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv) -> JSElement::string
 		{
 			M_JS_PROXY_WRAPPER(context, {
-				try_assert(argc == 0, fmt::format("{} 0, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 				auto result = Sen::Kernel::Path::Script::delimiter();
 				return JS::Converter::to_string(context, result); }, "delimiter"_sv);
 		}
@@ -7846,7 +7613,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto data = JS::Converter::get_string(context, argv[1]);
 				Sen::Kernel::FileSystem::write_file(destination, data);
-				return JS::Converter::get_undefined(); }, "write_file"_sv);
+				return JS_UNDEFINED; }, "write_file"_sv);
 		}
 
 		/**
@@ -7873,7 +7640,7 @@ namespace Sen::Kernel::Interface::Script
 				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
 				auto result = std::wstring{ converter.from_bytes(data) };
 				Sen::Kernel::FileSystem::write_file_by_utf16le(destination, result);
-				return JS::Converter::get_undefined(); }, "write_file_encode_with_utf16le"_sv);
+				return JS_UNDEFINED; }, "write_file_encode_with_utf16le"_sv);
 		}
 
 		/**
@@ -7983,7 +7750,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "create_directory");
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				Sen::Kernel::FileSystem::create_directory(destination);
-				return JS::Converter::get_undefined(); }, "create_directory"_sv);
+				return JS_UNDEFINED; }, "create_directory"_sv);
 		}
 
 		/**
@@ -8055,7 +7822,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::rename(source, destination);
-					return JS::Converter::get_undefined(); }, "rename"_sv);
+					return JS_UNDEFINED; }, "rename"_sv);
 			}
 
 			/**
@@ -8078,7 +7845,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::copy(source, destination);
-					return JS::Converter::get_undefined(); }, "copy"_sv);
+					return JS_UNDEFINED; }, "copy"_sv);
 			}
 
 			/**
@@ -8101,7 +7868,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::copy_directory(source, destination);
-					return JS::Converter::get_undefined(); }, "copy_directory"_sv);
+					return JS_UNDEFINED; }, "copy_directory"_sv);
 			}
 
 			/**
@@ -8122,7 +7889,7 @@ namespace Sen::Kernel::Interface::Script
 					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 					auto source = JS::Converter::get_string(context, argv[0]);
 					Kernel::Path::Script::remove(source);
-					return JS::Converter::get_undefined(); }, "remove"_sv);
+					return JS_UNDEFINED; }, "remove"_sv);
 			}
 
 			/**
@@ -8143,7 +7910,7 @@ namespace Sen::Kernel::Interface::Script
 					try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
 					auto source = JS::Converter::get_string(context, argv[0]);
 					Kernel::Path::Script::remove_all(source);
-					return JS::Converter::get_undefined(); }, "remove_all"_sv);
+					return JS_UNDEFINED; }, "remove_all"_sv);
 			}
 
 		}
@@ -8328,7 +8095,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_FreeValue(context, channels_val);
 				JS_FreeValue(context, rowbytes_val);
 				JS_FreeValue(context, data_val);
-				return JS::Converter::get_undefined(); }, "write"_sv);
+				return JS_UNDEFINED; }, "write"_sv);
 		}
 
 	}
@@ -8362,7 +8129,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
 				Sen::Kernel::Definition::ImageIO::scale_png(source, destination, percentage);
-				return JS::Converter::get_undefined(); }, "scale_fs"_sv);
+				return JS_UNDEFINED; }, "scale_fs"_sv);
 		}
 
 		/**
@@ -8385,7 +8152,7 @@ namespace Sen::Kernel::Interface::Script
 				auto width = JS::Converter::get_int32(context, argv[1]);
 				auto height = JS::Converter::get_int32(context, argv[2]);
 				Sen::Kernel::Definition::ImageIO::transparent_png(destination, width, height);
-				return JS::Converter::get_undefined(); }, "transparent_fs"_sv);
+				return JS_UNDEFINED; }, "transparent_fs"_sv);
 		}
 
 		struct Coordinate
@@ -8460,7 +8227,7 @@ namespace Sen::Kernel::Interface::Script
 				);
 				JS_FreeValue(context, width);
 				JS_FreeValue(context, height);
-				return JS::Converter::get_undefined(); }, "join_png"_sv);
+				return JS_UNDEFINED; }, "join_png"_sv);
 		}
 
 		inline static auto join(
@@ -8685,7 +8452,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
 				Sen::Kernel::Definition::ImageIO::resize_png(source, destination, percentage);
-				return JS::Converter::get_undefined(); }, "resize_fs"_sv);
+				return JS_UNDEFINED; }, "resize_fs"_sv);
 		}
 
 		/**
@@ -8710,7 +8477,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float64(context, argv[2]);
 				Sen::Kernel::Definition::ImageIO::rotate_png(source, destination, percentage);
-				return JS::Converter::get_undefined(); }, "rotate_fs"_sv);
+				return JS_UNDEFINED; }, "rotate_fs"_sv);
 		}
 
 		/**
@@ -8755,7 +8522,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_FreeValue(context, rectangle_height);
 				JS_FreeValue(context, rectangle_x);
 				JS_FreeValue(context, rectangle_y);
-				return JS::Converter::get_undefined(); }, "cut_fs"_sv);
+				return JS_UNDEFINED; }, "cut_fs"_sv);
 		}
 
 		/**
@@ -8813,7 +8580,7 @@ namespace Sen::Kernel::Interface::Script
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
 				Sen::Kernel::Definition::ImageIO::cut_pngs(source, data);
-				return JS::Converter::get_undefined(); }, "cut_multiple_fs"_sv);
+				return JS_UNDEFINED; }, "cut_multiple_fs"_sv);
 		}
 
 		/**
@@ -8871,7 +8638,7 @@ namespace Sen::Kernel::Interface::Script
 					throw Exception("Cannot read property \"length\" of undefined");
 				}
 				Sen::Kernel::Definition::ImageIO::cut_pngs_asynchronous(source, data);
-				return JS::Converter::get_undefined(); }, "cut_multiple_fs_asynchronous"_sv);
+				return JS_UNDEFINED; }, "cut_multiple_fs_asynchronous"_sv);
 		}
 
 	}
@@ -9174,7 +8941,7 @@ namespace Sen::Kernel::Interface::Script
 							paths.emplace_back(data);
 						}
 						Sen::Kernel::Definition::Encryption::Base64::encode_fs_as_multiple_thread(paths);
-						return JS::Converter::get_undefined(); }, "encode_fs_as_multiple_threads"_sv);
+						return JS_UNDEFINED; }, "encode_fs_as_multiple_threads"_sv);
 			}
 
 			/**
@@ -9199,7 +8966,7 @@ namespace Sen::Kernel::Interface::Script
 							paths.emplace_back(data);
 						}
 						Sen::Kernel::Definition::Encryption::Base64::encode_fs_as_multiple_thread(paths);
-						return JS::Converter::get_undefined(); }, "decode_fs_as_multiple_threads"_sv);
+						return JS_UNDEFINED; }, "decode_fs_as_multiple_threads"_sv);
 			}
 
 			/**
@@ -9242,7 +9009,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Encryption::Base64::encode_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+					return JS_UNDEFINED; }, "encode_fs"_sv);
 			}
 
 			/**
@@ -9264,7 +9031,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Encryption::Base64::decode_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+					return JS_UNDEFINED; }, "decode_fs"_sv);
 			}
 		}
 
@@ -9516,7 +9283,7 @@ namespace Sen::Kernel::Interface::Script
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto key = JS::Converter::to_binary_list(context, argv[2]);
 					Sen::Kernel::Definition::Encryption::XOR::encrypt_fs(source, destination, key);
-					return JS::Converter::get_undefined(); }, "encrypt_fs"_sv);
+					return JS_UNDEFINED; }, "encrypt_fs"_sv);
 			}
 
 		}
@@ -9562,7 +9329,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Definition::Compression::Zip::Compress::directory(source, destination);
-						return JS::Converter::get_undefined(); }, "directory"_sv);
+						return JS_UNDEFINED; }, "directory"_sv);
 				}
 
 				/**
@@ -9594,7 +9361,7 @@ namespace Sen::Kernel::Interface::Script
 						{
 							Sen::Kernel::Definition::Compression::Zip::Compress::file(source, destination);
 						}
-						return JS::Converter::get_undefined(); }, "file"_sv);
+						return JS_UNDEFINED; }, "file"_sv);
 				}
 
 			}
@@ -9626,7 +9393,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Definition::Compression::Zip::Uncompress::process(source, destination);
-						return JS::Converter::get_undefined(); }, "process"_sv);
+						return JS_UNDEFINED; }, "process"_sv);
 				}
 
 			}
@@ -9665,7 +9432,7 @@ namespace Sen::Kernel::Interface::Script
 						throw Exception(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level), std::source_location::current(), "compress_fs");
 					}
 					Sen::Kernel::Definition::Compression::Zlib::compress_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Zlib::Level>(level));
-					return JS::Converter::get_undefined(); }, "compress_fs"_sv);
+					return JS_UNDEFINED; }, "compress_fs"_sv);
 			}
 
 			/**
@@ -9688,7 +9455,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Compression::Zlib::uncompress_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "uncompress_fs"_sv);
+					return JS_UNDEFINED; }, "uncompress_fs"_sv);
 			}
 
 			/**
@@ -9862,7 +9629,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Compression::Bzip2::compress_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "compress_fs"_sv);
+					return JS_UNDEFINED; }, "compress_fs"_sv);
 			}
 
 			/**
@@ -9885,7 +9652,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Compression::Bzip2::uncompress_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "uncompress_fs"_sv);
+					return JS_UNDEFINED; }, "uncompress_fs"_sv);
 			}
 
 		}
@@ -9918,7 +9685,7 @@ namespace Sen::Kernel::Interface::Script
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_bigint64(context, argv[2]);
 					Sen::Kernel::Definition::Compression::Lzma::compress_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Lzma::Level>(level));
-					return JS::Converter::get_undefined(); }, "compress_fs"_sv);
+					return JS_UNDEFINED; }, "compress_fs"_sv);
 			}
 
 			/**
@@ -9942,7 +9709,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Compression::Lzma::uncompress_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "uncompress_fs"_sv);
+					return JS_UNDEFINED; }, "uncompress_fs"_sv);
 			}
 
 		}
@@ -9978,7 +9745,7 @@ namespace Sen::Kernel::Interface::Script
 						throw std::invalid_argument(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level));
 					}
 					Sen::Kernel::Definition::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Zlib::Level>(level));
-					return JS::Converter::get_undefined(); }, "compress_fs"_sv);
+					return JS_UNDEFINED; }, "compress_fs"_sv);
 			}
 
 			/**
@@ -10001,7 +9768,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Sen::Kernel::Definition::Compression::Zlib::uncompress_gzip_fs(source, destination);
-					return JS::Converter::get_undefined(); }, "uncompress_fs"_sv);
+					return JS_UNDEFINED; }, "uncompress_fs"_sv);
 			}
 		}
 	}
@@ -10045,7 +9812,7 @@ namespace Sen::Kernel::Interface::Script
 						auto height = JS::Converter::get_bigint64(context, argv[3]);
 						auto format = JS::Converter::get_int32(context, argv[4]);
 						Sen::Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Sen::Kernel::Support::Texture::Format>(format));
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 			}
 
 			/**
@@ -10069,7 +9836,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto format = JS::Converter::get_int32(context, argv[2]);
 						Sen::Kernel::Support::Texture::InvokeMethod::encode_fs(source, destination, static_cast<Sen::Kernel::Support::Texture::Format>(format));
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 			}
 
 		}
@@ -10107,7 +9874,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::Marmalade::DZip::Unpack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 				}
 
 				/**
@@ -10131,7 +9898,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::Marmalade::DZip::Pack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "pack_fs"_sv);
+						return JS_UNDEFINED; }, "pack_fs"_sv);
 				}
 			}
 		}
@@ -10177,7 +9944,7 @@ namespace Sen::Kernel::Interface::Script
 						else {
 							Sen::Kernel::Support::PopCap::Zlib::Compress<false>::compress_fs(source, destination);
 						}
-						return JS::Converter::get_undefined(); }, "compress_fs"_sv);
+						return JS_UNDEFINED; }, "compress_fs"_sv);
 				}
 
 				/**
@@ -10262,7 +10029,7 @@ namespace Sen::Kernel::Interface::Script
 						else {
 							Sen::Kernel::Support::PopCap::Zlib::Uncompress<false>::uncompress_fs(source, destination);
 						}
-						return JS::Converter::get_undefined(); }, "uncompress_fs"_sv);
+						return JS_UNDEFINED; }, "uncompress_fs"_sv);
 				}
 
 				/**
@@ -10356,7 +10123,7 @@ namespace Sen::Kernel::Interface::Script
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
 						Sen::Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -10382,7 +10149,7 @@ namespace Sen::Kernel::Interface::Script
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
 						Sen::Kernel::Support::PopCap::CompiledText::Encode::process_fs(source, destination, key, iv, use_64_bit_variant);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 			}
@@ -10414,7 +10181,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ResourceGroup::BasicConversion::split(source, destination);
-						return JS::Converter::get_undefined(); }, "split_fs"_sv);
+						return JS_UNDEFINED; }, "split_fs"_sv);
 				}
 
 				/**
@@ -10437,7 +10204,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ResourceGroup::BasicConversion::merge(source, destination);
-						return JS::Converter::get_undefined(); }, "merge_fs"_sv);
+						return JS_UNDEFINED; }, "merge_fs"_sv);
 				}
 
 				/**
@@ -10472,7 +10239,7 @@ namespace Sen::Kernel::Interface::Script
 								break;
 							}
 						}
-						return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+						return JS_UNDEFINED; }, "convert_fs"_sv);
 				}
 
 			}
@@ -10504,7 +10271,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ResInfo::BasicConversion::split_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "split_fs"_sv);
+						return JS_UNDEFINED; }, "split_fs"_sv);
 				}
 
 				/**
@@ -10527,7 +10294,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ResInfo::BasicConversion::merge_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "merge_fs"_sv);
+						return JS_UNDEFINED; }, "merge_fs"_sv);
 				}
 
 				/**
@@ -10550,7 +10317,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ResInfo::Convert::convert_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+						return JS_UNDEFINED; }, "convert_fs"_sv);
 				}
 
 			}
@@ -10582,7 +10349,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -10605,7 +10372,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::RenderEffects::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 			}
@@ -10637,7 +10404,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -10660,7 +10427,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::CharacterFontWidget2::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 			}
@@ -10714,7 +10481,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Sen::Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, platform);
-						return JS::Converter::get_undefined(); }, "decode_fs");
+						return JS_UNDEFINED; }, "decode_fs");
 				}
 
 				inline static auto encode_fs(
@@ -10729,7 +10496,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Sen::Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, platform);
-						return JS::Converter::get_undefined(); }, "encode_fs");
+						return JS_UNDEFINED; }, "encode_fs");
 				}
 
 				inline static auto to_xml(
@@ -10743,7 +10510,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "to_xml");
+						return JS_UNDEFINED; }, "to_xml");
 				}
 
 				inline static auto from_xml(
@@ -10757,7 +10524,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::Particles::FromXML::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "from_xml");
+						return JS_UNDEFINED; }, "from_xml");
 				}
 
 			}
@@ -10813,7 +10580,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						//auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Sen::Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs");
+						return JS_UNDEFINED; }, "decode_fs");
 				}
 
 				inline static auto encode_fs(
@@ -10828,7 +10595,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						//auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Sen::Kernel::Support::PopCap::PlayerInfo::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs");
+						return JS_UNDEFINED; }, "encode_fs");
 				}
 
 			}
@@ -10861,7 +10628,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						Sen::Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
-						return JS::Converter::get_undefined(); }, "decrypt_fs"_sv);
+						return JS_UNDEFINED; }, "decrypt_fs"_sv);
 				}
 
 				/**
@@ -10886,7 +10653,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						Sen::Kernel::Support::PopCap::CryptData::Encrypt::process_fs(source, destination, key);
-						return JS::Converter::get_undefined(); }, "encrypt_fs"_sv);
+						return JS_UNDEFINED; }, "encrypt_fs"_sv);
 				}
 
 			}
@@ -10918,7 +10685,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -10941,7 +10708,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 			}
@@ -10972,7 +10739,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -10999,7 +10766,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_fs(source, destination, key, iv);
-						return JS::Converter::get_undefined(); }, "decrypt_fs"_sv);
+						return JS_UNDEFINED; }, "decrypt_fs"_sv);
 				}
 
 				/**
@@ -11026,7 +10793,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_and_decode_fs(source, destination, key, iv);
-						return JS::Converter::get_undefined(); }, "decrypt_and_decode_fs"_sv);
+						return JS_UNDEFINED; }, "decrypt_and_decode_fs"_sv);
 				}
 
 				/**
@@ -11051,7 +10818,7 @@ namespace Sen::Kernel::Interface::Script
 							paths.emplace_back(data);
 						}
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decode_fs_as_multiple_threads(paths);
-						return JS::Converter::get_undefined(); }, "decode_fs_as_multiple_threads"_sv);
+						return JS_UNDEFINED; }, "decode_fs_as_multiple_threads"_sv);
 				}
 
 				/**
@@ -11076,7 +10843,7 @@ namespace Sen::Kernel::Interface::Script
 							paths.emplace_back(data);
 						}
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_fs_as_multiple_threads(paths);
-						return JS::Converter::get_undefined(); }, "encode_fs_as_multiple_threads"_sv);
+						return JS_UNDEFINED; }, "encode_fs_as_multiple_threads"_sv);
 				}
 
 				/**
@@ -11099,7 +10866,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 				/**
@@ -11124,7 +10891,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt_fs(source, destination, key, iv);
-						return JS::Converter::get_undefined(); }, "encrypt_fs"_sv);
+						return JS_UNDEFINED; }, "encrypt_fs"_sv);
 				}
 
 				/**
@@ -11149,7 +10916,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_and_encrypt_fs(source, destination, key, iv);
-						return JS::Converter::get_undefined(); }, "encode_and_encrypt_fs"_sv);
+						return JS_UNDEFINED; }, "encode_and_encrypt_fs"_sv);
 				}
 			}
 
@@ -11179,7 +10946,7 @@ namespace Sen::Kernel::Interface::Script
 						auto after_file = JS::Converter::get_string(context, argv[1]);
 						auto patch_file = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::ResourceStreamBundlePatch::Encode::process_fs(before_file, after_file, patch_file);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 				/**
@@ -11201,7 +10968,7 @@ namespace Sen::Kernel::Interface::Script
 						auto patch_file = JS::Converter::get_string(context, argv[1]);
 						auto after_file = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::ResourceStreamBundlePatch::Decode::process_fs(before_file, patch_file, after_file);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 			}
@@ -11232,7 +10999,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Unpack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 				}
 
 				/**
@@ -11254,7 +11021,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::PackResource::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "pack_resource"_sv);
+						return JS_UNDEFINED; }, "pack_resource"_sv);
 				}
 
 				/**
@@ -11276,7 +11043,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackResource::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_resource"_sv);
+						return JS_UNDEFINED; }, "unpack_resource"_sv);
 				}
 
 				/**
@@ -11298,7 +11065,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_cipher"_sv);
+						return JS_UNDEFINED; }, "unpack_cipher"_sv);
 				}
 
 				/**
@@ -11327,7 +11094,7 @@ namespace Sen::Kernel::Interface::Script
 						unpack.process(destination, manifest);
 						return JSON::json_to_js(context, manifest);
 						*/
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 				}
 
 				/**
@@ -11350,7 +11117,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Pack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "pack_fs"_sv);
+						return JS_UNDEFINED; }, "pack_fs"_sv);
 				}
 
 				/**
@@ -11407,7 +11174,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 				}
 
 				/**
@@ -11433,7 +11200,7 @@ namespace Sen::Kernel::Interface::Script
 						auto obj = Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_fs(source, destination);
 						return JSON::json_to_js(context, *obj);
 						*/
-						return JS::Converter::get_undefined(); }, "unpack_modding"_sv);
+						return JS_UNDEFINED; }, "unpack_modding"_sv);
 				}
 
 				/**
@@ -11457,7 +11224,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "pack_fs"_sv);
+						return JS_UNDEFINED; }, "pack_fs"_sv);
 				}
 
 				/**
@@ -11485,7 +11252,7 @@ namespace Sen::Kernel::Interface::Script
 						pack.process<false>(source, JSON::object_to_json(context, argv[2]));
 						pack.sen.out_file(destination);
 						*/
-						return JS::Converter::get_undefined(); }, "pack"_sv);
+						return JS_UNDEFINED; }, "pack"_sv);
 				}
 			}
 
@@ -11515,7 +11282,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Package::Unpack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 				}
 
 				/**
@@ -11539,7 +11306,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Package::Pack::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "pack_fs"_sv);
+						return JS_UNDEFINED; }, "pack_fs"_sv);
 				}
 			}
 
@@ -11569,7 +11336,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -11605,7 +11372,7 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, resolution);
 							}
-							return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+							return JS_UNDEFINED; }, "convert_fs"_sv);
 					}
 
 					/**
@@ -11637,7 +11404,7 @@ namespace Sen::Kernel::Interface::Script
 								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_whole(animation, extra, destination);
 							}
 							Sen::Kernel::FileSystem::write_json(fmt::format("{}/data.json", destination), extra);
-							return JS::Converter::get_undefined(); }, "process"_sv);
+							return JS_UNDEFINED; }, "process"_sv);
 					}
 				}
 
@@ -11664,7 +11431,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[1]));
 						Sen::Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, resolution);
-						return JS::Converter::get_undefined(); }, "resize_fs"_sv);
+						return JS_UNDEFINED; }, "resize_fs"_sv);
 					}
 
 					inline static auto dump_document(
@@ -11693,7 +11460,7 @@ namespace Sen::Kernel::Interface::Script
 							auto atom_action = JS_NewAtomLen(context, "action", 6_size);  
 							JS_DefinePropertyValue(context, destination, atom_action, JS::Converter::to_array(context, doc.action), int{JS_PROP_C_W_E});
 							JS_FreeAtom(context, atom_action);
-							return JS::Converter::get_undefined(); 
+							return JS_UNDEFINED; 
 						}, "dump_document"_sv);
 					}
 
@@ -11712,7 +11479,7 @@ namespace Sen::Kernel::Interface::Script
 								return JS_EXCEPTION;
 							}
 							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
-							return JS::Converter::get_undefined(); 
+							return JS_UNDEFINED; 
 						}, "generate_image"_sv);
 					}
 
@@ -11732,7 +11499,7 @@ namespace Sen::Kernel::Interface::Script
 							source.sprite = JS::Converter::get_vector<std::string>(context, JS_GetPropertyStr(context, argv[1], "sprite"));
 							source.image = JS::Converter::get_vector<std::string>(context, JS_GetPropertyStr(context, argv[1], "image"));
 							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, &source);
-							return JS::Converter::get_undefined(); 
+							return JS_UNDEFINED; 
 						}, "generate_document"_sv);
 					}
 
@@ -11751,7 +11518,7 @@ namespace Sen::Kernel::Interface::Script
 								return JS_EXCEPTION;
 							}
 							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
-							return JS::Converter::get_undefined(); }, "generate_sprite"_sv);
+							return JS_UNDEFINED; }, "generate_sprite"_sv);
 					}
 
 				}
@@ -11787,7 +11554,7 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
 							}
-							return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+							return JS_UNDEFINED; }, "convert_fs"_sv);
 					}
 				}
 
@@ -11824,7 +11591,7 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, resolution);
 							}
-							return JS::Converter::get_undefined(); }, "to_flash"_sv);
+							return JS_UNDEFINED; }, "to_flash"_sv);
 					}
 
 					/**
@@ -11853,7 +11620,7 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
 							}
-							return JS::Converter::get_undefined(); }, "from_flash"_sv);
+							return JS_UNDEFINED; }, "from_flash"_sv);
 					}
 				}
 
@@ -11877,7 +11644,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 			}
 
@@ -11908,7 +11675,7 @@ namespace Sen::Kernel::Interface::Script
 							Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 						}
 						Sen::Kernel::FileSystem::write_json(destination, result);
-						return JS::Converter::get_undefined(); }, "from_resource_custom"_sv);
+						return JS_UNDEFINED; }, "from_resource_custom"_sv);
 					}
 
 					inline static auto to_resource_custom(
@@ -11930,7 +11697,7 @@ namespace Sen::Kernel::Interface::Script
 							Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 						}
 						Sen::Kernel::FileSystem::write_json(destination, result);
-						return JS::Converter::get_undefined(); }, "to_resource_custom"_sv);
+						return JS_UNDEFINED; }, "to_resource_custom"_sv);
 					}
 
 				}
@@ -11966,7 +11733,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 					}
 
 					inline static auto encode_fs(
@@ -11980,7 +11747,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 					}
 				}
 
@@ -12002,7 +11769,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
-						return JS::Converter::get_undefined(); }, "unpack_fs"_sv);
+						return JS_UNDEFINED; }, "unpack_fs"_sv);
 					}
 
 					inline static auto pack_fs(
@@ -12016,7 +11783,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
-						return JS::Converter::get_undefined(); }, "pack_fs"_sv);
+						return JS_UNDEFINED; }, "pack_fs"_sv);
 					}
 				}
 
@@ -12083,7 +11850,7 @@ namespace Sen::Kernel::Interface::Script
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
 						Sen::Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, platform);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -12108,7 +11875,7 @@ namespace Sen::Kernel::Interface::Script
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
 						Sen::Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, platform);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 				inline static auto to_xml(
@@ -12122,7 +11889,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "to_xml");
+						return JS_UNDEFINED; }, "to_xml");
 				}
 
 				inline static auto from_xml(
@@ -12136,7 +11903,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Sen::Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "from_xml");
+						return JS_UNDEFINED; }, "from_xml");
 				}
 
 				/**
@@ -12166,7 +11933,7 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							Sen::Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
-							return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+							return JS_UNDEFINED; }, "convert_fs"_sv);
 					}
 				}
 
@@ -12196,7 +11963,7 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							Sen::Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
-							return JS::Converter::get_undefined(); }, "convert_fs"_sv);
+							return JS_UNDEFINED; }, "convert_fs"_sv);
 					}
 				}
 
@@ -12226,7 +11993,7 @@ namespace Sen::Kernel::Interface::Script
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
 							Sen::Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, platform);
-							return JS::Converter::get_undefined(); }, "to_flash"_sv);
+							return JS_UNDEFINED; }, "to_flash"_sv);
 					}
 
 					/**
@@ -12252,7 +12019,7 @@ namespace Sen::Kernel::Interface::Script
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
 							Sen::Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, platform);
-							return JS::Converter::get_undefined(); }, "from_flash"_sv);
+							return JS_UNDEFINED; }, "from_flash"_sv);
 					}
 
 				}
@@ -12302,7 +12069,7 @@ namespace Sen::Kernel::Interface::Script
 						auto global_data_source = JS::Converter::get_string(context, argv[1]);
 						auto media_source = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::WWise::SoundBank::Miscellaneous::Support::add_music(source, global_data_source, media_source, JSON::object_to_json(context, argv[3]));
-						return JS::Converter::get_undefined(); }, "add_music"_sv);
+						return JS_UNDEFINED; }, "add_music"_sv);
 					}
 
 
@@ -12326,7 +12093,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::WWise::SoundBank::Miscellaneous::Support::create_soundbank(source, destination);
-						return JS::Converter::get_undefined(); }, "create_soundbank"_sv);
+						return JS_UNDEFINED; }, "create_soundbank"_sv);
 					}
 
 				}
@@ -12351,7 +12118,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::WWise::SoundBank::Decode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 
 				/**
@@ -12374,7 +12141,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::WWise::SoundBank::Encode::process_fs(source, destination);
-						return JS::Converter::get_undefined(); }, "encode_fs"_sv);
+						return JS_UNDEFINED; }, "encode_fs"_sv);
 				}
 
 				inline static auto hash(
@@ -12391,7 +12158,7 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Uinteger32::class_id));
 						destination->value = Kernel::Support::WWise::SoundBank::Decode::fnv_hash(source);
-						return JS::Converter::get_undefined(); }, "decode_fs"_sv);
+						return JS_UNDEFINED; }, "decode_fs"_sv);
 				}
 			}
 		}
@@ -12684,16 +12451,9 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue
 		{
 			M_JS_PROXY_WRAPPER(ctx, {
-				auto s = static_cast<Data*>(nullptr);
+				auto s = new Data();
 				auto obj = JS_UNDEFINED;
 				auto proto = JSElement::Prototype{};
-				if (argc == 0) {
-					s = new Data();
-				}
-				else {
-					JS_ThrowInternalError(ctx, "Constructor for Clock class does not match, expected 0 argument");
-					return JS_EXCEPTION;
-				}
 				proto = JS_GetPropertyStr(ctx, new_target, "prototype");
 				if (JS_IsException(proto)) {
 					goto fail;
@@ -12733,13 +12493,13 @@ namespace Sen::Kernel::Interface::Script
 			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
 			if (clock == nullptr) {
 				JS_ThrowInternalError(ctx, "Cannot get Clock class");
-				return JS::Converter::get_undefined();
+				return JS_UNDEFINED;
 			}
 			try {
 				clock->start();
 			} catch (const std::exception &e) {
 				JS_ThrowInternalError(ctx, e.what());
-				return JS::Converter::get_undefined();
+				return JS_UNDEFINED;
 			}
 			return JS_UNDEFINED;
 		}
@@ -12754,7 +12514,7 @@ namespace Sen::Kernel::Interface::Script
 			auto *clock = static_cast<Data*>(JS_GetOpaque(this_val, class_id));
 			if (clock == nullptr) {
 				JS_ThrowInternalError(ctx, "Cannot get Clock class");
-				return JS::Converter::get_undefined();
+				return JS_UNDEFINED;
 			}
 			clock->start_safe();
 			return JS_UNDEFINED;
@@ -12922,88 +12682,93 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto deep_clone(
 			JSContext *context,
-			JSValueConst value) -> JSValue
+			JSValueConst value
+		) -> JSValue
 		{
 			switch (JS_VALUE_GET_TAG(value))
 			{
-			case JS_TAG_UNDEFINED:
-			{
-				return JS_UNDEFINED;
-			}
-			case JS_TAG_NULL:
-			{
-				return JS_NULL;
-			}
-			case JS_TAG_OBJECT:
-			{
-				if (JS_IsArray(context, value))
+				case JS_TAG_UNDEFINED:
 				{
-					auto js_array = JS_NewArray(context);
-					auto length = uint32_t{};
-					auto c_length = JS_GetPropertyStr(context, value, "length");
-					JS_ToUint32(context, &length, c_length);
-					JS_FreeValue(context, c_length);
-					for (auto i : Range<uint32_t>(length))
-					{
-						auto js_value = JS_GetPropertyUint32(context, value, i);
-						JS_SetPropertyUint32(context, js_array, i, deep_clone(context, js_value));
-					}
-					return js_array;
+					return JS_UNDEFINED;
 				}
-				if (JS_IsObject(value))
+				case JS_TAG_NULL:
 				{
-					auto json = JS_NewObject(context);
-					auto *tab = static_cast<JSPropertyEnum *>(nullptr);
-					auto tab_size = uint32_t{};
-					if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY) == 0)
+					return JS_NULL;
+				}
+				case JS_TAG_OBJECT:
+				{
+					if (JS_IsArray(context, value))
 					{
-						for (auto i : Range<uint32_t>(tab_size))
+						auto js_array = JS_NewArray(context);
+						auto length = uint32_t{};
+						auto atom = Atom{context, "length"};
+						auto c_length = JS_GetProperty(context, value, atom.value);
+						JS_ToUint32(context, &length, c_length);
+						JS_FreeValue(context, c_length);
+						for (auto i : Range<uint32_t>(length))
 						{
-							auto key = JS_AtomToCString(context, tab[i].atom);
-							auto val = JS_GetProperty(context, value, tab[i].atom);
-							auto atom = JS_NewAtomLen(context, key, std::strlen(key));
-							JS_DefinePropertyValue(context, json, atom, deep_clone(context, val), int{JS_PROP_C_W_E});
-							JS_FreeAtom(context, atom);
-							JS_FreeAtom(context, tab[i].atom);
-							JS_FreeValue(context, val);
-							JS_FreeCString(context, key);
+							auto js_value = JS_GetPropertyUint32(context, value, i);
+							JS_SetPropertyUint32(context, js_array, i, deep_clone(context, js_value));
+							JS_FreeValue(context, js_value);
 						}
-						js_free(context, tab);
+						return js_array;
 					}
-					return json;
+					if (JS_IsObject(value))
+					{
+						auto json = JS_NewObject(context);
+						auto *tab = static_cast<JSPropertyEnum *>(nullptr);
+						auto tab_size = uint32_t{};
+						if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0)
+						{
+							for (auto i : Range<uint32_t>(tab_size))
+							{
+								auto key = JS_AtomToCString(context, tab[i].atom);
+								if (key == nullptr) {
+									JS_FreeAtom(context, tab[i].atom);
+									continue;
+								}
+								auto object_value = JS_GetProperty(context, value, tab[i].atom);
+								JS_DefinePropertyValue(context, json, tab[i].atom, deep_clone(context, object_value), int{JS_PROP_C_W_E});
+								JS_FreeAtom(context, tab[i].atom);
+								JS_FreeValue(context, object_value);
+								JS_FreeCString(context, key);
+							}
+							js_free(context, tab);
+						}
+						return json;
+					}
+					throw Exception("Unknown type", std::source_location::current(), "deep_clone");
 				}
-				throw Exception("Unknown type");
-			}
-			case JS_TAG_STRING:
-			{
-				auto size = std::size_t{};
-				auto c_str = JS_ToCStringLen(context, &size, value);
-				auto destination = JS_NewStringLen(context, c_str, size);
-				JS_FreeCString(context, c_str);
-				return destination;
-			}
-			case JS_TAG_BOOL:
-			{
-				return JS_NewBool(context, JS_VALUE_GET_BOOL(value) != 0);
-			}
-			case JS_TAG_BIG_INT:
-			{
-				auto val = int64_t{};
-				JS_ToBigInt64(context, &val, value);
-				return JS_NewBigInt64(context, val);
-			}
-			case JS_TAG_FLOAT64:
-			{
-				return JS_NewFloat64(context, JS::Converter::get_float64(context, value));
-			}
-			case JS_TAG_INT:
-			{
-				return JS_NewFloat64(context, JS_VALUE_GET_INT(value));
-			}
-			default:
-			{
-				return value;
-			}
+				case JS_TAG_STRING:
+				{
+					auto size = std::size_t{};
+					auto c_str = JS_ToCStringLen(context, &size, value);
+					auto destination = JS_NewStringLen(context, c_str, size);
+					JS_FreeCString(context, c_str);
+					return destination;
+				}
+				case JS_TAG_BOOL:
+				{
+					return JS_NewBool(context, JS_VALUE_GET_BOOL(value) != 0);
+				}
+				case JS_TAG_BIG_INT:
+				{
+					auto val = int64_t{};
+					JS_ToBigInt64(context, &val, value);
+					return JS_NewBigInt64(context, val);
+				}
+				case JS_TAG_FLOAT64:
+				{
+					return JS_NewFloat64(context, JS::Converter::get_float64(context, value));
+				}
+				case JS_TAG_INT:
+				{
+					return JS_NewFloat64(context, JS_VALUE_GET_INT(value));
+				}
+				default:
+				{
+					throw Exception("Unhandled JSValue", std::source_location::current(), "deep_clone");
+				}
 			}
 		}
 
@@ -13011,11 +12776,13 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValueConst this_val,
 			int argc,
-			JSValueConst *argv) -> JSValue
+			JSValueConst *argv
+		) -> JSValue
 		{
-			M_JS_PROXY_WRAPPER(context, {
-				try_assert(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc));
-				return deep_clone(context, argv[0]); }, "make_copy"_sv);
+			return proxy_wrapper(context, "make_copy", [&](){
+				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "make_copy");
+				return deep_clone(context, argv[0]);
+			});
 		}
 
 		/*
@@ -13382,7 +13149,7 @@ namespace Sen::Kernel::Interface::Script
 				doc.Print(&printer);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				Kernel::FileSystem::write_file(destination, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)});
-				return JS::Converter::get_undefined(); }, "serialize_fs"_sv);
+				return JS_UNDEFINED; }, "serialize_fs"_sv);
 		}
 
 	}

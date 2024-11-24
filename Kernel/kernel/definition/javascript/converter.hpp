@@ -339,4 +339,58 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 		{
 			return JS_NewArrayBufferCopy(ctx, v.data(), v.size());
 		}
+
+		template <typename T>
+		inline static auto get_property(
+			JSContext* ctx, 
+			JSValueConst obj, 
+			JSAtom atom, 
+			const char* type_name, 
+			T(*converter)(JSContext*, const JSValue&)
+		) -> T 
+		{
+			auto value = JS_GetProperty(ctx, obj, atom);
+			if (JS_IsException(value)) {
+				Detail::handle_conversion_error(ctx, obj, type_name);
+			}
+			auto result = converter(ctx, value);
+			JS_FreeValue(ctx, value);
+			return result;
+		}
+
+		inline static auto get_property_string(JSContext* ctx, JSValueConst obj, JSAtom atom) -> std::string {
+			return get_property(ctx, obj, atom, "string", get_string);
+		}
+
+		inline static auto get_property_int32(JSContext* ctx, JSValueConst obj, JSAtom atom) -> int32_t {
+			return get_property(ctx, obj, atom, "int32", get_int32);
+		}
+
+		inline static auto get_property_float64(JSContext* ctx, JSValueConst obj, JSAtom atom) -> double {
+			return get_property(ctx, obj, atom, "double", get_float64);
+		}
+
+		inline static auto get_property_float32(JSContext* ctx, JSValueConst obj, JSAtom atom) -> float {
+			return get_property(ctx, obj, atom, "float", get_float32);
+		}
+
+		inline static auto get_property_int64(JSContext* ctx, JSValueConst obj, JSAtom atom) -> int64_t {
+			return get_property(ctx, obj, atom, "int64", get_int64);
+		}
+
+		inline static auto get_property_bigint64(JSContext* ctx, JSValueConst obj, JSAtom atom) -> int64_t {
+			return get_property(ctx, obj, atom, "bigint64", get_bigint64);
+		}
+
+		inline static auto get_property_uint32(JSContext* ctx, JSValueConst obj, JSAtom atom) -> uint32_t {
+			return get_property(ctx, obj, atom, "uint32", get_uint32);
+		}
+
+		inline static auto get_property_uint64(JSContext* ctx, JSValueConst obj, JSAtom atom) -> uint64_t {
+			return get_property(ctx, obj, atom, "uint64", get_uint64);
+		}
+
+		inline static auto get_property_bool(JSContext* ctx, JSValueConst obj, JSAtom atom) -> bool {
+			return get_property(ctx, obj, atom, "bool", get_bool);
+		}
 }
