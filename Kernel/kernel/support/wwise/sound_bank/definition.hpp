@@ -807,7 +807,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
 
     struct MusicTrackTransitionSetting
     {
-        //uint32_t switcher;
+        // uint32_t switcher;
         MusicTrackTransitionSettingItemSource source;
         MusicTrackTransitionSettingItemDestination destination;
     };
@@ -818,7 +818,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         if (k_version >= 112_ui)
         {
-           // nlohmann_json_j["switcher"] = nlohmann_json_t.switcher;
+            // nlohmann_json_j["switcher"] = nlohmann_json_t.switcher;
             nlohmann_json_j["source"] = nlohmann_json_t.source;
             nlohmann_json_j["destination"] = nlohmann_json_t.destination;
         }
@@ -831,7 +831,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         if (k_version >= 112_ui)
         {
-           // nlohmann_json_j.at("switcher").get_to(nlohmann_json_t.switcher);
+            // nlohmann_json_j.at("switcher").get_to(nlohmann_json_t.switcher);
             nlohmann_json_j.at("source").get_to(nlohmann_json_t.source);
             nlohmann_json_j.at("destination").get_to(nlohmann_json_t.destination);
         }
@@ -959,7 +959,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         nlohmann_json_j["clip"] = nlohmann_json_t.clip;
         nlohmann_json_j["type"] = magic_enum::enum_name(nlohmann_json_t.type);
-        if (k_version > 112)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j["switcher"] = nlohmann_json_t.switcher;
             nlohmann_json_j["transition"] = nlohmann_json_t.transition;
@@ -2850,7 +2850,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann_json_j["playback_setting"] = nlohmann_json_t.playback_setting;
         nlohmann_json_j["stream"] = nlohmann_json_t.stream;
         nlohmann_json_j["voice"] = nlohmann_json_t.voice;
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j["voice_volume_gain"] = nlohmann_json_t.voice_volume_gain;
         }
         nlohmann_json_j["output_bus"] = nlohmann_json_t.output_bus;
@@ -2867,7 +2868,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["hdr"] = nlohmann_json_t.hdr;
         }
-        if (k_version >= 128_ui)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j["midi"] = nlohmann_json_t.midi;
         }
@@ -2926,7 +2927,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann_json_j.at("playback_setting").get_to(nlohmann_json_t.playback_setting);
         nlohmann_json_j.at("stream").get_to(nlohmann_json_t.stream);
         nlohmann_json_j.at("voice").get_to(nlohmann_json_t.voice);
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j.at("voice_volume_gain").get_to(nlohmann_json_t.voice_volume_gain);
         }
         nlohmann_json_j.at("output_bus").get_to(nlohmann_json_t.output_bus);
@@ -2943,14 +2945,14 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j.at("hdr").get_to(nlohmann_json_t.hdr);
         }
-        if (k_version >= 128_ui)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j.at("midi").get_to(nlohmann_json_t.midi);
         }
         nlohmann_json_j.at("playback_limit").get_to(nlohmann_json_t.playback_limit);
         nlohmann_json_j.at("virtual_voice").get_to(nlohmann_json_t.virtual_voice);
         nlohmann_json_j.at("playback_priority").get_to(nlohmann_json_t.playback_priority);
-        
+
         if (k_version < 128_ui)
         {
             nlohmann_json_j.at("motion").get_to(nlohmann_json_t.motion);
@@ -2975,12 +2977,13 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        
-        if (k_version >= 88_ui) 
+
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_target").get_to(nlohmann_json_t.override_midi_target);
             nlohmann_json_j.at("override_midi_clip_tempo").get_to(nlohmann_json_t.override_midi_clip_tempo);
         }
@@ -5558,7 +5561,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["override_hdr_envelope_tracking"] = nlohmann_json_t.override_hdr_envelope_tracking;
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j["override_midi_event"] = nlohmann_json_t.override_midi_event;
             nlohmann_json_j["override_midi_note_tracking"] = nlohmann_json_t.override_midi_note_tracking;
         }
@@ -5629,11 +5633,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_event").get_to(nlohmann_json_t.override_midi_event);
             nlohmann_json_j.at("override_midi_note_tracking").get_to(nlohmann_json_t.override_midi_note_tracking);
         }
@@ -5801,10 +5806,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         AudioPlayModeContinuousSetting &nlohmann_json_t) -> void
     {
         nlohmann_json_j.at("always_reset_playlist").get_to(nlohmann_json_t.always_reset_playlist);
-        if (k_version < 88_ui) {
+        if (k_version < 88_ui)
+        {
             nlohmann_json_j.at("loop").get_to(nlohmann_json_t.loop.value);
         }
-        else {
+        else
+        {
             nlohmann_json_j.at("loop").get_to(nlohmann_json_t.loop);
         }
         nlohmann_json_j.at("transition_type").get_to(nlohmann_json_t.transition_type);
@@ -5872,7 +5879,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         const nlohmann::ordered_json &nlohmann_json_j,
         SoundPlaylistContainerPlaybackSetting &nlohmann_json_t) -> void
     {
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j.at("initial_delay").get_to(nlohmann_json_t.initial_delay);
         }
         nlohmann_json_t.scope = magic_enum_cast<SoundPlaylistContainerScope>(nlohmann_json_j.at("scope").get<std::string>());
@@ -5986,7 +5994,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["override_hdr_envelope_tracking"] = nlohmann_json_t.override_hdr_envelope_tracking;
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j["override_midi_event"] = nlohmann_json_t.override_midi_event;
             nlohmann_json_j["override_midi_note_tracking"] = nlohmann_json_t.override_midi_note_tracking;
         }
@@ -6058,11 +6067,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_event").get_to(nlohmann_json_t.override_midi_event);
             nlohmann_json_j.at("override_midi_note_tracking").get_to(nlohmann_json_t.override_midi_note_tracking);
         }
@@ -6170,7 +6180,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         const nlohmann::ordered_json &nlohmann_json_j,
         SoundSwitchContainerPlaybackSetting &nlohmann_json_t) -> void
     {
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j.at("initial_delay").get_to(nlohmann_json_t.initial_delay);
         }
         nlohmann_json_t.mode = magic_enum_cast<AudioPlayMode>(nlohmann_json_j.at("mode").get<std::string>());
@@ -6284,7 +6295,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["override_hdr_envelope_tracking"] = nlohmann_json_t.override_hdr_envelope_tracking;
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j["override_midi_event"] = nlohmann_json_t.override_midi_event;
             nlohmann_json_j["override_midi_note_tracking"] = nlohmann_json_t.override_midi_note_tracking;
         }
@@ -6356,11 +6368,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_event").get_to(nlohmann_json_t.override_midi_event);
             nlohmann_json_j.at("override_midi_note_tracking").get_to(nlohmann_json_t.override_midi_note_tracking);
         }
@@ -6575,7 +6588,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["override_hdr_envelope_tracking"] = nlohmann_json_t.override_hdr_envelope_tracking;
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j["override_midi_event"] = nlohmann_json_t.override_midi_event;
             nlohmann_json_j["override_midi_note_tracking"] = nlohmann_json_t.override_midi_note_tracking;
         }
@@ -6647,11 +6661,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_event").get_to(nlohmann_json_t.override_midi_event);
             nlohmann_json_j.at("override_midi_note_tracking").get_to(nlohmann_json_t.override_midi_note_tracking);
         }
@@ -6787,7 +6802,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["override_hdr_envelope_tracking"] = nlohmann_json_t.override_hdr_envelope_tracking;
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j["override_midi_event"] = nlohmann_json_t.override_midi_event;
             nlohmann_json_j["override_midi_note_tracking"] = nlohmann_json_t.override_midi_note_tracking;
         }
@@ -6859,11 +6875,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_event").get_to(nlohmann_json_t.override_midi_event);
             nlohmann_json_j.at("override_midi_note_tracking").get_to(nlohmann_json_t.override_midi_note_tracking);
         }
@@ -7134,7 +7151,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann_json_j["playback_setting"] = nlohmann_json_t.playback_setting;
         nlohmann_json_j["time_setting"] = nlohmann_json_t.time_setting;
         nlohmann_json_j["voice"] = nlohmann_json_t.voice;
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j["voice_volume_gain"] = nlohmann_json_t.voice_volume_gain;
         }
         nlohmann_json_j["output_bus"] = nlohmann_json_t.output_bus;
@@ -7152,7 +7170,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["hdr"] = nlohmann_json_t.hdr;
         }
-        if (k_version >= 128_ui)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j["midi"] = nlohmann_json_t.midi;
         }
@@ -7263,11 +7281,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_target").get_to(nlohmann_json_t.override_midi_target);
             nlohmann_json_j.at("override_midi_clip_tempo").get_to(nlohmann_json_t.override_midi_clip_tempo);
         }
@@ -7412,7 +7431,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann_json_j["playback_setting"] = nlohmann_json_t.playback_setting;
         nlohmann_json_j["time_setting"] = nlohmann_json_t.time_setting;
         nlohmann_json_j["voice"] = nlohmann_json_t.voice;
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j["voice_volume_gain"] = nlohmann_json_t.voice_volume_gain;
         }
         nlohmann_json_j["output_bus"] = nlohmann_json_t.output_bus;
@@ -7431,7 +7451,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["hdr"] = nlohmann_json_t.hdr;
         }
-        if (k_version >= 128_ui)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j["midi"] = nlohmann_json_t.midi;
         }
@@ -7543,11 +7563,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_target").get_to(nlohmann_json_t.override_midi_target);
             nlohmann_json_j.at("override_midi_clip_tempo").get_to(nlohmann_json_t.override_midi_clip_tempo);
         }
@@ -7694,7 +7715,8 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann_json_j["playback_setting"] = nlohmann_json_t.playback_setting;
         nlohmann_json_j["time_setting"] = nlohmann_json_t.time_setting;
         nlohmann_json_j["voice"] = nlohmann_json_t.voice;
-        if (k_version >= 88_ui) {
+        if (k_version >= 88_ui)
+        {
             nlohmann_json_j["voice_volume_gain"] = nlohmann_json_t.voice_volume_gain;
         }
         nlohmann_json_j["output_bus"] = nlohmann_json_t.output_bus;
@@ -7713,7 +7735,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         {
             nlohmann_json_j["hdr"] = nlohmann_json_t.hdr;
         }
-        if (k_version >= 128_ui)
+        if (k_version >= 112_ui)
         {
             nlohmann_json_j["midi"] = nlohmann_json_t.midi;
         }
@@ -7825,11 +7847,12 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             nlohmann_json_j.at("override_metadata").get_to(nlohmann_json_t.override_metadata);
         }
         nlohmann_json_j.at("override_positioning").get_to(nlohmann_json_t.override_positioning);
-        if (k_version >= 88_ui) 
+        if (k_version >= 88_ui)
         {
             nlohmann_json_j.at("override_hdr_envelope_tracking").get_to(nlohmann_json_t.override_hdr_envelope_tracking);
         }
-        if (k_version >= 112_ui) {
+        if (k_version >= 112_ui)
+        {
             nlohmann_json_j.at("override_midi_target").get_to(nlohmann_json_t.override_midi_target);
             nlohmann_json_j.at("override_midi_clip_tempo").get_to(nlohmann_json_t.override_midi_clip_tempo);
         }
@@ -8501,7 +8524,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         std::string platform;
         VoiceFilterBehavior voice_filter_behavior;
         float volume_threshold;
-        uint16_t maximum_voice_instance; //TODO.
+        uint16_t maximum_voice_instance; // TODO.
         ObstructionSettingBundle obstruction;
         ObstructionSettingBundle occlusion;
         List<PlugInReference> plug_in;
@@ -8656,9 +8679,9 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         nlohmann::ordered_json &nlohmann_json_j,
         const GameParameter &nlohmann_json_t) -> void
     {
-        
-            nlohmann_json_j["id"] = nlohmann_json_t.id;
-            nlohmann_json_j["range_default"] = nlohmann_json_t.range_default;
+
+        nlohmann_json_j["id"] = nlohmann_json_t.id;
+        nlohmann_json_j["range_default"] = nlohmann_json_t.range_default;
         if (k_version >= 112_ui)
         {
             nlohmann_json_j["interpolation_mode"] = magic_enum::enum_name(nlohmann_json_t.interpolation_mode);
@@ -8673,9 +8696,9 @@ namespace Sen::Kernel::Support::WWise::SoundBank
         const nlohmann::ordered_json &nlohmann_json_j,
         GameParameter &nlohmann_json_t) -> void
     {
-        
-            nlohmann_json_j.at("id").get_to(nlohmann_json_t.id);
-            nlohmann_json_j.at("range_default").get_to(nlohmann_json_t.range_default);
+
+        nlohmann_json_j.at("id").get_to(nlohmann_json_t.id);
+        nlohmann_json_j.at("range_default").get_to(nlohmann_json_t.range_default);
         if (k_version >= 112_ui)
         {
             nlohmann_json_t.interpolation_mode = magic_enum_cast<GameParameterInterpolationMode>(nlohmann_json_j.at("interpolation_mode").get<std::string>());

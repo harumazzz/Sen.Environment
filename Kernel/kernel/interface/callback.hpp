@@ -264,11 +264,11 @@ namespace Sen::Kernel::Interface {
 					javascript.add_proxy(Script::Image::resize_fs, "Sen"_sv, "Kernel"_sv, "Image"_sv, "resize_fs"_sv);
 					// rotate_fs
 					javascript.add_proxy(Script::Image::rotate_fs, "Sen"_sv, "Kernel"_sv, "Image"_sv, "rotate_fs"_sv);
-					// composite_fs
+					// cut_fs
 					javascript.add_proxy(Script::Image::cut_fs, "Sen"_sv, "Kernel"_sv, "Image"_sv, "cut_fs"_sv);
-					// composite_multiple_fs
+					// cut_multiple_fs
 					javascript.add_proxy(Script::Image::cut_multiple_fs, "Sen"_sv, "Kernel"_sv, "Image"_sv, "cut_multiple_fs"_sv);
-					// composite_multiple_fs_asynchronous
+					// cut_multiple_fs_asynchronous
 					javascript.add_proxy(Script::Image::cut_multiple_fs_asynchronous, "Sen"_sv, "Kernel"_sv, "Image"_sv, "cut_multiple_fs_asynchronous"_sv);
 				}
 				// javascript
@@ -502,12 +502,8 @@ namespace Sen::Kernel::Interface {
 				{
 					// unpack_fs
 					javascript.add_proxy(Script::Support::PopCap::RSB::unpack_fs, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv, "unpack_fs"_sv);
-					// unpack_for_modding
-					javascript.add_proxy(Script::Support::PopCap::RSB::unpack_for_modding_fs, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSB"_sv, "unpack_for_modding_fs"_sv);
 					// pack_fs
 					javascript.add_proxy(Script::Support::PopCap::RSB::pack_fs, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv, "pack_fs"_sv);
-					// pack
-					javascript.add_proxy(Script::Support::PopCap::RSB::pack, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSB"_sv, "pack"_sv);
 					// unpack_cipher
 					javascript.add_proxy(Script::Support::PopCap::RSB::unpack_cipher, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv, "unpack_cipher"_sv);
 					// unpack_resource
@@ -526,12 +522,8 @@ namespace Sen::Kernel::Interface {
 				{
 					// unpack_fs
 					javascript.add_proxy(Script::Support::PopCap::RSG::unpack_fs, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv, "unpack_fs"_sv);
-					// unpack_modding
-					javascript.add_proxy(Script::Support::PopCap::RSG::unpack_modding, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv, "unpack_modding"_sv);
 					// pack_fs
 					javascript.add_proxy(Script::Support::PopCap::RSG::pack_fs, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv, "pack_fs"_sv);
-					// pack
-					javascript.add_proxy(Script::Support::PopCap::RSG::pack, "Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv, "pack"_sv);
 				}
 				// pam
 				{
