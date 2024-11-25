@@ -126,7 +126,7 @@ namespace Sen::Kernel::Interface::Script
 		evaluate_context += "throw e;";
 		evaluate_context += "}";
 		evaluate_context += fmt::format("\n{}();", function_name);
-		JS_Eval(context, evaluate_context.c_str(), evaluate_context.length(), source.c_str(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
+		JS_Eval(context, evaluate_context.c_str(), evaluate_context.length(), source.c_str(), JS_EVAL_TYPE_GLOBAL);
 		return JS_EXCEPTION;
 	}
 
@@ -445,7 +445,7 @@ namespace Sen::Kernel::Interface::Script
 			using CString = const char*;
 
 			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline auto constexpr make_finalizer (
+			inline auto make_finalizer (
 				JSClassID class_id
 			) -> std::function<void (JSRuntime*, JSValue)>
 			{
@@ -465,7 +465,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return JSClassDef {
 					.class_name = class_name.data(),
-					.finalizer = make_finalizer<T>(class_id).target<JSClassFinalizer>(),
+					.finalizer = make_finalizer<T>(class_id).template target<JSClassFinalizer>(),
 					.gc_mark = nullptr,
 					.call = nullptr,
 					.exotic = nullptr,
@@ -2214,7 +2214,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto T>
 				requires BooleanConstraint
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("read_position", getter<T>, setter<T>, 0),
 				JS_CPPGETSET_MAGIC_DEF("write_position", getter<T>, setter<T>, 1),
 				JS_CPPFUNC_DEF("size", 0, size<T>),
@@ -2285,7 +2285,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("readDouble", 1, readDouble<T>),
 				JS_CPPFUNC_DEF("close", 0, close<T>),
 				JS_CPPFUNC_DEF("allocate", 1, allocate<T>),
-			};
+			});
 
 			template <auto use_big_endian>
 				requires BooleanConstraint
@@ -2300,7 +2300,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name<use_big_endian>();
 				auto make_constructor = JS_NewCFunction2(ctx, constructor<use_big_endian>, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<use_big_endian>, countof(proto_functions<use_big_endian>));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions<use_big_endian>.data(), proto_functions<use_big_endian>.size());
 				JS_SetConstructor(ctx, make_constructor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen"_sv);
@@ -2424,9 +2424,9 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
-			};
+			});
 
 			template <auto T>
 			inline static auto make_instance (
@@ -2468,7 +2468,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_DefinePropertyValue(ctx, point_ctor, trueAtom.value, default_true_func_val, int{JS_PROP_C_W_E});
 				auto falseAtom = Atom{ctx, "false"};
 				JS_DefinePropertyValue(ctx, point_ctor, falseAtom.value, default_false_func_val, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen"_sv);
@@ -2639,11 +2639,11 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("name", getter, setter, static_cast<int>(Value::name)),
 				JS_CPPGETSET_MAGIC_DEF("id", getter, setter, static_cast<int>(Value::id)),
 				JS_CPPGETSET_MAGIC_DEF("transform", getter, setter, static_cast<int>(Value::transform)),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -2654,7 +2654,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -2850,12 +2850,12 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("name", getter, setter, static_cast<int>(Value::name)),
 				JS_CPPGETSET_MAGIC_DEF("link", getter, setter, static_cast<int>(Value::link)),
 				JS_CPPGETSET_MAGIC_DEF("transform", getter, setter, static_cast<int>(Value::transform)),
 				JS_CPPGETSET_MAGIC_DEF("color", getter, setter, static_cast<int>(Value::color)),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -2866,7 +2866,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -3037,13 +3037,13 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
 				JS_CPPFUNC_DEF("close", 0, close),
 				JS_CPPFUNC_DEF("size", 0, size),
 				JS_CPPFUNC_DEF("read", 0, read),
 				JS_CPPFUNC_DEF("read_all", 0, read_all),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -3054,7 +3054,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -3220,13 +3220,13 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
 				JS_CPPFUNC_DEF("close", 0, close),
 				JS_CPPFUNC_DEF("size", 0, size),
 				JS_CPPFUNC_DEF("write", 0, write),
 				JS_CPPFUNC_DEF("write_all", 0, write_all),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -3237,7 +3237,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -3428,7 +3428,7 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
 				JS_CPPFUNC_DEF("close", 0, close),
 				JS_CPPFUNC_DEF("size", 0, size),
@@ -3436,7 +3436,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("write_all", 0, write_all),
 				JS_CPPFUNC_DEF("read", 0, read),
 				JS_CPPFUNC_DEF("read_all", 0, read_all),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -3447,7 +3447,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -3707,7 +3707,7 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("write_indent", getter, setter, 0),
 				JS_CPPFUNC_DEF("clear", 0, clear),
 				JS_CPPFUNC_DEF("toString", 0, toString),
@@ -3721,7 +3721,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("writeString", 1, writeValue<std::string>),
 				JS_CPPFUNC_DEF("writeNumber", 1, writeValue<double>),
 				JS_CPPFUNC_DEF("writeBigInt", 1, writeValue<std::int64_t>),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -3732,7 +3732,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -3944,9 +3944,9 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter<T>, setter<T>, 0),
-			};
+			});
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto register_class(
@@ -3958,7 +3958,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), NumberID<T>::class_id, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
 				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>, countof(proto_functions<T>));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>.data(), proto_functions<T>.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -4157,13 +4157,13 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("delay_frames_list", getter, setter, GetterSetter::delay_frames_list),
 				JS_CPPGETSET_MAGIC_DEF("loop", getter, setter, GetterSetter::loop),
 				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, GetterSetter::width),
 				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, GetterSetter::height),
 				JS_CPPGETSET_MAGIC_DEF("trim", getter, setter, GetterSetter::trim),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx) -> void
@@ -4173,7 +4173,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -4299,9 +4299,9 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
-			};
+			});
 
 			inline static auto instance(
 				JSContext *ctx,
@@ -4340,7 +4340,7 @@ namespace Sen::Kernel::Interface::Script
 				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
 				auto atom = Atom{ctx, "instance"};
 				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -4493,9 +4493,9 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter<T>, setter<T>, 0),
-			};
+			});
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -4550,7 +4550,7 @@ namespace Sen::Kernel::Interface::Script
 				auto instance_c = JS_NewCFunction2(ctx, instance<T>, "instance", 0, JS_CFUNC_generic, 0);
 				auto atom = Atom{ctx, "instance"};
 				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>, countof(proto_functions<T>));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>.data(), proto_functions<T>.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -4718,9 +4718,9 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
-			};
+			});
 
 			inline static auto instance(
 				JSContext *ctx,
@@ -4764,7 +4764,7 @@ namespace Sen::Kernel::Interface::Script
 				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
 				auto atom = Atom{ctx, "instance"};
 				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -5015,7 +5015,7 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
 				JS_CPPFUNC_DEF("size", 0, size),
 				JS_CPPFUNC_DEF("capacity", 0, capacity),
@@ -5023,7 +5023,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("sub", 2, sub),
 				JS_CPPFUNC_DEF("stream_view", 0, stream<false>),
 				JS_CPPFUNC_DEF("big_stream_view", 0, stream<true>),
-			};
+			});
 
 			inline static auto instance(
 				JSContext *ctx,
@@ -5061,7 +5061,7 @@ namespace Sen::Kernel::Interface::Script
 				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
 				auto atom = Atom(ctx, "instance");
 				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -5675,7 +5675,7 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPFUNC_DEF("scale", 2, scale),
 				JS_CPPFUNC_DEF("rotate", 1, rotate),
 				JS_CPPFUNC_DEF("translate", 2, translate),
@@ -5713,7 +5713,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPFUNC_DEF("save", 0, save),
 				JS_CPPFUNC_DEF("restore", 0, restore),
 				JS_CPPFUNC_DEF("set_image_color", 2, set_image_color),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -5724,7 +5724,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -5876,10 +5876,10 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, DimensionView::Magic::width),
 				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, DimensionView::Magic::height),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -5890,7 +5890,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -6066,12 +6066,12 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("x", getter, setter, Rectangle::Magic::x),
 				JS_CPPGETSET_MAGIC_DEF("y", getter, setter, Rectangle::Magic::y),
 				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, Rectangle::Magic::width),
 				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, Rectangle::Magic::height),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -6082,7 +6082,7 @@ namespace Sen::Kernel::Interface::Script
 				auto class_name = "Rectangle"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -6539,7 +6539,7 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static const JSCFunctionListEntry proto_functions[] = {
+			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 				JS_CPPGETSET_MAGIC_DEF("bit_depth", getter, setter, ImageView::Magic::bit_depth),
 				JS_CPPGETSET_MAGIC_DEF("channels", getter, setter, ImageView::Magic::channels),
 				JS_CPPGETSET_MAGIC_DEF("color_type", getter, setter, ImageView::Magic::color_type),
@@ -6550,7 +6550,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_CPPGETSET_MAGIC_DEF("data", getter, setter, ImageView::Magic::data),
 				JS_CPPFUNC_DEF("area", 0, area),
 				JS_CPPFUNC_DEF("circumference", 0, circumference),
-			};
+			});
 
 			inline static auto register_class(
 				JSContext *ctx
@@ -6582,7 +6582,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_DefinePropertyValue(ctx, point_ctor, atom_read_fs.value, default_read_fs, int{JS_PROP_C_W_E});
 				auto atom_write_fs = Atom(ctx, "write_fs");
 				JS_DefinePropertyValue(ctx, point_ctor, atom_write_fs.value, default_write_fs, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(ctx, point_ctor, proto);
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
@@ -10716,10 +10716,10 @@ namespace Sen::Kernel::Interface::Script
 			});
 		}
 
-		inline static const JSCFunctionListEntry proto_functions[] = {
+		inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 			JS_CPPFUNC_DEF("start", 0, start),
 			JS_CPPFUNC_DEF("on", 2, on),
-		};
+		});
 
 		inline static auto register_class(
 			JSContext *ctx
@@ -10730,7 +10730,7 @@ namespace Sen::Kernel::Interface::Script
 			auto class_name = _class_name();
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 			auto proto = JS_NewObject(ctx);
-			JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+			JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 			JS_SetConstructor(ctx, point_ctor, proto);
 			auto global_obj = JS_GetGlobalObject(ctx);
 			auto obj1 = Class::make_instance_object(ctx, global_obj, "Sen");
@@ -11012,7 +11012,7 @@ namespace Sen::Kernel::Interface::Script
 			});
 		}
 
-		inline static const JSCFunctionListEntry proto_functions[] = {
+		inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
 			JS_CPPFUNC_DEF("start", 0, start),
 			JS_CPPFUNC_DEF("stop", 0, stop),
 			JS_CPPFUNC_DEF("start_safe", 0, start_safe),
@@ -11022,7 +11022,7 @@ namespace Sen::Kernel::Interface::Script
 			JS_CPPFUNC_DEF("duration_as_seconds", 0, get_duration_as_seconds),
 			JS_CPPFUNC_DEF("isStarted", 0, is_started),
 			JS_CPPFUNC_DEF("isStopped", 0, is_stopped),
-		};
+		});
 
 		inline static auto register_class(
 			JSContext *ctx
@@ -11033,7 +11033,7 @@ namespace Sen::Kernel::Interface::Script
 			auto class_name = _class_name();
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 			auto proto = JS_NewObject(ctx);
-			JS_SetPropertyFunctionList(ctx, proto, proto_functions, countof(proto_functions));
+			JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
 			JS_SetConstructor(ctx, point_ctor, proto);
 			auto global_obj = JS_GetGlobalObject(ctx);
 			auto obj1 = Class::make_instance_object(ctx, global_obj, "Sen");

@@ -25,7 +25,7 @@ namespace Sen::Kernel::Definition::JavaScript {
 		) = delete;
 
 		Runtime(
-			Runtime& const value
+			Runtime& value
 		) = delete;
 
 		Runtime(
@@ -82,7 +82,7 @@ namespace Sen::Kernel::Definition::JavaScript {
 		) = delete;
 
 		explicit Context(
-			Runtime& const runtime
+			Runtime& runtime
 		) : value{JS_NewContext(runtime.value)}
 		{
 
