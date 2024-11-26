@@ -62,27 +62,28 @@ namespace Sen::Kernel::Interface {
 	}
 
 	inline static auto construct_string_list(
-		const List<std::string> & that
+		const List<std::string>& that
 	) -> std::shared_ptr<CStringList>
 	{
 		auto destination = std::make_shared<CStringList>(new StringView[that.size()], that.size());
-		for	(auto i : Range<std::size_t>(that.size())){
+		for (auto i = 0; i < that.size(); ++i) {
 			destination->value[i] = construct_string(that.at(i));
 		}
 		return destination;
 	}
+
 
 	inline static auto destruct_string_list(
 		CStringList* that
 	) -> List<std::string>
 	{
 		auto destination = List<std::string>{};
-		for (auto i : Range(static_cast<std::size_t>(that->size)))
-		{
+		for (auto i : Range(static_cast<std::size_t>(that->size))) {
 			destination.emplace_back(std::string{ that->value[i].value, static_cast<std::size_t>(that->value[i].size) });
 		}
 		return destination;
 	}
+
 
 	struct Shell {
 		private:
@@ -115,12 +116,13 @@ namespace Sen::Kernel::Interface {
 		inline static std::unique_ptr<List<std::string>> arguments{nullptr};
 
 		static auto assign(
-			std::string &script_value,
-			List<std::string>& arguments_value
+			const std::string& script_value,  
+			const List<std::string>& arguments_value  
 		) -> void
 		{
 			Additional::script = std::make_unique<std::string>(script_value);
 			Additional::arguments = std::make_unique<List<std::string>>(arguments_value);
 		}
+
 	};
 }

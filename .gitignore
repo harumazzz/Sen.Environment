@@ -441,3 +441,5 @@ Shell/Properties/launchSettings.json
 WinShell
 Documentation
 KernelX
+Modding/android/app/src/main/jniLibs/arm64-v8a/libKernel.so
+Modding/android/app/src/main/jniLibs/arm64-v8a/libKernel.so

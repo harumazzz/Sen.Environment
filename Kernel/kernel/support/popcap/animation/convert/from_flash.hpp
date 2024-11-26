@@ -135,7 +135,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			{
 				auto name = fmt::format("label/{}", sprite_name);
 				auto name_child = dom_symbol_item->FindAttribute("name");
-				assert_conditional((name_child != nullptr || name == std::string{name_child->Value()}), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_name")), sprite_name), "exchange_sprite_document");
+				assert_conditional((name_child != nullptr || name == std::string{name_child->Value()}), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_name")), sprite_name, name), "exchange_sprite_document");
 			}
 			if constexpr (sprite_type == SpriteType::main_sprite)
 			{
@@ -356,7 +356,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				auto frame_duration = m_duration != nullptr ? static_cast<int>(Converter::to_int32(m_duration->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_duration_is_not_a_integer")), std::string{m_duration->Value()}))) : 1;
 				frame_count += frame_duration;
 				auto label_name = dom_frame->FindAttribute("name");
-				assert_conditional(label_name != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info");
+				assert_conditional(label_name != nullptr && std::string_view{dom_frame->Value()}.size() != 0, fmt::format("{}", Language::get("popcap.animation.from_flash.label_name_cannot_null")), "exchange_label_info");
 				auto name = std::string(label_name->Value());
 				// debug(name);
 				label[name].start = frame_index;

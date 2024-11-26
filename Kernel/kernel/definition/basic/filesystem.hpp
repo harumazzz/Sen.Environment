@@ -501,6 +501,91 @@ namespace Sen::Kernel::FileSystem
 		return;
 	}
 
+	inline static auto make_xml_exception(
+		tinyxml2::XMLError &status,
+		int line_number
+	) -> std::string
+	{
+		auto result = std::string{};
+		switch (status) {
+			case tinyxml2::XMLError::XML_CAN_NOT_CONVERT_TEXT: {
+				result = "XML Error: Cannot convert text to the requested type.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ELEMENT_DEPTH_EXCEEDED: {
+				result = "XML Error: The nesting depth of elements exceeded the allowed limit.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_COUNT: {
+				result = "XML Error: Generic error count exceeded or unknown error occurred.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_EMPTY_DOCUMENT: {
+				result = "XML Error: The document is empty.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_FILE_COULD_NOT_BE_OPENED: {
+				result = "XML Error: The file could not be opened.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_FILE_NOT_FOUND: {
+				result = "XML Error: The specified file was not found.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_FILE_READ_ERROR: {
+				result = "XML Error: An error occurred while reading the file.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_MISMATCHED_ELEMENT: {
+				result = "XML Error: Mismatched element tags detected.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_NO_ATTRIBUTE: {
+				result = "XML Error: The requested attribute was not found.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_WRONG_ATTRIBUTE_TYPE: {
+				result = "XML Error: Attribute value type does not match the expected type.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_ELEMENT: {
+				result = "XML Error: An error occurred while parsing an element.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_ATTRIBUTE: {
+				result = "XML Error: An error occurred while parsing an attribute.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_TEXT: {
+				result = "XML Error: An error occurred while parsing text.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_CDATA: {
+				result = "XML Error: An error occurred while parsing a CDATA section.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_COMMENT: {
+				result = "XML Error: An error occurred while parsing a comment.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_DECLARATION: {
+				result = "XML Error: An error occurred while parsing an XML declaration.";
+				break;
+			}
+			case tinyxml2::XMLError::XML_ERROR_PARSING_UNKNOWN: {
+				result = "XML Error: An unknown error occurred during parsing.";
+				break;
+			}
+			default: {
+				result = "XML Error: Unknown or unhandled error occurred.";
+				break;
+			}
+		}
+		result += fmt::format(" Line number: {}", line_number);
+		return result;
+	}
+
+
 
 	/**
 	 * file path: the file path to read
@@ -519,12 +604,12 @@ namespace Sen::Kernel::FileSystem
 		auto file = std::ifstream(source.data());
 		#endif
         if (!file.is_open()) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_json");
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_xml");
         }
         auto buffer = std::stringstream{};
         buffer << file.rdbuf();
 		auto status_code = xml->Parse(buffer.str().data(), buffer.str().size());
-		assert_conditional(status_code == tinyxml2::XML_SUCCESS, fmt::format("{}: {}", Kernel::Language::get("xml.read_error"), String::view(String::to_posix_style(source.data()))), "read_xml");
+		assert_conditional(status_code == tinyxml2::XML_SUCCESS, fmt::format("{}: \"{}\". {}", Kernel::Language::get("xml.read_error"), String::view(String::to_posix_style(source.data())), make_xml_exception(status_code, xml->ErrorLineNum())), "read_xml");
 		return;
 	}
 
@@ -566,7 +651,7 @@ namespace Sen::Kernel::FileSystem
 
 		public:
 
-			Pointer<std::FILE, decltype(close_file)> file{};
+			Pointer<std::FILE, decltype(close_file)> file{nullptr, close_file};
 
 			FileHandler(
 				std::string_view source,
@@ -698,13 +783,13 @@ namespace Sen::Kernel::FileSystem
 					nullptr
 				);
 				assert_conditional(!(hDir == INVALID_HANDLE_VALUE), fmt::format("{}", Language::get("windows.process.failed_to_open_directory_to_handle")), "watch_windows");
-				char buffer[1024];
+				auto buffer = std::array<char, 1024>{};
 				auto bytesReturned = DWORD{};
 				while (true) {
 					if (ReadDirectoryChangesW(
 							hDir,
-							buffer,
-							sizeof(buffer),
+							buffer.data(),
+							buffer.size(),
 							TRUE,
 							FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE,
 							&bytesReturned,
@@ -712,10 +797,10 @@ namespace Sen::Kernel::FileSystem
 							nullptr
 						)) {
 
-						FILE_NOTIFY_INFORMATION *pNotify;
+						auto pNotify = static_cast<FILE_NOTIFY_INFORMATION*>(nullptr);
 						auto offset = int{0};
 						do {
-							pNotify = (FILE_NOTIFY_INFORMATION *) &buffer[offset];
+							pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buffer[offset]);
 							auto wfilename = std::wstring(pNotify->FileName, pNotify->FileName + pNotify->FileNameLength / sizeof(WCHAR));
 							auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wfilename.c_str(), static_cast<int>(wfilename.size()), nullptr, 0, nullptr, nullptr);
 							auto filename = std::string(size_needed, 0);

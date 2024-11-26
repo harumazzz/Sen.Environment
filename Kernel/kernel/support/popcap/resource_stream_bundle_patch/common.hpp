@@ -37,7 +37,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         inline static auto bytes_to_hex_string(
             List<uint8_t> const &data) -> std::string
         {
-            std::stringstream result;
+            auto result = std::stringstream{};
             for (auto &v : data)
             {
                 result

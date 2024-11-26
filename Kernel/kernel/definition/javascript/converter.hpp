@@ -278,7 +278,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 		#else
 		auto file_size = std::filesystem::file_size(std::filesystem::path{ source });
 		#endif
-		auto buffer = std::unique_ptr<char[], decltype(close_buffer)>((char*) std::malloc(file_size * sizeof(char)), close_buffer);
+		auto buffer = std::unique_ptr<char[], decltype(close_buffer)>(reinterpret_cast<char*>(std::malloc(file_size * sizeof(char))), close_buffer);
 		if (buffer == nullptr) {
 			#if WINDOWS
 			throw Exception(fmt::format("C malloc allocating memory failed, source file: {}", String::to_posix_style({source.data(), source.size()})), std::source_location::current(), "read_file_as_js_arraybuffer");

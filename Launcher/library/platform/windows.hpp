@@ -6,9 +6,9 @@ namespace Sen::Launcher {
 	auto current_home(
 	) -> std::wstring 
 	{
-		wchar_t path[MAX_PATH];
-		GetModuleFileNameW(nullptr, path, MAX_PATH);
-		auto execPath = std::wstring(path);
+		auto path = std::array<wchar_t, MAX_PATH>{};
+		GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
+		auto execPath = std::wstring(path.data(), path.size());
 		auto pos = execPath.find_last_of(L"\\/");
 		if (pos != std::wstring::npos) {
 			execPath = execPath.substr(0, pos);
@@ -31,7 +31,7 @@ namespace Sen::Launcher {
 		startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
 		startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 		startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-		std::wstring fullCommand = command + L" " + arguments;
+		auto fullCommand = command + L" " + arguments;
 		if (!CreateProcessW(
 			nullptr,                  
 			const_cast<LPWSTR>(fullCommand.c_str()),
@@ -57,11 +57,11 @@ namespace Sen::Launcher {
 		auto path = PWSTR{};
 		auto hr = SHGetKnownFolderPath(FOLDERID_Downloads, 0, nullptr, &path);
 		if (SUCCEEDED(hr)) {
-			char mbstr[MAX_PATH];
+			auto mbstr = std::array<char, MAX_PATH>{};
 			auto convertedChars = size_t{ 0 };
-			wcstombs_s(&convertedChars, mbstr, path, sizeof(mbstr));
+			wcstombs_s(&convertedChars, mbstr.data(), mbstr.size(), path, mbstr.size() - 1);
 			CoTaskMemFree(path); 
-			return std::string(mbstr);
+			return std::string{mbstr.data(), mbstr.size()};
 		}
 		return "";
 	}

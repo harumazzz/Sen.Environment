@@ -175,7 +175,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			static_assert(get_label == true || get_label == false, "get_label must be true or false");
 			auto model_structure = std::map<int, Model>{};
-			auto label_name = std::string{};
+			auto label_name = std::string{"animation"};
 			auto label_duplicate_system_stored = std::map<std::string, size_t>{};
 			auto &frame_node_structure = package_library.frame_node;
 			for (auto frame_index : Range<int>(sprite.frame.size()))

@@ -727,8 +727,8 @@ namespace Sen::Kernel::Interface::Script
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto atom = Atom{ctx, "Uint8Array"};
 				auto uint8array_ctor = JS_GetProperty(ctx, global_obj, atom.value);
-				JSValue args[] = {array_buffer};
-				auto uint8array = JS_CallConstructor(ctx, uint8array_ctor, 1, args);
+				auto args = std::array<JSValue, 1_size>{array_buffer};
+				auto uint8array = JS_CallConstructor(ctx, uint8array_ctor, args.size(), args.data());
 				JS_FreeValue(ctx, global_obj);
 				JS_FreeValue(ctx, uint8array_ctor);
 				return uint8array;
