@@ -30,16 +30,23 @@ Additional modules to Sen.
 
     -   For android, you need to compile [Kernel](https://github.com/Haruma-VN/Sen.Environment/tree/master/Kernel) yourself, put it in `android/app/src/main/jniLibs/arm64-v8a/` as `libKernel.so` along with `libc++_shared.so` from Android Studio NDK.
 
+    -   The `libc++_shared.so` is taken from: `<NDK_PATH>/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so`.
+
         > The version libc++\_shared.so included in the current project is NDK r27c.
 
         > See the [Android documentation](https://source.android.com/docs/core/architecture/vndk/linker-namespace) for details.
 
     -   CMake Project Setup:
+
         -   Generator: Ninja
-        -   ANDROID_PLATFORM: 28
+
+        -   ANDROID_PLATFORM: 30
+
         -   ANDROID_ABI: arm64-v8a
+
         -   ANDROID_STL: c++\_shared
-        -   Compiler: [Clang 17.0 for Android (NDK 25.2)](https://developer.android.com/ndk/downloads)
+
+        -   Compiler: [Clang 18.0.3 for Android (NDK r27c)](https://developer.android.com/ndk/downloads)
 
 ## Localization
 

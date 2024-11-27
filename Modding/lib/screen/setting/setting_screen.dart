@@ -455,7 +455,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                   width: 50,
                   height: 50,
                 ),
-                applicationName: BuildDistribution.kApplicationName,
+                applicationName: 'Sen',
                 aboutBoxChildren: [
                   Text('${los.version}: ${BuildDistribution.version}'),
                   const SizedBox(height: 10),

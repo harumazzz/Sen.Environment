@@ -124,6 +124,26 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zl")
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+add_compile_definitions(NDEBUG)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if(ANDROID AND NOT ANDROID_ABI)
+    set(ANDROID_ABI "arm64-v8a")
+endif()
+
+if(ANDROID AND NOT ANDROID_PLATFORM)
+    set(ANDROID_PLATFORM 30)
+endif()
+
+if(ANDROID AND NOT ANDROID_STL)
+    set(ANDROID_STL "c++_shared")
+endif()
+
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(
         -Weverything

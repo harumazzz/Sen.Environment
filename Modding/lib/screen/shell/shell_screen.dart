@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
+
+import 'package:async/async.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/api.dart';
-import 'package:async/async.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/provider/recent_provider.dart';
@@ -18,7 +20,6 @@ import 'package:sen/service/file_service.dart';
 import 'package:sen/service/notification_service.dart';
 import 'package:sen/service/pointer_service.dart';
 import 'package:sen/widget/radio_button.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ShellScreen extends ConsumerStatefulWidget {
   final List<String> arguments;
@@ -694,6 +695,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
               title: Text(los.upload_directory),
               onTap: () {
                 _onUploadDirectory();
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Symbols.folder_code),
+              title: Text(los.batch_function),
+              onTap: (){
+                if (_inputController != null) {
+                  _inputController!.text = ':b';
+                }
                 Navigator.of(context).pop();
               },
             ),

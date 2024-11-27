@@ -74,9 +74,11 @@ class _BackupSettingState extends State<BackupSetting> {
 
   void _onUploadConfiguration() async {
     final los = AppLocalizations.of(context)!;
+    var source = await FileService.uploadFile();
+    if (source == null) {
+      return;
+    }
     try {
-      final source = await FileService.uploadFile();
-      if (source == null) return;
       _loadDumpedConfiguration(source: source);
       setState(() {});
       _onSuccess(message: los.configuration_has_been_loaded);

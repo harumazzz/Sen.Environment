@@ -1,17 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sen/model/firebase_message.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/repository/message_repository.dart';
 import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
-import 'dart:io';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/android_service.dart';
-import 'package:page_transition/page_transition.dart';
 
 class RootScreen extends ConsumerStatefulWidget {
   const RootScreen({super.key, required this.title});
@@ -250,15 +251,15 @@ class NotificationWidget extends StatelessWidget {
     }
   }
 
-  Widget _buildNotificationCard(FirebaseMessage data) {
+  Widget _buildNotificationCard(
+    BuildContext context,
+    FirebaseMessage data,
+  ) {
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
         leading: Icon(
           Icons.notifications,
           color: Colors.blue.shade700,
@@ -267,27 +268,35 @@ class NotificationWidget extends StatelessWidget {
           data.title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
         ),
-        subtitle: Text(
-          data.description,
-          style: const TextStyle(fontSize: 14),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Text(
-          _formatTimestamp(data.createdAt),
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 6.0),
+            Text(
+              data.description,
+              style: const TextStyle(fontSize: 14),
+              maxLines: 10,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4.0),
+            Text(
+              _formatTimestamp(data.createdAt),
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+            const SizedBox(height: 4.0),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildNotificationList(List<FirebaseMessage> messages) {
+  Widget _buildNotificationList(
+    BuildContext context,
+    List<FirebaseMessage> messages,
+  ) {
     return SizedBox(
       width: double.maxFinite,
       child: SingleChildScrollView(
@@ -297,14 +306,16 @@ class NotificationWidget extends StatelessWidget {
             shrinkWrap: true,
             itemCount: messages.length,
             itemBuilder: (context, index) =>
-                _buildNotificationCard(messages[index]),
+                _buildNotificationCard(context, messages[index]),
           ),
         ),
       ),
     );
   }
 
-  Future<void> _showNotifications(BuildContext context) async {
+  Future<void> _showNotifications(
+    BuildContext context,
+  ) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -318,7 +329,7 @@ class NotificationWidget extends StatelessWidget {
             } else if (snapshot.hasError) {
               return Text(snapshot.error.toString());
             } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              return _buildNotificationList(snapshot.data!);
+              return _buildNotificationList(context, snapshot.data!);
             } else {
               return const Center(
                 child: Text(

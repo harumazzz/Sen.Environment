@@ -67,17 +67,6 @@ namespace Sen::Kernel {
     	return static_cast<unsigned long>(n);
 	}
 
-	/**
-	 * String
-	*/
-
-	inline constexpr auto operator "" _s(
-		const char* n
-	) -> std::string
-	{
-    	return std::string{n, strlen(n)};
-	}
-
 	inline static auto constexpr operator "" _sv(
 		const char* str, std::size_t len
 	) noexcept -> std::string_view

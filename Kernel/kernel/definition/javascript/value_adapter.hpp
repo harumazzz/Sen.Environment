@@ -12,5 +12,9 @@ namespace Sen::Kernel::Definition::JavaScript {
 	struct ValueAdapter;
 
 	struct ValueAdapter {
+
+		using Value = JSValue;
+
+		Value value;
 	};
 }
