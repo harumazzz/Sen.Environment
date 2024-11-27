@@ -32,14 +32,6 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 			) = default;
 
 			/**
-			 * Get instance
-			*/
-
-			M_INSTANCE_OF_STRUCT(
-				Decrypt
-			);
-
-			/**
 			 * Process method
 			*/
 
@@ -77,7 +69,8 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 				std::string_view key
 			) -> void
 			{
-				auto result = Decrypt::instance().process(DataStreamView{source}, key);
+				auto decrypt = Decrypt{};
+				auto result = decrypt.process(DataStreamView{source}, key);
 				FileSystem::write_binary(destination, result);
 				return;
 			}

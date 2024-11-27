@@ -182,4 +182,14 @@ namespace Sen::Kernel::Definition::Encryption
 			}
 
 	};
+
+	inline static auto fill_rijndael_block(
+		DataStreamView &raw, 
+		std::string_view iv
+	) -> void
+	{
+		auto padding = iv.size() - ((raw.size() + iv.size() - 1) % iv.size() + 1);
+		raw.writeNull(padding);
+		return;
+	}
 }

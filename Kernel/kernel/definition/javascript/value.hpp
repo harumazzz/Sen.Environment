@@ -14,7 +14,9 @@ namespace Sen::Kernel::Definition::JavaScript {
 
 	struct Context;
 
-	struct Context;
+	struct Atom;
+
+	struct ClassID;
 
 	struct Runtime {
 
@@ -134,4 +136,55 @@ namespace Sen::Kernel::Definition::JavaScript {
 			
 			Pointer<JSContext> context;
 	};
+
+	struct ClassID {
+
+		JSClassID value{0};
+
+		explicit ClassID(
+
+		) = default;
+
+		~ClassID(
+
+		) = default;
+
+		ClassID(
+			ClassID &other
+		) = delete;
+
+		ClassID(
+			ClassID &&other
+		) = delete;
+
+		auto operator =(
+			ClassID&& other
+		) = delete;
+
+		inline auto allocate_new (
+			JSRuntime* runtime
+		) -> void
+		{
+			JS_NewClassID(runtime, &thiz.value);
+			return;
+		}
+
+		inline auto allocate_new (
+			JSContext* context
+		) -> void
+		{
+			JS_NewClassID(JS_GetRuntime(context), &thiz.value);
+			return;
+		}
+
+	};
+
+	inline static auto constexpr temporary_class_id (
+
+	) -> ClassID
+	{
+		return ClassID{};
+	}
+
+
 }

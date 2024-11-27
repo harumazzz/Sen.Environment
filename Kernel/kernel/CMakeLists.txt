@@ -40,9 +40,10 @@ add_library(
 	./definition/compression/zlib.hpp
 	./definition/compression/lzma.hpp
 	./definition/compression/bzip2.hpp
-	./definition/javascript/converter.hpp
 	./definition/javascript/value.hpp
 	./definition/javascript/runtime.hpp
+	./definition/javascript/converter.hpp
+	./definition/javascript/value_adapter.hpp
 	./definition/diff/vcdiff.hpp
 
 	./dependencies/fmt.hpp
@@ -320,4 +321,14 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-strict-prototypes")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -fmacro-prefix-map=${CMAKE_SOURCE_DIR}=.
+    )
+elseif (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        /D "NDEBUG"
+    )
 endif()

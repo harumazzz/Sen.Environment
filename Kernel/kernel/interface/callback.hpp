@@ -728,6 +728,9 @@ namespace Sen::Kernel::Interface {
 			{
 				// call main
 				javascript.evaluate("Sen.Script.main()"_sv, std::source_location::current().file_name());
+				#ifdef DEBUG
+					javascript.dump_memory_usage();
+				#endif
 				return;
 			}
 	};

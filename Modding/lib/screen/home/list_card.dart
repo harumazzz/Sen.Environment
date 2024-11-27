@@ -59,7 +59,7 @@ class ListCard extends StatelessWidget {
           trailing: onSetting != null
               ? IconButton(
                   icon: const Icon(Icons.settings),
-                  onPressed: () {},
+                  onPressed: onSetting,
                   tooltip: AppLocalizations.of(context)!.settings,
                 )
               : const SizedBox.shrink(),

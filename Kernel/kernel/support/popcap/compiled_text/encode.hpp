@@ -109,14 +109,17 @@ namespace Sen::Kernel::Support::PopCap::CompiledText {
 			) -> void
 			{
 				auto buffer = DataStreamView{};
-				buffer.writeBytes(PopCap::Zlib::Compress<false>{}.compress(thiz.sen->getBytes(0, thiz.sen->size())));
-				fill_rijndael_block(buffer, thiz.iv);
+				{
+					auto zlib = PopCap::Zlib::Compress<false>{};
+					buffer.writeBytes(zlib.compress(thiz.sen->getBytes(0, thiz.sen->size())));
+				}
+				Encryption::fill_rijndael_block(buffer, thiz.iv);
 				auto decoded_base64 = DataStreamView{};
 				decoded_base64.writeUint8(0x10);
 				decoded_base64.writeUint8(0x00);
-				decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Sen::Kernel::Definition::Encryption::Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.getBytes(0, buffer.size()).data()), key, iv, buffer.size()));
+				decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Sen::Kernel::Definition::Encryption::Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.begin_pointer()), key, iv, buffer.size()));
 				auto encoded_base64 = DataStreamView{};
-				encoded_base64.fromString(Base64::encode(decoded_base64.getBytes(0, decoded_base64.size()).data(), decoded_base64.size()));
+				encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
 				result->writeBytes(encoded_base64.getBytes(0, encoded_base64.size()));
 				return;
 			}

@@ -6,19 +6,6 @@
 
 namespace Sen::Kernel {
 
-	// assert: condition & message
-	// if not condition, will throw message
-
-	#define assert_test(conditional) \
-	if (!(conditional)) { \
-		throw Exception("/*assert_test_vaild*/", std::source_location::current()); \
-	}
-
-	#define try_assert(conditional, message) \
-	if (!(conditional)) { \
-		throw Exception(message, std::source_location::current()); \
-	}
-
 	#define assert_conditional(conditional, message, function_name)\
 	if (!(conditional)) { \
 		throw Exception(message, std::source_location::current(), function_name); \

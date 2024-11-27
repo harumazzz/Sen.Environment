@@ -2,17 +2,40 @@
 
 namespace Sen::Kernel::Support::Texture {
 
-	
-	// set pixel
+	template <typename T> requires std::is_arithmetic<T>::value
+	inline auto constexpr calculate_area(
+		T width, 
+		T height
+	) -> T
+	{
+		return width * height;
+	}
 
-	#define set_pixel(x, y, width) (y * width + x) * 4
+	template <typename T> requires std::is_arithmetic<T>::value
+	inline auto constexpr set_pixel(
+		T x, 
+		T y, 
+		T width
+	) -> T
+	{
+		return (y * width + x) * 4;
+	}
 
-	// pixel area
+	template <typename T> requires std::is_arithmetic<T>::value
+	inline auto constexpr pixel_area(
+		T area
+	) -> T
+	{
+		return area * 4;
+	}
 
-	#define pixel_area(area) area * 4
-
-	// pixel area rgba
-
-	#define pixel_area_rgba(width, height) pixel_area(calculate_area(width, height))
+	template <typename T> requires std::is_arithmetic<T>::value
+	inline auto constexpr pixel_area_rgba(
+		T width, 
+		T height
+	) -> T
+	{
+		return pixel_area(calculate_area(width, height));
+	}
 
 }

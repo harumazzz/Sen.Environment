@@ -1576,9 +1576,9 @@ namespace Sen::Kernel::Definition
                                        "readVarInt64");
                     thiz.read_pos = view;
                 }
-                int64_t num = 0;
+                auto num = int64_t{0};
                 auto num_2 = 0;
-                uint8_t byte = 0;
+                auto byte = uint8_t{0};
                 do
                 {
                     if (num_2 == 70)
@@ -1641,6 +1641,13 @@ namespace Sen::Kernel::Definition
                 auto zigzag_num = thiz.readVarInt32();
                 auto decoded = static_cast<std::int32_t>((zigzag_num >> 1) ^ -(zigzag_num & 1));
                 return decoded;
+            }
+
+            inline auto begin_pointer (
+
+            ) -> std::uint8_t*
+            {
+                return thiz.data.data();
             }
 
             template <typename... Args>

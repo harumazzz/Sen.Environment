@@ -209,14 +209,6 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			) = default;
 
 			/**
-			 * Instance
-			*/
-
-			M_INSTANCE_OF_STRUCT(
-				Decode
-			);
-
-			/**
 			 * This method will decode newton file
 			 * source: source file
 			 * destination: destination file

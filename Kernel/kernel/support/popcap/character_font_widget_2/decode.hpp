@@ -18,14 +18,6 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 			) = default;
 
 			/**
-			 * Get instance
-			*/
-
-			M_INSTANCE_OF_STRUCT(
-				Decode
-			);
-
-			/**
 			 * Destructor
 			*/
 
@@ -156,7 +148,8 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 			{
 				auto view = std::make_unique<DataStreamView>(source);
 				auto result = CharacterFontWidget2{};
-				Decode::instance().process(view.get(), &result);
+				auto decode = Decode{};
+				decode.process(view.get(), &result);
 				FileSystem::write_json(destination, result);
 				return;
 			}

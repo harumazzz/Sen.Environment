@@ -43,7 +43,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             locale += static_cast<char>(clip_bit(data, 16_size, 8_size));
             locale += static_cast<char>(clip_bit(data, 8_size, 8_size));
             locale += static_cast<char>(clip_bit(data, 0_size, 8_size));
-            try_assert(locale.size() == 4_size, "invalid_locale_size");
+            assert_conditional(locale.size() == 4_size, fmt::format("{}", Language::get("popcap.rsb.invalid_locale_size")), "fourcc_from_integer");
             return;
         }
 
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             std::string const &locale,
             uint32_t &data) -> void
         {
-            try_assert(locale.size() == 4_size, "invalid_locale_size");
+            assert_conditional(locale.size() == 4_size, fmt::format("{}", Language::get("popcap.rsb.invalid_locale_size")), "fourcc_to_integer");
             data |= static_cast<uint32_t>(locale[0] << 0);
             data |= static_cast<uint32_t>(locale[1] << 8);
             data |= static_cast<uint32_t>(locale[2] << 16);
@@ -274,7 +274,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
         {
             exchange_string_block<k_subgroup_name_string_block_size>(stream, value.id);
             auto padding_to_write = value.subgroup_count * 16_size;
-            try_assert(padding_to_write < 1024_size, "out_of_range");
+            assert_conditional(padding_to_write < 1024_size, fmt::format("{}", Language::get("popcap.rsb.out_of_range")), "exchange_from_simple_group");
             for (auto i : Range(value.subgroup_count))
             {
                 exchange_from_simple_subgroup(stream, value.subgroup_information[i]);
@@ -524,7 +524,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             stream.read_pos += 4_size;
             value.type = stream.readUint16();
             value.header_size = stream.readUint16();
-            try_assert(value.header_size == 0x1C_size, "invalid_header_size");
+            assert_conditional(value.header_size == 0x1C_size, fmt::format("{}", Language::get("popcap.rsb.invalid_header_size")), "exchange_to_resource_basic");
             value.property_information_offset = stream.readUint32();
             value.image_property_information_offset = stream.readUint32();
             value.id_offset = stream.readUint32();
@@ -540,7 +540,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             stream.writeNull(4);
             stream.writeUint16(value.type);
             stream.writeUint16(value.header_size);
-            try_assert(value.header_size == 0x1C_size, "invalid_header_size");
+            assert_conditional(value.header_size == 0x1C_size, fmt::format("{}", Language::get("popcap.rsb.invalid_header_size")), "exchange_from_resource_basic");
             stream.writeUint32(value.property_information_offset);
             stream.writeUint32(value.image_property_information_offset);
             stream.writeUint32(value.id_offset);
@@ -702,7 +702,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             value.id_offset = stream.readUint32();
             value.subgroup_count = stream.readUint32();
             value.subgroup_information_size = stream.readUint32();
-            try_assert(value.subgroup_information_size == 0x10_size, "invalid_subgroup_information_size");
+            assert_conditional(value.subgroup_information_size == 0x10_size, fmt::format("{}", Language::get("popcap.rsb.invalid_subgroup_information_size")), "exchange_to_group_manifest");
             value.subgroup_information.resize(value.subgroup_count);
             for (auto i : Range(value.subgroup_count))
             {
@@ -717,7 +717,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
         {
             stream.writeUint32(value.id_offset);
             stream.writeUint32(value.subgroup_count);
-            try_assert(value.subgroup_information_size == 0x10_size, "invalid_subgroup_information_size");
+            assert_conditional(value.subgroup_information_size == 0x10_size, fmt::format("{}", Language::get("popcap.rsb.invalid_subgroup_information_size")), "exchange_from_group_manifest");
             stream.writeUint32(value.subgroup_information_size);
             for (auto i : Range(value.subgroup_count))
             {

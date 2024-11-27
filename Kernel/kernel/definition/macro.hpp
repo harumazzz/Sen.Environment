@@ -26,10 +26,6 @@
 #define M_EXPORT_API extern "C" __attribute__((visibility("default")))
 #endif
 
-#define calculate_area(width, height) width * height
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
 #if WINDOWS
 #include <windows.h>
 #endif
@@ -37,16 +33,6 @@
 #if APPLE
 #include <Carbon/Carbon.h>
 #endif
-
-#define M_INSTANCE_OF_STRUCT(struct_name)\
-inline static auto instance(\
-) -> struct_name&\
-{\
-static auto INSTANCE = struct_name{};\
-return INSTANCE;\
-}
-
-#define M_INSTANCE_OF_CLASS(class_name) M_INSTANCE_OF_STRUCT(class_name)
 
 #define HAS_ARGS(...) BOOL(FIRST(__VA_ARGS__))
 #define BOOL(x) BOOL_ ## x
@@ -73,10 +59,6 @@ return INSTANCE;\
     #define fsize std::ftell
     #endif
 #endif
-
-#define fill_rijndael_block(raw, iv)                                            \
-    auto padding = iv.size() - ((raw.size() + iv.size() - 1) % iv.size() + 1); \
-    raw.writeNull(padding);
 
 namespace Sen::Kernel {
 	

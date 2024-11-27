@@ -23,10 +23,6 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 
 			) = default;
 
-			M_INSTANCE_OF_STRUCT(
-				Encrypt
-			);
-
 			/**
 			 * Destructor
 			*/
@@ -73,7 +69,8 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 				std::string_view key
 			) -> void
 			{
-				auto result = Encrypt::instance().process(DataStreamView{source}, key);
+				auto encrypt = Encrypt{};
+				auto result = encrypt.process(DataStreamView{source}, key);
 				FileSystem::write_binary(destination, result);
 				return;
 			}

@@ -84,17 +84,14 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             DataStreamView &source_buffer,
             DataStreamView &destination,
             std::string_view key,
-            std::string_view iv) -> void
+            std::string_view iv
+        ) -> void
         {
-            fill_rijndael_block(source_buffer, iv);
+            Encryption::fill_rijndael_block(source_buffer, iv);
             destination.writeUint8(0x10_byte);
             destination.writeUint8(0x00_byte);
             destination.writeBytes(
-                Rijndael::encrypt<std::size_t, Rijndael::Mode::CBC>(
-                    reinterpret_cast<char *>(source_buffer.getBytes(0, source_buffer.size()).data()),
-                    key,
-                    iv,
-                    source_buffer.size()));
+            Rijndael::encrypt<std::size_t, Rijndael::Mode::CBC>(reinterpret_cast<char *>(source_buffer.begin_pointer()), key, iv, source_buffer.size()));
             return;
         }
 
@@ -129,7 +126,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             const List<List<std::string>> &paths) -> void
         {
             auto threads = List<std::thread>{};
-            auto file_mutexes = std::map<std::string, std::mutex>{};
+            auto file_mutexes = std::unordered_map<std::string, std::mutex>{};
             for (const auto &data : paths)
             {
                 threads.emplace_back([=, &file_mutexes]()

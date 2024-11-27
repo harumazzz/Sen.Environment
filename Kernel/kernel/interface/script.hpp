@@ -34,7 +34,9 @@ namespace Sen::Kernel::Interface::Script
 	inline auto constexpr get_property_uint64 = JS::Converter::get_property_uint64;
 
 	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
-	
+
+	inline auto constexpr temporary_class_id = JS::temporary_class_id;
+
 	/**
 	 * ----------------------------------------
 	 * JS Atom is used
@@ -494,6 +496,25 @@ namespace Sen::Kernel::Interface::Script
 				};
 			}
 
+			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+			inline static auto make_handle(
+				JSContext *ctx,
+				JSValueConst this_val,
+				int argc,
+				JSValueConst *argv,
+				std::string_view method_name,
+				std::function<JSValue(T*)> method,
+				JSClassID class_id
+			) -> JSValue
+			{
+				return proxy_wrapper(ctx, method_name, [&](){
+					auto s = static_cast<T*>(JS_GetOpaque2(ctx, this_val, class_id));
+					if (s == nullptr) {
+						return JS_EXCEPTION;
+					}
+					return method(s);
+				});
+			}
 
 
 		namespace DataStreamView
@@ -507,12 +528,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto use_big_endian>
 				requires BooleanConstraint
-			struct ClassID
-			{
-				static_assert(use_big_endian == true or use_big_endian == false, "use_big_endian must be true or false");
-				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				inline static JSClassID value = 0;
-			};
+			inline static auto class_id = temporary_class_id();
 
 			template <auto T>
 				requires BooleanConstraint
@@ -542,7 +558,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, ClassID<T>::value);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -578,7 +594,7 @@ namespace Sen::Kernel::Interface::Script
 				requires BooleanConstraint
 			inline static auto this_class = make_class_definition<Data<T>>(
 				_class_name<T>(),
-				ClassID<T>::value
+				class_id<T>.value
 			);
 
 			template <auto T>
@@ -591,15 +607,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				static_assert(T == true or T == false, "T must be true or false");
-				static_assert(sizeof(T) == sizeof(bool));
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data<T>*>(JS_GetOpaque2(ctx, this_val, ClassID<T>::value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <auto T>
@@ -2295,8 +2303,8 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				JS_NewClassID(JS_GetRuntime(ctx), &ClassID<use_big_endian>::value);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<use_big_endian>::value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
+				class_id<use_big_endian>.allocate_new(JS_GetRuntime(ctx));
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<use_big_endian>.value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
 				auto class_name = _class_name<use_big_endian>();
 				auto make_constructor = JS_NewCFunction2(ctx, constructor<use_big_endian>, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -2333,7 +2341,7 @@ namespace Sen::Kernel::Interface::Script
 				~Data() = default;
 			};
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -2358,7 +2366,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -2380,7 +2388,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -2391,13 +2399,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -2444,7 +2446,7 @@ namespace Sen::Kernel::Interface::Script
 				if (JS_IsException(proto)) {
 					return JS_EXCEPTION;
 				}
-				auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+				auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 				JS_FreeValue(ctx, proto);
 				if (JS_IsException(obj)) {
 					return JS_EXCEPTION;
@@ -2457,8 +2459,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Boolean class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Boolean class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -2489,7 +2491,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Support::PopCap::Animation::Miscellaneous::Image;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			using Matrix = std::array<double, 6>;
 
@@ -2526,7 +2528,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -2548,7 +2550,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			enum class Value : uint8_t
@@ -2566,13 +2568,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -2649,8 +2645,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Image class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -2683,7 +2679,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Support::PopCap::Animation::Miscellaneous::Sprite;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			using Matrix = std::array<double, 6>;
 
@@ -2730,7 +2726,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -2751,13 +2747,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto _class_name(
@@ -2769,7 +2759,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			enum class Value : uint8_t
@@ -2861,8 +2851,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Sprite class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Sprite class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -2895,7 +2885,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -2921,7 +2911,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -2943,7 +2933,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -2954,13 +2944,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
@@ -3049,8 +3033,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileInputStream class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileInputStream class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -3075,7 +3059,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -3101,7 +3085,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -3123,7 +3107,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -3134,13 +3118,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
@@ -3232,8 +3210,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileOutputStream class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileOutputStream class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -3258,7 +3236,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -3284,7 +3262,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -3306,7 +3284,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -3317,13 +3295,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
@@ -3442,8 +3414,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileStream class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileStream class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -3468,7 +3440,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Definition::JsonWriter;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -3486,7 +3458,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -3508,7 +3480,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -3519,13 +3491,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto clear(
@@ -3727,8 +3693,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "JsonWriter class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "JsonWriter class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -3770,10 +3736,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			struct NumberID
-			{
-				inline static JSClassID class_id = 0;
-			};
+			inline static auto class_id = temporary_class_id();
 
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
@@ -3804,7 +3767,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, NumberID<T>::class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -3820,67 +3783,67 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto this_class = make_class_definition<Data<T>>(
 				"Number",
-				NumberID<T>::class_id
+				class_id<T>.value
 			);
 
 			template <>
 			inline static auto this_class<int8_t> = make_class_definition<Data<int8_t>>(
 				"Integer8",
-				NumberID<int8_t>::class_id
+				class_id<int8_t>.value
 			);
 
 			template <>
 			inline static auto this_class<int16_t> = make_class_definition<Data<int16_t>>(
 				"Integer16",
-				NumberID<int16_t>::class_id
+				class_id<int16_t>.value
 			);
 
 			template <>
 			inline static auto this_class<int32_t> = make_class_definition<Data<int32_t>>(
 				"Integer32",
-				NumberID<int32_t>::class_id
+				class_id<int32_t>.value
 			);
 
 			template <>
 			inline static auto this_class<int64_t> = make_class_definition<Data<int64_t>>(
 				"Integer64",
-				NumberID<int64_t>::class_id
+				class_id<int64_t>.value
 			);
 
 			template <>
 			inline static auto this_class<uint8_t> = make_class_definition<Data<uint8_t>>(
 				"UInteger8",
-				NumberID<uint8_t>::class_id
+				class_id<uint8_t>.value
 			);
 
 			template <>
 			inline static auto this_class<uint16_t> = make_class_definition<Data<uint16_t>>(
 				"UInteger16",
-				NumberID<uint16_t>::class_id
+				class_id<uint16_t>.value
 			);
 
 			template <>
 			inline static auto this_class<uint32_t> = make_class_definition<Data<uint32_t>>(
 				"UInteger32",
-				NumberID<uint32_t>::class_id
+				class_id<uint32_t>.value
 			);
 
 			template <>
 			inline static auto this_class<uint64_t> = make_class_definition<Data<uint64_t>>(
 				"UInteger64",
-				NumberID<uint32_t>::class_id
+				class_id<uint64_t>.value
 			);
 
 			template <>
 			inline static auto this_class<float> = make_class_definition<Data<float>>(
 				"Float",
-				NumberID<float>::class_id
+				class_id<float>.value
 			);
 
 			template <>
 			inline static auto this_class<double> = make_class_definition<Data<double>>(
 				"Double",
-				NumberID<double>::class_id
+				class_id<double>.value
 			);
 
 			template <typename T>
@@ -3893,13 +3856,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data<T>*>(JS_GetOpaque2(ctx, this_val, NumberID<T>::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <typename T>
@@ -3953,9 +3910,9 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &(NumberID<T>::class_id));
+				class_id<T>.allocate_new(ctx);
 				auto class_name = fmt::format("{}", this_class<T>.class_name);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), NumberID<T>::class_id, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
 				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
 				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>.data(), proto_functions<T>.size());
@@ -3980,7 +3937,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Definition::APNGMakerSetting;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			enum GetterSetter
 			{
@@ -3999,26 +3956,25 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(ctx, "constructor", [&]() {
-					using Uinteger32 = Number::NumberID<std::uint32_t>;
 					using Uinteger32C = Number::Data<std::uint32_t>;
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 5) {
 						auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(ctx, argv[0]);
-						auto loop = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[1], Uinteger32::class_id));
+						auto loop = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[1], Number::class_id<std::uint32_t>.value));
 						if (loop == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto width = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[2], Uinteger32::class_id));
+						auto width = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[2], Number::class_id<std::uint32_t>.value));
 						if (width == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto height = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[3], Uinteger32::class_id));
+						auto height = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[3], Number::class_id<std::uint32_t>.value));
 						if (height == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto trim = static_cast<Boolean::Data*>(JS_GetOpaque2(ctx, argv[4], Boolean::class_id));
+						auto trim = static_cast<Boolean::Data*>(JS_GetOpaque2(ctx, argv[4], Boolean::class_id.value));
 						if (trim == nullptr) {
 							return JS_EXCEPTION;
 						}
@@ -4032,7 +3988,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -4054,7 +4010,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -4065,13 +4021,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -4166,10 +4116,11 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx) -> void
+				JSContext *ctx
+			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -4208,7 +4159,7 @@ namespace Sen::Kernel::Interface::Script
 				~Data() = default;
 			};
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -4233,7 +4184,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -4255,7 +4206,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -4266,13 +4217,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -4318,7 +4263,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -4332,8 +4277,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Size class failed register", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Size class failed register", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -4383,10 +4328,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			struct ClassID
-			{
-				inline static JSClassID value;
-			};
+			inline static auto class_id = temporary_class_id();
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -4412,7 +4354,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, ClassID<T>::value);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -4429,19 +4371,19 @@ namespace Sen::Kernel::Interface::Script
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto this_class = make_class_definition<Data<T>>(
 				"Character",
-				ClassID<T>::value
+				class_id<T>.value
 			);
 
 			template <>
 			inline static auto this_class<unsigned char> = make_class_definition<Data<unsigned char>>(
 				"UCharacter",
-				ClassID<unsigned char>::value
+				class_id<unsigned char>.value
 			); 
 
 			template <>
 			inline static auto this_class<wchar_t> = make_class_definition<Data<wchar_t>>(
 				"WideCharacter",
-				ClassID<wchar_t>::value
+				class_id<wchar_t>.value
 			);
 
 			template <typename T> 
@@ -4454,13 +4396,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data<T>*>(JS_GetOpaque2(ctx, this_val, ClassID<T>::value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <typename T> 
@@ -4514,7 +4450,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, ClassID<T>::value);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -4530,8 +4466,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &(ClassID<T>::value));
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), ClassID<T>::value, &this_class<T>) == 0, fmt::format("{} class register failed", this_class<T>.class_name), "register_class");
+				class_id<T>.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", this_class<T>.class_name), "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (std::is_same<T, char>::value)
 				{
@@ -4565,8 +4501,6 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 		}
-
-		// String Support
 
 		namespace String
 		{
@@ -4612,7 +4546,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = CData;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -4645,7 +4579,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -4667,7 +4601,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -4678,13 +4612,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -4742,7 +4670,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -4756,8 +4684,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "String class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "String class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -4817,7 +4745,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Data;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constexpr _class_name(
 
@@ -4828,7 +4756,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle(
@@ -4839,13 +4767,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto size(
@@ -4933,7 +4855,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), m_function_name);
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, DataStreamView::ClassID<use_big_endian>::value);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, DataStreamView::class_id<use_big_endian>.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						throw Exception("can't define class", std::source_location::current(), m_function_name);
@@ -4971,7 +4893,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -5039,7 +4961,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -5053,8 +4975,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "BinaryView class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "BinaryView class register failed", "register_class");
 				auto class_name = "BinaryView"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -5082,10 +5004,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = canvas_ity::canvas;
 
-			struct Detail
-			{
-				inline static JSClassID class_id;
-			};
+			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
 				JSContext *ctx,
@@ -5110,7 +5029,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, Detail::class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -5132,7 +5051,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				Detail::class_id
+				class_id.value
 			);
 
 			inline static auto handle (
@@ -5143,13 +5062,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, Detail::class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto scale (
@@ -5719,8 +5632,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &(Detail::class_id));
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), Detail::class_id, &this_class) == 0, "Canvas class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Canvas class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -5745,7 +5658,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Definition::Dimension<int>;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			enum Magic
 			{
@@ -5780,7 +5693,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -5802,7 +5715,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle (
@@ -5813,13 +5726,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -5885,8 +5792,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "DimensionView class failed register", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "DimensionView class failed register", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -5911,7 +5818,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Definition::Rectangle<int>;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			enum Magic
 			{
@@ -5952,7 +5859,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -5974,7 +5881,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle (
@@ -5985,13 +5892,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -6077,8 +5978,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Rectangle class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Rectangle class register failed", "register_class");
 				auto class_name = "Rectangle"_sv;
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -6103,7 +6004,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Definition::Image<int>;
 
-			inline static JSClassID class_id;
+			inline static auto class_id = temporary_class_id();
 
 			enum Magic
 			{
@@ -6163,7 +6064,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
@@ -6185,7 +6086,7 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto this_class = make_class_definition<Data>(
 				_class_name(),
-				class_id
+				class_id.value
 			);
 
 			inline static auto handle (
@@ -6196,13 +6097,7 @@ namespace Sen::Kernel::Interface::Script
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
@@ -6356,7 +6251,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return proxy_wrapper(ctx, "cut", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -6374,7 +6269,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6393,7 +6288,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return proxy_wrapper(ctx, "resize", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resize");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -6403,7 +6298,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6422,7 +6317,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return proxy_wrapper(ctx, "scale", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -6432,7 +6327,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6451,7 +6346,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return proxy_wrapper(ctx, "rotate", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -6461,7 +6356,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6480,7 +6375,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return proxy_wrapper(ctx, "write_fs", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_fs");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[1], class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[1], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -6504,7 +6399,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6529,7 +6424,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 					JS_FreeValue(ctx, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
@@ -6556,8 +6451,8 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *ctx
 			) -> void
 			{
-				JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "ImageView class register failed", "register_class");
+				class_id.allocate_new(ctx);
+				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "ImageView class register failed", "register_class");
 				auto class_name = _class_name();
 				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(ctx);
@@ -8575,7 +8470,7 @@ namespace Sen::Kernel::Interface::Script
 				using Data = Class::BinaryView::Data;
 				return proxy_wrapper(context, "uncompress", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -8596,7 +8491,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), "uncompress");
 					}
-					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id);
+					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
 					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						throw Exception("Cannot get BinaryView class from its prototype", std::source_location::current(), "uncompress");
@@ -8618,7 +8513,7 @@ namespace Sen::Kernel::Interface::Script
 				using Zlib = Definition::Compression::Zlib;
 				return proxy_wrapper(context, "compress", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -8688,7 +8583,7 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), "compress");
 					}
-					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id);
+					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
 					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						throw Exception("Cannot get BinaryView class from its prototype", std::source_location::current(), "compress");
@@ -8973,7 +8868,7 @@ namespace Sen::Kernel::Interface::Script
 						if (JS_IsException(proto)) {
 							assert_conditional(false, "not a constructor", "compress");
 						}
-						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id);
+						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
 						JS_FreeValue(context, proto);
 						if (JS_IsException(obj)) {
 							assert_conditional(false, "Cannot call constructor of BinaryView class", "compress");
@@ -9042,7 +8937,7 @@ namespace Sen::Kernel::Interface::Script
 						if (JS_IsException(proto)) {
 							assert_conditional(false, "not a constructor", "uncompress");
 						}
-						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id);
+						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
 						JS_FreeValue(context, proto);
 						if (JS_IsException(obj)) {
 							assert_conditional(false, "Cannot call constructor of BinaryView class", "uncompress");
@@ -9968,7 +9863,7 @@ namespace Sen::Kernel::Interface::Script
 						return proxy_wrapper(context, "generate_image"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_image");
 							auto destination = JS::Converter::get_string(context, argv[0]);
-							auto source = static_cast<Class::Image::Data*>(JS_GetOpaque2(context, argv[1], Class::Image::class_id));
+							auto source = static_cast<Class::Image::Data*>(JS_GetOpaque2(context, argv[1], Class::Image::class_id.value));
 							if (source == nullptr) {
 								return JS_EXCEPTION;
 							}
@@ -10015,7 +9910,7 @@ namespace Sen::Kernel::Interface::Script
 						return proxy_wrapper(context, "generate_sprite"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_sprite");
 							auto destination = JS::Converter::get_string(context, argv[0]);
-							auto source = static_cast<Class::Sprite::Data*>(JS_GetOpaque2(context, argv[1], Class::Sprite::class_id));
+							auto source = static_cast<Class::Sprite::Data*>(JS_GetOpaque2(context, argv[1], Class::Sprite::class_id.value));
 							if (source == nullptr) {
 								return JS_EXCEPTION;
 							}
@@ -10529,15 +10424,14 @@ namespace Sen::Kernel::Interface::Script
 					JSValueConst *argv
 				) -> JSElement::undefined
 				{
-					using namespace Class::Number;
-					using Uinteger32 = NumberID<std::uint32_t>;
-					using Uinteger32C = Data<std::uint32_t>;
+					using Uinteger32C = Class::Number::Data<std::uint32_t>;
 					return proxy_wrapper(context, "decode_fs"_sv, [&] {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 						auto source = JS::Converter::get_string(context, argv[0]);
-						auto destination = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Uinteger32::class_id));
+						auto destination = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Class::Number::class_id<std::uint32_t>.value));
 						destination->value = Kernel::Support::WWise::SoundBank::Decode::fnv_hash(source);
-						return JS_UNDEFINED; });
+						return JS_UNDEFINED; 
+					});
 				}
 			}
 		}
@@ -10617,7 +10511,7 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 
-		inline static JSClassID class_id;
+		inline static auto class_id = temporary_class_id();
 
 		using Data = JSFileWatcher;
 
@@ -10645,7 +10539,7 @@ namespace Sen::Kernel::Interface::Script
 				if (JS_IsException(proto)) {
 					goto fail;
 				}
-				obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+				obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 				JS_FreeValue(ctx, proto);
 				if (JS_IsException(obj)) {
 					goto fail;
@@ -10667,7 +10561,7 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto this_class = Class::make_class_definition<Data>(
 			_class_name(),
-			class_id
+			class_id.value
 		);
 
 		inline static auto handle(
@@ -10678,13 +10572,7 @@ namespace Sen::Kernel::Interface::Script
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
-			return proxy_wrapper(ctx, method_name, [&](){
-				auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-				if (s == nullptr) {
-					return JS_EXCEPTION;
-				}
-				return method(s);
-			});
+			return Class::make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 		}
 
 		inline static auto on(
@@ -10725,8 +10613,8 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *ctx
 		) -> void
 		{
-			JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "FileWatcher class register failed", "register_class");
+			class_id.allocate_new(ctx);
+			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileWatcher class register failed", "register_class");
 			auto class_name = _class_name();
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 			auto proto = JS_NewObject(ctx);
@@ -10829,7 +10717,7 @@ namespace Sen::Kernel::Interface::Script
 				bool running_;
 		};
 
-		inline static JSClassID class_id;
+		inline static auto class_id = temporary_class_id();
 
 		inline static auto constructor(
 			JSContext *ctx, 
@@ -10847,7 +10735,7 @@ namespace Sen::Kernel::Interface::Script
 				if (JS_IsException(proto)) {
 					goto fail;
 				}
-				obj = JS_NewObjectProtoClass(ctx, proto, class_id);
+				obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
 				JS_FreeValue(ctx, proto);
 				if (JS_IsException(obj)) {
 					goto fail;
@@ -10869,7 +10757,7 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto this_class = Class::make_class_definition<Data>(
 			_class_name(),
-			class_id
+			class_id.value
 		);
 
 		inline static auto handle(
@@ -10880,13 +10768,7 @@ namespace Sen::Kernel::Interface::Script
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
-			return proxy_wrapper(ctx, method_name, [&](){
-				auto s = static_cast<Data*>(JS_GetOpaque2(ctx, this_val, class_id));
-				if (s == nullptr) {
-					return JS_EXCEPTION;
-				}
-				return method(s);
-			});
+			return Class::make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
 		}
 
 		inline static auto start(
@@ -11028,8 +10910,8 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *ctx
 		) -> void
 		{
-			JS_NewClassID(JS_GetRuntime(ctx), &class_id);
-			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id, &this_class) == 0, "Clock class register failed", "register_class");
+			class_id.allocate_new(ctx);
+			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Clock class register failed", "register_class");
 			auto class_name = _class_name();
 			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
 			auto proto = JS_NewObject(ctx);
@@ -11269,7 +11151,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_apng");
 				auto a = JS::Converter::get_vector<std::string>(context, argv[0]);
 				auto b = JS::Converter::get_string(context, argv[1]);
-				auto s = static_cast<Class::APNGMakerSetting::Data*>(JS_GetOpaque2(context, argv[2], Class::APNGMakerSetting::class_id));
+				auto s = static_cast<Class::APNGMakerSetting::Data*>(JS_GetOpaque2(context, argv[2], Class::APNGMakerSetting::class_id.value));
 				if (s == nullptr) {
 					return JS_EXCEPTION;
 				}

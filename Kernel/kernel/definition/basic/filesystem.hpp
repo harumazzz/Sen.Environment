@@ -52,6 +52,40 @@ namespace Sen::Kernel::FileSystem
 		return buffer.str();
 	}
 
+	inline static auto read_quick_file (
+		std::string_view source
+	) -> std::string 
+	{
+		auto file_deleter = [](FILE* file) {
+			if (file != nullptr) {
+				std::fclose(file);
+			}
+		};
+		#if WINDOWS
+		auto wide_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data())));
+		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(_wfopen(wide_path.data(), L"rb"), file_deleter);
+		#else
+		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(std::fopen(std::string(source.data()).data(), "rb"), file_deleter);
+		#endif
+		if (file == nullptr) {
+			#if WINDOWS
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_quick_file");
+			#else
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_quick_file");
+			#endif
+		}
+		#if WINDOWS
+		auto file_path = std::filesystem::path{wide_path};
+		#else
+		auto file_path = std::filesystem::path{std::string(source)};
+		#endif
+    	auto file_size = std::filesystem::file_size(file_path);
+		auto content = std::string(file_size, '\0');
+		auto count = std::fread(content.data(), 1, file_size, file.get());
+		assert_conditional(count == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), "read_quick_file");
+		return content;
+	}
+
 	// Provide file path to read json
 	// return: if the json is valid, the json data will be parsed as object
 

@@ -94,7 +94,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				std::string_view source
 			) -> JSValue
 			{
-				return thiz.evaluate(FileSystem::read_file(source), source);
+				return thiz.evaluate(FileSystem::read_quick_file(source), source);
 			}
 
 			inline static auto constexpr not_undefined(
@@ -152,7 +152,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				return;
 			}
 
-			inline auto execute_pending_job(
+			inline auto execute_pending_job (
 			) -> void
 			{
 				auto job_ctx = static_cast<JSContext *>(nullptr);
@@ -163,7 +163,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				return;
 			}
 
-			inline auto constexpr evaluate_flag(
+			inline auto constexpr evaluate_flag (
 
 			) -> int
 			{
@@ -183,7 +183,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				return property;
 			}
 
-			inline auto define_property(
+			inline auto define_property (
 				JSValue parent, 
 				std::string_view name, 
 				JSValue value
@@ -194,7 +194,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				return;
 			}
 
-			inline auto evaluate(
+			inline auto evaluate (
 				std::string_view source_data,
 				std::string_view source_file
 			) -> JSValue
@@ -365,6 +365,15 @@ namespace Sen::Kernel::Definition::JavaScript
 					define_property(outer_object, obj2_name, middle1_object);
 					define_property(global_obj, obj1_name, outer_object);
 				});
+			}
+
+			inline auto dump_memory_usage (
+
+			) -> void
+			{
+				auto mem_usage = JSMemoryUsage{};
+    			JS_ComputeMemoryUsage(thiz.runtime.value, &mem_usage);
+				JS_DumpMemoryUsage(stdout, &mem_usage, thiz.runtime.value);
 			}
 
 			~Handler(

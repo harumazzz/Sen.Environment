@@ -180,18 +180,6 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 			}
 
 			/**
-			 * Singleton
-			*/
-
-			inline static auto instance(
-
-			) -> BasicConversion&
-			{
-				static auto INSTANCE = BasicConversion{};
-				return INSTANCE;
-			}
-
-			/**
 			 * Quick split method
 			 * @param source: source file
 			 * @param destination: destination directory
@@ -203,7 +191,8 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 				std::string_view destination
 			) -> void
 			{
-				ResInfo::BasicConversion::instance().split(source, destination);
+				auto convert = ResInfo::BasicConversion{};
+				convert.split(source, destination);
 				return;
 			}
 
@@ -219,7 +208,8 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 				std::string_view destination
 			) -> void
 			{
-				ResInfo::BasicConversion::instance().merge(source, destination);
+				auto convert = ResInfo::BasicConversion{};
+				convert.merge(source, destination);
 				return;
 			}
 

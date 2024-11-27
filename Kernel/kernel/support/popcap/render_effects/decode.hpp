@@ -82,14 +82,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) = default;
 
 			/**
-			 * Create instance
-			*/
-
-			M_INSTANCE_OF_STRUCT(
-				Decode
-			);
-
-			/**
 			 * Decode method
 			*/
 			
