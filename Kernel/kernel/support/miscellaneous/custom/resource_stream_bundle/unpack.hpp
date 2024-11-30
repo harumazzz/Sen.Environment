@@ -243,7 +243,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             }
             for (auto &[packet_id, packet_data] : packet_data_section_view_stored)
             {
-                async_work_process.emplace_back(std::async(&write_bytes, fmt::format("{}/removed_packet/{}.scg", destination, packet_id), packet_data));
+                async_work_process.emplace_back(std::async(&write_bytes, fmt::format("{}/removed_packet/{}.rsg", destination, packet_id), packet_data));
             }
             async_process_list<void>(async_work_process);
             return;
