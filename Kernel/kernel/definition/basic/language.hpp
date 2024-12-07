@@ -39,7 +39,6 @@ namespace Sen::Kernel::Language
 	 * Language file reader
 	 * Kernel will parse language before start program
 	*/
-
 	inline static auto read_language (
 		std::string_view source
 	) -> void {

@@ -1,9 +1,9 @@
 name: sen
-description: "Sen: Environment"
-publish_to: "none"
+description: 'Sen: Environment'
+publish_to: 'none'
 version: 2.0.0
 environment:
-    sdk: ">=3.4.3 <4.0.0"
+    sdk: '>=3.4.3 <4.0.0'
 dependencies:
     flutter:
         sdk: flutter
@@ -31,10 +31,8 @@ dependencies:
     flutter_riverpod: ^2.6.1
     path_provider: ^2.1.5
     flutter_dotenv: ^5.2.1
-    google_generative_ai: ^0.4.6
     shimmer: ^3.0.0
-    firebase_core: ^3.8.0
-    cloud_firestore: ^5.5.0
+    flutter_native_splash: ^2.4.3
 dev_dependencies:
     flutter_test:
         sdk: flutter
@@ -45,7 +43,7 @@ flutter_launcher_icons:
     window: true
     linux: true
     macintosh: true
-    image_path: "assets/images/logo.png"
+    image_path: 'assets/images/logo.png'
     remove_alpha_ios: true
 flutter:
     uses-material-design: true

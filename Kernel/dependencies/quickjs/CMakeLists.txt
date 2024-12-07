@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.9)
-
 project(
     quickjs 
     VERSION 0.7.0 

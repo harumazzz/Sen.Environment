@@ -62,10 +62,12 @@ namespace Sen::Kernel::Definition
             }
 
             auto operator=(
-                Stream &&that) -> Stream & = delete;
+                Stream &&that
+            ) -> Stream & = delete;
 
             Stream(
-                std::string_view source) : read_pos(0), write_pos(0)
+                std::string_view source
+            ) : read_pos(0), write_pos(0)
             {
                 #if WINDOWS
                 auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data(), L"rb"), close_file);
@@ -91,24 +93,30 @@ namespace Sen::Kernel::Definition
             }
 
             Stream(
-                const std::size_t &length) : read_pos(0), write_pos(length), length(length)
+                const std::size_t &length
+            ) : read_pos(0), write_pos(length), length(length)
             {
                 thiz.reserve(length + thiz.buffer_size);
                 return;
             }
 
-            ~Stream()
+            ~Stream(
+
+            )
             {
                 thiz.close();
             }
 
-            inline auto getFilePath() const -> std::string_view
+            inline auto getFilePath(
+
+            ) const -> std::string_view
             {
                 return thiz.file_path;
             }
 
             inline auto fromString(
-                const std::string &it) const -> void
+                const std::string &it
+            ) const -> void
             {
                 thiz.close();
                 thiz.data.assign(it.begin(), it.end());
@@ -119,14 +127,14 @@ namespace Sen::Kernel::Definition
 
             inline auto begin(
 
-                ) -> decltype(thiz.data.begin())
+            ) -> decltype(thiz.data.begin())
             {
                 return thiz.data.begin();
             }
 
             inline auto end(
 
-                ) -> decltype(thiz.data.end())
+            ) -> decltype(thiz.data.end())
             {
                 return thiz.data.end();
             }
@@ -153,7 +161,8 @@ namespace Sen::Kernel::Definition
             }
 
             inline auto constexpr reserve(
-                const std::size_t &capacity) const -> void
+                const std::size_t &capacity
+            ) const -> void
             {
                 thiz.data.resize(capacity);
                 return;
@@ -178,12 +187,12 @@ namespace Sen::Kernel::Definition
 
             inline auto get(
                 size_t from,
-                size_t to) const -> List<uint8_t>
+                size_t to
+            ) const -> List<uint8_t>
             {
                 if (from < 0 || to > thiz.data.size())
                 {
-                    throw Exception(fmt::format("{} {} {} {}", Language::get("buffer.invalid.size"), from, Language::get("to"), to),
-                                    std::source_location::current(), "get");
+                    throw Exception(fmt::format("{} {} {} {}", Language::get("buffer.invalid.size"), from, Language::get("to"), to), std::source_location::current(), "get");
                 }
                 return List<unsigned char>(thiz.data.begin() + from, thiz.data.begin() + to);
             }
@@ -203,7 +212,8 @@ namespace Sen::Kernel::Definition
             }
 
             inline auto change_read_pos(
-                const std::size_t &pos) const -> void
+                const std::size_t &pos
+            ) const -> void
             {
                 assert_conditional(pos <= thiz.size(), String::format(fmt::format("{}: {}", Language::get("read_position_cannot_be_smaller_than_size"), thiz.file_path), std::to_string(pos), std::to_string(thiz.size())), "position");
                 thiz.read_pos = pos;
@@ -211,7 +221,8 @@ namespace Sen::Kernel::Definition
             }
 
             inline auto constexpr change_write_pos(
-                const std::size_t &pos) const -> void
+                const std::size_t &pos
+            ) const -> void
             {
                 thiz.write_pos = pos;
                 return;
@@ -232,7 +243,8 @@ namespace Sen::Kernel::Definition
             template <typename T>
                 requires CharacterOnView<T>
             inline auto append(
-                const List<T> &m_data) const -> void
+                const List<T> &m_data
+            ) const -> void
             {
                 thiz.data.insert(thiz.data.begin() + thiz.length, m_data.begin(), m_data.end());
                 thiz.length += m_data.size();
@@ -243,7 +255,8 @@ namespace Sen::Kernel::Definition
             template <typename T, size_t n>
                 requires CharacterOnView<T>
             inline auto append(
-                const std::array<T, n> &m_data) const -> void
+                const std::array<T, n> &m_data
+            ) const -> void
             {
                 thiz.data.insert(thiz.data.begin() + thiz.length, m_data.begin(), m_data.end());
                 thiz.length += m_data.size();
@@ -252,7 +265,8 @@ namespace Sen::Kernel::Definition
             }
 
             inline auto out_file(
-                std::string_view path) const -> void
+                std::string_view path
+            ) const -> void
             {
                 {
                     #if WINDOWS
@@ -288,7 +302,8 @@ namespace Sen::Kernel::Definition
                 requires(IsValidArgument<Args> && ...)
             inline auto writeUint8(
                 std::uint8_t value,
-                Args... args) const -> void
+                Args... args
+            ) const -> void
             {
                 static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "Expected 0 or 1 argument only");
                 if constexpr (sizeof...(Args) == 1)
@@ -300,7 +315,8 @@ namespace Sen::Kernel::Definition
             }
 
             inline auto allocate(
-                const std::size_t &size) -> void
+                const std::size_t &size
+            ) -> void
             {
                 thiz.data.reserve(size);
                 return;
@@ -310,7 +326,8 @@ namespace Sen::Kernel::Definition
                 requires(IsValidArgument<Args> && ...)
             inline auto writeUint16(
                 std::uint16_t value,
-                Args... args) const -> void
+                Args... args
+            ) const -> void
             {
                 static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "Expected 0 or 1 argument only");
                 if constexpr (sizeof...(Args) == 1)
