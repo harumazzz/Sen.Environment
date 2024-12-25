@@ -64,7 +64,7 @@ namespace Sen::Kernel::Definition {
 			for (auto & [key, value] : map) {
 				keys.emplace_back(key);
 			}
-			return;
+			return keys;
 		}
 
 	}

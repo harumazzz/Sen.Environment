@@ -1,6 +1,6 @@
 project(
     quickjs 
-    VERSION 0.7.0 
+    VERSION 0.8.0 
     HOMEPAGE_URL https://github.com/quickjs-ng/quickjs
     LANGUAGES C
 )

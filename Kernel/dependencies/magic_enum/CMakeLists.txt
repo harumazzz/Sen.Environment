@@ -1,6 +1,6 @@
 project(
     magic_enum
-    VERSION 0.9.6
+    VERSION 0.9.7
     HOMEPAGE_URL https://github.com/Neargye/magic_enum
     LANGUAGES CXX
 )
@@ -9,7 +9,8 @@ add_library(
     ${PROJECT_NAME} INTERFACE
 )
 
-target_sources(${PROJECT_NAME} INTERFACE
+target_sources(
+    ${PROJECT_NAME} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_all.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_containers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_flags.hpp

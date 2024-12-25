@@ -55,6 +55,5 @@
 #include "kernel/dependencies/dirent.hpp"
 #include "kernel/dependencies/simdjson.hpp"
 #include "kernel/dependencies/magic_enum.hpp"
-#include "kernel/dependencies/compile-time-regular-expressions.hpp"
 #include "kernel/dependencies/canvas_ity.hpp"
 #include "kernel/dependencies/tsl.hpp"

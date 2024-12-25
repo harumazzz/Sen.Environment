@@ -34,7 +34,7 @@ add_library(
 	./definition/encryption/sha224.hpp
 	./definition/encryption/sha256.hpp
 	./definition/encryption/base64.hpp
-	./definition/encryption/XOR.hpp
+	./definition/encryption/xor.hpp
 	./definition/encryption/crc.hpp
 	./definition/encryption/fnv.hpp
 	./definition/compression/zlib.hpp
@@ -67,7 +67,6 @@ add_library(
 	./dependencies/dirent.hpp
 	./dependencies/simdjson.hpp
 	./dependencies/magic_enum.hpp
-	./dependencies/compile-time-regular-expressions.hpp
 	./dependencies/canvas_ity.hpp
 	./dependencies/tsl.hpp
 
@@ -249,7 +248,6 @@ target_link_libraries(
 	quickjs
 	zip
 	simdjson
-	compile-time-regular-expressions
 	canvas_ity
 	tsl
 )

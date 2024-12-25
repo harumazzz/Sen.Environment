@@ -711,7 +711,15 @@ namespace Sen::Kernel::Interface {
 				javascript.register_object(Script::Clock::register_class);
 				// execute the script
 				javascript.evaluate_fs(*Additional::script);
-				// Execute other Promise
+				return;
+			}
+
+			// Execute other Promise if quickjs found any
+
+			inline auto execute_promise_in_queue (
+
+			) -> void
+			{
 				while (javascript.has_promise()) {
 					javascript.execute_pending_job();
 				}
@@ -728,6 +736,8 @@ namespace Sen::Kernel::Interface {
 			{
 				// call main
 				javascript.evaluate("Sen.Script.main()"_sv, std::source_location::current().file_name());
+				// Execute other Promise
+				thiz.execute_promise_in_queue();
 				#ifdef DEBUG
 					javascript.dump_memory_usage();
 				#endif

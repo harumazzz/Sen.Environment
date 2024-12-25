@@ -3,6 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_linux
+  custom_mouse_cursor
   desktop_drop
   dynamic_color
   file_selector_linux

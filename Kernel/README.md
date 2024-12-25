@@ -2,7 +2,8 @@
 
 -   `Kernel` - Backend, the main core of the program.
 
--   This project is a cross-platform `C++` project that support many operating systems such: `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 7+`
+-   This project is a cross-platform `C++` project that support many operating systems such:
+    `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 7+`
 
 ## Development
 
@@ -42,7 +43,8 @@
 
 -   [md5](https://github.com/JieweiWei/md5): MD5 Hash
 
--   [open_vcdiff](https://github.com/google/open-vcdiff): Diff two file and generate the different after compare
+-   [open_vcdiff](https://github.com/google/open-vcdiff): Diff two file and generate the different
+    after compare
 
 -   [SHA](https://github.com/pr0f3ss/SHA): SHA-384, SHA-512 Hash
 
@@ -58,8 +60,6 @@
 
 -   [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64): Base64 Encode/Decode
 
--   [compile-time-regular-expressions](https://github.com/hanickadot/compile-time-regular-expressions): Regex for modern C++, support `constexpr` regex
-
 -   [bzip2](https://sourceware.org/bzip2): Bzip2 Compress/Uncompress
 
 -   [avir](https://github.com/avaneev/avir): Image scaling algorithm
@@ -68,15 +68,20 @@
 
 -   [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main): canvas for drawing image
 
--   [tsl](https://github.com/Tessil/ordered-map): Actual ordered map for C++ comes with support of First-in-first-out
+-   [tsl](https://github.com/Tessil/ordered-map): Actual ordered map for C++ comes with support of
+    First-in-first-out
 
--   [etc1](https://developer.android.com/guide/playcore/asset-delivery/texture-compression): Google Standard ETC1 for encode/decode image
+-   [etc1](https://developer.android.com/guide/playcore/asset-delivery/texture-compression): Google
+    Standard ETC1 for encode/decode image
 
 ## Modification
 
--   To make sure all the libraries work perfectly fine with `Kernel`, there are some modification compare to original project. All modification will be added `Haruma :: Add`, `Haruma :: Change`, `Haruma :: Delete`
+-   To make sure all the libraries work perfectly fine with `Kernel`, there are some modification
+    compare to original project. All modification will be added `Haruma :: Add`, `Haruma :: Change`,
+    `Haruma :: Delete`
 
--   Special thanks to [TwinStar](https://github.com/twinstar6980) for his modification on some libraries which makes all the process easier.
+-   Special thanks to [TwinStar](https://github.com/twinstar6980) for his modification on some
+    libraries which makes all the process easier.
 
 -   All the modification has been made:
 

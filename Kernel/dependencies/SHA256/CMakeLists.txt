@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(
     SHA256 
+    VERSION 0
+    HOMEPAGE_URL https://github.com/System-Glitch/SHA256
     LANGUAGES CXX
 )
 
