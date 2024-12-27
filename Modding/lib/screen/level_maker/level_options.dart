@@ -21,8 +21,7 @@ class LevelOptions extends StatefulWidget {
   State<LevelOptions> createState() => _LevelOptionsState();
 }
 
-class _LevelOptionsState extends State<LevelOptions>
-    with TickerProviderStateMixin {
+class _LevelOptionsState extends State<LevelOptions> with TickerProviderStateMixin {
   late final TabController _tabController;
   int _selectedImage = -1;
   final Map<String, MemoryImage> _imageCache = {};
@@ -89,8 +88,8 @@ class _LevelOptionsState extends State<LevelOptions>
                 gradient: _selectedImage == index
                     ? LinearGradient(
                         colors: [
-                          Colors.green.withOpacity(0.6),
-                          Colors.green.withOpacity(0.6),
+                          Colors.green.withValues(alpha: 0.6),
+                          Colors.green.withValues(alpha: 0.6),
                         ],
                       )
                     : null,

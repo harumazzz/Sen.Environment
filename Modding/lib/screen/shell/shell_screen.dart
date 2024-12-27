@@ -13,7 +13,6 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/message.dart';
-import 'package:sen/provider/recent_provider.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/shell/horiz_icon.dart';
 import 'package:sen/service/file_service.dart';
@@ -146,8 +145,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     calloc.free(state);
   }
 
-  static void _handleInputEnumerationCommand(
-      List<String> result, Pointer<CStringView> destination) {
+  static void _handleInputEnumerationCommand(List<String> result, Pointer<CStringView> destination) {
     var state = calloc<Bool>();
     state.value = false;
     _sendPort!.send([
@@ -187,8 +185,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     final kernelPath = isolateData[1];
     _sendPort = mainSendPort;
     _dylib = DynamicLibrary.open(kernelPath);
-    final execute = _dylib!
-        .lookupFunction<KernelExecuteCAPI, KernelExecuteDartAPI>('execute');
+    final execute = _dylib!.lookupFunction<KernelExecuteCAPI, KernelExecuteDartAPI>('execute');
     final subReceivePort = ReceivePort();
     final subStreamQueue = StreamQueue<dynamic>(subReceivePort);
     mainSendPort.send(subReceivePort.sendPort);
@@ -211,8 +208,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     final argument = calloc<CStringView>(argumentList.length);
     for (var i = 0; i < argumentList.length; ++i) {
       final currentArgument = PointerService.toUint8List(argumentList[i]);
-      final currentArgumentPointer =
-          PointerService.utf8ListToCString(currentArgument);
+      final currentArgumentPointer = PointerService.utf8ListToCString(currentArgument);
       (argument + i).ref
         ..size = currentArgument.length
         ..value = currentArgumentPointer;
@@ -303,9 +299,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   }
 
   Color _getColorBasedOnTheme() {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey
-        : Colors.pinkAccent.withOpacity(0.05);
+    return Theme.of(context).brightness == Brightness.dark ? Colors.grey : Colors.pinkAccent.withValues(alpha: 0.05);
   }
 
   Color _exchangeColor(String color) {
@@ -491,19 +485,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       _exchangeKernelPath(),
     ]);
     final subSendPort = await mainStreamQueue.next as SendPort;
-    subSendPort.send([
-      '${setting.toolChain}/script/main.js',
-      (setting.toolChain),
-      additionalArguments
-    ]);
+    subSendPort.send(['${setting.toolChain}/Script/main.js', (setting.toolChain), additionalArguments]);
     while (await mainStreamQueue.hasNext) {
       var mainEvent = await mainStreamQueue.next as List<dynamic>?;
       if (mainEvent == null) {
         mainEvent = await mainStreamQueue.next as List<dynamic>;
         break;
       } else {
-        if (mainEvent[0] != null &&
-            (mainEvent[0] as String).contains('input')) {
+        if (mainEvent[0] != null && (mainEvent[0] as String).contains('input')) {
           final callbackState = Pointer<Bool>.fromAddress(mainEvent[1]);
           final destination = Pointer<CStringView>.fromAddress(mainEvent[2]);
           statement:
@@ -624,57 +613,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     }
   }
 
-  void _onRecentFile() async {
-    final provider = ref.read(recentProvider);
-    final los = AppLocalizations.of(context)!;
-    Navigator.of(context).pop();
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.recent_files),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              ...provider.recentFiles.map(
-                (e) => Column(
-                  children: [
-                    ListTile(
-                      leading: FileService.isFile(e)
-                          ? const Icon(Icons.file_copy_outlined)
-                          : const Icon(Icons.folder_outlined),
-                      title:
-                          Text(e, overflow: TextOverflow.ellipsis, maxLines: 1),
-                      trailing: TextButton(
-                        onPressed: () {
-                          _inputController!.text = e;
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          los.use,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Divider(),
-                    const SizedBox(height: 4),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          )
-        ],
-      ),
-    );
-  }
-
   void _onSelect() {
     final los = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -701,17 +639,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             ListTile(
               leading: const Icon(Symbols.folder_code),
               title: Text(los.batch_function),
-              onTap: (){
+              onTap: () {
                 if (_inputController != null) {
                   _inputController!.text = ':b';
                 }
                 Navigator.of(context).pop();
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history_outlined),
-              title: Text(los.recent_files),
-              onTap: _onRecentFile,
             ),
             ListTile(
               leading: const Icon(Icons.cancel),
@@ -756,9 +689,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
 
   void _onSendString() {
     final inputData = _inputController!.text;
-    if (FileService.isFile(inputData) || FileService.isDirectory(inputData)) {
-      ref.watch(recentProvider.notifier).addFile(inputData);
-    }
     _completer!.complete(inputData);
     _inputController!.text = '';
     setState(() {
@@ -838,7 +768,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   }
 
   Color? _color(Message e) {
-    return e.color != null ? _exchangeColor(e.color!).withOpacity(0.42) : null;
+    return e.color != null ? _exchangeColor(e.color!).withValues(alpha: 0.42) : null;
   }
 
   Widget? _subtitle(Message e) {
@@ -865,10 +795,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   Widget _text(String message) {
     return SelectableText(
       message,
-      style: Theme.of(context)
-          .textTheme
-          .titleSmall!
-          .copyWith(fontWeight: FontWeight.w500),
+      style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w500),
     );
   }
 

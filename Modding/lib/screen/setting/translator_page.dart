@@ -35,7 +35,7 @@ class TranslatorPage extends StatelessWidget {
         ),
         const SizedBox(height: 8.0),
         Divider(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha: 0.3),
           thickness: 1.0,
           height: 24.0,
         ),
@@ -70,7 +70,7 @@ class TranslatorPage extends StatelessWidget {
           ),
         if (translator.discord != null) const SizedBox(height: 16.0),
         Divider(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha: 0.3),
           thickness: 1.0,
           height: 24.0,
         ),

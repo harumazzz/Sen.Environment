@@ -31,8 +31,7 @@ class AnimationScreen extends StatefulWidget {
   State<AnimationScreen> createState() => _AnimationScreenState();
 }
 
-class _AnimationScreenState extends State<AnimationScreen>
-    with SingleTickerProviderStateMixin {
+class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
   double xOffset = 0.0;
   double yOffset = 0.0;
   bool _dragging = false;
@@ -48,9 +47,7 @@ class _AnimationScreenState extends State<AnimationScreen>
       splashColor: Colors.blue.withAlpha(30),
       onTap: widget.onUploadFile,
       child: Center(
-        child: _dragging
-            ? Text(los.drop_file_to_upload)
-            : Text(los.upload_file_to_continue),
+        child: _dragging ? Text(los.drop_file_to_upload) : Text(los.upload_file_to_continue),
       ),
     );
   }
@@ -75,8 +72,7 @@ class _AnimationScreenState extends State<AnimationScreen>
           var file = details.files.first;
           widget.onDragFile(file.path);
           if (VisualHelper.hasAnimation) {
-            VisualHelper.workingFrameRate =
-                VisualHelper.animation.frameRate.toDouble();
+            VisualHelper.workingFrameRate = VisualHelper.animation.frameRate.toDouble();
           }
         }
       },
@@ -87,21 +83,15 @@ class _AnimationScreenState extends State<AnimationScreen>
   void _loadWorkingSprite(int index) {
     setState(() {
       final labelInfo = VisualHelper.labelInfo[VisualHelper.currentLabel]!;
-      final duration = ((labelInfo.endIndex - labelInfo.startIndex) /
-              VisualHelper.workingFrameRate *
-              1000)
-          .toInt();
+      final duration = ((labelInfo.endIndex - labelInfo.startIndex) / VisualHelper.workingFrameRate * 1000).toInt();
       _animationController.duration = Duration(milliseconds: duration);
-      _animationVisual =
-          VisualHelper.visualizeSprite(index, _animationController);
+      _animationVisual = VisualHelper.visualizeSprite(index, _animationController);
       _animationVisual = SizedBox.fromSize(
-        size: Size(VisualHelper.animation.size.width,
-            VisualHelper.animation.size.height),
+        size: Size(VisualHelper.animation.size.width, VisualHelper.animation.size.height),
         child: UnconstrainedBox(
           child: SizedOverflowBox(
             alignment: AlignmentDirectional.topStart,
-            size: Size(VisualHelper.animation.size.width,
-                VisualHelper.animation.size.height),
+            size: Size(VisualHelper.animation.size.width, VisualHelper.animation.size.height),
             child: _animationVisual,
           ),
         ),
@@ -142,8 +132,7 @@ class _AnimationScreenState extends State<AnimationScreen>
       return ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Transform(
-          transform:
-              VisualHelper.transformMatrixFromVariant([xOffset, yOffset]),
+          transform: VisualHelper.transformMatrixFromVariant([xOffset, yOffset]),
           child: Transform.scale(
             scale: scale,
             child: ConstrainedBox(
@@ -180,10 +169,7 @@ class _AnimationScreenState extends State<AnimationScreen>
           const SizedBox(width: 16),
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall!
-                .copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 8.0),
           Expanded(
@@ -227,8 +213,8 @@ class _AnimationScreenState extends State<AnimationScreen>
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withOpacity(0.3)
-                : Colors.black.withOpacity(0.3),
+                ? Colors.white.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -308,9 +294,7 @@ class _AnimationScreenState extends State<AnimationScreen>
                 Tooltip(
                   message: _isPause ? 'Play' : 'Stop',
                   child: IconButton(
-                    icon: !_isPause
-                        ? const Icon(Icons.play_arrow_outlined)
-                        : const Icon(Icons.pause_outlined),
+                    icon: !_isPause ? const Icon(Icons.play_arrow_outlined) : const Icon(Icons.pause_outlined),
                     onPressed: () {
                       setState(() {
                         _isPause = !_isPause;

@@ -20,7 +20,8 @@ class ThankyouPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final cardBackgroundColor = isDarkTheme ? Colors.green[900]!.withOpacity(0.5) : Colors.green[100]!.withOpacity(0.8);
+    final cardBackgroundColor =
+        isDarkTheme ? Colors.green[900]!.withValues(alpha: 0.5) : Colors.green[100]!.withValues(alpha: 0.8);
     final textColor = isDarkTheme ? Colors.white : Colors.black;
     Widget buildWindowsDebug() {
       return Row(
@@ -32,7 +33,7 @@ class ThankyouPage extends StatelessWidget {
             'If you having any issues with Sen on your machine, try to install ',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: textColor.withOpacity(0.9),
+                  color: textColor.withValues(alpha: 0.9),
                 ),
           ),
           HyperLink(
@@ -94,7 +95,7 @@ class ThankyouPage extends StatelessWidget {
                                 'Your download should start automatically. If not, use the link below.',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      color: textColor.withOpacity(0.9),
+                                      color: textColor.withValues(alpha: 0.9),
                                     ),
                               ),
                               const SizedBox(height: 24.0),

@@ -74,18 +74,13 @@ class _AnimationViewerState extends State<AnimationViewer> {
     }
     var labelName = "main";
     _label.add("main");
-    VisualHelper.labelInfo[labelName] = LabelInfo(
-        startIndex: 0,
-        endIndex: VisualHelper.animation.mainSprite.frame.length - 1);
-    for (int frameIndex = 0;
-        frameIndex < VisualHelper.animation.mainSprite.frame.length;
-        ++frameIndex) {
-      final frameLabelName =
-          VisualHelper.animation.mainSprite.frame[frameIndex].label;
+    VisualHelper.labelInfo[labelName] =
+        LabelInfo(startIndex: 0, endIndex: VisualHelper.animation.mainSprite.frame.length - 1);
+    for (int frameIndex = 0; frameIndex < VisualHelper.animation.mainSprite.frame.length; ++frameIndex) {
+      final frameLabelName = VisualHelper.animation.mainSprite.frame[frameIndex].label;
       if (frameLabelName != "" && frameLabelName != labelName) {
         labelName = frameLabelName;
-        VisualHelper.labelInfo[labelName] =
-            LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
+        VisualHelper.labelInfo[labelName] = LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
         _label.add(labelName);
       }
       ++VisualHelper.labelInfo[labelName]!.endIndex;
@@ -247,8 +242,8 @@ class _AnimationViewerState extends State<AnimationViewer> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.3),
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -277,8 +272,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        forceMaterialTransparency:
-            Platform.isWindows || Platform.isLinux || Platform.isMacOS,
+        forceMaterialTransparency: Platform.isWindows || Platform.isLinux || Platform.isMacOS,
         title: Text(los.animation_viewer),
         actions: [
           IconButton(

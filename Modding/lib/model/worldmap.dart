@@ -126,13 +126,6 @@ class MapPieceItem {
 
 enum LevelNodeType { normal, minigame, miniboss, nonfinalboss, boss, danger }
 
-/*
-enum MapTutorialState {
-  //TODO
-  none
-}
-*/
-
 enum WorldMapEventStatus { none, undiscovered, locked, unlocked, cleared }
 
 class MapEventItem {
