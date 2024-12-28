@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.10)
 
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
@@ -23,9 +23,7 @@ add_executable (
     ${PROJECT_NAME} 
     ./library/utility.hpp
     ./library/string.hpp
-    ./library/zip.hpp
     ./library/version.hpp
-    ./library/download.hpp
     ./library/platform/windows.hpp
     ./library/platform/unix.hpp
     ./launcher.cpp 
@@ -42,14 +40,7 @@ target_include_directories(
     .
 )
 
-target_link_libraries(
-    ${PROJECT_NAME} PRIVATE 
-    zip
-)
-
-
-add_subdirectory(./deps/json)
-add_subdirectory(./deps/zip)
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)

@@ -8,11 +8,11 @@ namespace Sen::Shell {
 	class KernelLoader {
 	public:
 		KernelLoader(int size, 
-	#if WINDOWS
-					wchar_t** argc
-	#else
-					char** argc
-	#endif
+		#if WINDOWS
+			wchar_t** argc
+		#else
+			char** argc
+		#endif
 		)
 			: size(size), argc(argc), result(1), hinst_lib(nullptr) {}
 
@@ -80,8 +80,13 @@ namespace Sen::Shell {
 
 		) -> void
 		{
+			#if WINDOWS
 			kernel = utf16_to_utf8(argc[1]);
 			script = utf16_to_utf8(argc[2]);
+			#else
+			kernel = std::string{argc[1], std::strlen(argc[1])};
+			kernel = std::string{argc[2], std::strlen(argc[2])};
+			#endif
 		}
 
 		inline auto load_kernel(

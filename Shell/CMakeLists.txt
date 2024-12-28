@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.10)
 
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
@@ -6,6 +6,8 @@ if (POLICY CMP0141)
 endif()
 
 project (Shell)
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build can only be Release" FORCE)
 
 if(MSVC)
     add_compile_options(/utf-8)
@@ -46,12 +48,6 @@ if(NOT (CMAKE_SYSTEM_NAME MATCHES "iOS" OR CMAKE_SYSTEM_NAME MATCHES "Android"))
     target_link_libraries(${PROJECT_NAME} PRIVATE tinyfiledialogs)
 endif()
 
-
-add_subdirectory(./deps/cpp-httplib)
-
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET Shell PROPERTY CXX_STANDARD 20)
-endif()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

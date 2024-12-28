@@ -23,6 +23,8 @@ if (MSVC)
     message(STATUS "MSVC version: ${MSVC_VERSION}")
 endif()
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build can only be Release" FORCE)
+
 add_subdirectory("./dependencies/md5")
 add_subdirectory("./dependencies/json")
 add_subdirectory("./dependencies/zlib")

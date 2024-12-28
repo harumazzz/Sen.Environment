@@ -1,6 +1,4 @@
-﻿#include "library/download.hpp"
-#include "library/string.hpp"
-#include "library/zip.hpp"
+﻿#include "library/string.hpp"
 #include "library/version.hpp"
 #include "library/platform/windows.hpp"
 #include "library/platform/unix.hpp"
@@ -36,8 +34,12 @@ MAIN{
         #endif
     }
     catch (const std::runtime_error& e) {
+        #if WINDOWS
         std::println(std::cout, "error found: {}", e.what());
+        #else
+        std::cout << "error found: " << e.what() << '\n' << std::flush;
+        #endif
     }
     std::system("pause");
-    return -1;
+    return 0;
 }

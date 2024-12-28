@@ -1,4 +1,5 @@
 #pragma once
+#include "library/utility.hpp"
 
 #ifndef _WIN32
 namespace Sen::Launcher {

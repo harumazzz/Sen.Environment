@@ -803,8 +803,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: 6.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),

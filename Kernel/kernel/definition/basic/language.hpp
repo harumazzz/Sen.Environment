@@ -7,9 +7,12 @@
 #include <vector>
 #include <cstdarg>
 #include <string_view>
+#include <fstream>
+#include <codecvt>
+#include <iostream>
 #include "kernel/definition/assert.hpp"
 #include "kernel/dependencies/fmt.hpp"
-#include "kernel/dependencies/simdjson.hpp"
+#include "kernel/dependencies/json.hpp"
 
 namespace Sen::Kernel::Language
 {
@@ -18,9 +21,7 @@ namespace Sen::Kernel::Language
 	 * DO NOT USE THIS, THIS IS LANGUAGE CONTAINER
 	*/
 
-	static inline simdjson::ondemand::parser parser;
-    static inline simdjson::padded_string json_data;
-    static inline simdjson::ondemand::document language;
+	static std::unordered_map<std::string, std::string> language;
 
 	/**
 	 * Lambda auto close file
@@ -39,11 +40,31 @@ namespace Sen::Kernel::Language
 	 * Language file reader
 	 * Kernel will parse language before start program
 	*/
+
 	inline static auto read_language (
 		std::string_view source
 	) -> void {
-		json_data = simdjson::padded_string::load(source); 
-        language = parser.iterate(json_data);
+		#if _WIN32
+		auto static constexpr utf8_to_utf16 = [](std::string_view str) -> std::wstring
+		{
+			auto myconv = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
+			return myconv.from_bytes(str.data(), str.data() + str.size());
+		};
+		auto file = std::ifstream(utf8_to_utf16(source));
+		#else
+		auto file = std::ifstream(source.data());
+		#endif
+		if (!(file.is_open())) {
+			#if _WIN32
+			auto path = std::string{source.data(), source.size()};
+			std::replace(path.begin(), path.end(), '\\', '/');
+			throw Exception(fmt::format("Could not read language file: {}", path), std::source_location::current(), "read_language");
+			#else
+			throw Exception(fmt::format("Could not read language file: {}", source), std::source_location::current(), "read_language");
+			#endif
+		}
+		auto buffer = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		language = nlohmann::json::parse(buffer);
 		return;
 	}
 
@@ -55,14 +76,12 @@ namespace Sen::Kernel::Language
 
 	inline static auto get(
 		std::string_view key
-	) -> std::string
+	) -> std::string_view
 	{
-		auto value = language[key];
-		if (value.error() == simdjson::SUCCESS) {
-			auto result = value.get_string().value();
-			auto destination = std::string{result.data(), result.size()};
-			return destination;
+		auto value = language.find({key.data(), key.size()});
+		if (value == language.end()) {
+			return key;
 		}
-		return std::string{key.data(), key.size()};
+		return value->second;
 	}
 }

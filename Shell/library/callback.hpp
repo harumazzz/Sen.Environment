@@ -199,15 +199,6 @@ namespace Sen::Shell {
 			destination->value = MemoryBuffer::get();
 			return;
 		}
-		if (result[0] == "host") {
-			assert_conditional(result.size() >= 5, "argument must be greater than 5");
-			auto svr = Server{};
-			svr.Get(std::format("/{}", result[1]), [&](const Request&, Response& res) {
-				res.set_content(result[2], "text/html");
-			});
-			svr.listen(result[3], std::stoi(result[4]));
-			return;
-		}
 		if (result[0] == "pick_file") {
 			#if WINDOWS
 				auto raw_selection = Dialog::pick_path(false, false);

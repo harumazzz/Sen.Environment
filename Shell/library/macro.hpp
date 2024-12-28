@@ -27,7 +27,6 @@
 #include <span>
 #include "library/color.hpp"
 #include "String.hpp"
-#include "deps/cpp-httplib/httplib.h"
 
 #define WINDOWS _WIN32
 
@@ -40,8 +39,6 @@
 #define IPHONE TARGET_OS_IPHONE
 
 #define MACINTOSH __MACH__
-
-using namespace httplib;
 
 #if WINDOWS
 #include <windows.h>
