@@ -49,6 +49,8 @@ dependencies:
     audioplayers: ^6.1.0
     number_text_input_formatter: ^1.0.0+8
     drop_down_search_field: ^1.1.1
+    dio: ^5.7.0
+    archive: ^4.0.2
 dev_dependencies:
     flutter_test:
         sdk: flutter

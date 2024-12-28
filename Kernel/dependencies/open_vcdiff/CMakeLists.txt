@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
 	open_vcdiff
 	VERSION 0.8.4

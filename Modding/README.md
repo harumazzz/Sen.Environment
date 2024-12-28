@@ -4,7 +4,7 @@ Additional modules to Sen.
 
 ## Project development
 
--   [Flutter 3.24](https://docs.flutter.dev/get-started/install)
+-   [Flutter 3.27](https://docs.flutter.dev/get-started/install)
 
 -   Exploration:
 

@@ -59,30 +59,4 @@ class AndroidService {
     );
     return result;
   }
-
-  static Future<bool?> downloadFile({
-    required String description,
-    required String destination,
-    required String fileName,
-    required String url,
-  }) async {
-    final result = await _methodChannel.invokeMethod<bool?>('download_file', {
-      'description': description,
-      'destination': destination,
-      'fileName': fileName,
-      'url': url,
-    });
-    return result;
-  }
-
-  static Future<bool?> unzipFile({
-    required String source,
-    required String destination,
-  }) async {
-    final result = await _methodChannel.invokeMethod<bool?>('unzip_file', {
-      'source': source,
-      'destination': destination,
-    });
-    return result;
-  }
 }

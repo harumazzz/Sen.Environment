@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
 	canvas_ity
 	VERSION 1.0.0

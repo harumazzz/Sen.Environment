@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
 	zlib
 	VERSION 1.3.1

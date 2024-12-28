@@ -5,6 +5,7 @@ import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:sen/service/android_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:archive/archive.dart';
 
 class FileService {
   static List<String> readDirectory({
@@ -36,10 +37,7 @@ class FileService {
     String? suggestedName,
   }) async {
     var outputFile = null as String?;
-    if (Platform.isWindows ||
-        Platform.isLinux ||
-        Platform.isMacOS ||
-        Platform.isIOS) {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS || Platform.isIOS) {
       outputFile = (await file_selector.getSaveLocation(
         suggestedName: suggestedName,
       ))
@@ -149,9 +147,39 @@ class FileService {
       return (await path_provider.getApplicationDocumentsDirectory()).path;
     }
     if (Platform.isWindows) {
-      return p.absolute(
-          (await path_provider.getApplicationSupportDirectory()).path);
+      return p.absolute((await path_provider.getApplicationSupportDirectory()).path);
     }
     return (await path_provider.getApplicationSupportDirectory()).path;
+  }
+
+  static void createDirectory(String destination) {
+    return Directory(destination).createSync(recursive: true);
+  }
+
+  static void removeFile(String source) {
+    return File(source).deleteSync();
+  }
+
+  static unzipFile(String source, String destination) {
+    final inputStream = InputFileStream(source);
+    final archive = ZipDecoder().decodeStream(inputStream);
+    final symbolicLinks = [];
+    for (final file in archive) {
+      if (file.isSymbolicLink) {
+        symbolicLinks.add(file);
+        continue;
+      }
+      if (file.isFile) {
+        final outputStream = OutputFileStream('$destination/${file.name}');
+        file.writeContent(outputStream);
+        outputStream.closeSync();
+      } else {
+        Directory('$destination/${file.name}').createSync(recursive: true);
+      }
+    }
+    for (final entity in symbolicLinks) {
+      final link = Link('$destination/${entity.fullPathName}');
+      link.createSync(entity.symbolicLink!, recursive: true);
+    }
   }
 }

@@ -1,7 +1,10 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
 	fmt
-	VERSION 11.0.2
+	VERSION 11.1.1
 	HOMEPAGE_URL https://github.com/fmtlib/fmt
+	LANGUAGES CXX
 )
 
 add_library(${PROJECT_NAME} INTERFACE)

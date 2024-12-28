@@ -801,14 +801,22 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
 
   Widget _messageDisplay(Message e) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 6.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
         color: _color(e),
         child: ListTile(
-          leading: const Icon(Symbols.terminal),
-          title: _text(e.title),
+          leading: const Icon(
+            Symbols.terminal,
+            size: 30.0,
+          ),
+          title: _text(
+            e.title,
+          ),
           subtitle: _subtitle(e),
         ),
       ),

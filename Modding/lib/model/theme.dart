@@ -9,11 +9,7 @@ class MaterialDesign {
     colorScheme: material.ColorScheme.fromSeed(
       seedColor: material.Colors.deepPurpleAccent,
       brightness: material.Brightness.dark,
-    ).copyWith(
-      surface: material.Colors.black,
-      onSurface: material.Colors.white,
     ),
-    scaffoldBackgroundColor: material.Colors.black,
     useMaterial3: true,
     dialogTheme: material.DialogTheme(
       backgroundColor: material.Colors.grey.shade900,

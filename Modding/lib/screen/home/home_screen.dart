@@ -107,6 +107,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          if (item.isDisabled) {
+            return const SizedBox.shrink();
+          }
           return GridCard(
             item: item,
             isValid: ref.watch(settingProvider).isValid,
@@ -120,6 +123,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          if (item.isDisabled) {
+            return const SizedBox.shrink();
+          }
           return ListCard(
             item: item,
             isValid: ref.watch(settingProvider).isValid,
@@ -142,6 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           size: 50,
           color: Colors.blueGrey.shade600,
         ),
+        isEnabled: true,
       ),
       Item(
         title: los.js_execute,
@@ -151,6 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           size: 50,
           color: Colors.yellow.shade600,
         ),
+        isEnabled: true,
       ),
       Item(
         title: los.animation_viewer,
@@ -160,6 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           size: 50,
           color: Colors.green.shade700,
         ),
+        isEnabled: true,
       ),
       Item(
         title: los.level_maker,
@@ -169,6 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           size: 50,
           color: Colors.cyan.shade600,
         ),
+        isEnabled: true,
       ),
       Item(
         title: los.map_editor,
@@ -178,6 +188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           size: 50,
           color: Colors.lightBlue.shade600,
         ),
+        isEnabled: !Platform.isAndroid && !Platform.isIOS,
       ),
     ];
   }
@@ -198,12 +209,10 @@ class _MapEditorConfiguration extends ConsumerStatefulWidget {
   const _MapEditorConfiguration();
 
   @override
-  ConsumerState<_MapEditorConfiguration> createState() =>
-      __MapEditorConfigurationState();
+  ConsumerState<_MapEditorConfiguration> createState() => __MapEditorConfigurationState();
 }
 
-class __MapEditorConfigurationState
-    extends ConsumerState<_MapEditorConfiguration> {
+class __MapEditorConfigurationState extends ConsumerState<_MapEditorConfiguration> {
   late TextEditingController _resourceLocationController;
 
   @override
@@ -266,10 +275,7 @@ class __MapEditorConfigurationState
             const SizedBox(height: 12.0),
             Text(
               los.settings,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12.0),
             Row(
@@ -304,12 +310,10 @@ class _LevelMakerConfiguration extends ConsumerStatefulWidget {
   const _LevelMakerConfiguration();
 
   @override
-  ConsumerState<_LevelMakerConfiguration> createState() =>
-      __LevelMakerConfigurationState();
+  ConsumerState<_LevelMakerConfiguration> createState() => __LevelMakerConfigurationState();
 }
 
-class __LevelMakerConfigurationState
-    extends ConsumerState<_LevelMakerConfiguration> {
+class __LevelMakerConfigurationState extends ConsumerState<_LevelMakerConfiguration> {
   late TextEditingController _resourceLocationController;
 
   @override
@@ -372,10 +376,7 @@ class __LevelMakerConfigurationState
             const SizedBox(height: 12.0),
             Text(
               los.settings,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12.0),
             Row(

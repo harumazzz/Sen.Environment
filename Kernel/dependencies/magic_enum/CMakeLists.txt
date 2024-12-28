@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
     magic_enum
     VERSION 0.9.7
@@ -7,28 +9,25 @@ project(
 
 add_library(
     ${PROJECT_NAME} INTERFACE
-)
-
-target_sources(
-    ${PROJECT_NAME} INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_all.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_containers.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_flags.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_format.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_iostream.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_switch.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum_utility.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/magic_enum.hpp
+    ./magic_enum_all.hpp
+    ./magic_enum_containers.hpp
+    ./magic_enum_flags.hpp
+    ./magic_enum_format.hpp
+    ./magic_enum_iostream.hpp
+    ./magic_enum_fuse.hpp
+    ./magic_enum_switch.hpp
+    ./magic_enum_utility.hpp
+    ./magic_enum.hpp
 )
 
 target_include_directories(
-    ${PROJECT_NAME} INTERFACE
-    ../fmt
+	${PROJECT_NAME} INTERFACE
+	../fmt
 )
 
 target_link_libraries(
-    ${PROJECT_NAME} INTERFACE
-    fmt
+	${PROJECT_NAME} INTERFACE
+	fmt
 )
 
 set(CMAKE_CXX_STANDARD 20)

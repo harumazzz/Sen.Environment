@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.20)
+
 project(
 	avir
   	VERSION 3.0.11

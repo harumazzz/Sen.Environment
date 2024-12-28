@@ -80,7 +80,8 @@ struct std::formatter<E, std::enable_if_t<std::is_enum_v<std::decay_t<E>> && mag
 
 #if defined(FMT_VERSION)
 
-#include <fmt/format.h>
+// Haruma : Modify
+#include "./include/fmt/format.h"
 
 template <typename E>
 struct fmt::formatter<E, std::enable_if_t<std::is_enum_v<std::decay_t<E>> && magic_enum::customize::enum_format_enabled<E>(), char>> : fmt::formatter<std::string_view> {

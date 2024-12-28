@@ -24,7 +24,7 @@ import android.app.DownloadManager
 import android.content.Context
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.haruma.sen.environment.utility.ZipHelper
+
 
 class MainActivity: FlutterActivity() {
 
@@ -63,47 +63,6 @@ class MainActivity: FlutterActivity() {
 		this.registerOnActivityResult(requestCode, resultCode, data)
 		return
 	}
-
-    private fun onDownload(
-        fileName: String,
-        desc: String,
-        url: String,
-        destination: String,
-    ): Unit {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            downloadFile(fileName, desc, url, destination)
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1001)
-                downloadFile(fileName, desc, url, destination)
-            } else {
-                downloadFile(fileName, desc, url, destination)
-            }
-        }
-    }
-
-    private fun downloadFile(
-        fileName: String,
-        desc: String,
-        url: String,
-        destination: String,
-    ) {
-        val request = DownloadManager.Request(Uri.parse(url))
-            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
-            .setTitle(fileName)
-            .setDescription(desc)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(false)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            request.setDestinationInExternalFilesDir(this, destination, fileName)
-        } else {
-            request.setDestinationInExternalPublicDir(destination, fileName)
-        }
-
-        val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val downloadID = downloadManager.enqueue(request)
-    }
 
 
     public override fun onRequestPermissionsResult(
@@ -178,21 +137,6 @@ class MainActivity: FlutterActivity() {
                     else {
                         result.success(null)
                     }
-                }
-                "download_file" -> {
-                    val arguments = call.arguments as Map<String, String>
-                    val desc = arguments.get("description") as String
-                    val destination = arguments.get("destination") as String
-                    val fileName = arguments.get("fileName") as String
-                    val url = arguments.get("url") as String
-                    this.onDownload(fileName, desc, url, destination)
-                }
-                "unzip_file" -> {
-                    val arguments = call.arguments as Map<String, String>
-                    val source = arguments.get("source") as String
-                    val destination = arguments.get("destination") as String
-                    val zip: ZipHelper = ZipHelper()
-                    zip.unzip(source, destination)
                 }
                 "pick_directory" -> {
                     val destination = this.pickDirectoryFromDocument()

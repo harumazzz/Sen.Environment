@@ -43,3 +43,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /lib/screen/map_editor/*
+/android/app/main/jniLibs/arm64-v8a/libKernel.so

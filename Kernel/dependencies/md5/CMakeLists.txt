@@ -1,5 +1,5 @@
 # Adapted third from TwinStar ToolKit Source
-
+cmake_minimum_required (VERSION 3.20)
 project(
 	md5
 	VERSION 1.0

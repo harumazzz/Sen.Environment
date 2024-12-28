@@ -239,5 +239,11 @@
 	"confirm_delete": "Confirm delete",
 	"confirm_delete_description": "Are you sure want to delete entire process?",
 	"continue_progress": "Continue progress",
-	"worldmap_has_been_cleared": "Worldmap has been cleared"
+	"worldmap_has_been_cleared": "Worldmap has been cleared",
+	"download_script": "Download Script",
+	"download_script_description": "Download the script to your device",
+	"unzip_file_failed": "Unzip file failed",
+	"error": "Error",
+	"ok": "OK",
+	"script_has_been_downloaded": "Script has been downloaded"
 }
