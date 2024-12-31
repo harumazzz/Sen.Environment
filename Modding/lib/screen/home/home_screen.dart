@@ -293,7 +293,7 @@ class __MapEditorConfigurationState extends ConsumerState<_MapEditorConfiguratio
                   onPressed: _onUploadDirectory,
                   icon: Tooltip(
                     message: los.upload_directory,
-                    child: const Icon(Icons.folder),
+                    child: const Icon(Symbols.folder),
                   ),
                 ),
               ],
@@ -394,7 +394,7 @@ class __LevelMakerConfigurationState extends ConsumerState<_LevelMakerConfigurat
                   onPressed: _onUploadDirectory,
                   icon: Tooltip(
                     message: los.upload_directory,
-                    child: const Icon(Icons.folder),
+                    child: const Icon(Symbols.folder),
                   ),
                 ),
               ],

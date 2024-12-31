@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/provider/map_provider.dart';
 import 'package:sen/screen/map_editor/viewmodel/map_manager.dart';
 import 'package:sen/screen/map_editor/viewmodel/resource_manager.dart';
@@ -62,7 +63,7 @@ class _MapEditorState extends ConsumerState<MapEditor> {
       appBar: AppBar(
         forceMaterialTransparency: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Symbols.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
             StateManager.dispose();

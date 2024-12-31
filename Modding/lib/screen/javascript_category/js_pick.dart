@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/model/script.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/file_service.dart';
@@ -48,7 +49,7 @@ class _JsPickState extends State<JsPick> {
             final item = _data.data[index];
             return Card(
               child: ListTile(
-                leading: const Icon(Icons.javascript_outlined, size: 28),
+                leading: const Icon(Symbols.javascript, size: 28),
                 title: Text(item.name),
                 subtitle: Text(item.description),
                 onTap: () {

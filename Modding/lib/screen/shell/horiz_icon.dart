@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class HorizIcon extends StatefulWidget {
   const HorizIcon({super.key});
@@ -7,8 +8,7 @@ class HorizIcon extends StatefulWidget {
   State<HorizIcon> createState() => _HorizIconState();
 }
 
-class _HorizIconState extends State<HorizIcon>
-    with SingleTickerProviderStateMixin {
+class _HorizIconState extends State<HorizIcon> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _steamAnimation;
   late Animation<double> _opacityAnimation;
@@ -48,7 +48,7 @@ class _HorizIconState extends State<HorizIcon>
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          const Icon(Icons.coffee_outlined, size: 30),
+          const Icon(Symbols.coffee, size: 30),
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -59,7 +59,7 @@ class _HorizIconState extends State<HorizIcon>
                   child: Opacity(
                     opacity: _opacityAnimation.value,
                     child: Icon(
-                      Icons.waves_outlined,
+                      Symbols.waves,
                       color: Colors.grey.shade400,
                       size: 15,
                     ),

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
@@ -275,13 +276,13 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
               children: [
                 IconButton(
                   onPressed: _zoomOutAction,
-                  icon: const Icon(Icons.zoom_out_outlined),
-                  tooltip: 'Zoom Out',
+                  icon: const Icon(Symbols.zoom_out),
+                  tooltip: los.zoom_out,
                 ),
                 Tooltip(
-                  message: 'Backward',
+                  message: los.backward,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_outlined),
+                    icon: const Icon(Symbols.arrow_back),
                     onPressed: () {
                       VisualHelper.workingFrameRate /= 2;
                       if (VisualHelper.workingFrameRate <= 0) {
@@ -292,9 +293,9 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                   ),
                 ),
                 Tooltip(
-                  message: _isPause ? 'Play' : 'Stop',
+                  message: _isPause ? los.play : los.stop,
                   child: IconButton(
-                    icon: !_isPause ? const Icon(Icons.play_arrow_outlined) : const Icon(Icons.pause_outlined),
+                    icon: !_isPause ? const Icon(Symbols.play_arrow) : const Icon(Symbols.pause),
                     onPressed: () {
                       setState(() {
                         _isPause = !_isPause;
@@ -310,9 +311,9 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                   ),
                 ),
                 Tooltip(
-                  message: 'Forward',
+                  message: los.forward,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_forward_outlined),
+                    icon: const Icon(Symbols.arrow_forward),
                     onPressed: () {
                       VisualHelper.workingFrameRate *= 2;
                       if (VisualHelper.workingFrameRate > 240) {
@@ -324,8 +325,8 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                 ),
                 IconButton(
                   onPressed: _zoomInAction,
-                  icon: const Icon(Icons.zoom_in_outlined),
-                  tooltip: 'Zoom In',
+                  icon: const Icon(Symbols.zoom_in),
+                  tooltip: los.zoom_in,
                 ),
               ],
             ),

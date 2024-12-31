@@ -175,8 +175,8 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     required WidgetRef ref,
   }) {
     if (ref.watch(settingProvider).toolChain.isNotEmpty) {
-      final state = _existKernel(ref.watch(settingProvider).toolChain) &&
-          _existScript(ref.watch(settingProvider).toolChain);
+      final state =
+          _existKernel(ref.watch(settingProvider).toolChain) && _existScript(ref.watch(settingProvider).toolChain);
       ref.watch(settingProvider.notifier).setIsValid(state);
     }
   }
@@ -223,9 +223,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                     controller: _controller,
                     onChanged: (String value) {
                       _controller.text = value;
-                      ref
-                          .watch(settingProvider.notifier)
-                          .setToolChain(_controller.text);
+                      ref.watch(settingProvider.notifier).setToolChain(_controller.text);
                       _onCheckValidator(ref: ref);
                     },
                   ),
@@ -239,12 +237,10 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                         return;
                       }
                       _controller.text = directory;
-                      ref
-                          .watch(settingProvider.notifier)
-                          .setToolChain(directory);
+                      ref.watch(settingProvider.notifier).setToolChain(directory);
                       _onCheckValidator(ref: ref);
                     },
-                    icon: const Icon(Icons.drive_folder_upload_outlined),
+                    icon: const Icon(Symbols.drive_folder_upload),
                   ),
                 ),
               ],
@@ -386,9 +382,8 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    toolchainPath() => ref.watch(settingProvider).toolChain == ''
-        ? los.not_specified
-        : ref.read(settingProvider).toolChain;
+    toolchainPath() =>
+        ref.watch(settingProvider).toolChain == '' ? los.not_specified : ref.read(settingProvider).toolChain;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -406,21 +401,20 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
               Text(los.default_setting),
               const SizedBox(height: 15),
               ListTile(
-                leading: const Icon(Icons.dark_mode_outlined),
+                leading: const Icon(Symbols.dark_mode),
                 title: Text(los.theme),
                 onTap: _onChangeTheme,
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.translate_outlined),
+                leading: const Icon(Symbols.translate),
                 title: Text(los.language),
-                subtitle:
-                    Text(_exchangeLocale(ref.read(settingProvider).locale)),
+                subtitle: Text(_exchangeLocale(ref.read(settingProvider).locale)),
                 onTap: _onChangeLocale,
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.person_2_outlined),
+                leading: const Icon(Symbols.person_2),
                 title: Text(los.author),
                 subtitle: Text(los.author_of_this_locale),
                 onTap: _onViewTranslator,
@@ -429,20 +423,20 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
               Text(los.application_setting),
               const SizedBox(height: 15),
               ListTile(
-                leading: const Icon(Icons.notifications_outlined),
+                leading: const Icon(Symbols.notifications),
                 title: Text(los.send_notification),
                 onTap: _onChangeNotification,
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.storage_outlined),
+                leading: const Icon(Symbols.storage),
                 title: Text(los.storage_permission),
                 subtitle: _hasPermission ? Text(los.granted) : Text(los.denied),
                 onTap: !_hasPermission ? _requestPermission : null,
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.build_outlined),
+                leading: const Icon(Symbols.build),
                 title: Text(los.toolchain),
                 subtitle: Text(toolchainPath()),
                 onTap: _onChangeToolChain,

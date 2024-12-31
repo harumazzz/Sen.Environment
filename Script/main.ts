@@ -19,14 +19,12 @@ namespace Sen.Script {
 			message: any,
 			color: Definition.Console.Color = Definition.Console.Color.DEFAULT,
 		): void {
-			if (Shell.is_gui()) {
-				if (message) Kernel.Console.print(title, message, color);
-				else Kernel.Console.print(title, '', color);
-			} else {
-				if (message) Kernel.Console.print(`● ${title}`, `    ${message}`, color);
-				else Kernel.Console.print(`● ${title}`, '', color);
-			}
-			return;
+			const is_gui = Shell.is_gui();
+			const prefix = is_gui ? '' : '● ';
+			const new_tille = `${prefix}${title}`;
+			let msg = message ? message : '';
+			if (!is_gui && msg !== '') msg = `    ${msg}`;
+			return Kernel.Console.print(new_tille, msg, color);
 		}
 
 		export function send(
@@ -45,14 +43,12 @@ namespace Sen.Script {
 		 */
 
 		export function error(str: string | undefined): void {
-			if (str !== undefined) {
-				Console.display(
-					`${Kernel.Language.get('runtime_error')}:`,
-					str,
-					Definition.Console.Color.RED,
-				);
-			}
-			return;
+			if (str === undefined) return;
+			return Console.display(
+				`${Kernel.Language.get('runtime_error')}:`,
+				str,
+				Definition.Console.Color.RED,
+			);
 		}
 
 		/**
@@ -64,20 +60,11 @@ namespace Sen.Script {
 		 */
 
 		export function argument(str: any): void {
-			if (Shell.is_gui()) {
-				display(
-					`${Kernel.Language.get('execution_argument')}:`,
-					str,
-					Definition.Console.Color.CYAN,
-				);
-			} else {
-				display(
-					`${Kernel.Language.get('execution_argument')}: ${str}`,
-					'',
-					Definition.Console.Color.CYAN,
-				);
-			}
-			return;
+			const title = Shell.is_gui()
+				? `${Kernel.Language.get('execution_argument')}:`
+				: `${Kernel.Language.get('execution_argument')}: ${str}`;
+			const message = Shell.is_gui() ? str : '';
+			return display(title, message, Definition.Console.Color.CYAN);
 		}
 
 		/**
@@ -90,20 +77,11 @@ namespace Sen.Script {
 		 */
 
 		export function finished(subtitle: string, message?: string): void {
-			if (Shell.is_gui()) {
-				display(
-					`${Kernel.Language.get(`execution_finished`)}: ${subtitle}`,
-					message,
-					Definition.Console.Color.GREEN,
-				);
-			} else {
-				display(
-					`${Kernel.Language.get(`execution_finished`)}: ${subtitle}`,
-					message,
-					Definition.Console.Color.GREEN,
-				);
-			}
-			return;
+			return display(
+				`${Kernel.Language.get('execution_finished')}: ${subtitle}`,
+				message,
+				Definition.Console.Color.GREEN,
+			);
 		}
 
 		/**
@@ -147,12 +125,11 @@ namespace Sen.Script {
 		 */
 
 		export function warning(source: string): void {
-			Console.display(
+			return Console.display(
 				Kernel.Language.get('execution_warning'),
 				source,
 				Definition.Console.Color.YELLOW,
 			);
-			return;
 		}
 
 		// Path type
@@ -319,7 +296,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 7 as const;
+	export const version = 8 as const;
 
 	/**
 	 * --------------------------------------------------

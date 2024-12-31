@@ -621,7 +621,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         return Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.upload_file),
+              leading: const Icon(Symbols.upload_file),
               title: Text(los.upload_file),
               onTap: () {
                 _onUploadFile();
@@ -629,7 +629,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.folder),
+              leading: const Icon(Symbols.folder),
               title: Text(los.upload_directory),
               onTap: () {
                 _onUploadDirectory();
@@ -647,7 +647,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.cancel),
+              leading: const Icon(Symbols.cancel),
               title: Text(los.cancel),
               onTap: () {
                 Navigator.pop(context);
@@ -673,14 +673,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           message: los.select_option,
           child: IconButton(
             onPressed: _onSelect,
-            icon: const Icon(Icons.add_circle_sharp),
+            icon: const Icon(Symbols.add_circle_sharp),
           ),
         ),
         Tooltip(
           message: los.submit,
           child: IconButton(
             onPressed: _onSendString,
-            icon: const Icon(Icons.send_outlined),
+            icon: const Icon(Symbols.send),
           ),
         ),
       ],
@@ -726,7 +726,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           message: los.submit,
           child: IconButton(
             onPressed: _onSendEnumeration,
-            icon: const Icon(Icons.send_outlined),
+            icon: const Icon(Symbols.send),
           ),
         ),
       ],
@@ -754,7 +754,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           message: los.submit,
           child: IconButton(
             onPressed: () => _onSendBoolean(radioButton.currentOption),
-            icon: const Icon(Icons.send_outlined),
+            icon: const Icon(Symbols.send),
           ),
         ),
       ],
@@ -796,10 +796,36 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     return SelectableText(
       message,
       style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w500),
+      contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+        final List<ContextMenuButtonItem> buttonItems = editableTextState.contextMenuButtonItems;
+        buttonItems.insert(
+            0,
+            ContextMenuButtonItem(
+              label: 'Send email',
+              onPressed: () {},
+            ));
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: editableTextState.contextMenuAnchors,
+          buttonItems: buttonItems,
+        );
+      },
     );
   }
 
   Widget _messageDisplay(Message e) {
+    final title = e.title;
+    final pattern = RegExp(r"^[0-9]{1,10}\..*");
+    var callback = null as VoidCallback?;
+    if (pattern.hasMatch(title)) {
+      callback = () {
+        final value = title.substring(0, title.indexOf('.'));
+        if (int.tryParse(value) != null) {
+          setState(() {
+            _value = value;
+          });
+        }
+      };
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
@@ -816,6 +842,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             e.title,
           ),
           subtitle: _subtitle(e),
+          onTap: callback,
         ),
       ),
     );

@@ -51,6 +51,7 @@ dependencies:
     drop_down_search_field: ^1.1.1
     dio: ^5.7.0
     archive: ^4.0.2
+    windows_taskbar: ^1.1.2
 dev_dependencies:
     flutter_test:
         sdk: flutter
@@ -68,6 +69,7 @@ flutter:
     generate: true
     assets:
         - assets/
+        - assets/icon/
         - assets/images/
         - assets/images/translator/
         - .env

@@ -74,7 +74,7 @@ class GridCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: IconButton(
-                    icon: const Icon(Icons.settings),
+                    icon: const Icon(Symbols.settings),
                     onPressed: onSetting,
                     tooltip: AppLocalizations.of(context)!.settings,
                   ),

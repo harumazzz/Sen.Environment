@@ -246,5 +246,11 @@
 	"error": "Error",
 	"ok": "OK",
 	"script_has_been_downloaded": "Script has been downloaded",
-	"change_position_value": "Change position value"
+	"change_position_value": "Change position value",
+	"zoom_out": "Zoom Out",
+	"backward": "Backward",
+	"play": "Play",
+	"stop": "Stop",
+	"forward": "Forward",
+	"zoom_in": "Zoom In"
 }

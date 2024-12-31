@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class FooterWidget extends StatelessWidget {
   const FooterWidget({
@@ -121,7 +122,7 @@ class FooterWidget extends StatelessWidget {
                   const SizedBox(height: 8.0),
                   const Row(
                     children: [
-                      Icon(Icons.email, size: 16.0),
+                      Icon(Symbols.email, size: 16.0),
                       SizedBox(width: 8.0),
                       Text('harumatsx@gmail.com'),
                     ],
@@ -135,11 +136,11 @@ class FooterWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.youtube_searched_for),
+                icon: const Icon(Symbols.youtube_searched_for),
                 onPressed: () {},
               ),
               IconButton(
-                icon: const Icon(Icons.discord),
+                icon: const Icon(Icons.discord_outlined),
                 onPressed: () {},
               ),
             ],

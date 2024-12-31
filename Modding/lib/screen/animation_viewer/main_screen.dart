@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
@@ -31,7 +32,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
         title: Text(los.upload_media),
         content: Row(
           children: [
-            const Icon(Icons.abc_outlined),
+            const Icon(Symbols.abc),
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -44,7 +45,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
                   _controller.text = directory;
                 }
               },
-              icon: const Icon(Icons.drive_folder_upload_outlined),
+              icon: const Icon(Symbols.drive_folder_upload),
             ),
           ],
         ),
@@ -209,15 +210,15 @@ class _AnimationViewerState extends State<AnimationViewer> {
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: const Icon(Icons.home),
+          icon: const Icon(Symbols.home),
           label: los.home,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.label_outline),
+          icon: const Icon(Symbols.label),
           label: los.label,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.image_outlined),
+          icon: const Icon(Symbols.image),
           label: los.media,
         ),
       ],
@@ -277,7 +278,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
         actions: [
           IconButton(
             onPressed: _onUploadFile,
-            icon: const Icon(Icons.file_upload_outlined),
+            icon: const Icon(Symbols.file_upload),
           ),
         ],
       ),

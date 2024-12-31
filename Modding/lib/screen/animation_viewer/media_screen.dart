@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -27,8 +28,7 @@ class MediaScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          forceMaterialTransparency:
-              Platform.isWindows || Platform.isLinux || Platform.isMacOS,
+          forceMaterialTransparency: Platform.isWindows || Platform.isLinux || Platform.isMacOS,
           automaticallyImplyLeading: false,
           centerTitle: true,
           backgroundColor: Colors.transparent,
@@ -47,15 +47,15 @@ class MediaScreen extends StatelessWidget {
                 indicatorColor: Theme.of(context).colorScheme.secondary,
                 tabs: <Widget>[
                   Tab(
-                    icon: const Icon(Icons.folder_outlined),
+                    icon: const Icon(Symbols.folder),
                     text: los.media,
                   ),
                   Tab(
-                    icon: const Icon(Icons.folder_outlined),
+                    icon: const Icon(Symbols.folder),
                     text: los.image,
                   ),
                   Tab(
-                    icon: const Icon(Icons.folder_outlined),
+                    icon: const Icon(Symbols.folder),
                     text: los.sprite,
                   ),
                 ],
@@ -104,7 +104,7 @@ class _MediaPage extends StatelessWidget {
         child: ListTile(
           contentPadding: const EdgeInsets.all(12),
           leading: VisualHelper.imageSource[index] == null
-              ? const Icon(Icons.broken_image_outlined, size: 40)
+              ? const Icon(Symbols.broken_image, size: 40)
               : ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image(
@@ -114,8 +114,7 @@ class _MediaPage extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-          title:
-              Text(media[index], style: Theme.of(context).textTheme.titleSmall),
+          title: Text(media[index], style: Theme.of(context).textTheme.titleSmall),
         ),
       ),
     );
@@ -150,16 +149,14 @@ class _ImagePageState extends State<_ImagePage> {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(12),
-          leading: const Icon(Icons.image_outlined, size: 40),
-          title: Text(widget.image[index],
-              style: Theme.of(context).textTheme.titleSmall),
+          leading: const Icon(Symbols.image, size: 40),
+          title: Text(widget.image[index], style: Theme.of(context).textTheme.titleSmall),
           trailing: Checkbox(
             value: VisualHelper.selectImageList[index],
             onChanged: (bool? value) {
               setState(
                 () {
-                  VisualHelper.selectImageList[index] =
-                      value ?? !VisualHelper.selectImageList[index];
+                  VisualHelper.selectImageList[index] = value ?? !VisualHelper.selectImageList[index];
                 },
               );
               widget.updateUI?.call();
@@ -199,15 +196,13 @@ class _SpritePageState extends State<_SpritePage> {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(12),
-          leading: const Icon(Icons.image_outlined, size: 40),
-          title: Text(widget.sprite[index],
-              style: Theme.of(context).textTheme.titleSmall),
+          leading: const Icon(Symbols.image, size: 40),
+          title: Text(widget.sprite[index], style: Theme.of(context).textTheme.titleSmall),
           trailing: Checkbox(
             value: VisualHelper.selectSpriteList[index],
             onChanged: (bool? value) {
               setState(() {
-                VisualHelper.selectSpriteList[index] =
-                    value ?? !VisualHelper.selectSpriteList[index];
+                VisualHelper.selectSpriteList[index] = value ?? !VisualHelper.selectSpriteList[index];
               });
               widget.updateUI?.call();
             },

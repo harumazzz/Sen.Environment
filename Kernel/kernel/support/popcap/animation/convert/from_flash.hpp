@@ -517,7 +517,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						}
 					}
 				}
-				assert_conditional(start_index == last_duration, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.label_length_does_not_match"), label_name)), "exchange_label"); 
+				assert_conditional(start_index == last_duration, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.label_length_does_not_match")), label_name), "exchange_label"); 
 			}
 			return;
 		}

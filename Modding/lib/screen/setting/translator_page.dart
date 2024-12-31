@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/widget/hyperlink.dart';
 
@@ -84,7 +85,7 @@ class TranslatorPage extends StatelessWidget {
                 children: [
                   isLink
                       ? const Icon(
-                          Icons.link_outlined,
+                          Symbols.link,
                           color: Colors.grey,
                           size: 20.0,
                         )

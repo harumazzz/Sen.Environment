@@ -304,7 +304,7 @@ namespace Sen::Kernel::Definition
                         }
                     }
                 }
-                assert_conditional(state == 0_byte, fmt::format("{}", Language::get("json_writer.incomplete_utf8_string")), "WriteEscapeString");
+                assert_conditional(state == 0_byte, String::format(fmt::format("{}", Language::get("json_writer.incomplete_utf8_string")), std::to_string(output.at(output.size() - 1))), "WriteEscapeString");
                 return;
             }
 

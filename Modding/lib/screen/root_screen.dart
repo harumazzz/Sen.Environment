@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/home/home_screen.dart';
@@ -53,18 +54,18 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         onDestinationSelected: _changeScreen,
         destinations: <Widget>[
           NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home_filled),
+            icon: const Icon(Symbols.home),
+            selectedIcon: const Icon(Symbols.home_filled),
             label: los.home,
           ),
           NavigationDestination(
-            icon: const Icon(Icons.miscellaneous_services_outlined),
-            selectedIcon: const Icon(Icons.miscellaneous_services_sharp),
+            icon: const Icon(Symbols.package),
+            selectedIcon: const Icon(Symbols.package_sharp),
             label: los.miscellaneous,
           ),
           NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
+            icon: const Icon(Symbols.settings),
+            selectedIcon: const Icon(Symbols.settings_sharp),
             label: los.settings,
           ),
         ],
@@ -86,18 +87,18 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         labelType: NavigationRailLabelType.all,
         destinations: [
           NavigationRailDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home_filled),
+            icon: const Icon(Symbols.home),
+            selectedIcon: const Icon(Symbols.home_filled),
             label: Text(los.home),
           ),
           NavigationRailDestination(
-            icon: const Icon(Icons.miscellaneous_services_outlined),
-            selectedIcon: const Icon(Icons.miscellaneous_services_sharp),
+            icon: const Icon(Symbols.package),
+            selectedIcon: const Icon(Symbols.package_sharp),
             label: Text(los.miscellaneous),
           ),
           NavigationRailDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
+            icon: const Icon(Symbols.settings),
+            selectedIcon: const Icon(Symbols.settings_sharp),
             label: Text(los.settings),
           ),
         ],

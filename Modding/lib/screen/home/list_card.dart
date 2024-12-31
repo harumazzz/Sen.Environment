@@ -58,7 +58,7 @@ class ListCard extends StatelessWidget {
           ),
           trailing: onSetting != null
               ? IconButton(
-                  icon: const Icon(Icons.settings),
+                  icon: const Icon(Symbols.settings),
                   onPressed: onSetting,
                   tooltip: AppLocalizations.of(context)!.settings,
                 )

@@ -33,14 +33,14 @@ class LevelProvider extends StateNotifier<LevelState> {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     state = state.copyWith(
-      resourceLocation: prefs.getString('resourceLocation'),
+      resourceLocation: prefs.getString('levelResource'),
       isLoading: false,
     );
   }
 
   Future<void> setResourceLocation(String resourceLocation) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('resourceLocation', resourceLocation);
+    await prefs.setString('levelResource', resourceLocation);
     state = state.copyWith(resourceLocation: resourceLocation);
   }
 }
