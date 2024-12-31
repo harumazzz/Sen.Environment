@@ -77,8 +77,6 @@ using CStringView = StringView;
 
 using CStringList = StringList;
 
-typedef void(*ShellCallback)(CStringList* list, CStringView* destination);
-
 class MemoryBuffer {
 public:
     MemoryBuffer(std::size_t size) {
@@ -125,9 +123,6 @@ public:
 private:
     inline static char* buffer{nullptr};
 };
-
-typedef int (*execute)
-(CStringView* script, CStringList* argument, ShellCallback m_callback);
 
 #define assert_conditional(condition, message) \
 	if(!(condition)) {\

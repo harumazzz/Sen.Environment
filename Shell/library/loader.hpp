@@ -3,31 +3,66 @@
 #include "library/callback.hpp"
 #include "library/macro.hpp"
 
+#if WINDOWS
+#include <windows.h>
+#include <VersionHelpers.h>
+#endif
+
 namespace Sen::Shell {
+
+	#if WINDOWS
+
+	using RtlGetVersionPtr = LONG (WINAPI *)(PRTL_OSVERSIONINFOW);
+
+	
+	inline auto is_windows10(
+
+	) -> bool 
+	{
+		auto rovi = RTL_OSVERSIONINFOW{0};
+		rovi.dwOSVersionInfoSize = sizeof(rovi);
+		auto hMod = GetModuleHandleW(L"ntdll.dll");
+		if (hMod != nullptr) {
+			auto pRtlGetVersion = reinterpret_cast<RtlGetVersionPtr>(GetProcAddress(hMod, "RtlGetVersion"));
+			if (pRtlGetVersion != nullptr) {
+				pRtlGetVersion(&rovi);
+				return (rovi.dwMajorVersion > 10) || 
+					(rovi.dwMajorVersion == 10 && rovi.dwMinorVersion >= 0);
+			}
+		}
+		return false;
+	}
+	#endif
+
+	using Callback = void(*)(CStringList* list, CStringView* destination);
+
+	using Execute = int(*)(CStringView* script, CStringList* argument, Callback m_callback);
 
 	class KernelLoader {
 	public:
-		KernelLoader(int size, 
+		KernelLoader(
+			int argc, 
 		#if WINDOWS
-			wchar_t** argc
+			wchar_t** argv
 		#else
-			char** argc
+			char** argv
 		#endif
 		)
-			: size(size), argc(argc), result(1), hinst_lib(nullptr) {}
+			: argc(argc), argv(argv), result(1), hinst_lib(nullptr) {}
 
 		inline auto run(
 
 		) -> int
 		{
 			try {
+				this->validate_os();
 				this->initialize_console();
 				this->validate_arguments();
 				this->set_entry();
 				this->load_kernel();
-				auto execute_method = this->lookup_symbols();
+				auto execute_method = this->lookup_symbols<Execute>();
 				this->prepare_arguments();
-				result = this->execute_kernel(execute_method);
+				result = this->execute_kernel<Execute, Callback>(execute_method);
 			} catch (const std::runtime_error& e) {
 				Console::print(std::string{"Exception found: "} +  std::string{e.what()}, "", Interactive::Color::RED);
 			} catch (...) {
@@ -41,9 +76,9 @@ namespace Sen::Shell {
 		}
 
 	private:
-		int size;
+		int argc;
 	#if WINDOWS
-		wchar_t** argc;
+		wchar_t** argv;
 	#else
 		char** argc;
 	#endif
@@ -71,9 +106,21 @@ namespace Sen::Shell {
 		inline auto validate_arguments(
 
 		) -> void const {
-			if (size < 3) {
+			if (argc < 3) {
 				throw std::runtime_error{"Please use launcher to launch sen"};
 			}
+		}
+
+		inline auto validate_os (
+
+		) -> void
+		{
+			#if WINDOWS
+				if (!is_windows10()) {
+					throw std::runtime_error{"Windows 10 or later is required"};
+				}
+			#endif
+			return;
 		}
 
 		inline auto set_entry(
@@ -81,11 +128,11 @@ namespace Sen::Shell {
 		) -> void
 		{
 			#if WINDOWS
-			kernel = utf16_to_utf8(argc[1]);
-			script = utf16_to_utf8(argc[2]);
+			kernel = utf16_to_utf8(argv[1]);
+			script = utf16_to_utf8(argv[2]);
 			#else
-			kernel = std::string{argc[1], std::strlen(argc[1])};
-			kernel = std::string{argc[2], std::strlen(argc[2])};
+			kernel = std::string{argv[1], std::strlen(argv[1])};
+			script = std::string{argv[2], std::strlen(argv[2])};
 			#endif
 		}
 
@@ -94,29 +141,31 @@ namespace Sen::Shell {
 		) -> void
 		{
 			#if WINDOWS
-			hinst_lib = LoadLibrary(kernel.c_str());
+			auto utf16_kernel = u8_to_u16(kernel);
+			hinst_lib = LoadLibraryW(utf16_kernel.data());
 			#else
-			hinst_lib = dlopen(kernel.c_str(), RTLD_LAZY);
+			hinst_lib = dlopen(kernel.data(), RTLD_LAZY | RTLD_LOCAL);
 			#endif
 			if (hinst_lib == nullptr) {
 				throw std::runtime_error{"kernel cannot be loaded"};
 			}
 		}
 
+		template <typename function>
 		inline auto lookup_symbols(
 
-		) -> execute 
+		) -> function 
 		{
 			#if WINDOWS
-			auto execute_method = reinterpret_cast<execute>(GetProcAddress(hinst_lib, "execute"));
+			auto execute_method = reinterpret_cast<void*>(GetProcAddress(hinst_lib, "execute"));
 			#else
-			auto execute_method = reinterpret_cast<execute>(dlsym(hinst_lib, "execute"));
+			auto execute_method = reinterpret_cast<void*>(dlsym(hinst_lib, "execute"));
 			#endif
 			if (execute_method == nullptr) {
 				this->cleanup_kernel();
 				throw std::runtime_error{"execute method not found"};
 			}
-			return execute_method;
+			return static_cast<function>(execute_method);
 		}
 
 		inline auto prepare_arguments(
@@ -124,30 +173,27 @@ namespace Sen::Shell {
 		) -> void
 		{
 			this->argument_list = std::make_unique<CStringList>();
-			this->argument_list->size = static_cast<size_t>(size);
+			this->argument_list->size = static_cast<size_t>(argc);
 			this->argument_list->value = new CStringView[argument_list->size];
-			for (auto i = 0; i < size; ++i) {
-				if (i == 1) {
-					this->argument_list->value[i] = CStringView{kernel.size(), kernel.data()};
-				} else if (i == 2) {
-					this->argument_list->value[i] = CStringView{script.size(), script.data()};
-				} else {
-					#if WINDOWS
-					auto arg_value = utf16_to_utf8(argc[i]);
+			this->argument_list->value[0] = CStringView{kernel.size(), kernel.data()};
+			this->argument_list->value[1] = CStringView{script.size(), script.data()};
+			for (auto i = 0; i != 1, i != 2, i < argc; ++i) {
+				#if WINDOWS
+					auto arg_value = utf16_to_utf8(argv[i]);
 					auto value_copy = new char[arg_value.size() + 1];
 					std::memcpy(value_copy, arg_value.data(), arg_value.size());
 					value_copy[arg_value.size()] = '\0';
 					this->argument_list->value[i] = CStringView{arg_value.size(), value_copy};
 					#else
-					argument_list->value[i] = CStringView{std::strlen(argc[i]), argc[i]};
+					argument_list->value[i] = CStringView{std::strlen(argv[i]), argv[i]};
 					#endif
-				}
 			}
 			return;
 		}
 
+		template <typename function, typename callable> requires std::is_invocable_r<int, function, CStringView*, CStringList*, callable>::value && std::is_invocable_r<void, callable, CStringList*, CStringView*>::value
 		inline auto execute_kernel(
-			execute execute_method
+			function execute_method
 		) -> int 
 		{
 			auto script_pointer = CStringView{script.size(), script.data()};
@@ -159,10 +205,13 @@ namespace Sen::Shell {
 		) -> void
 		{
 			if (argument_list.get() != nullptr) {
-				delete[] argument_list->value;
-				for (auto i = 3; i < size; ++i) {
-					delete[] argument_list->value[i].value;
+				for (auto i = 0; i < argc; ++i) {
+					if (argument_list->value[i].value != nullptr) {
+						delete[] argument_list->value[i].value;
+						argument_list->value[i].value = nullptr;
+					}
 				}
+				delete[] argument_list->value;
 			}
 			this->cleanup_kernel();
 		}
@@ -180,7 +229,7 @@ namespace Sen::Shell {
 			}
 		}
 
-		std::unique_ptr<CStringList> argument_list;
+		std::unique_ptr<CStringList> argument_list{nullptr};
 	};
 
 }

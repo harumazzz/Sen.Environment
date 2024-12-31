@@ -807,8 +807,9 @@ namespace Sen::Kernel::FileSystem
 
 		#ifdef _WIN32
 			void watch_windows() {
+				auto utf16_directory = String::utf8_to_utf16(directory);
 				auto hDir = CreateFile(
-					directory.c_str(),
+					reinterpret_cast<LPCWSTR>(utf16_directory.data()),
 					FILE_LIST_DIRECTORY,
 					FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 					nullptr,

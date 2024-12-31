@@ -262,6 +262,10 @@ if (WIN32)
 	target_compile_options(${PROJECT_NAME} PRIVATE /wd4005)
 endif()
 
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
+endif()
+
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(
@@ -331,4 +335,11 @@ elseif (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
         /D "NDEBUG"
     )
+endif()
+
+if (NOT MSVC)
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fvisibility=hidden")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fvisibility=hidden")
 endif()

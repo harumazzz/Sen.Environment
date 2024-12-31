@@ -144,6 +144,9 @@ if(ANDROID AND NOT ANDROID_STL)
     set(ANDROID_STL "c++_shared")
 endif()
 
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This project only supports x64 builds.")
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(

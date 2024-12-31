@@ -245,5 +245,6 @@
 	"unzip_file_failed": "Unzip file failed",
 	"error": "Error",
 	"ok": "OK",
-	"script_has_been_downloaded": "Script has been downloaded"
+	"script_has_been_downloaded": "Script has been downloaded",
+	"change_position_value": "Change position value"
 }

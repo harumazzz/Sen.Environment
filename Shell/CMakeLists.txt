@@ -21,6 +21,10 @@ if (WIN32)
   add_compile_options(/w)
 endif()
 
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This project only supports x64 builds.")
+endif()
+
 add_executable (
     ${PROJECT_NAME} 
     ./library/color.hpp
@@ -59,4 +63,9 @@ endif()
 
 if (MSVC)
     target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=0x0A00)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Kernel32)
+endif()
+
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
 endif()

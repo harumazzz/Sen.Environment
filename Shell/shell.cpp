@@ -1,4 +1,5 @@
 ﻿#include "library/loader.hpp"
+#include <iostream>
 
 using namespace Sen::Shell;
 

@@ -47,3 +47,15 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This project only supports x64 builds.")
+endif()
+
+if (MSVC)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Kernel32)
+endif()
+
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
+endif()
