@@ -7,17 +7,25 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 
     namespace Detail {
 
-        inline auto handle_conversion_error(JSContext* context, const JSValue& value, const std::string& type) -> void {
-            throw Exception(fmt::format("Failed to convert JS value to {}", type), std::source_location::current(), "handle_conversion_error");
+        inline auto throw_exception(
+			JSContext* context, 
+			const JSValue& value, 
+			std::string_view type
+		) -> void 
+		{
+			assert_conditional(false, fmt::format("Failed to convert JS value to {}", type), "throw_exception");
         }
 
     }
 
-	inline static auto get_string(JSContext* context, const JSValue& value) -> std::string {
+	inline static auto get_string (
+		JSContext* context, 
+		const JSValue& value
+	) -> std::string {
         auto size = std::size_t{};
         auto c_str = JS_ToCStringLen(context, &size, value);
         if (c_str == nullptr) {
-			Detail::handle_conversion_error(context, value, "string");
+			Detail::throw_exception(context, value, "string");
 		}
         auto str = std::string { c_str, size };
         JS_FreeCString(context, c_str);
@@ -27,7 +35,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
     inline static auto get_int32(JSContext* context, const JSValue& value) -> int32_t {
         auto result = int32_t{};
         if (JS_ToInt32(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "int32");
+			Detail::throw_exception(context, value, "int32");
 		}
         return result;
     }
@@ -35,7 +43,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
     inline static auto get_float64(JSContext* context, const JSValue& value) -> double {
         auto result = double{};
         if (JS_ToFloat64(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "double");
+			Detail::throw_exception(context, value, "double");
 		}
         return result;
     }
@@ -43,7 +51,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 	inline static auto get_float32(JSContext* context, const JSValue& value) -> float {
         auto result = double{};
         if (JS_ToFloat64(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "float");
+			Detail::throw_exception(context, value, "float");
 		}
         return static_cast<float>(result);
     }
@@ -51,7 +59,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
     inline static auto get_int64(JSContext* context, const JSValue& value) -> int64_t {
         auto result = int64_t{};
         if (JS_ToInt64(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "int64");
+			Detail::throw_exception(context, value, "int64");
 		}
         return result;
     }
@@ -59,7 +67,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
     inline static auto get_bigint64(JSContext* context, const JSValue& value) -> int64_t {
         auto result = int64_t{};
         if (JS_ToBigInt64(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "int64");
+			Detail::throw_exception(context, value, "int64");
 		}
         return result;
     }
@@ -67,7 +75,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
     inline static auto get_uint32(JSContext* context, const JSValue& value) -> uint32_t {
         auto result = uint32_t{};
         if (JS_ToUint32(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "uint32");
+			Detail::throw_exception(context, value, "uint32");
 		}
         return result;
     }
@@ -75,7 +83,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 	inline static auto get_uint64(JSContext* context, const JSValue& value) -> uint64_t {
         auto result = uint64_t{};
         if (JS_ToIndex(context, &result, value) < 0) {
-			Detail::handle_conversion_error(context, value, "uint64");
+			Detail::throw_exception(context, value, "uint64");
 		}
         return result;
     }
@@ -351,7 +359,7 @@ namespace Sen::Kernel::Definition::JavaScript::Converter {
 		{
 			auto value = JS_GetProperty(ctx, obj, atom);
 			if (JS_IsException(value)) {
-				Detail::handle_conversion_error(ctx, obj, type_name);
+				Detail::throw_exception(ctx, obj, type_name);
 			}
 			auto result = converter(ctx, value);
 			JS_FreeValue(ctx, value);

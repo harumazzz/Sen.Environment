@@ -185,7 +185,7 @@ namespace Sen::Kernel::Interface::Script
 					auto js_obj = JS_NewObject(context);
 					for (auto &[key, value] : json.items())
 					{
-						auto atom = Atom{context, key.data(), key.size()};
+						auto atom = Atom{context, key};
 						JS_DefinePropertyValue(context, js_obj, atom.value, json_to_js(context, value), JS_PROP_C_W_E);
 					}
 					return js_obj;
@@ -6482,7 +6482,7 @@ namespace Sen::Kernel::Interface::Script
 				auto global_obj = JS_GetGlobalObject(ctx);
 				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
 				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom(ctx, class_name.data(), class_name.size());
+				auto atom = Atom{ctx, class_name};
 				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
 				JS_FreeValue(ctx, global_obj);
 				JS_FreeValue(ctx, obj1);

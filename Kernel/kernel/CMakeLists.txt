@@ -42,6 +42,7 @@ add_library(
 	./definition/compression/zlib.hpp
 	./definition/compression/lzma.hpp
 	./definition/compression/bzip2.hpp
+	./definition/javascript/common.hpp
 	./definition/javascript/value.hpp
 	./definition/javascript/runtime.hpp
 	./definition/javascript/converter.hpp

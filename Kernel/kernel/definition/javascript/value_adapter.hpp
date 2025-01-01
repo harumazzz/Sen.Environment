@@ -7,14 +7,5 @@
 
 namespace Sen::Kernel::Definition::JavaScript {
 
-	using Convert = Converter;
-
-	struct ValueAdapter;
-
-	struct ValueAdapter {
-
-		using Value = JSValue;
-
-		Value value;
-	};
+	
 }

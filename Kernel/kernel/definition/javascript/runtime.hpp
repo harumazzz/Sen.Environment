@@ -214,7 +214,7 @@ namespace Sen::Kernel::Definition::JavaScript
 				JSValueConst target_object
 			) -> void
 			{
-				auto func_atom = Atom{context.value, function_name.data(), function_name.size()};
+				auto func_atom = Atom{context.value, function_name};
 				JS_DefinePropertyValue(
 					context.value,
 					target_object,

@@ -35,11 +35,15 @@
             android:name=".SubActivity"
             android:exported="true">
             <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="image/*" />
-                <data android:mimeType="*/*" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="image/" />
+                <data android:mimeType="/*" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
