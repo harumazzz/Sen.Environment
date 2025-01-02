@@ -1,21 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
 import 'package:sen/service/file_service.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class AnimationViewer extends StatefulWidget {
+class AnimationViewer extends ConsumerStatefulWidget {
   const AnimationViewer({super.key});
 
   @override
-  State<AnimationViewer> createState() => _AnimationViewerState();
+  ConsumerState<AnimationViewer> createState() => _AnimationViewerState();
 }
 
-class _AnimationViewerState extends State<AnimationViewer> {
+class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
   late List<String> _sprite;
@@ -23,6 +27,9 @@ class _AnimationViewerState extends State<AnimationViewer> {
   late List<String> _media;
   late List<String> _label;
   late TextEditingController _controller;
+  late AnimationController _animationController;
+  String? _animationFile;
+  String? _mediaDirectory;
 
   Future<void> _onUploadMedia() async {
     final los = AppLocalizations.of(context)!;
@@ -43,6 +50,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
                 final directory = await FileService.uploadDirectory();
                 if (directory != null) {
                   _controller.text = directory;
+                  _mediaDirectory = directory;
                 }
               },
               icon: const Icon(Symbols.drive_folder_upload),
@@ -63,23 +71,31 @@ class _AnimationViewerState extends State<AnimationViewer> {
     );
   }
 
+  void _cleanUp() {
+    _label.clear();
+    _media.clear();
+    _image.clear();
+    _sprite.clear();
+  }
+
   void _loadMedia() {
+    _cleanUp();
     for (final image in VisualHelper.animation.image) {
       _image.add(image.path);
       _media.add('${image.path}.png');
-      VisualHelper.selectImageList.add(true);
     }
+    ref.read(selectedImageListProvider.notifier).allocate(VisualHelper.animation.image.length);
     for (final sprite in VisualHelper.animation.sprite) {
       _sprite.add(sprite.name);
-      VisualHelper.selectSpriteList.add(true);
     }
-    var labelName = "main";
-    _label.add("main");
+    ref.read(selectedSpriteListNotifier.notifier).allocate(VisualHelper.animation.sprite.length);
+    var labelName = 'main';
+    _label.add('main');
     VisualHelper.labelInfo[labelName] =
         LabelInfo(startIndex: 0, endIndex: VisualHelper.animation.mainSprite.frame.length - 1);
-    for (int frameIndex = 0; frameIndex < VisualHelper.animation.mainSprite.frame.length; ++frameIndex) {
+    for (var frameIndex = 0; frameIndex < VisualHelper.animation.mainSprite.frame.length; ++frameIndex) {
       final frameLabelName = VisualHelper.animation.mainSprite.frame[frameIndex].label;
-      if (frameLabelName != "" && frameLabelName != labelName) {
+      if (frameLabelName != '' && frameLabelName != labelName) {
         labelName = frameLabelName;
         VisualHelper.labelInfo[labelName] = LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
         _label.add(labelName);
@@ -115,7 +131,7 @@ class _AnimationViewerState extends State<AnimationViewer> {
                 ),
               );
             },
-            child: const Text('Detail'),
+            child: Text(los.detail),
           ),
           TextButton(
             onPressed: () {
@@ -128,10 +144,22 @@ class _AnimationViewerState extends State<AnimationViewer> {
     );
   }
 
+  void _resetAnimation() {
+    if (_animationController.duration != null) {
+      _animationController.forward(from: 0.0);
+    }
+  }
+
   void _onUploadFile() async {
     final file = await FileService.uploadFile();
     if (file != null) {
       try {
+        _animationFile = file;
+        ref.read(selectedLabel.notifier).resetLabel();
+        ref.read(selectedImageListProvider.notifier).reset();
+        ref.read(selectedSpriteListNotifier.notifier).reset();
+        _resetAnimation();
+        VisualHelper.dispose();
         await VisualHelper.loadAnimation(file);
         VisualHelper.hasAnimation = true;
         await _onUploadMedia();
@@ -145,10 +173,13 @@ class _AnimationViewerState extends State<AnimationViewer> {
     }
   }
 
-  void _onDragFile(String file) async {
+  void _onDragFile(
+    String file,
+  ) async {
     await VisualHelper.loadAnimation(file);
     VisualHelper.hasAnimation = true;
     await _onUploadMedia();
+    _resetAnimation();
     _loadMedia();
     setState(() {
       _updateScreens();
@@ -170,6 +201,9 @@ class _AnimationViewerState extends State<AnimationViewer> {
         hasFile: false,
         mediaScreen: mediaScreen,
         labelScreen: labelScreen,
+        animationController: _animationController,
+        animationFile: _animationFile,
+        mediaDirectory: _mediaDirectory,
       ),
       labelScreen,
       mediaScreen,
@@ -178,20 +212,22 @@ class _AnimationViewerState extends State<AnimationViewer> {
 
   @override
   void initState() {
+    _animationController = AnimationController(vsync: this);
+    _controller = TextEditingController();
     super.initState();
     _sprite = [];
     _image = [];
     _media = [];
     _label = [];
     _updateScreens();
-    _controller = TextEditingController();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _controller.dispose();
-    super.dispose();
     VisualHelper.dispose();
+    super.dispose();
   }
 
   late List<Widget> _screen;

@@ -149,7 +149,7 @@ namespace Sen.Script {
 			loop: do {
 				destination = Kernel.Console.readline();
 				switch (destination) {
-					case ':p': {
+					case ':p':
 						if (type === 'file') {
 							destination = Shell.callback(['pick_file']);
 						}
@@ -158,8 +158,8 @@ namespace Sen.Script {
 						}
 						Console.obtained(destination);
 						break loop;
-					}
-					default: {
+
+					default:
 						if (destination.startsWith('"') && destination.endsWith('"')) {
 							destination = destination.slice(1, destination.length - 1);
 						}
@@ -182,7 +182,6 @@ namespace Sen.Script {
 						if (type === 'any') {
 							break loop;
 						}
-					}
 				}
 			} while (true);
 			if (destination !== '') {

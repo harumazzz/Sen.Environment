@@ -60,6 +60,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     _stateController = ClientInteractionController(
       context: context,
       scrollController: _scrollController,
+      inputController: _inputController,
     );
     super.initState();
     _run(widget.arguments);
@@ -141,6 +142,18 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     });
   }
 
+  Future<void> _pickFile(
+    Pointer<CStringView> destination,
+  ) async {
+    return await _stateController.pickFile(destination);
+  }
+
+  Future<void> _pickDirectory(
+    Pointer<CStringView> destination,
+  ) async {
+    return await _stateController.pickDirectory(destination);
+  }
+
   void _run(
     List<String> arguments,
   ) async {
@@ -152,6 +165,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       inputString: _inputString,
       inputEnumeration: _inputEnumeration,
       inputBoolean: _inputBoolean,
+      pickFile: _pickFile,
+      pickDirectory: _pickDirectory,
     );
     _setFinishState();
     return;

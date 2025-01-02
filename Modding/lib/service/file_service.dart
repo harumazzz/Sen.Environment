@@ -81,6 +81,12 @@ class FileService {
     return File(source).readAsStringSync();
   }
 
+  static Future<String> readFileAsync({
+    required String source,
+  }) async {
+    return await File(source).readAsString();
+  }
+
   static Uint8List readBuffer({
     required String source,
   }) {
@@ -108,6 +114,12 @@ class FileService {
     required String source,
   }) {
     return jsonDecode(readFile(source: source));
+  }
+
+  static Future<dynamic> readJsonAsync({
+    required String source,
+  }) async {
+    return jsonDecode(await readFileAsync(source: source));
   }
 
   static Future<String?> uploadDirectory() async {

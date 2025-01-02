@@ -252,5 +252,18 @@
 	"play": "Play",
 	"stop": "Stop",
 	"forward": "Forward",
-	"zoom_in": "Zoom In"
+	"zoom_in": "Zoom In",
+	"launch_immediately": "Launch immediately",
+	"show_confirm_dialog": "Show confirm dialog",
+	"js_settings": "JS Settings",
+	"do_you_wish_to_run": "Do you wish to run script {module_name}?",
+	"script_not_found": "Script not found",
+	"restart": "Restart",
+	"animation_file": "Animation file: {file}",
+	"media_directory": "Media directory: {media_path}",
+	"unselected": "Unselected",
+	"disable_all_sprite": "Disable all sprites",
+	"disable_all_image": "Disable all images",
+	"enable_all_sprite": "Enable all sprites",
+	"enable_all_image": "Enable all images"
 }

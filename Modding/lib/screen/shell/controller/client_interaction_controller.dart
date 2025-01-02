@@ -4,17 +4,19 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
+import 'package:sen/service/file_service.dart';
 import 'package:sen/service/pointer_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ClientInteractionController {
   final BuildContext context;
   final ScrollController scrollController;
+  final TextEditingController? inputController;
   final List<Message> messages;
 
   ClientInteractionController({
     required this.context,
     required this.scrollController,
+    required this.inputController,
   }) : messages = [];
 
   void _scrollToBottom() {
@@ -23,22 +25,15 @@ class ClientInteractionController {
     });
   }
 
-  Future<void> inputString(
+  Future<void> _handleInput(
     Pointer<CStringView> destination,
-    void Function(Completer<String?> completer) onSend,
+    Future<String?> Function() fetchData,
   ) async {
-    final los = AppLocalizations.of(context)!;
     final completer = Completer<String?>();
-    onSend(completer);
+    completer.complete(await fetchData());
     final e = await completer.future;
-    final providedValue = e!.isNotEmpty ? e : 'none';
-    messages.add(
-      Message(
-        title: '${los.user_provided}:',
-        subtitle: providedValue,
-        color: 'default',
-      ),
-    );
+    if (e == null) return;
+
     final units = PointerService.toUint8List(e);
     final utf8Str = PointerService.utf8ListToCString(units);
     destination.ref
@@ -49,55 +44,50 @@ class ClientInteractionController {
     await WidgetsBinding.instance.endOfFrame;
   }
 
+  Future<void> inputString(
+    Pointer<CStringView> destination,
+    void Function(Completer<String?> completer) onSend,
+  ) async {
+    return await _handleInput(destination, () async {
+      final completer = Completer<String?>();
+      onSend(completer);
+      return completer.future;
+    });
+  }
+
   Future<void> inputEnumeration(
     Pointer<CStringView> destination,
     List<String> restStatement,
     void Function(Completer<String?> completer, String value) onSend,
   ) async {
-    final los = AppLocalizations.of(context)!;
-    final completer = Completer<String?>();
-    final value = restStatement[0];
-    onSend(completer, value);
-    final e = await completer.future;
-    messages.add(
-      Message(
-        title: los.user_provided,
-        subtitle: e,
-        color: 'default',
-      ),
-    );
-    final units = PointerService.toUint8List(e!);
-    final utf8Str = PointerService.utf8ListToCString(units);
-    destination.ref
-      ..size = units.length
-      ..value = utf8Str;
-
-    _scrollToBottom();
-    await WidgetsBinding.instance.endOfFrame;
+    return await _handleInput(destination, () async {
+      final completer = Completer<String?>();
+      final value = restStatement[0];
+      onSend(completer, value);
+      return completer.future;
+    });
   }
 
   Future<void> inputBoolean(
     Pointer<CStringView> destination,
     void Function(Completer<String?> completer) onSend,
   ) async {
-    final los = AppLocalizations.of(context)!;
-    final completer = Completer<String?>();
-    onSend(completer);
-    final e = await completer.future;
-    messages.add(
-      Message(
-        title: los.user_provided,
-        subtitle: e,
-        color: 'default',
-      ),
-    );
-    final units = PointerService.toUint8List(e!);
-    final utf8Str = PointerService.utf8ListToCString(units);
-    destination.ref
-      ..size = units.length
-      ..value = utf8Str;
+    return await _handleInput(destination, () async {
+      final completer = Completer<String?>();
+      onSend(completer);
+      return completer.future;
+    });
+  }
 
-    _scrollToBottom();
-    await WidgetsBinding.instance.endOfFrame;
+  Future<void> pickFile(
+    Pointer<CStringView> destination,
+  ) async {
+    return await _handleInput(destination, FileService.uploadFile);
+  }
+
+  Future<void> pickDirectory(
+    Pointer<CStringView> destination,
+  ) async {
+    return await _handleInput(destination, FileService.uploadDirectory);
   }
 }

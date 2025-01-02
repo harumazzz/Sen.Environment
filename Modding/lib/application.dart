@@ -7,7 +7,7 @@ import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
 import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
-import 'package:sen/screen/javascript_category/js_pick.dart';
+import 'package:sen/screen/javascript_category/javascript_category.dart';
 import 'package:sen/screen/level_maker/level_maker.dart';
 import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/root_screen.dart';
@@ -54,7 +54,7 @@ class _ApplicationState extends ConsumerState<Application> {
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/js.ico'),
           'JS Category',
-          () => _pushScreen(JsPick(holder: ref.read(settingProvider).toolChain)),
+          () => _pushScreen(JavaScriptCategory(toolChain: ref.read(settingProvider).toolChain)),
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/package.ico'),

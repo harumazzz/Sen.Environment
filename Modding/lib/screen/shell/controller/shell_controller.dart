@@ -23,9 +23,13 @@ class ShellController {
     this.onBefore,
   });
 
-  void _handleQueryCommand(List<dynamic> event) {
+  void _handleQueryCommand({
+    required List<dynamic> event,
+    required Future<void> Function(Pointer<CStringView> destination) pickFile,
+    required Future<void> Function(Pointer<CStringView> destination) pickDirectory,
+  }) {
     if (event.isEmpty) return;
-    var command = event.removeAt(0);
+    final command = event.removeAt(0);
     if (command == null) return;
 
     switch (command) {
@@ -35,7 +39,32 @@ class ShellController {
       case 'finish':
         _handleFinishCommand();
         break;
+      case 'pick_file':
+        _handlePickFileCommand(events: event, pickFile: pickFile);
+      case 'pick_directory':
+        _handlePickDirectoryCommand(events: event, pickDirectory: pickDirectory);
+        break;
     }
+  }
+
+  void _handlePickDirectoryCommand({
+    required List<dynamic> events,
+    required Future<void> Function(Pointer<CStringView> destination) pickDirectory,
+  }) async {
+    final callbackState = Pointer<Bool>.fromAddress(events[0]);
+    final destination = Pointer<CStringView>.fromAddress(events[1]);
+    await pickDirectory(destination);
+    callbackState.value = true;
+  }
+
+  void _handlePickFileCommand({
+    required List<dynamic> events,
+    required Future<void> Function(Pointer<CStringView> destination) pickFile,
+  }) async {
+    final callbackState = Pointer<Bool>.fromAddress(events[0]);
+    final destination = Pointer<CStringView>.fromAddress(events[1]);
+    await pickFile(destination);
+    callbackState.value = true;
   }
 
   void _handleDisplayCommand(List<dynamic> event) {
@@ -92,6 +121,8 @@ class ShellController {
     required Future<void> Function(Pointer<CStringView> destination) inputString,
     required Future<void> Function(Pointer<CStringView> destination, List<String> restStatement) inputEnumeration,
     required Future<void> Function(Pointer<CStringView> destination) inputBoolean,
+    required Future<void> Function(Pointer<CStringView> destination) pickFile,
+    required Future<void> Function(Pointer<CStringView> destination) pickDirectory,
   }) async {
     final SettingState setting = ref.read(settingProvider);
     final mainReceivePort = ReceivePort();
@@ -104,6 +135,8 @@ class ShellController {
       inputString: inputString,
       inputEnumeration: inputEnumeration,
       inputBoolean: inputBoolean,
+      pickFile: pickFile,
+      pickDirectory: pickDirectory,
     );
     await mainStreamQueue.cancel();
   }
@@ -129,6 +162,8 @@ class ShellController {
     required Future<void> Function(Pointer<CStringView> destination) inputString,
     required Future<void> Function(Pointer<CStringView> destination, List<String> restStatement) inputEnumeration,
     required Future<void> Function(Pointer<CStringView> destination) inputBoolean,
+    required Future<void> Function(Pointer<CStringView> destination) pickFile,
+    required Future<void> Function(Pointer<CStringView> destination) pickDirectory,
   }) async {
     while (await mainStreamQueue.hasNext) {
       var mainEvent = await mainStreamQueue.next as List<dynamic>?;
@@ -144,7 +179,7 @@ class ShellController {
           inputBoolean: inputBoolean,
         );
       } else {
-        _handleQueryCommand(mainEvent);
+        _handleQueryCommand(event: mainEvent, pickFile: pickFile, pickDirectory: pickDirectory);
       }
     }
   }

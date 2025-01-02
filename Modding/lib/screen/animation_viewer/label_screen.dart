@@ -1,42 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
 
-// ignore: must_be_immutable
-class LabelScreen extends StatefulWidget {
-  LabelScreen({
+class LabelScreen extends ConsumerWidget {
+  const LabelScreen({
     super.key,
     required this.label,
   });
 
   final List<String> label;
 
-  void Function()? updateUI;
-
   @override
-  State<LabelScreen> createState() => _LabelScreenState();
-}
-
-class _LabelScreenState extends State<LabelScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
-      itemCount: widget.label.length,
+      itemCount: label.length,
       itemBuilder: (context, index) => Tooltip(
-        message: widget.label[index],
+        message: label[index],
         child: Card(
           child: ListTile(
             leading: const Icon(Symbols.animation),
             trailing: IconButton(
               icon: const Icon(Symbols.play_arrow),
               onPressed: () {
-                setState(() {
-                  VisualHelper.currentLabel = widget.label[index];
-                });
-                widget.updateUI?.call();
+                ref.read(selectedLabel.notifier).setLabel(label[index]);
               },
             ),
-            title: Text(widget.label[index]),
+            title: Text(label[index]),
           ),
         ),
       ),

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/model/animation.dart' as model;
+import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
 import 'package:sen/service/file_service.dart';
 import 'dart:collection';
 import 'dart:math' as math;
@@ -12,7 +16,10 @@ class LabelInfo {
   int startIndex;
   int endIndex;
 
-  LabelInfo({required this.startIndex, required this.endIndex});
+  LabelInfo({
+    required this.startIndex,
+    required this.endIndex,
+  });
 }
 
 class VisualHelper {
@@ -28,13 +35,7 @@ class VisualHelper {
 
   static double workingFrameRate = 30;
 
-  static String currentLabel = "main";
-
   static Map<String, LabelInfo> labelInfo = {};
-
-  static List<bool> selectImageList = [];
-
-  static List<bool> selectSpriteList = [];
 
   static Future<void> loadAnimation(String path) async {
     dispose();
@@ -110,8 +111,7 @@ class VisualHelper {
   }
 
   static Color colorFromVariant(model.Color color) {
-    return Color.fromRGBO((color[0] * 255).round(), (color[1] * 255).round(),
-        (color[2] * 255).round(), color[3]);
+    return Color.fromRGBO((color[0] * 255).round(), (color[1] * 255).round(), (color[2] * 255).round(), color[3]);
   }
 
   static model.AnimationImage selectImage(int index) {
@@ -140,28 +140,32 @@ class VisualHelper {
 
   //-----------------------
 
-  static Widget visualizeImage(int index) {
+  static Widget visualizeImage(int index, WidgetRef ref) {
     final image = selectImage(index);
     return Visibility(
-        visible: VisualHelper.selectImageList[index],
-        child: Transform(
-            transform: transformMatrixFromVariant(image.transform),
-            child: imageSource[index] == null
-                ? Text('Missing ${image.path}')
-                : Image(
-                    image: imageSource[index]!,
-                    width: image.dimension.width.toDouble(),
-                    height: image.dimension.height.toDouble(),
-                    fit: BoxFit.fill)));
+      visible: ref.watch(selectedImageListProvider)[index],
+      child: Transform(
+        transform: transformMatrixFromVariant(image.transform),
+        child: imageSource[index] == null
+            ? Text('Missing ${image.path}')
+            : Image(
+                image: imageSource[index]!,
+                width: image.dimension.width.toDouble(),
+                height: image.dimension.height.toDouble(),
+                fit: BoxFit.fill),
+      ),
+    );
   }
 
   static Widget visualizeSprite(
-      int index, AnimationController animationController) {
+    int index,
+    AnimationController animationController,
+    WidgetRef ref,
+  ) {
     final sprite = selectSprite(index);
     final isMainSprite = index == animation.sprite.length;
     final layerList = SplayTreeMap<int, _VisualLayer>();
     var frameIndex = 0;
-
     for (final frame in sprite.frame) {
       for (final removeIndex in frame.remove) {
         var layer = layerList[removeIndex]!;
@@ -174,16 +178,16 @@ class VisualHelper {
         var layer = layerList[action.index] = _VisualLayer();
         var subController = isMainSprite
             ? animationController.drive(IntTween(
-                begin: labelInfo[currentLabel]!.startIndex,
-                end: labelInfo[currentLabel]!.endIndex - 1))
+                begin: labelInfo[ref.watch(selectedLabel)]!.startIndex,
+                end: labelInfo[ref.watch(selectedLabel)]!.endIndex - 1))
             : animationController.drive(
                 IntTween(begin: 0, end: sprite.frame.length - 1),
               );
         layer.view = AnimatedBuilder(
           animation: subController,
           child: !action.sprite
-              ? visualizeImage(action.resource)
-              : visualizeSprite(action.resource, animationController),
+              ? visualizeImage(action.resource, ref)
+              : visualizeSprite(action.resource, animationController, ref),
           builder: (context, child) {
             var index = subController.value;
             var property = layer.property[index];
@@ -209,16 +213,12 @@ class VisualHelper {
         if (layer.isChanged) {
           layer.property[frameIndex] = (
             transformMatrixFromVariant(action.transform),
-            action.color != null
-                ? makeColor(action.color!)
-                : layer.property[frameIndex]!.$2,
+            action.color != null ? makeColor(action.color!) : layer.property[frameIndex]!.$2,
           );
         } else {
           layer.property[frameIndex] = (
             transformMatrixFromVariant(action.transform),
-            action.color != null
-                ? makeColor(action.color!)
-                : layer.property[frameIndex - 1]!.$2,
+            action.color != null ? makeColor(action.color!) : layer.property[frameIndex - 1]!.$2,
           );
         }
         layer.isChanged = true;
@@ -243,7 +243,7 @@ class VisualHelper {
       );
     } else {
       return Visibility(
-        visible: VisualHelper.selectSpriteList[index],
+        visible: ref.watch(selectedSpriteListNotifier)[index],
         child: Stack(
           fit: StackFit.passthrough,
           children: layerList.values.map((value) => value.view).toList(),
@@ -252,15 +252,12 @@ class VisualHelper {
     }
   }
 
-  static dispose() {
+  static void dispose() {
     hasAnimation = false;
     hasMedia = false;
     workingFrameRate = 30;
-    selectImageList = [];
-    selectSpriteList = [];
     imageSource = [];
     labelInfo = {};
-    currentLabel = "main";
   }
 }
 

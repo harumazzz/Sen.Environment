@@ -6,7 +6,7 @@ class AnimationPainter extends CustomPainter {
   final double x;
   final double y;
 
-  AnimationPainter({
+  const AnimationPainter({
     required this.x,
     required this.y,
   });

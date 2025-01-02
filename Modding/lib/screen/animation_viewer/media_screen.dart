@@ -2,18 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
+import 'package:sen/screen/animation_viewer/image_page.dart';
+import 'package:sen/screen/animation_viewer/media_page.dart';
+import 'package:sen/screen/animation_viewer/sprite_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-// ignore: must_be_immutable
 class MediaScreen extends StatelessWidget {
   final List<String> sprite;
   final List<String> image;
   final List<String> media;
 
-  void Function()? updateUI;
-
-  MediaScreen({
+  const MediaScreen({
     super.key,
     required this.sprite,
     required this.image,
@@ -67,145 +66,16 @@ class MediaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: TabBarView(
             children: <Widget>[
-              _MediaPage(media: media),
-              _ImagePage(
-                image: image,
-                updateUI: updateUI,
+              MediaPage(
+                media: media,
               ),
-              _SpritePage(
+              ImagePage(
+                image: image,
+              ),
+              SpritePage(
                 sprite: sprite,
-                updateUI: updateUI,
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MediaPage extends StatelessWidget {
-  const _MediaPage({
-    required this.media,
-  });
-
-  final List<String> media;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: media.length,
-      itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(12),
-          leading: VisualHelper.imageSource[index] == null
-              ? const Icon(Symbols.broken_image, size: 40)
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image(
-                    image: VisualHelper.imageSource[index]!,
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-          title: Text(media[index], style: Theme.of(context).textTheme.titleSmall),
-        ),
-      ),
-    );
-  }
-}
-
-// ignore: must_be_immutable
-class _ImagePage extends StatefulWidget {
-  _ImagePage({
-    required this.image,
-    required this.updateUI,
-  });
-
-  final List<String> image;
-
-  void Function()? updateUI;
-
-  @override
-  State<_ImagePage> createState() => _ImagePageState();
-}
-
-class _ImagePageState extends State<_ImagePage> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: widget.image.length,
-      itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(12),
-          leading: const Icon(Symbols.image, size: 40),
-          title: Text(widget.image[index], style: Theme.of(context).textTheme.titleSmall),
-          trailing: Checkbox(
-            value: VisualHelper.selectImageList[index],
-            onChanged: (bool? value) {
-              setState(
-                () {
-                  VisualHelper.selectImageList[index] = value ?? !VisualHelper.selectImageList[index];
-                },
-              );
-              widget.updateUI?.call();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ignore: must_be_immutable
-class _SpritePage extends StatefulWidget {
-  _SpritePage({
-    required this.sprite,
-    this.updateUI,
-  });
-
-  final List<String> sprite;
-
-  void Function()? updateUI;
-
-  @override
-  State<_SpritePage> createState() => _SpritePageState();
-}
-
-class _SpritePageState extends State<_SpritePage> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: widget.sprite.length,
-      itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(12),
-          leading: const Icon(Symbols.image, size: 40),
-          title: Text(widget.sprite[index], style: Theme.of(context).textTheme.titleSmall),
-          trailing: Checkbox(
-            value: VisualHelper.selectSpriteList[index],
-            onChanged: (bool? value) {
-              setState(() {
-                VisualHelper.selectSpriteList[index] = value ?? !VisualHelper.selectSpriteList[index];
-              });
-              widget.updateUI?.call();
-            },
           ),
         ),
       ),

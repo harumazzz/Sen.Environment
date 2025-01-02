@@ -35,8 +35,11 @@ class CommandHandler {
       case 'is_gui':
         _handleIsGuiCommand(destination);
         break;
-      case 'push_notification':
-        _handlePushNotificationCallback(result);
+      case 'pick_file':
+        _handlePickFile(destination);
+        break;
+      case 'pick_directory':
+        _handlePickDirectory(destination);
         break;
       case 'finish':
         _handleFinishCallback();
@@ -51,8 +54,26 @@ class CommandHandler {
     sendPort?.send(['unexpected', ...command]);
   }
 
-  void _handlePushNotificationCallback(List<String> result) {
-    sendPort?.send(['push_notification', result[0], result[1]]);
+  void _handlePickFile(Pointer<CStringView> destination) {
+    final state = calloc<Bool>();
+    state.value = false;
+    sendPort?.send(['pick_file', state.address, destination.address]);
+    while (!state.value) {
+      sleep(const Duration(milliseconds: 10));
+    }
+
+    calloc.free(state);
+  }
+
+  void _handlePickDirectory(Pointer<CStringView> destination) {
+    final state = calloc<Bool>();
+    state.value = false;
+    sendPort?.send(['pick_directory', state.address, destination.address]);
+    while (!state.value) {
+      sleep(const Duration(milliseconds: 10));
+    }
+
+    calloc.free(state);
   }
 
   void _handleFinishCallback() {
@@ -74,7 +95,7 @@ class CommandHandler {
   }
 
   void _handleInputCommand(Pointer<CStringView> destination) {
-    var state = calloc<Bool>();
+    final state = calloc<Bool>();
     state.value = false;
     sendPort?.send(['input_string', state.address, destination.address]);
 
@@ -86,7 +107,7 @@ class CommandHandler {
   }
 
   void _handleInputBooleanCommand(Pointer<CStringView> destination) {
-    var state = calloc<Bool>();
+    final state = calloc<Bool>();
     state.value = false;
     sendPort?.send(['input_boolean', state.address, destination.address]);
 

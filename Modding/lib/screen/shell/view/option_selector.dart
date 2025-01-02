@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class OptionSelector extends StatelessWidget {
   final Future<String?> Function() onUploadFile;
@@ -47,22 +48,22 @@ class OptionSelector extends StatelessWidget {
     return Wrap(
       children: [
         ListTile(
-          leading: const Icon(Icons.upload_file),
+          leading: const Icon(Symbols.upload_file),
           title: Text(los.upload_file),
           onTap: () => _handleUploadFile(pop),
         ),
         ListTile(
-          leading: const Icon(Icons.folder),
+          leading: const Icon(Symbols.folder),
           title: Text(los.upload_directory),
           onTap: () => _handleUploadDirectory(pop),
         ),
         ListTile(
-          leading: const Icon(Icons.code),
+          leading: const Icon(Symbols.code),
           title: Text(los.batch_function),
           onTap: () => _handleBatchFunction(pop),
         ),
         ListTile(
-          leading: const Icon(Icons.cancel),
+          leading: const Icon(Symbols.cancel),
           title: Text(los.cancel),
           onTap: () => Navigator.pop(context),
         ),

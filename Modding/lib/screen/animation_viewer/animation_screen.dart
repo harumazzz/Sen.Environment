@@ -2,13 +2,18 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/screen/animation_viewer/control_panel.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
+import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class AnimationScreen extends StatefulWidget {
+class AnimationScreen extends ConsumerStatefulWidget {
   const AnimationScreen({
     super.key,
     required this.hasFile,
@@ -16,6 +21,9 @@ class AnimationScreen extends StatefulWidget {
     required this.onDragFile,
     required this.mediaScreen,
     required this.labelScreen,
+    required this.animationController,
+    required this.animationFile,
+    required this.mediaDirectory,
   });
 
   final bool hasFile;
@@ -24,23 +32,43 @@ class AnimationScreen extends StatefulWidget {
 
   final void Function(String value) onDragFile;
 
+  final String? animationFile;
+
+  final String? mediaDirectory;
+
   final MediaScreen mediaScreen;
 
   final LabelScreen labelScreen;
 
+  final AnimationController animationController;
+
   @override
-  State<AnimationScreen> createState() => _AnimationScreenState();
+  ConsumerState<AnimationScreen> createState() => _AnimationScreenState();
 }
 
-class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
-  double xOffset = 0.0;
-  double yOffset = 0.0;
+class _AnimationScreenState extends ConsumerState<AnimationScreen> {
+  late ValueNotifier<double> _xOffsetNotifier;
+  late ValueNotifier<double> _yOffsetNotifier;
   bool _dragging = false;
-  double scale = 1.0;
+  late ValueNotifier<double> _scaleNotifier;
 
   late Widget? _animationVisual;
-  late AnimationController _animationController;
   bool _isPause = false;
+
+  @override
+  void initState() {
+    _scaleNotifier = ValueNotifier(1.0);
+    _xOffsetNotifier = ValueNotifier(0.0);
+    _yOffsetNotifier = ValueNotifier(0.0);
+    super.initState();
+    _animationVisual = null;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    return;
+  }
 
   Widget _uploadFile() {
     final los = AppLocalizations.of(context)!;
@@ -70,7 +98,7 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
       },
       onDragDone: (details) {
         if (details.files.isNotEmpty) {
-          var file = details.files.first;
+          final file = details.files.first;
           widget.onDragFile(file.path);
           if (VisualHelper.hasAnimation) {
             VisualHelper.workingFrameRate = VisualHelper.animation.frameRate.toDouble();
@@ -81,12 +109,75 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     );
   }
 
+  void _showInfo() async {
+    final los = AppLocalizations.of(context)!;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(los.info),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(los.animation_file(widget.animationFile ?? los.unselected)),
+              const SizedBox(height: 10.0),
+              Text(los.media_directory(widget.mediaDirectory ?? los.unselected)),
+              const SizedBox(height: 10.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  ElevatedButton(
+                    child: Text(los.enable_all_image),
+                    onPressed: () {
+                      ref.read(selectedImageListProvider.notifier).enableAll();
+                    },
+                  ),
+                  const SizedBox(width: 10.0),
+                  ElevatedButton(
+                    child: Text(los.disable_all_image),
+                    onPressed: () {
+                      ref.read(selectedImageListProvider.notifier).disableAll();
+                    },
+                  ),
+                  const SizedBox(width: 10.0),
+                  ElevatedButton(
+                    child: Text(los.enable_all_sprite),
+                    onPressed: () {
+                      ref.read(selectedSpriteListNotifier.notifier).enableAll();
+                    },
+                  ),
+                  const SizedBox(width: 10.0),
+                  ElevatedButton(
+                    child: Text(los.disable_all_sprite),
+                    onPressed: () {
+                      ref.read(selectedSpriteListNotifier.notifier).disableAll();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(los.close),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _loadWorkingSprite(int index) {
     setState(() {
-      final labelInfo = VisualHelper.labelInfo[VisualHelper.currentLabel]!;
+      final labelInfo = VisualHelper.labelInfo[ref.read<String>(selectedLabel)]!;
       final duration = ((labelInfo.endIndex - labelInfo.startIndex) / VisualHelper.workingFrameRate * 1000).toInt();
-      _animationController.duration = Duration(milliseconds: duration);
-      _animationVisual = VisualHelper.visualizeSprite(index, _animationController);
+      widget.animationController.duration = Duration(milliseconds: duration);
+      _animationVisual = VisualHelper.visualizeSprite(index, widget.animationController, ref);
       _animationVisual = SizedBox.fromSize(
         size: Size(VisualHelper.animation.size.width, VisualHelper.animation.size.height),
         child: UnconstrainedBox(
@@ -98,57 +189,78 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
         ),
       );
       if (!_isPause) {
-        _animationController.repeat();
+        widget.animationController.repeat();
       }
     });
   }
 
-  void _resetUI() {
-    if (mounted) {
-      setState(() {});
-    }
+  Widget _buildMainContainer({
+    required double scale,
+    required double xOffset,
+    required double yOffset,
+  }) {
+    final los = AppLocalizations.of(context)!;
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Transform(
+            transform: VisualHelper.transformMatrixFromVariant([
+              xOffset,
+              yOffset,
+            ]),
+            child: Transform.scale(
+              scale: scale,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.6,
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: _animationVisual,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 10,
+          right: 10,
+          child: Tooltip(
+            message: los.info,
+            child: IconButton(
+              onPressed: _showInfo,
+              icon: const Icon(Symbols.info, size: 24),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(vsync: this);
-    _animationVisual = null;
-    widget.mediaScreen.updateUI = _resetUI;
-    widget.labelScreen.updateUI = _resetUI;
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    widget.mediaScreen.updateUI = null;
-    widget.labelScreen.updateUI = null;
-    super.dispose();
-    return;
+  Widget _buildAnimationVisual() {
+    return ValueListenableBuilder<double>(
+      valueListenable: _yOffsetNotifier,
+      builder: (context, yOffset, child) {
+        return ValueListenableBuilder<double>(
+          valueListenable: _xOffsetNotifier,
+          builder: (context, xOffset, child) => ValueListenableBuilder<double>(
+            valueListenable: _scaleNotifier,
+            builder: (context, scale, child) {
+              return _buildMainContainer(scale: scale, xOffset: xOffset, yOffset: yOffset);
+            },
+          ),
+        );
+      },
+    );
   }
 
   Widget _painterOrUpload() {
     if (VisualHelper.hasAnimation && VisualHelper.hasMedia) {
       _loadWorkingSprite(VisualHelper.animation.sprite.length);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Transform(
-          transform: VisualHelper.transformMatrixFromVariant([xOffset, yOffset]),
-          child: Transform.scale(
-            scale: scale,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.6,
-                maxHeight: MediaQuery.of(context).size.height * 0.6,
-              ),
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: _animationVisual,
-              ),
-            ),
-          ),
-        ),
-      );
+      return _buildAnimationVisual();
     } else {
       return ClipRRect(
         clipBehavior: Clip.hardEdge,
@@ -159,50 +271,40 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
 
   Widget _buildSliderRow({
     required String label,
-    required double value,
+    required ValueNotifier<double> notifier,
     required double min,
     required double max,
-    required ValueChanged<double> onChanged,
   }) {
-    return Card(
-      child: Row(
-        children: [
-          const SizedBox(width: 16),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Tooltip(
-              message: value.toStringAsFixed(2).toString(),
-              child: Slider(
-                value: value.clamp(min, max),
-                min: min,
-                max: max,
-                onChanged: onChanged,
+    return ValueListenableBuilder<double>(
+      valueListenable: notifier,
+      builder: (context, value, child) {
+        return Card(
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Tooltip(
+                  message: value.toStringAsFixed(2),
+                  child: Slider(
+                    value: value.clamp(min, max),
+                    min: min,
+                    max: max,
+                    onChanged: (val) {
+                      notifier.value = val;
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  void _zoomInAction() {
-    scale *= 2;
-    if (scale > 300) {
-      scale = 300;
-    }
-    setState(() {});
-  }
-
-  void _zoomOutAction() {
-    scale /= 2;
-    if (scale < 0.1) {
-      scale = 0.1;
-    }
-    setState(() {});
   }
 
   Widget _buildContainer() {
@@ -237,101 +339,36 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
             children: [
               _buildSliderRow(
                 label: los.x,
-                value: xOffset,
+                notifier: _xOffsetNotifier,
                 min: -800,
                 max: 800,
-                onChanged: (value) {
-                  setState(() {
-                    xOffset = value;
-                  });
-                },
               ),
               const SizedBox(height: 4.0),
               const Divider(),
               const SizedBox(height: 4.0),
               _buildSliderRow(
                 label: los.y,
-                value: yOffset,
+                notifier: _yOffsetNotifier,
                 min: -400,
                 max: 400,
-                onChanged: (value) {
-                  setState(() {
-                    yOffset = value;
-                  });
-                },
               ),
             ],
           ),
         ),
-        Card(
-          margin: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: _zoomOutAction,
-                  icon: const Icon(Symbols.zoom_out),
-                  tooltip: los.zoom_out,
-                ),
-                Tooltip(
-                  message: los.backward,
-                  child: IconButton(
-                    icon: const Icon(Symbols.arrow_back),
-                    onPressed: () {
-                      VisualHelper.workingFrameRate /= 2;
-                      if (VisualHelper.workingFrameRate <= 0) {
-                        VisualHelper.workingFrameRate = 1;
-                      }
-                      setState(() {});
-                    },
-                  ),
-                ),
-                Tooltip(
-                  message: _isPause ? los.play : los.stop,
-                  child: IconButton(
-                    icon: !_isPause ? const Icon(Symbols.play_arrow) : const Icon(Symbols.pause),
-                    onPressed: () {
-                      setState(() {
-                        _isPause = !_isPause;
-                        if (_isPause) {
-                          _animationController.stop();
-                          return;
-                        }
-                        if (_animationController.duration != null) {
-                          _animationController.forward();
-                        }
-                      });
-                    },
-                  ),
-                ),
-                Tooltip(
-                  message: los.forward,
-                  child: IconButton(
-                    icon: const Icon(Symbols.arrow_forward),
-                    onPressed: () {
-                      VisualHelper.workingFrameRate *= 2;
-                      if (VisualHelper.workingFrameRate > 240) {
-                        VisualHelper.workingFrameRate = 240;
-                      }
-                      setState(() {});
-                    },
-                  ),
-                ),
-                IconButton(
-                  onPressed: _zoomInAction,
-                  icon: const Icon(Symbols.zoom_in),
-                  tooltip: los.zoom_in,
-                ),
-              ],
-            ),
-          ),
-        ),
+        ControlPanel(
+            animationController: widget.animationController,
+            isPause: _isPause,
+            toggleEvent: () {
+              _isPause = !_isPause;
+              return _isPause;
+            },
+            scaleNotifier: _scaleNotifier,
+            setState: setState,
+            forcePlay: () {
+              setState(() {
+                _isPause = false;
+              });
+            }),
       ],
     );
   }

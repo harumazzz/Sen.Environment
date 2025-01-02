@@ -57,24 +57,19 @@ class KernelHelper {
     final dylib = DynamicLibrary.open(kernelPath);
     final finalizer = Finalizer<DynamicLibrary>((dylib) => dylib.close());
     finalizer.attach(mainSendPort, dylib);
-    final execute = dylib.lookupFunction<KernelExecuteCAPI, KernelExecuteDartAPI>('execute');
+    final execute = dylib.lookup<NativeFunction<KernelExecuteCAPI>>('execute').asFunction<KernelExecuteDartAPI>();
     final subReceivePort = ReceivePort();
     final subStreamQueue = StreamQueue<dynamic>(subReceivePort);
     mainSendPort.send(subReceivePort.sendPort);
     final subEvent = await subStreamQueue.next as List<dynamic>;
     final scriptPath = subEvent[0] as String;
     final currentShell = subEvent[1] as String;
-    final additionalArguments = subEvent[2] as List<String>;
+    final arguments = subEvent[2] as List<String>;
     final script = KernelScript(scriptPath);
-    final arguments = KernelArgument(
-      currentShell,
-      kernelPath,
-      scriptPath,
-      additionalArguments,
-    );
-    execute(script.value, arguments.value, Pointer.fromFunction(_callback));
+    final argument = KernelArgument(currentShell, kernelPath, scriptPath, arguments);
+    execute(script.value, argument.value, Pointer.fromFunction(_callback));
     script.cleanup();
-    arguments.cleanup();
+    argument.cleanup();
     mainSendPort.send(null);
     _release();
     dylib.close();
