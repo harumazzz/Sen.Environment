@@ -19,6 +19,7 @@ class LabelScreen extends ConsumerWidget {
         message: label[index],
         child: Card(
           child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
             leading: const Icon(Symbols.animation),
             trailing: IconButton(
               icon: const Icon(Symbols.play_arrow),

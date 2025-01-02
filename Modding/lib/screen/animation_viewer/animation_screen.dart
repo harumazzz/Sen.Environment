@@ -3,13 +3,10 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/control_panel.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -22,8 +19,6 @@ class AnimationScreen extends ConsumerStatefulWidget {
     required this.mediaScreen,
     required this.labelScreen,
     required this.animationController,
-    required this.animationFile,
-    required this.mediaDirectory,
   });
 
   final bool hasFile;
@@ -31,10 +26,6 @@ class AnimationScreen extends ConsumerStatefulWidget {
   final void Function() onUploadFile;
 
   final void Function(String value) onDragFile;
-
-  final String? animationFile;
-
-  final String? mediaDirectory;
 
   final MediaScreen mediaScreen;
 
@@ -109,69 +100,6 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
     );
   }
 
-  void _showInfo() async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.info),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(los.animation_file(widget.animationFile ?? los.unselected)),
-              const SizedBox(height: 10.0),
-              Text(los.media_directory(widget.mediaDirectory ?? los.unselected)),
-              const SizedBox(height: 10.0),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ElevatedButton(
-                    child: Text(los.enable_all_image),
-                    onPressed: () {
-                      ref.read(selectedImageListProvider.notifier).enableAll();
-                    },
-                  ),
-                  const SizedBox(width: 10.0),
-                  ElevatedButton(
-                    child: Text(los.disable_all_image),
-                    onPressed: () {
-                      ref.read(selectedImageListProvider.notifier).disableAll();
-                    },
-                  ),
-                  const SizedBox(width: 10.0),
-                  ElevatedButton(
-                    child: Text(los.enable_all_sprite),
-                    onPressed: () {
-                      ref.read(selectedSpriteListNotifier.notifier).enableAll();
-                    },
-                  ),
-                  const SizedBox(width: 10.0),
-                  ElevatedButton(
-                    child: Text(los.disable_all_sprite),
-                    onPressed: () {
-                      ref.read(selectedSpriteListNotifier.notifier).disableAll();
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(los.close),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _loadWorkingSprite(int index) {
     setState(() {
       final labelInfo = VisualHelper.labelInfo[ref.read<String>(selectedLabel)]!;
@@ -199,44 +127,27 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
     required double xOffset,
     required double yOffset,
   }) {
-    final los = AppLocalizations.of(context)!;
-    return Stack(
-      fit: StackFit.passthrough,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Transform(
-            transform: VisualHelper.transformMatrixFromVariant([
-              xOffset,
-              yOffset,
-            ]),
-            child: Transform.scale(
-              scale: scale,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.6,
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: _animationVisual,
-                ),
-              ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Transform(
+        transform: VisualHelper.transformMatrixFromVariant([
+          xOffset,
+          yOffset,
+        ]),
+        child: Transform.scale(
+          scale: scale,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.6,
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: _animationVisual,
             ),
           ),
         ),
-        Positioned(
-          top: 10,
-          right: 10,
-          child: Tooltip(
-            message: los.info,
-            child: IconButton(
-              onPressed: _showInfo,
-              icon: const Icon(Symbols.info, size: 24),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -356,19 +267,20 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
           ),
         ),
         ControlPanel(
-            animationController: widget.animationController,
-            isPause: _isPause,
-            toggleEvent: () {
-              _isPause = !_isPause;
-              return _isPause;
-            },
-            scaleNotifier: _scaleNotifier,
-            setState: setState,
-            forcePlay: () {
-              setState(() {
-                _isPause = false;
-              });
-            }),
+          animationController: widget.animationController,
+          isPause: _isPause,
+          toggleEvent: () {
+            _isPause = !_isPause;
+            return _isPause;
+          },
+          scaleNotifier: _scaleNotifier,
+          setState: setState,
+          forcePlay: () {
+            setState(() {
+              _isPause = false;
+            });
+          },
+        ),
       ],
     );
   }

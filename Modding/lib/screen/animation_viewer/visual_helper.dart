@@ -152,7 +152,8 @@ class VisualHelper {
                 image: imageSource[index]!,
                 width: image.dimension.width.toDouble(),
                 height: image.dimension.height.toDouble(),
-                fit: BoxFit.fill),
+                fit: BoxFit.fill,
+              ),
       ),
     );
   }
@@ -175,11 +176,11 @@ class VisualHelper {
         if (layerList.containsKey(action.index)) {
           throw Exception();
         }
+        final currentLabel = ref.watch(selectedLabel);
         var layer = layerList[action.index] = _VisualLayer();
         var subController = isMainSprite
-            ? animationController.drive(IntTween(
-                begin: labelInfo[ref.watch(selectedLabel)]!.startIndex,
-                end: labelInfo[ref.watch(selectedLabel)]!.endIndex - 1))
+            ? animationController
+                .drive(IntTween(begin: labelInfo[currentLabel]!.startIndex, end: labelInfo[currentLabel]!.endIndex - 1))
             : animationController.drive(
                 IntTween(begin: 0, end: sprite.frame.length - 1),
               );

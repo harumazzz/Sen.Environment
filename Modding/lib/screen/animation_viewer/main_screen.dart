@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
+import 'package:sen/screen/animation_viewer/control_button.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
@@ -186,6 +187,83 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
     });
   }
 
+  void _showInfo() async {
+    final los = AppLocalizations.of(context)!;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(los.info),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(los.animation_file(_animationFile ?? los.unselected)),
+              const SizedBox(height: 10.0),
+              Text(los.media_directory(_mediaDirectory ?? los.unselected)),
+              const SizedBox(height: 10.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('${los.image}: '),
+                  const SizedBox(width: 10.0),
+                  ControlButton(
+                    tooltip: los.enable_all_image,
+                    icon: Symbols.select_all,
+                    onPressed: () {
+                      ref.read(selectedImageListProvider.notifier).enableAll();
+                    },
+                  ),
+                  const SizedBox(width: 10.0),
+                  ControlButton(
+                    tooltip: los.disable_all_image,
+                    icon: Symbols.deselect,
+                    onPressed: () {
+                      ref.read(selectedImageListProvider.notifier).disableAll();
+                    },
+                  )
+                ],
+              ),
+              const SizedBox(height: 10.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('${los.sprite}: '),
+                  const SizedBox(width: 10.0),
+                  ControlButton(
+                    tooltip: los.enable_all_sprite,
+                    icon: Symbols.select_all,
+                    onPressed: () {
+                      ref.read(selectedSpriteListNotifier.notifier).enableAll();
+                    },
+                  ),
+                  const SizedBox(width: 10.0),
+                  ControlButton(
+                    tooltip: los.disable_all_sprite,
+                    icon: Symbols.deselect,
+                    onPressed: () {
+                      ref.read(selectedSpriteListNotifier.notifier).disableAll();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(los.close),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _updateScreens() {
     final mediaScreen = MediaScreen(
       sprite: _sprite,
@@ -202,8 +280,6 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
         mediaScreen: mediaScreen,
         labelScreen: labelScreen,
         animationController: _animationController,
-        animationFile: _animationFile,
-        mediaDirectory: _mediaDirectory,
       ),
       labelScreen,
       mediaScreen,
@@ -315,6 +391,10 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
           IconButton(
             onPressed: _onUploadFile,
             icon: const Icon(Symbols.file_upload),
+          ),
+          IconButton(
+            onPressed: _showInfo,
+            icon: const Icon(Symbols.info),
           ),
         ],
       ),
