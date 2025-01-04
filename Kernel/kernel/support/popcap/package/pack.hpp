@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/package/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Package
 {
-    using namespace Definition;
+    
 
     struct Pack : Common
     {

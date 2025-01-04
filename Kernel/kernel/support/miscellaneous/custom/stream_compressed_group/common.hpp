@@ -1,13 +1,13 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/texture/invoke.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
 #include "kernel/support/miscellaneous/custom/stream_compressed_group/definition.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -654,7 +654,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         struct ImageSpriteInfo
         {
             bool is_use;
-            Definition::Image<int> data;
+            Image<int> data;
             std::string subgroup_id;
             std::string path;
             Sen::Kernel::Support::PopCap::Animation::Convert::ImageAdditional additional;
@@ -957,14 +957,14 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
         inline static auto exchange_image_split(
             std::map<string, ImageSpriteInfo> &texture_sprite_view_stored,
-            Definition::Image<int> const &image,
+            Image<int> const &image,
             std::string const &subgroup_id,
             TexturePacketCompressedInfo const &image_info) -> void
         {
             for (auto &[data_id, data_value] : image_info.data)
             {
                 assert_conditional(data_value.type == DataType::Image, String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_image_type")), data_id), "exchange_image");
-                auto rectangle = Definition::RectangleFileIO<int>(
+                auto rectangle = RectangleFileIO<int>(
                     data_value.texture_info.ax,
                     data_value.texture_info.ay,
                     data_value.texture_info.aw,
@@ -977,7 +977,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 {
                     rectangle.height = image_info.dimension.height - rectangle.y;
                 }
-                auto image_cut = Definition::Image<int>::cut(image, rectangle);
+                auto image_cut = Image<int>::cut(image, rectangle);
                 texture_sprite_view_stored[data_id].subgroup_id = subgroup_id;
                 texture_sprite_view_stored[data_id].data.width = image_cut.width;
                 texture_sprite_view_stored[data_id].data.height = image_cut.height;
@@ -1072,7 +1072,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     .version = k_resource_content_information_version,
                     .information_string_size = static_cast<uint32_t>(content_data_string.size())};
                 subgroup_information.resource_content_information_offset = static_cast<uint32_t>(resource_packet_view_stored.write_pos);
-                auto compressed_data = Sen::Kernel::Definition::Encryption::Base64::encode(content_data_string);
+                auto compressed_data = Encryption::Base64::encode(content_data_string);
                 resource_content_information.information_compressed_size = static_cast<uint32_t>(compressed_data.size());
                 exchange_resouce_content_information(resource_content_information, resource_packet_view_stored);
                 resource_packet_view_stored.writeString(compressed_data);
@@ -1152,7 +1152,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 assert_conditional(resource_content_information.magic == k_resource_content_information_magic_identifier, String::format(fmt::format("{}", Language::get("popcap.rsb.project.invalid_resource_content_magic")), std::to_string(resource_content_information.magic), std::to_string(k_resource_content_information_magic_identifier)), "exchange_stream_resource_group");
                 assert_conditional(resource_content_information.version == k_resource_content_information_version, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 auto compressed_data = stream.readString(static_cast<size_t>(resource_content_information.information_compressed_size));
-                auto content_data_string = Sen::Kernel::Definition::Encryption::Base64::decode(compressed_data);
+                auto content_data_string = Encryption::Base64::decode(compressed_data);
                 assert_conditional(content_data_string.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 packet_subgroup.info = nlohmann::ordered_json::parse(content_data_string);
             }

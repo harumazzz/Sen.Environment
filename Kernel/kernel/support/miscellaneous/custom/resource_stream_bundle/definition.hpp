@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/miscellaneous/custom/stream_compressed_group/definition.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle

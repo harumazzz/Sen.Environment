@@ -9,7 +9,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 	// using DataStreamView
 
-	using Sen::Kernel::Definition::DataStreamView;
+	using Sen::Kernel::DataStreamView;
 
 
 	#pragma endregion
@@ -90,8 +90,8 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) -> void
 			{
 				auto info = std::make_unique<BasicDefinition>();
-				assert_conditional(decoder->readString(4) == BasicDefinition::magic, fmt::format("{}", Kernel::Language::get("popcap.render_effects.decode.mismatch_magic")), "process");
-				assert_conditional(decoder->readUint32() == BasicDefinition::version, fmt::format("{}", Kernel::Language::get("popcap.render_effects.decode.mismatch_version")), "process");
+				assert_conditional(decoder->readString(4) == magic, fmt::format("{}", Kernel::Language::get("popcap.render_effects.decode.mismatch_magic")), "process");
+				assert_conditional(decoder->readUint32() == version, fmt::format("{}", Kernel::Language::get("popcap.render_effects.decode.mismatch_version")), "process");
 				{
 					info->block1_size = decoder->readUint32();
 					info->block1_section_offset = decoder->readUint32();

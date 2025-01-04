@@ -1,13 +1,13 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
 #include "kernel/support/popcap/player_info/definition.hpp"
 #include "kernel/support/popcap/player_info/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::PlayerInfo
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/definition.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
 

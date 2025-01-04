@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::WWise::SoundBank
 {
 
-    using namespace Sen::Kernel::Definition;
+    using namespace Sen::Kernel;
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -15,9 +15,9 @@ namespace Sen::Kernel::Support::WWise::SoundBank
     {
         uint32_t values;
         uint32_t project_id;
-        uint32_t soundbank_type = 0;
+        uint32_t soundbank_type{0};
         std::string bank_hash;
-        uint32_t padding = 0;
+        uint32_t padding{0};
     };
 
     inline auto to_json(

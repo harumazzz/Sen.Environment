@@ -5,7 +5,7 @@
 
 namespace Sen::Kernel::Support::WWise::SoundBank
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 

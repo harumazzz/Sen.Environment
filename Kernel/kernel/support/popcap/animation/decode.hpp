@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/animation/definition.hpp"
 #include "kernel/support/popcap/animation/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Animation
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 

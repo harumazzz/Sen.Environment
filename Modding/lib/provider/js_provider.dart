@@ -31,7 +31,9 @@ class JsProviderNotifier extends StateNotifier<JsProvider> {
     state.copyWith(showConfirmDialog: showConfirmDialog);
   }
 
-  void setshowConfirmDialog(bool showConfirmDialog) {
+  void setshowConfirmDialog(bool showConfirmDialog) async {
     state = state.copyWith(showConfirmDialog: showConfirmDialog);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('js.showConfirmDialog', showConfirmDialog);
   }
 }

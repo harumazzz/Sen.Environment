@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/texture/common.hpp"
 #include "kernel/support/texture/compression/pvrtc/pvrtc.hpp"
 namespace Sen::Kernel::Support::Texture
@@ -40,7 +40,7 @@ namespace Sen::Kernel::Support::Texture
 
 	// use color
 
-	using namespace Sen::Kernel::Definition;
+	using namespace Sen::Kernel;
 
 	/**
 	 * Decode class

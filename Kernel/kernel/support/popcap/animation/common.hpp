@@ -1,10 +1,10 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Animation
 {
-    using namespace Definition;
+    
     struct Common
     {
         inline static constexpr auto k_magic_identifier = 0xBAF01954_ui;

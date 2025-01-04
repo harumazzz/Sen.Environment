@@ -2,8 +2,8 @@
 
 #include "kernel/interface/cli.hpp"
 #include "kernel/interface/data.hpp"
-#include "kernel/definition/library.hpp"
-#include "kernel/definition/macro.hpp"
+#include "kernel/utility/library.hpp"
+#include "kernel/utility/macro.hpp"
 #include "kernel/support/utility.hpp"
 
 namespace Sen::Kernel::Interface {

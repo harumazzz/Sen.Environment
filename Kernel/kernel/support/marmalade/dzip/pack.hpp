@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/marmalade/dzip/definition.hpp"
 
 namespace Sen::Kernel::Support::Marmalade::DZip
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -106,14 +106,14 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::zlib))
                     {
                         auto chunk_data = FileSystem::read_binary<uint8_t>(resource_path);
-                        chunk_information.writeBytes(Kernel::Definition::Compression::Zlib::compress_gzip<6>(chunk_data));
+                        chunk_information.writeBytes(Compression::Zlib::compress_gzip<6>(chunk_data));
                         chunk_size_uncompressed = chunk_data.size();
                         chunk_size_compressed = chunk_size_uncompressed;
                     }
                     if (chunk_flag.test(ChunkFlag::bzip2))
                     {
                         auto chunk_data = FileSystem::read_binary<uint8_t>(resource_path);
-                        chunk_information.writeBytes(Kernel::Definition::Compression::Bzip2::compress(chunk_data, 9, 30));
+                        chunk_information.writeBytes(Compression::Bzip2::compress(chunk_data, 9, 30));
                         chunk_size_uncompressed = chunk_data.size();
                         chunk_size_compressed = chunk_size_uncompressed;
                     }
@@ -134,7 +134,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::lzma))
                     {
                         auto chunk_data = FileSystem::read_binary<uint8_t>(resource_path);
-                        chunk_information.writeBytes(Kernel::Definition::Compression::Lzma::compress<6>(chunk_data));
+                        chunk_information.writeBytes(Compression::Lzma::compress<6>(chunk_data));
                         chunk_size_uncompressed = chunk_data.size();
                         chunk_size_compressed = chunk_size_uncompressed;
                     }

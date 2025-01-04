@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/definition.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Shared
@@ -30,7 +30,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
 
     inline auto write_image(
         std::string const &destination,
-        Definition::Image<int> const &data) -> void
+        Image<int> const &data) -> void
     {
         FileSystem::create_directory(Path::getParents(destination));
         ImageIO::write_png(destination, data);

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResInfo {
 
 	// use definition
 
-	using namespace Definition;
+	
 
 	// Base
 
@@ -82,7 +82,7 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 			{
 				return nlohmann::ordered_json {
 					{"is_composite", resource["is_composite"]},
-					{"subgroups", Object::keys(resource["subgroup"])}
+					{"subgroups", Object::keys(resource["subgroup"]),},
 				};
 			}
 

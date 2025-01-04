@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 

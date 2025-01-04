@@ -42,7 +42,7 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 			{
 				auto result = DataStreamView{};
 				auto code = List<uint8_t>{key.begin(), key.end()};
-				assert_conditional((view.readString(BasicDefinition::magic.size()) == std::string{BasicDefinition::magic.begin(), BasicDefinition::magic.end()}), fmt::format("{}", Kernel::Language::get("popcap.crypt_data.decrypt.mismatch_magic")), "process");
+				assert_conditional((view.readString(magic.size()) == std::string{magic.begin(), magic.end()}), fmt::format("{}", Kernel::Language::get("popcap.crypt_data.decrypt.mismatch_magic")), "process");
             	auto size = view.readUint64();
 				if (view.size() > 0x112){
 					auto index = 0;

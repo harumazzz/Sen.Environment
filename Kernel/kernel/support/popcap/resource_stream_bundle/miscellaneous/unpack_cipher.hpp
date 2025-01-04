@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/unpack.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/unpack.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 {
-	using namespace Definition;
+	
 
 	using namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle;
 

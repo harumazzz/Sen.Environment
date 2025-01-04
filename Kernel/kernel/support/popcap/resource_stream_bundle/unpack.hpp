@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/unpack.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 {
-    using namespace Definition;
+    
 
    // using DataSectionViewStored = std::map<std::string, List<uint8_t>, decltype(&case_insensitive_compare)>;
 

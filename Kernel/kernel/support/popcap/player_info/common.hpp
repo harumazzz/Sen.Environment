@@ -1,10 +1,10 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::PlayerInfo
 {
-    using namespace Definition;
+    
 
     struct Common
     {

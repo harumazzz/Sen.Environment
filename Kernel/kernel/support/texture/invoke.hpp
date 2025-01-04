@@ -158,7 +158,7 @@ namespace Sen::Kernel::Support::Texture {
 				int width,
 				int height,
 				Format format
-			) -> Definition::Image<int>
+			) -> Image<int>
 			{
 				switch(format){
 					case Format::RGBA_8888: {
@@ -343,7 +343,7 @@ namespace Sen::Kernel::Support::Texture {
 			#pragma region encode_whole
 
 			inline static auto encode_whole(
-				Definition::Image<int> & source_image,
+				Image<int> & source_image,
 				Format format
 			) -> List<unsigned char>
 			{

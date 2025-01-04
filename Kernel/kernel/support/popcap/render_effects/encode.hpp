@@ -37,7 +37,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 	// using DataStreamView
 
-	using Sen::Kernel::Definition::DataStreamView;
+	using Sen::Kernel::DataStreamView;
 
 	#pragma endregion
 
@@ -107,11 +107,11 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) -> void
 			{
 				auto data = DataStreamView{};
-            	auto blockSectionOffset = BasicDefinition::BlockSectionOffset;
+            	auto blockSectionOffset = Common::BlockSectionOffset;
 				auto block_offset = BlockOffset{};
-				data.writeNull(BasicDefinition::BlockSectionOffset);
-				sen->writeString(std::string{BasicDefinition::magic.data(), BasicDefinition::magic.size()});
-				sen->writeUint32(BasicDefinition::version);
+				data.writeNull(blockSectionOffset);
+				sen->writeString(std::string{magic.data(), magic.size()});
+				sen->writeUint32(version);
 				block_offset.block1_section_offset = static_cast<uint32_t>(data.get_write_pos());
 				for (auto i : Range<uint32_t>(thiz.data.block_1.size())) {
 					data.writeUint32(thiz.data.block_1[i].unknown_1);
@@ -180,30 +180,30 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				}
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_1.size()));
 				sen->writeUint32(block_offset.block1_section_offset);
-				sen->writeUint32(BasicDefinition::Block1SectionSize);
+				sen->writeUint32(Common::Block1SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_2.size()));
 				sen->writeUint32(block_offset.block2_section_offset);
-				sen->writeUint32(BasicDefinition::Block2SectionSize);
+				sen->writeUint32(Common::Block2SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_3.size()));
 				sen->writeUint32(block_offset.block3_section_offset);
-				sen->writeUint32(BasicDefinition::Block3SectionSize);
+				sen->writeUint32(Common::Block3SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_4.size()));
 				sen->writeUint32(block_offset.block4_section_offset);
-				sen->writeUint32(BasicDefinition::Block4SectionSize);
+				sen->writeUint32(Common::Block4SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_5.size()));
 				sen->writeUint32(block_offset.block5_section_offset);
-				sen->writeUint32(BasicDefinition::Block5SectionSize);
+				sen->writeUint32(Common::Block5SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_6.size()));
 				sen->writeUint32(block_offset.block6_section_offset);
-				sen->writeUint32(BasicDefinition::Block6SectionSize);
+				sen->writeUint32(Common::Block6SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_7.size()));
 				sen->writeUint32(block_offset.block7_section_offset);
-				sen->writeUint32(BasicDefinition::Block7SectionSize);
+				sen->writeUint32(Common::Block7SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(thiz.data.block_8.size()));
 				sen->writeUint32(block_offset.block8_section_offset);
-				sen->writeUint32(BasicDefinition::Block8SectionSize);
+				sen->writeUint32(Common::Block8SectionSize);
 				sen->writeUint32(static_cast<uint32_t>(blockSectionOffset));
-				sen->writeBytes(data.get(static_cast<uint64_t>(BasicDefinition::BlockSectionOffset), data.size()));
+				sen->writeBytes(data.get(static_cast<uint64_t>(Common::BlockSectionOffset), data.size()));
 				sen->writeBytes(string_section.get(0, string_section.size()));
 				return;
 			}

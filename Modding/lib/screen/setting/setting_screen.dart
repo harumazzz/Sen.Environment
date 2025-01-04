@@ -6,6 +6,9 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/screen/setting/locale_option.dart';
+import 'package:sen/screen/setting/notification_option.dart';
+import 'package:sen/screen/setting/theme_option.dart';
 import 'package:sen/screen/setting/translator_page.dart';
 import 'package:sen/service/android_service.dart';
 import 'package:sen/service/file_service.dart';
@@ -55,20 +58,17 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildThemeOptionTile(
+              ThemeOption(
                 title: los.system,
                 value: 'system',
-                ref: ref,
               ),
-              _buildThemeOptionTile(
+              ThemeOption(
                 title: los.light,
                 value: 'light',
-                ref: ref,
               ),
-              _buildThemeOptionTile(
+              ThemeOption(
                 title: los.dark,
                 value: 'dark',
-                ref: ref,
               ),
               const SizedBox(height: 10),
               _onCloseButton(),
@@ -83,65 +83,10 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     return TextButton(
       onPressed: () {
-        _onCheckValidator(ref: ref);
+        _onCheckValidator();
         Navigator.of(context).pop();
       },
       child: Text(los.okay),
-    );
-  }
-
-  Widget _buildThemeOptionTile({
-    required String title,
-    required String value,
-    required WidgetRef ref,
-  }) {
-    return ListTile(
-      title: Text(title),
-      leading: Radio<String>(
-        value: value,
-        groupValue: ref.read(settingProvider).theme,
-        onChanged: (String? value) {
-          if (value == null) return;
-          ref.watch(settingProvider.notifier).setTheme(value);
-        },
-      ),
-    );
-  }
-
-  Widget _buildLocaleOptionTitle({
-    required String title,
-    required String value,
-  }) {
-    return ListTile(
-      title: Text(title),
-      leading: Radio<String>(
-        value: value,
-        groupValue: ref.read(settingProvider).locale,
-        onChanged: (String? value) {
-          if (value == null) return;
-          ref.watch(settingProvider.notifier).setLocale(value);
-        },
-      ),
-    );
-  }
-
-  Widget _buildNotificationOption({
-    required String title,
-    required bool value,
-    required WidgetRef ref,
-  }) {
-    return ListTile(
-      title: Text(title),
-      leading: Radio<bool>(
-        value: value,
-        groupValue: ref.watch(settingProvider).sendNotification,
-        onChanged: (bool? value) {
-          if (value == null) {
-            return;
-          }
-          ref.watch(settingProvider.notifier).setNotification(value);
-        },
-      ),
     );
   }
 
@@ -153,15 +98,13 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
         builder: (context, ref, child) => AlertDialog(
           title: Text(los.send_notification),
           actions: [
-            _buildNotificationOption(
+            NotificationOption(
               title: los.enable,
               value: true,
-              ref: ref,
             ),
-            _buildNotificationOption(
+            NotificationOption(
               title: los.disable,
               value: false,
-              ref: ref,
             ),
             const SizedBox(height: 10),
             _onCloseButton(),
@@ -171,12 +114,12 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     );
   }
 
-  void _onCheckValidator({
-    required WidgetRef ref,
-  }) {
+  void _onCheckValidator() {
     if (ref.watch(settingProvider).toolChain.isNotEmpty) {
-      final state =
-          _existKernel(ref.watch(settingProvider).toolChain) && _existScript(ref.watch(settingProvider).toolChain);
+      final state = _existKernel(ref.watch(settingProvider).toolChain) &&
+          _existScript(
+            ref.watch(settingProvider).toolChain,
+          );
       ref.watch(settingProvider.notifier).setIsValid(state);
     }
   }
@@ -224,7 +167,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                     onChanged: (String value) {
                       _controller.text = value;
                       ref.watch(settingProvider.notifier).setToolChain(_controller.text);
-                      _onCheckValidator(ref: ref);
+                      _onCheckValidator();
                     },
                   ),
                 ),
@@ -238,7 +181,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                       }
                       _controller.text = directory;
                       ref.watch(settingProvider.notifier).setToolChain(directory);
-                      _onCheckValidator(ref: ref);
+                      _onCheckValidator();
                     },
                     icon: const Icon(Symbols.drive_folder_upload),
                   ),
@@ -323,19 +266,19 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildLocaleOptionTitle(
+            LocaleOption(
               title: los.en,
               value: 'en',
             ),
-            _buildLocaleOptionTitle(
+            LocaleOption(
               title: los.vi,
               value: 'vi',
             ),
-            _buildLocaleOptionTitle(
+            LocaleOption(
               title: los.es,
               value: 'es',
             ),
-            _buildLocaleOptionTitle(
+            LocaleOption(
               title: los.ru,
               value: 'ru',
             ),

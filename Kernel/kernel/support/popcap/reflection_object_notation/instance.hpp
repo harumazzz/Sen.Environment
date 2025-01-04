@@ -1,17 +1,17 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/reflection_object_notation/decode.hpp"
 #include "kernel/support/popcap/reflection_object_notation/encode.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 {
-    using namespace Definition;
+    
 
     struct Instance
     {
     private:
-        using Rijndael = Sen::Kernel::Definition::Encryption::Rijndael;
+        using Rijndael = Sen::Kernel::Encryption::Rijndael;
 
     public:
         inline static auto decrypt(

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/animation/definition.hpp"
 #include "kernel/support/popcap/animation/convert/definition.hpp"
 

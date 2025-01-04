@@ -7,10 +7,10 @@
 namespace Sen::Kernel::Interface {
 
 	/**
-	 * Use JS instead of Sen::Kernel::Definition::JavaScript
+	 * Use JS
 	*/
 
-	namespace JS = Sen::Kernel::Definition::JavaScript;
+	namespace JS = Sen::Kernel::JavaScript;
 
 	// callback
 
@@ -51,48 +51,48 @@ namespace Sen::Kernel::Interface {
 				{
 					{
 						javascript.add_proxy([](
-							JSContext* ctx,
-							JSValue val,
+							JSContext* context,
+							JSValue value,
 							int argc,
 							JSValue* argv
 						) -> JSValue {
 							auto is_gui = std::make_unique<CStringView>();
 							Shell::callback(construct_string_list(List<std::string>{std::string{"is_gui"}}).get(), is_gui.get());
-							return JS::Converter::to_bool(ctx, static_cast<bool>(Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell")));
+							return JS::Converter::to_bool(context, static_cast<bool>(Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell")));
 						}, "Sen"_sv, "Shell"_sv, "is_gui"_sv);
 					}
 					{
 						javascript.add_proxy([](
-							JSContext *ctx,
-							JSValue val,
+							JSContext *context,
+							JSValue value,
 							int argc,
 							JSValue *argv
 						) -> JSValue {
 							auto shell_version = std::make_unique<CStringView>();
 							Shell:: callback(construct_string_list(List<std::string>{std::string{"version"}}).get(), shell_version.get());
-							return JS::Converter::to_number(ctx, static_cast<int>(Converter::to_int32(std::string{shell_version->value, static_cast<std::size_t>(shell_version->size)}, "Cannot get the Shell version"))); 
+							return JS::Converter::to_number(context, static_cast<int>(Converter::to_int32(std::string{shell_version->value, static_cast<std::size_t>(shell_version->size)}, "Cannot get the Shell version"))); 
 						}, "Sen"_sv, "Shell"_sv, "version"_sv);
 					}
 					// version
 					javascript.add_proxy([](
-						JSContext *ctx,
-						JSValue val,
+						JSContext *context,
+						JSValue value,
 						int argc,
 						JSValue *argv
 					) -> JSValue {
-						return JS::Converter::to_number(ctx, Kernel::version); 
+						return JS::Converter::to_number(context, Kernel::version); 
 					}, "Sen"_sv, "Kernel"_sv, "version"_sv);
 					// callback
 					javascript.add_proxy(Script::callback, "Sen"_sv, "Shell"_sv, "callback"_sv);
 					// arguments
 					javascript.add_proxy([](
-						JSContext *ctx,
-						JSValue val,
+						JSContext *context,
+						JSValue value,
 						int argc,
 						JSValue *argv
 					) -> JSValue 
 					{
-						return JS::Converter::to_array(ctx, *Additional::arguments.get()); 
+						return JS::Converter::to_array(context, *Additional::arguments.get()); 
 					}, "Sen"_sv, "Kernel"_sv, "arguments"_sv);
 				}
 				// xml
@@ -121,12 +121,12 @@ namespace Sen::Kernel::Interface {
 				{
 					// script path
 					javascript.add_proxy([](
-						JSContext *ctx,
-						JSValue val,
+						JSContext *context,
+						JSValue value,
 						int argc,
 						JSValue *argv
 					) -> JSValue {
-						return JS::Converter::to_string(ctx, String::to_posix_style(Additional::script.get()->data())); 
+						return JS::Converter::to_string(context, String::to_posix_style(Additional::script.get()->data())); 
 					}, "Sen"_sv, "Kernel"_sv, "Home"_sv, "script"_sv);
 				}
 				// vcdiff

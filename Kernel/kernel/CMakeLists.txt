@@ -7,47 +7,47 @@ project(
 
 add_library(
 	${PROJECT_NAME} SHARED
-	./definition/macro.hpp
-	./definition/range.hpp
-	./definition/library.hpp
-	./definition/literal.hpp
-	./definition/assert.hpp
-	./definition/utility.hpp
-	./definition/basic/filesystem.hpp
-	./definition/basic/string.hpp
-	./definition/basic/converter.hpp
-	./definition/basic/math.hpp
-	./definition/basic/language.hpp
-	./definition/basic/path.hpp
-	./definition/basic/pointer.hpp
-	./definition/basic/timer.hpp
-	./definition/basic/image.hpp
-	./definition/basic/json.hpp
-	./definition/basic/buffer.hpp
-	./definition/basic/array.hpp
-	./definition/basic/system.hpp
-	./definition/basic/thread.hpp
-	./definition/basic/json_writer.hpp
-	./definition/basic/apng_maker.hpp
-	./definition/basic/utility.hpp
+	./utility/macro.hpp
+	./utility/range.hpp
+	./utility/library.hpp
+	./utility/literal.hpp
+	./utility/assert.hpp
+	./utility/utility.hpp
+	./utility/container/filesystem.hpp
+	./utility/container/string.hpp
+	./utility/container/converter.hpp
+	./utility/container/math.hpp
+	./utility/container/language.hpp
+	./utility/container/path.hpp
+	./utility/container/pointer.hpp
+	./utility/container/timer.hpp
+	./utility/container/image.hpp
+	./utility/container/json.hpp
+	./utility/container/buffer.hpp
+	./utility/container/array.hpp
+	./utility/container/system.hpp
+	./utility/container/thread.hpp
+	./utility/container/json_writer.hpp
+	./utility/container/apng_maker.hpp
+	./utility/container/utility.hpp
 
-	./definition/encryption/md5.hpp
-	./definition/encryption/Rijndael.hpp
-	./definition/encryption/sha224.hpp
-	./definition/encryption/sha256.hpp
-	./definition/encryption/base64.hpp
-	./definition/encryption/xor.hpp
-	./definition/encryption/crc.hpp
-	./definition/encryption/fnv.hpp
-	./definition/compression/zlib.hpp
-	./definition/compression/lzma.hpp
-	./definition/compression/bzip2.hpp
-	./definition/javascript/common.hpp
-	./definition/javascript/value.hpp
-	./definition/javascript/runtime.hpp
-	./definition/javascript/converter.hpp
-	./definition/javascript/value_adapter.hpp
-	./definition/diff/vcdiff.hpp
+	./utility/encryption/md5.hpp
+	./utility/encryption/Rijndael.hpp
+	./utility/encryption/sha224.hpp
+	./utility/encryption/sha256.hpp
+	./utility/encryption/base64.hpp
+	./utility/encryption/xor.hpp
+	./utility/encryption/crc.hpp
+	./utility/encryption/fnv.hpp
+	./utility/compression/zlib.hpp
+	./utility/compression/lzma.hpp
+	./utility/compression/bzip2.hpp
+	./utility/javascript/common.hpp
+	./utility/javascript/value.hpp
+	./utility/javascript/runtime.hpp
+	./utility/javascript/converter.hpp
+	./utility/javascript/value_adapter.hpp
+	./utility/diff/vcdiff.hpp
 
 	./dependencies/fmt.hpp
 	./dependencies/json.hpp
@@ -72,6 +72,7 @@ add_library(
 	./dependencies/magic_enum.hpp
 	./dependencies/canvas_ity.hpp
 	./dependencies/tsl.hpp
+	./dependencies/compile-time-regular-expressions.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
@@ -253,6 +254,7 @@ target_link_libraries(
 	simdjson
 	canvas_ity
 	tsl
+	compile-time-regular-expressions
 )
 
 if (WIN32)

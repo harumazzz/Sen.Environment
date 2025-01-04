@@ -1,13 +1,13 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
 #include "kernel/support/wwise/sound_bank/definition.hpp"
 #include "kernel/support/wwise/sound_bank/common.hpp"
 
 namespace Sen::Kernel::Support::WWise::SoundBank
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 

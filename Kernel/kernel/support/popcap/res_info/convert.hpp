@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_group/convert.hpp"
 #include "kernel/support/popcap/resource_group/common.hpp"
 
@@ -8,7 +8,7 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 	
 	// use definition
 
-	using namespace Definition;
+	
 
 	// sub information
 

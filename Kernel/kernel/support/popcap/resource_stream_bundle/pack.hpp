@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 {
-    using namespace Definition;
+    
 
     struct Pack : Common
     {

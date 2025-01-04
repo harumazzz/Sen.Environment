@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_group/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 {
 
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -67,7 +67,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
                     {
                         if (resource_data_section_size_original != k_none_size)
                         {
-                            resource_data_section_view_stored_map[current_resource_type] = std::move(Definition::Compression::Zlib::uncompress(resource_data_section_view_stored));
+                            resource_data_section_view_stored_map[current_resource_type] = std::move(Compression::Zlib::uncompress(resource_data_section_view_stored));
                         }
                     }
                 }

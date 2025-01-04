@@ -54,7 +54,7 @@ class _ApplicationState extends ConsumerState<Application> {
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/js.ico'),
           'JS Category',
-          () => _pushScreen(JavaScriptCategory(toolChain: ref.read(settingProvider).toolChain)),
+          () => _pushScreen(const JavaScriptCategory()),
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/package.ico'),

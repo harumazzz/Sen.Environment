@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/compression/zlib.hpp"
+#include "kernel/utility/compression/zlib.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Zlib {
 
@@ -20,7 +20,7 @@ namespace Sen::Kernel::Support::PopCap::Zlib {
 
 			// Zlib compression level
 
-			inline static auto const level = Kernel::Definition::Compression::Zlib::Level::LEVEL_9;
+			inline static auto const level = Kernel::Compression::Zlib::Level::LEVEL_9;
 
 	};
 

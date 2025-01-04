@@ -21,12 +21,13 @@ endif()
 
 add_executable (
     ${PROJECT_NAME} 
-    ./library/utility.hpp
-    ./library/string.hpp
-    ./library/version.hpp
-    ./library/platform/windows.hpp
-    ./library/platform/unix.hpp
-    ./launcher.cpp 
+    ./library/standard.cppm
+    ./library/string.cppm
+    ./library/version.cppm
+    ./library/macro.hpp
+    ./library/platform/windows.cppm
+    ./library/platform/unix.cppm
+    ./launcher.cppm
     $<$<PLATFORM_ID:Windows>:./launcher.rc>
 )
 

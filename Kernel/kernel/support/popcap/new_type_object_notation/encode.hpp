@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 
@@ -8,7 +8,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	 * use namespace definition
 	*/
 
-	using namespace Sen::Kernel::Definition; 
+	using namespace Sen::Kernel; 
 
 	/**
 	 * Encode Newton class

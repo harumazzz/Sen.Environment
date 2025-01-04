@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Animation
 {
@@ -134,7 +134,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
 
 #pragma region using
 
-    using Sen::Kernel::Definition::DataStreamView;
+    using Sen::Kernel::DataStreamView;
 
 #pragma endregion
 

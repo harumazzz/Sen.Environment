@@ -4,7 +4,7 @@ project(
     simdjson
     VERSION 3.11.3
     HOMEPAGE_URL https://simdjson.org/
-    LANGUAGES CXX
+    LANGUAGES CXX C
 )
 
 add_library(

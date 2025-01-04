@@ -1,13 +1,13 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/particles/definition.hpp"
 #include "kernel/support/popcap/particles/common.hpp"
 #include "kernel/support/popcap/zlib/compress.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Particles
 {
-	using namespace Definition;
+	
 
 	class Encode : Common
 	{

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 {
-    using namespace Definition;
+    
 
     using PacketCompression = Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::PacketCompression;
 
@@ -266,7 +266,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 }
                 /*
                 else {
-                    auto missing_image = Definition::Image<int>::transparent(Definition::Dimension{image_value.size.width, image_value.size.height});
+                    auto missing_image = Image<int>::transparent(Dimension{image_value.size.width, image_value.size.height});
                     write_image(fmt::format("{}/library/media/{}.png", destination, (!image_value.name.empty() ? image_value.name : image_name)), missing_image);
                     extra.image[image_name].comment = k_missing_image_comment_string;
                     extra.image[image_name].use_image_additional = true;

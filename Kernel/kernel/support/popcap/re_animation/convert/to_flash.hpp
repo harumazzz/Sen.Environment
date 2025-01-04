@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/re_animation/definition.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert

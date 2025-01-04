@@ -1,8 +1,8 @@
 #pragma once
 
-#include "kernel/definition/library.hpp"
-#include "kernel/definition/macro.hpp"
-#include "kernel/definition/basic/array.hpp"
+#include "kernel/utility/library.hpp"
+#include "kernel/utility/macro.hpp"
+#include "kernel/utility/container/array.hpp"
 
 namespace Sen::Kernel::Interface {
 

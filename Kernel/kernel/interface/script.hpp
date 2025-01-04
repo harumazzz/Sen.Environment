@@ -17,7 +17,7 @@ namespace Sen::Kernel::Interface::Script
 	 * ----------------------------------------
 	 */
 
-	namespace JS = Sen::Kernel::Definition::JavaScript;
+	namespace JS = Sen::Kernel::JavaScript;
 
 	inline auto constexpr get_property_string = JS::Converter::get_property_string;
 
@@ -475,16 +475,16 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto make_instance_object (
-				JSContext* ctx, 
+				JSContext* context, 
 				JSValue parent, 
 				std::string_view name
 			) -> JSValue
 			{
-				auto atom = Atom{ctx, name};
-				auto obj = JS_GetProperty(ctx, parent, atom.value);
+				auto atom = Atom{context, name};
+				auto obj = JS_GetProperty(context, parent, atom.value);
 				if (JS_IsUndefined(obj)) {
-					obj = JS_NewObject(ctx);
-					JS_DefinePropertyValue(ctx, parent, atom.value, obj, int{JS_PROP_C_W_E});
+					obj = JS_NewObject(context);
+					JS_DefinePropertyValue(context, parent, atom.value, obj, int{JS_PROP_C_W_E});
 				}
 				return obj;
 			}
@@ -498,7 +498,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto make_handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
@@ -507,8 +507,8 @@ namespace Sen::Kernel::Interface::Script
 				JSClassID class_id
 			) -> JSValue
 			{
-				return proxy_wrapper(ctx, method_name, [&](){
-					auto s = static_cast<T*>(JS_GetOpaque2(ctx, this_val, class_id));
+				return proxy_wrapper(context, method_name, [&](){
+					auto s = static_cast<T*>(JS_GetOpaque2(context, this_val, class_id));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
@@ -524,7 +524,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto T>
 				requires BooleanConstraint
-			using Data = Definition::Buffer::Stream<T>;
+			using Data = Stream<T>;
 
 			template <auto use_big_endian>
 				requires BooleanConstraint
@@ -533,7 +533,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
@@ -541,25 +541,25 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						s.reset(new Data<T>{ JS::Converter::get_string(ctx, argv[0])});
+						s.reset(new Data<T>{ JS::Converter::get_string(context, argv[0])});
 					} else if (argc == 0) {
 						s.reset(new Data<T>{});
 					} else {
-						JS_ThrowInternalError(ctx, fmt::format("{}", Kernel::Language::get("data_stream_view_cannot_be_initialize")).data());
+						JS_ThrowInternalError(context, fmt::format("{}", Kernel::Language::get("data_stream_view_cannot_be_initialize")).data());
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
@@ -567,11 +567,11 @@ namespace Sen::Kernel::Interface::Script
 					return obj;
 
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					if constexpr (T) {
-						JS_ThrowInternalError(ctx, "Failed to initialize DataStreamViewUseBigEndian");
+						JS_ThrowInternalError(context, "Failed to initialize DataStreamViewUseBigEndian");
 					} else {
-						JS_ThrowInternalError(ctx, "Failed to initialize DataStreamView");
+						JS_ThrowInternalError(context, "Failed to initialize DataStreamView");
 					}
 					return JS_EXCEPTION;
 				});
@@ -600,31 +600,31 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
+				return make_handle<Data<T>>(context, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
+				return handle<T>(context, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
 					if (magic == 0) {
-						return JS_NewBigInt64(ctx, s->read_pos);
+						return JS_NewBigInt64(context, s->read_pos);
 					} else {
-						return JS_NewBigInt64(ctx, s->write_pos);
+						return JS_NewBigInt64(context, s->write_pos);
 					}
 				});
 			}
@@ -632,7 +632,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
@@ -640,9 +640,9 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, 0, nullptr, "setter", [&](Data<T>* s) {
+				return handle<T>(context, this_val, 0, nullptr, "setter", [&](Data<T>* s) {
 					auto v = std::int64_t{};
-					if (JS_ToBigInt64(ctx, &v, val)) {
+					if (JS_ToBigInt64(context, &v, val)) {
 						return JS_EXCEPTION;
 					}
 					if (magic == 0) {
@@ -657,46 +657,46 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto size(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "size", [&](Data<T>* s) {
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->size());
+				return handle<T>(context, this_val, argc, argv, "size", [&](Data<T>* s) {
+					return JS::Converter::to_bigint<uint64_t>(context, s->size());
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto capacity(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "capacity", [&](Data<T>* s) {
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->capacity());
+				return handle<T>(context, this_val, argc, argv, "capacity", [&](Data<T>* s) {
+					return JS::Converter::to_bigint<uint64_t>(context, s->capacity());
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto fromString(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "fromString", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "fromString", [&](Data<T>* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fromString");
-					s->fromString(JS::Converter::get_string(ctx, argv[0]));
+					s->fromString(JS::Converter::get_string(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
@@ -704,16 +704,16 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto reserve(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "reserve", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "reserve", [&](Data<T>* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "reserve");
-					s->reserve(static_cast<std::uint64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+					s->reserve(static_cast<std::uint64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					return JS_UNDEFINED;
 				});
 			}
@@ -721,24 +721,24 @@ namespace Sen::Kernel::Interface::Script
 			#pragma region convert
 
 			inline static auto to_arraybuffer(
-				JSContext *ctx,
+				JSContext *context,
 				const List<uint8_t>& vec
 			) -> JSElement::ArrayBuffer {
-				return JS_NewArrayBufferCopy(ctx, vec.data(), vec.size());
+				return JS_NewArrayBufferCopy(context, vec.data(), vec.size());
 			}
 
 			inline static auto to_uint8array(
-				JSContext *ctx,
+				JSContext *context,
 				const List<uint8_t>& vec
 			) -> JSElement::Uint8Array {
-				auto array_buffer = JS_NewArrayBufferCopy(ctx, vec.data(), vec.size());
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto atom = Atom{ctx, "Uint8Array"};
-				auto uint8array_ctor = JS_GetProperty(ctx, global_obj, atom.value);
+				auto array_buffer = JS_NewArrayBufferCopy(context, vec.data(), vec.size());
+				auto global_obj = JS_GetGlobalObject(context);
+				auto atom = Atom{context, "Uint8Array"};
+				auto uint8array_ctor = JS_GetProperty(context, global_obj, atom.value);
 				auto args = std::array<JSValue, 1_size>{array_buffer};
-				auto uint8array = JS_CallConstructor(ctx, uint8array_ctor, args.size(), args.data());
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, uint8array_ctor);
+				auto uint8array = JS_CallConstructor(context, uint8array_ctor, args.size(), args.data());
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, uint8array_ctor);
 				return uint8array;
 			}
 
@@ -747,55 +747,55 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto toUint8Array(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::Uint8Array {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "toUint8Array", [&](Data<T>* s) {
-					return to_uint8array(ctx, s->toBytes());
+				return handle<T>(context, this_val, argc, argv, "toUint8Array", [&](Data<T>* s) {
+					return to_uint8array(context, s->toBytes());
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto toArrayBuffer(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "toArrayBuffer", [&](Data<T>* s) {
-					return to_arraybuffer(ctx, s->toBytes());
+				return handle<T>(context, this_val, argc, argv, "toArrayBuffer", [&](Data<T>* s) {
+					return to_arraybuffer(context, s->toBytes());
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto getArrayBuffer(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "getArrayBuffer", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "getArrayBuffer", [&](Data<T>* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "getArrayBuffer");
-					auto from = JS::Converter::get_bigint64(ctx, argv[0]);
-					auto to = JS::Converter::get_bigint64(ctx, argv[1]);
-					return to_arraybuffer(ctx, s->get(from, to));
+					auto from = JS::Converter::get_bigint64(context, argv[0]);
+					auto to = JS::Converter::get_bigint64(context, argv[1]);
+					return to_arraybuffer(context, s->get(from, to));
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto getUint8Array(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -803,18 +803,18 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "getUint8Array", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "getUint8Array", [&](Data<T>* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "getUint8Array");
-					auto from = JS::Converter::get_bigint64(ctx, argv[0]);
-					auto to = JS::Converter::get_bigint64(ctx, argv[1]);
-					return to_uint8array(ctx, s->get(from, to));
+					auto from = JS::Converter::get_bigint64(context, argv[0]);
+					auto to = JS::Converter::get_bigint64(context, argv[1]);
+					return to_uint8array(context, s->get(from, to));
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto toString(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -822,24 +822,24 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "toString", [&](Data<T>* s) {
-					return JS::Converter::to_string(ctx, s->toString());
+				return handle<T>(context, this_val, argc, argv, "toString", [&](Data<T>* s) {
+					return JS::Converter::to_string(context, s->toString());
 				});
 			}
 
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto out_file(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "out_file", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "out_file", [&](Data<T>* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "out_file");
-					s->out_file(JS::Converter::get_string(ctx, argv[0]));
+					s->out_file(JS::Converter::get_string(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
@@ -847,16 +847,16 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 			requires BooleanConstraint
 			inline static auto allocate(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "allocate", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "allocate", [&](Data<T>* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "allocate");
-					s->allocate(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+					s->allocate(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					return JS_UNDEFINED;
 				});
 			}
@@ -864,7 +864,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -872,13 +872,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint8", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeUint8");
 					if (argc == 1) {
-						s->writeUint8(static_cast<uint8_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeUint8(static_cast<uint8_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeUint8(static_cast<uint8_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeUint8(static_cast<uint8_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -887,7 +887,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -895,13 +895,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint16", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeUint16");
 					if (argc == 1) {
-						s->writeUint16(static_cast<uint16_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeUint16(static_cast<uint16_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeUint16(static_cast<uint16_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeUint16(static_cast<uint16_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -910,7 +910,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint24(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -918,13 +918,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint24", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint24", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeUint24");
 					if (argc == 1) {
-						s->writeUint24(static_cast<uint32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeUint24(static_cast<uint32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeUint24(static_cast<uint32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeUint24(static_cast<uint32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -933,7 +933,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -941,13 +941,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint32", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeUint32");
 					if (argc == 1) {
-						s->writeUint32(static_cast<uint32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeUint32(static_cast<uint32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeUint32(static_cast<uint32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeUint32(static_cast<uint32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -956,7 +956,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -964,13 +964,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint64", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeUint64");
 					if (argc == 1) {
-						s->writeUint64(static_cast<uint64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeUint64(static_cast<uint64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeUint64(static_cast<uint64_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeUint64(static_cast<uint64_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -979,7 +979,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeInt8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -987,13 +987,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeInt8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeInt8", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeInt8");
 					if (argc == 1) {
-						s->writeInt8(static_cast<int8_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeInt8(static_cast<int8_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeInt8(static_cast<int8_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeInt8(static_cast<int8_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1002,7 +1002,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeInt16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1010,13 +1010,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeInt16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeInt16", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeInt16");
 					if (argc == 1) {
-						s->writeInt16(static_cast<int16_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeInt16(static_cast<int16_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeInt16(static_cast<int16_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeInt16(static_cast<int16_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1025,7 +1025,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeInt24(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1033,13 +1033,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeInt24", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeInt24", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeInt24");
 					if (argc == 1) {
-						s->writeInt24(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeInt24(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeInt24(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeInt24(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1048,7 +1048,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1056,13 +1056,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeInt32");
 					if (argc == 1) {
-						s->writeInt32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeInt32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeInt32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeInt32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1071,7 +1071,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeInt64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1079,13 +1079,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeInt64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeInt64", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeInt64");
 					if (argc == 1) {
-						s->writeInt64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeInt64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeInt64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeInt64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1094,25 +1094,25 @@ namespace Sen::Kernel::Interface::Script
 			#pragma region convert
 
 			inline static auto from_arraybuffer(
-				JSContext *ctx,
+				JSContext *context,
 				JSValue array_buffer
 			) -> List<uint8_t>
 			{
 				auto size = size_t{};
-				auto data = JS_GetArrayBuffer(ctx, &size, array_buffer);
+				auto data = JS_GetArrayBuffer(context, &size, array_buffer);
 				assert_conditional(size != 0 && data != nullptr, fmt::format("{}", Kernel::Language::get("js.array_buffer_is_empty")), "from_arraybuffer");
 				return make_list(data, size);
 			}
 
 			inline static auto from_uint8array (
-				JSContext *ctx,
+				JSContext *context,
 				JSValue uint8array
 			) -> List<uint8_t>
 			{
-				auto atom = Atom{ctx, "buffer"};
-				auto array_buffer = JS_GetProperty(ctx, uint8array, atom.value);
-				auto vec = from_arraybuffer(ctx, array_buffer);
-				JS_FreeValue(ctx, array_buffer);
+				auto atom = Atom{context, "buffer"};
+				auto array_buffer = JS_GetProperty(context, uint8array, atom.value);
+				auto vec = from_arraybuffer(context, array_buffer);
+				JS_FreeValue(context, array_buffer);
 				return vec;
 			}
 
@@ -1121,7 +1121,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeArrayBuffer(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1129,13 +1129,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeArrayBuffer", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeArrayBuffer", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeArrayBuffer");
 					if (argc == 2) {
-						s->writeBytes(from_arraybuffer(ctx, argv[0]), static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeBytes(from_arraybuffer(context, argv[0]), static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					else {
-						s->writeBytes(from_arraybuffer(ctx, argv[0]));
+						s->writeBytes(from_arraybuffer(context, argv[0]));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1144,7 +1144,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeUint8Array(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1152,13 +1152,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeUint8Array", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeUint8Array", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeUint8Array");
 					if (argc == 2) {
-						s->writeBytes(from_uint8array(ctx, argv[0]), static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeBytes(from_uint8array(context, argv[0]), static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					else {
-						s->writeBytes(from_uint8array(ctx, argv[0]));
+						s->writeBytes(from_uint8array(context, argv[0]));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1167,7 +1167,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeFloat(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1175,13 +1175,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeFloat", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeFloat", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeFloat");
 					if (argc == 1) {
-						s->writeFloat(static_cast<float>(JS::Converter::get_float32(ctx, argv[0])));
+						s->writeFloat(static_cast<float>(JS::Converter::get_float32(context, argv[0])));
 					}
 					else {
-						s->writeFloat(static_cast<float>(JS::Converter::get_float32(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeFloat(static_cast<float>(JS::Converter::get_float32(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1190,7 +1190,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeDouble(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1198,13 +1198,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeDouble", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeDouble", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeDouble");
 					if (argc == 1) {
-						s->writeDouble(static_cast<double>(JS::Converter::get_float64(ctx, argv[0])));
+						s->writeDouble(static_cast<double>(JS::Converter::get_float64(context, argv[0])));
 					}
 					else {
-						s->writeDouble(static_cast<double>(JS::Converter::get_float64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeDouble(static_cast<double>(JS::Converter::get_float64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1213,7 +1213,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeVarInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1221,13 +1221,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeVarInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeVarInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeVarInt32");
 					if (argc == 1) {
-						s->writeVarInt32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeVarInt32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeVarInt32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeVarInt32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1236,7 +1236,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeVarInt64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1244,13 +1244,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeVarInt64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeVarInt64", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeVarInt64");
 					if (argc == 1) {
-						s->writeVarInt64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeVarInt64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeVarInt64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeVarInt64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1259,7 +1259,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeZigZag32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1267,13 +1267,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeZigZag32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeZigZag32", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeZigZag32");
 					if (argc == 1) {
-						s->writeZigZag32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeZigZag32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeZigZag32(static_cast<int32_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeZigZag32(static_cast<int32_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1282,7 +1282,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeZigZag64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1290,13 +1290,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeZigZag64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeZigZag64", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeZigZag64");
 					if (argc == 1) {
-						s->writeZigZag64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeZigZag64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeZigZag64(static_cast<int64_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeZigZag64(static_cast<int64_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1305,7 +1305,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeString(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1313,13 +1313,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeString", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeString", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "writeString");
 					if (argc == 1) {
-						s->writeString(JS::Converter::get_string(ctx, argv[0]));
+						s->writeString(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeString(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeString(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1328,7 +1328,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringFourByte(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1336,13 +1336,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringFourByte", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringFourByte", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringFourByte");
 					if (argc == 1) {
-						s->writeStringFourByte(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringFourByte(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringFourByte(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringFourByte(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1351,7 +1351,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeNull(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1359,13 +1359,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeNull", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeNull", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeNull");
 					if (argc == 1) {
-						s->writeNull(static_cast<uint64_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						s->writeNull(static_cast<uint64_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						s->writeNull(static_cast<uint64_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeNull(static_cast<uint64_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1374,7 +1374,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeBoolean(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1382,13 +1382,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeBoolean", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeBoolean", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeBoolean");
 					if (argc == 1) {
-						s->writeBoolean(JS::Converter::get_bool(ctx, argv[0]));
+						s->writeBoolean(JS::Converter::get_bool(context, argv[0]));
 					}
 					else {
-						s->writeBoolean(JS::Converter::get_bool(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeBoolean(JS::Converter::get_bool(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1397,7 +1397,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByUint8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1405,13 +1405,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByUint8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByUint8", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByUint8");
 					if (argc == 1) {
-						s->writeStringByUint8(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByUint8(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByUint8(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByUint8(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1420,7 +1420,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByUint16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1428,13 +1428,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByUint16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByUint16", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByUint16");
 					if (argc == 1) {
-						s->writeStringByUint16(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByUint16(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByUint16(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByUint16(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1443,7 +1443,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByUint32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1451,13 +1451,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByUint32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByUint32", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByUint32");
 					if (argc == 1) {
-						s->writeStringByUint32(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByUint32(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByUint32(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByUint32(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1466,7 +1466,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByInt8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1474,13 +1474,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByInt8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByInt8", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByInt8");
 					if (argc == 1) {
-						s->writeStringByInt8(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByInt8(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByInt8(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByInt8(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1489,7 +1489,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByInt16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1497,13 +1497,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByInt16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByInt16", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByInt16");
 					if (argc == 1) {
-						s->writeStringByInt16(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByInt16(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByInt16(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByInt16(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1512,7 +1512,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1520,13 +1520,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByInt32");
 					if (argc == 1) {
-						s->writeStringByInt32(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByInt32(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByInt32(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByInt32(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1535,7 +1535,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto writeStringByEmpty(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1543,13 +1543,13 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
-				return handle<T>(ctx, this_val, argc, argv, "writeStringByEmpty", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "writeStringByEmpty", [&](Data<T>* s) {
 					assert_conditional(argc == 2 || argc == 1, fmt::format("argument expected 2 or 1, received: {}", argc), "writeStringByEmpty");
 					if (argc == 1) {
-						s->writeStringByEmpty(JS::Converter::get_string(ctx, argv[0]));
+						s->writeStringByEmpty(JS::Converter::get_string(context, argv[0]));
 					}
 					else {
-						s->writeStringByEmpty(JS::Converter::get_string(ctx, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						s->writeStringByEmpty(JS::Converter::get_string(context, argv[0]),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
 					return JS_UNDEFINED;
 				});
@@ -1558,7 +1558,7 @@ namespace Sen::Kernel::Interface::Script
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readUint8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1566,23 +1566,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readUint8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readUint8", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readUint8");
 					auto value = uint8_t{};
 					if (argc == 1) {
-						value = s->readUint8(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readUint8(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readUint8();
 					}
-					return JS::Converter::to_bigint<uint8_t>(ctx, value);
+					return JS::Converter::to_bigint<uint8_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readUint16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1590,23 +1590,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readUint16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readUint16", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readUint16");
 					auto value = uint16_t{};
 					if (argc == 1) {
-						value = s->readUint16(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readUint16(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readUint16();
 					}
-					return JS::Converter::to_bigint<uint16_t>(ctx, value);
+					return JS::Converter::to_bigint<uint16_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readUint24(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1614,23 +1614,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readUint24", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readUint24", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readUint24");
 					auto value = uint32_t{};
 					if (argc == 1) {
-						value = s->readUint24(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readUint24(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readUint24();
 					}
-					return JS::Converter::to_bigint<uint32_t>(ctx, value);
+					return JS::Converter::to_bigint<uint32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readUint32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1638,23 +1638,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readUint32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readUint32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readUint32");
 					auto value = uint32_t{};
 					if (argc == 1) {
-						value = s->readUint32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readUint32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readUint32();
 					}
-					return JS::Converter::to_bigint<uint32_t>(ctx, value);
+					return JS::Converter::to_bigint<uint32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readUint64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1662,23 +1662,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readUint64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readUint64", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readUint64");
 					auto value = uint64_t{};
 					if (argc == 1) {
-						value = s->readUint64(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readUint64(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readUint64();
 					}
-					return JS::Converter::to_bigint<uint64_t>(ctx, value);
+					return JS::Converter::to_bigint<uint64_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readInt8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1686,23 +1686,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readInt8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readInt8", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readInt8");
 					auto value = int8_t{};
 					if (argc == 1) {
-						value = s->readInt8(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readInt8(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readInt8();
 					}
-					return JS::Converter::to_bigint<int8_t>(ctx, value);
+					return JS::Converter::to_bigint<int8_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readInt16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1710,23 +1710,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readInt16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readInt16", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readInt16");
 					auto value = int16_t{};
 					if (argc == 1) {
-						value = s->readInt16(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readInt16(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readInt16();
 					}
-					return JS::Converter::to_bigint<int16_t>(ctx, value);
+					return JS::Converter::to_bigint<int16_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readInt24(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1734,23 +1734,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readInt24", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readInt24", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readInt24");
 					auto value = int32_t{};
 					if (argc == 1) {
-						value = s->readInt24(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readInt24(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readInt24();
 					}
-					return JS::Converter::to_bigint<int32_t>(ctx, value);
+					return JS::Converter::to_bigint<int32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1758,23 +1758,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readInt32");
 					auto value = int32_t{};
 					if (argc == 1) {
-						value = s->readInt32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readInt32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readInt32();
 					}
-					return JS::Converter::to_bigint<int32_t>(ctx, value);
+					return JS::Converter::to_bigint<int32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readInt64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1782,23 +1782,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readInt64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readInt64", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readInt64");
 					auto value = int64_t{};
 					if (argc == 1) {
-						value = s->readInt64(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readInt64(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readInt64();
 					}
-					return JS::Converter::to_bigint<int64_t>(ctx, value);
+					return JS::Converter::to_bigint<int64_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readString(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1806,23 +1806,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readString", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readString", [&](Data<T>* s) {
 					assert_conditional(argc == 1 || argc == 2, fmt::format("argument expected 1 or 2, received: {}", argc), "readString");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readString(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readString(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
-						value = s->readString(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[1])));
+						value = s->readString(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])),static_cast<size_t>(JS::Converter::get_bigint64(context, argv[1])));
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByUint8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1830,23 +1830,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByUint8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByUint8", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByUint8");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByUint8(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByUint8(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByUint8();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByUint16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1854,23 +1854,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByUint16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByUint16", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByUint16");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByUint16(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByUint16(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByUint16();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByUint32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1878,23 +1878,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByUint32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByUint32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByUint32");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByUint32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByUint32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByUint32();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByInt8(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1902,23 +1902,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByInt8", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByInt8", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByInt8");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByInt8(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByInt8(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByInt8();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByInt16(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1926,23 +1926,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByInt16", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByInt16", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByInt16");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByInt16(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByInt16(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByInt16();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1950,23 +1950,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByInt32");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByInt32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByInt32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByInt32();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByVarInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1974,23 +1974,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByVarInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByVarInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByVarInt32");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByVarInt32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByVarInt32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByVarInt32();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readStringByEmpty(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -1998,23 +1998,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readStringByEmpty", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readStringByEmpty", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readStringByEmpty");
 					auto value = std::string{};
 					if (argc == 1) {
-						value = s->readStringByEmpty(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readStringByEmpty(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readStringByEmpty();
 					}
-					return JS::Converter::to_string(ctx, value);
+					return JS::Converter::to_string(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readVarInt32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2022,23 +2022,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readVarInt32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readVarInt32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readVarInt32");
 					auto value = int32_t{};
 					if (argc == 1) {
-						value = s->readVarInt32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readVarInt32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readVarInt32();
 					}
-					return JS::Converter::to_bigint<int32_t>(ctx, value);
+					return JS::Converter::to_bigint<int32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readVarInt64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2046,23 +2046,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readVarInt64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readVarInt64", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readVarInt64");
 					auto value = int64_t{};
 					if (argc == 1) {
-						value = s->readVarInt64(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readVarInt64(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readVarInt64();
 					}
-					return JS::Converter::to_bigint<int64_t>(ctx, value);
+					return JS::Converter::to_bigint<int64_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readVarUint32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2070,23 +2070,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readVarUint32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readVarUint32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readVarUint32");
 					auto value = uint32_t{};
 					if (argc == 1) {
-						value = s->readVarUint32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readVarUint32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readVarUint32();
 					}
-					return JS::Converter::to_bigint<uint32_t>(ctx, value);
+					return JS::Converter::to_bigint<uint32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readVarUint64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2094,23 +2094,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readVarUint64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readVarUint64", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readVarUint64");
 					auto value = uint64_t{};
 					if (argc == 1) {
-						value = s->readVarUint64(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readVarUint64(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readVarUint64();
 					}
-					return JS::Converter::to_bigint<uint64_t>(ctx, value);
+					return JS::Converter::to_bigint<uint64_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readZigZag32(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2118,23 +2118,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readZigZag32", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readZigZag32", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readZigZag32");
 					auto value = int32_t{};
 					if (argc == 1) {
-						value = s->readZigZag32(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readZigZag32(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readZigZag32();
 					}
-					return JS::Converter::to_bigint<int32_t>(ctx, value);
+					return JS::Converter::to_bigint<int32_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readZigZag64(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2142,23 +2142,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readZigZag64", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readZigZag64", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readZigZag64");
 					auto value = int64_t{};
 					if (argc == 1) {
-						value = s->readZigZag64(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readZigZag64(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readZigZag64();
 					}
-					return JS::Converter::to_bigint<int64_t>(ctx, value);
+					return JS::Converter::to_bigint<int64_t>(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readFloat(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2166,23 +2166,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readFloat", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readFloat", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readFloat");
 					auto value = float{};
 					if (argc == 1) {
-						value = s->readFloat(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readFloat(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readFloat();
 					}
-					return JS::Converter::to_number(ctx, value);
+					return JS::Converter::to_number(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto readDouble(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2190,23 +2190,23 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readDouble", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readDouble", [&](Data<T>* s) {
 					assert_conditional(argc == 0 || argc == 1, fmt::format("argument expected 0 or 1, received: {}", argc), "readDouble");
 					auto value = double{};
 					if (argc == 1) {
-						value = s->readDouble(static_cast<size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+						value = s->readDouble(static_cast<size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					}
 					else {
 						value = s->readDouble();
 					}
-					return JS::Converter::to_number(ctx, value);
+					return JS::Converter::to_number(context, value);
 				});
 			}
 
 			template <auto T>
 				requires BooleanConstraint
 			inline static auto close(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2214,7 +2214,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
-				return handle<T>(ctx, this_val, argc, argv, "readDouble", [&](Data<T>* s) {
+				return handle<T>(context, this_val, argc, argv, "readDouble", [&](Data<T>* s) {
 					s->close();
 					return JS_UNDEFINED;
 				});
@@ -2298,27 +2298,27 @@ namespace Sen::Kernel::Interface::Script
 			template <auto use_big_endian>
 				requires BooleanConstraint
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				class_id<use_big_endian>.allocate_new(JS_GetRuntime(ctx));
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<use_big_endian>.value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
+				class_id<use_big_endian>.allocate_new(JS_GetRuntime(context));
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<use_big_endian>.value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
 				auto class_name = _class_name<use_big_endian>();
-				auto make_constructor = JS_NewCFunction2(ctx, constructor<use_big_endian>, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<use_big_endian>.data(), proto_functions<use_big_endian>.size());
-				JS_SetConstructor(ctx, make_constructor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen"_sv);
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel"_sv);
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, make_constructor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto make_constructor = JS_NewCFunction2(context, constructor<use_big_endian>, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions<use_big_endian>.data(), proto_functions<use_big_endian>.size());
+				JS_SetConstructor(context, make_constructor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen"_sv);
+				auto obj2 = make_instance_object(context, obj1, "Kernel"_sv);
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, make_constructor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -2344,13 +2344,13 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
@@ -2358,23 +2358,23 @@ namespace Sen::Kernel::Interface::Script
 						s.reset(new Data(JS_VALUE_GET_BOOL(argv[0]) == 0 ? false : true));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Constructor for Boolean class does not match, expected 1 argument");
+						JS_ThrowInternalError(context, "Constructor for Boolean class does not match, expected 1 argument");
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -2392,35 +2392,35 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::boolean
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bool(ctx, s->value);
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					return JS::Converter::to_bool(context, s->value);
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					s->value = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
 					return JS_UNDEFINED;
 				});
@@ -2432,7 +2432,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto T>
 			inline static auto make_instance (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -2441,13 +2441,13 @@ namespace Sen::Kernel::Interface::Script
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(Data));
 				auto s = std::make_unique<Data>(T);
-				auto atom = Atom{ctx, "prototype"};
-				auto proto = JS_GetProperty(ctx, this_val, atom.value);
+				auto atom = Atom{context, "prototype"};
+				auto proto = JS_GetProperty(context, this_val, atom.value);
 				if (JS_IsException(proto)) {
 					return JS_EXCEPTION;
 				}
-				auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-				JS_FreeValue(ctx, proto);
+				auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+				JS_FreeValue(context, proto);
 				if (JS_IsException(obj)) {
 					return JS_EXCEPTION;
 				}
@@ -2456,31 +2456,31 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Boolean class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Boolean class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto default_true_func_val = JS_NewCFunction2(ctx, make_instance<true>, "true", 0, JS_CFUNC_generic, 0);
-				auto default_false_func_val = JS_NewCFunction2(ctx, make_instance<false>, "false", 0, JS_CFUNC_generic, 0);
-				auto trueAtom = Atom{ctx, "true"};
-				JS_DefinePropertyValue(ctx, point_ctor, trueAtom.value, default_true_func_val, int{JS_PROP_C_W_E});
-				auto falseAtom = Atom{ctx, "false"};
-				JS_DefinePropertyValue(ctx, point_ctor, falseAtom.value, default_false_func_val, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen"_sv);
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel"_sv);
-				auto atom = Atom(ctx, class_name);
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, proto);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, obj1);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto default_true_func_val = JS_NewCFunction2(context, make_instance<true>, "true", 0, JS_CFUNC_generic, 0);
+				auto default_false_func_val = JS_NewCFunction2(context, make_instance<false>, "false", 0, JS_CFUNC_generic, 0);
+				auto trueAtom = Atom{context, "true"};
+				JS_DefinePropertyValue(context, point_ctor, trueAtom.value, default_true_func_val, int{JS_PROP_C_W_E});
+				auto falseAtom = Atom{context, "false"};
+				JS_DefinePropertyValue(context, point_ctor, falseAtom.value, default_false_func_val, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen"_sv);
+				auto obj2 = make_instance_object(context, obj1, "Kernel"_sv);
+				auto atom = Atom(context, class_name);
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, proto);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, obj1);
 				return;
 			}
 
@@ -2501,42 +2501,42 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 3) {
-						auto name = JS::Converter::get_string(ctx, argv[0]);
-						auto id = JS::Converter::get_string(ctx, argv[1]);
-						auto transform = JS::Converter::get_vector<double>(ctx, argv[2]);
+						auto name = JS::Converter::get_string(context, argv[0]);
+						auto id = JS::Converter::get_string(context, argv[1]);
+						auto transform = JS::Converter::get_vector<double>(context, argv[2]);
 						auto matrix = Matrix{};
 						matrix_from_transform(matrix, transform);
 						s.reset(new Data(name, id, matrix));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Constructor for Image class does not match, expected 3 argument, got: %d", argc);
+						JS_ThrowInternalError(context, "Constructor for Image class does not match, expected 3 argument, got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -2561,39 +2561,39 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
 					{
 						case Value::name:
 						{
-							return JS::Converter::to_string(ctx, s->name);
+							return JS::Converter::to_string(context, s->name);
 						}
 						case Value::id:
 						{
-							return JS::Converter::to_string(ctx, s->id);
+							return JS::Converter::to_string(context, s->id);
 						}
 						case Value::transform:
 						{
-							return JS::Converter::to_array(ctx, List<double>{s->transform.begin(), s->transform.end()});
+							return JS::Converter::to_array(context, List<double>{s->transform.begin(), s->transform.end()});
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot find any getter to magic %d", magic);
+							JS_ThrowInternalError(context, "Cannot find any getter to magic %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -2601,33 +2601,33 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
 					{
 						case Value::name:
 						{
-							s->name = JS::Converter::get_string(ctx, val);
+							s->name = JS::Converter::get_string(context, val);
 							break;
 						}
 						case Value::id:
 						{
-							s->id = JS::Converter::get_string(ctx, val);
+							s->id = JS::Converter::get_string(context, val);
 							break;
 						}
 						case Value::transform:
 						{
-							auto transform = JS::Converter::get_array<double>(ctx, val);
+							auto transform = JS::Converter::get_array<double>(context, val);
 							matrix_from_transform(s->transform, transform);
 							break;
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot find any setter to magic %d", magic);
+							JS_ThrowInternalError(context, "Cannot find any setter to magic %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -2642,33 +2642,33 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Image class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Image class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto obj3 = make_instance_object(ctx, obj2, "Support");
-				auto obj4 = make_instance_object(ctx, obj3, "PopCap");
-				auto obj5 = make_instance_object(ctx, obj4, "Animation");
-				auto obj6 = make_instance_object(ctx, obj5, "Miscellaneous");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, obj3);
-				JS_FreeValue(ctx, obj4);
-				JS_FreeValue(ctx, obj5);
-				JS_FreeValue(ctx, obj6);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto obj3 = make_instance_object(context, obj2, "Support");
+				auto obj4 = make_instance_object(context, obj3, "PopCap");
+				auto obj5 = make_instance_object(context, obj4, "Animation");
+				auto obj6 = make_instance_object(context, obj5, "Miscellaneous");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, obj3);
+				JS_FreeValue(context, obj4);
+				JS_FreeValue(context, obj5);
+				JS_FreeValue(context, obj6);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -2696,21 +2696,21 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 4) {
-						auto name = JS::Converter::get_string(ctx, argv[0]);
-						auto link = JS::Converter::get_string(ctx, argv[1]);
-						auto transform = JS::Converter::get_vector<double>(ctx, argv[2]);
-						auto color = JS::Converter::get_vector<double>(ctx, argv[3]);
+						auto name = JS::Converter::get_string(context, argv[0]);
+						auto link = JS::Converter::get_string(context, argv[1]);
+						auto transform = JS::Converter::get_vector<double>(context, argv[2]);
+						auto color = JS::Converter::get_vector<double>(context, argv[3]);
 						auto matrix = Matrix{};
 						auto basic_color = Color{};
 						matrix_from_transform(matrix, transform);
@@ -2718,36 +2718,36 @@ namespace Sen::Kernel::Interface::Script
 						s.reset(new Data(name, link, matrix, basic_color));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Constructor for Sprite class does not match, expected 4 argument, got: %d", argc);
+						JS_ThrowInternalError(context, "Constructor for Sprite class does not match, expected 4 argument, got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; 
 				});
 			}
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto _class_name(
@@ -2771,32 +2771,32 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
 					{
 						case Value::name:
 						{
-							return JS::Converter::to_string(ctx, s->name);
+							return JS::Converter::to_string(context, s->name);
 						}
 						case Value::link:
 						{
-							return JS::Converter::to_string(ctx, s->link);
+							return JS::Converter::to_string(context, s->link);
 						}
 						case Value::transform:
 						{
-							return JS::Converter::to_array(ctx, List<double>{s->transform.begin(), s->transform.end()});
+							return JS::Converter::to_array(context, List<double>{s->transform.begin(), s->transform.end()});
 						}
 						case Value::color:
 						{
-							return JS::Converter::to_array(ctx, List<double>{s->color.begin(), s->color.end()});
+							return JS::Converter::to_array(context, List<double>{s->color.begin(), s->color.end()});
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot call getter on magic: %d", magic);
+							JS_ThrowInternalError(context, "Cannot call getter on magic: %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -2804,35 +2804,35 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
 					{
 						case Value::name:
 						{
-							s->name = JS::Converter::get_string(ctx, val);
+							s->name = JS::Converter::get_string(context, val);
 						}
 						case Value::link:
 						{
-							s->link = JS::Converter::get_string(ctx, val);
+							s->link = JS::Converter::get_string(context, val);
 						}
 						case Value::transform:
 						{
-							auto transform = JS::Converter::get_array<double>(ctx, val);
+							auto transform = JS::Converter::get_array<double>(context, val);
 							matrix_from_transform(s->transform, transform);
 						}
 						case Value::color:
 						{
-							auto color = JS::Converter::get_array<double>(ctx, val);
+							auto color = JS::Converter::get_array<double>(context, val);
 							color_from_transform(s->color, color);
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot call setter on magic: %d", magic);
+							JS_ThrowInternalError(context, "Cannot call setter on magic: %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -2848,33 +2848,33 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Sprite class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Sprite class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto obj3 = make_instance_object(ctx, obj2, "Support");
-				auto obj4 = make_instance_object(ctx, obj3, "PopCap");
-				auto obj5 = make_instance_object(ctx, obj4, "Animation");
-				auto obj6 = make_instance_object(ctx, obj5, "Miscellaneous");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, obj3);
-				JS_FreeValue(ctx, obj4);
-				JS_FreeValue(ctx, obj5);
-				JS_FreeValue(ctx, obj6);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto obj3 = make_instance_object(context, obj2, "Support");
+				auto obj4 = make_instance_object(context, obj3, "PopCap");
+				auto obj5 = make_instance_object(context, obj4, "Animation");
+				auto obj6 = make_instance_object(context, obj5, "Miscellaneous");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, obj3);
+				JS_FreeValue(context, obj4);
+				JS_FreeValue(context, obj5);
+				JS_FreeValue(context, obj6);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -2888,38 +2888,38 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						auto source = JS::Converter::get_string(ctx, argv[0]);
+						auto source = JS::Converter::get_string(context, argv[0]);
 						s.reset(new Data(source, "rb"));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "FileInputStream cannot be initialized because argument does not satisfy constructor");
+						JS_ThrowInternalError(context, "FileInputStream cannot be initialized because argument does not satisfy constructor");
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -2937,86 +2937,86 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "close", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "close", [&](Data* s) {
 					s->close();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto size(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "size", [&](Data* s) {
-					return JS::Converter::to_bigint<std::uint64_t>(ctx, s->size());
+				return handle(context, this_val, argc, argv, "size", [&](Data* s) {
+					return JS::Converter::to_bigint<std::uint64_t>(context, s->size());
 				});
 			}
 
 			inline static auto read(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "read", [&](Data* s) {
-					return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->read()));
+				return handle(context, this_val, argc, argv, "read", [&](Data* s) {
+					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
 				});
 			}
 
 			inline static auto read_all(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer
 			{
-				return handle(ctx, this_val, argc, argv, "read_all", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "read_all", [&](Data* s) {
 					auto data = s->read_all();
-					return JS_NewArrayBufferCopy(ctx, data.data(), data.size());
+					return JS_NewArrayBufferCopy(context, data.data(), data.size());
 				});
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bigint(ctx, s->position());
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					return JS::Converter::to_bigint(context, s->position());
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s) {
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, val)));
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s) {
+					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
 					return JS_UNDEFINED;
 				});
 			}
@@ -3030,25 +3030,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileInputStream class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileInputStream class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -3062,38 +3062,38 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						auto source = JS::Converter::get_string(ctx, argv[0]);
+						auto source = JS::Converter::get_string(context, argv[0]);
 						s.reset(new Data(source, "wb"));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "FileOutputStream cannot be initialized because the constructor does not satisfy the argument count");
+						JS_ThrowInternalError(context, "FileOutputStream cannot be initialized because the constructor does not satisfy the argument count");
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; 
 				});
 			}
@@ -3111,89 +3111,89 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "close", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "close", [&](Data* s) {
 					s->close();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto size(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "size", [&](Data* s) {
-					return JS::Converter::to_bigint(ctx, s->size());
+				return handle(context, this_val, argc, argv, "size", [&](Data* s) {
+					return JS::Converter::to_bigint(context, s->size());
 				});
 			}
 
 			inline static auto write(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "write", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "write", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
-					s->write(static_cast<char>(JS::Converter::get_bigint64(ctx, argv[0])));
+					s->write(static_cast<char>(JS::Converter::get_bigint64(context, argv[0])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto write_all(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "write_all", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "write_all", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
-					s->write_all(JS::Converter::to_binary_list(ctx, argv[0]));
+					s->write_all(JS::Converter::to_binary_list(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bigint(ctx, s->position());
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					return JS::Converter::to_bigint(context, s->position());
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, val)));
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
 					return JS_UNDEFINED;
 				});
 			}
@@ -3207,25 +3207,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileOutputStream class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileOutputStream class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -3239,38 +3239,38 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						auto source = JS::Converter::get_string(ctx, argv[0]);
+						auto source = JS::Converter::get_string(context, argv[0]);
 						s.reset(new Data(source, "w+b"));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "FileStream cannot be initialized because expected argument count = 1 but got: %d", argc);
+						JS_ThrowInternalError(context, "FileStream cannot be initialized because expected argument count = 1 but got: %d", argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -3288,114 +3288,114 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto close(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "close", [&](Data* s){
+				return handle(context, this_val, argc, argv, "close", [&](Data* s){
 					s->close();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto size(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "size", [&](Data* s){
-					return JS::Converter::to_bigint(ctx, s->size());
+				return handle(context, this_val, argc, argv, "size", [&](Data* s){
+					return JS::Converter::to_bigint(context, s->size());
 				});
 			}
 
 			inline static auto write(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "write", [&](Data* s){
+				return handle(context, this_val, argc, argv, "write", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
-					s->write(static_cast<char>(JS::Converter::get_bigint64(ctx, argv[0])));
+					s->write(static_cast<char>(JS::Converter::get_bigint64(context, argv[0])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto write_all(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "write_all", [&](Data* s){
+				return handle(context, this_val, argc, argv, "write_all", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
-					s->write_all(JS::Converter::to_binary_list(ctx, argv[0]));
+					s->write_all(JS::Converter::to_binary_list(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto read(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "read", [&](Data* s){
-					return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->read()));
+				return handle(context, this_val, argc, argv, "read", [&](Data* s){
+					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
 				});
 			}
 
 			inline static auto read_all(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer
 			{
-				return handle(ctx, this_val, argc, argv, "read_all", [&](Data* s){
+				return handle(context, this_val, argc, argv, "read_all", [&](Data* s){
 					auto data = s->read_all();
-					return JS_NewArrayBufferCopy(ctx, data.data(), data.size());
+					return JS_NewArrayBufferCopy(context, data.data(), data.size());
 				});
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s){
-					return JS::Converter::to_bigint(ctx, s->position());
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s){
+					return JS::Converter::to_bigint(context, s->position());
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s){
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, val)));
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s){
+					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
 					return JS_UNDEFINED;
 				});
 			}
@@ -3411,25 +3411,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileStream class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileStream class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -3438,35 +3438,35 @@ namespace Sen::Kernel::Interface::Script
 		namespace JsonWriter
 		{
 
-			using Data = Kernel::Definition::JsonWriter;
+			using Data = Kernel::JsonWriter;
 
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::make_unique<Data>();
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;					
 				});
 			}
@@ -3484,130 +3484,130 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto clear(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "clear", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "clear", [&](Data* s) {
 					s->Clear();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto toString(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::string
 			{
-				return handle(ctx, this_val, argc, argv, "toString", [&](Data* s) {
-					return JS::Converter::to_string(ctx, s->ToString());
+				return handle(context, this_val, argc, argv, "toString", [&](Data* s) {
+					return JS::Converter::to_string(context, s->ToString());
 				});
 			}
 
 			inline static auto writeStartArray(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeStartArray", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeStartArray", [&](Data* s) {
 					s->WriteStartArray();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writeEndArray(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeEndArray", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeEndArray", [&](Data* s) {
 					s->WriteEndArray();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writeStartObject(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeStartObject", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeStartObject", [&](Data* s) {
 					s->WriteStartObject();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writeEndObject(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeEndObject", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeEndObject", [&](Data* s) {
 					s->WriteEndObject();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writeBoolean(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeBoolean", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeBoolean", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeBoolean");
-					s->WriteBoolean(JS::Converter::get_bool(ctx, argv[0]));
+					s->WriteBoolean(JS::Converter::get_bool(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writeNull(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writeNull", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writeNull", [&](Data* s) {
 					s->WriteNull();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto writePropertyName(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "writePropertyName", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "writePropertyName", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writePropertyName");
-					s->WritePropertyName(JS::Converter::get_string(ctx, argv[0]));
+					s->WritePropertyName(JS::Converter::get_string(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
@@ -3615,7 +3615,7 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires (std::is_arithmetic<T>::value or std::is_same<T, std::string>::value && !std::is_pointer<T>::value)
 			inline static auto writeValue(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -3634,40 +3634,40 @@ namespace Sen::Kernel::Interface::Script
 				{
 					function_name = "writeNumber";
 				}
-				return handle(ctx, this_val, argc, argv, function_name, [&](Data* s) {
+				return handle(context, this_val, argc, argv, function_name, [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), function_name);
 					if constexpr (std::is_same<T, std::string>::value) {
-						s->WriteValue(JS::Converter::get_string(ctx, argv[0]));
+						s->WriteValue(JS::Converter::get_string(context, argv[0]));
 					}
 					if constexpr (std::is_integral<T>::value) {
-						s->WriteValue(JS::Converter::get_bigint64(ctx, argv[0]));
+						s->WriteValue(JS::Converter::get_bigint64(context, argv[0]));
 					}
 					if constexpr (std::is_floating_point<T>::value) {
-						s->WriteValue(JS::Converter::get_float64(ctx, argv[0]));
+						s->WriteValue(JS::Converter::get_float64(context, argv[0]));
 					}
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::boolean
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bool(ctx, s->WriteIndent);
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					return JS::Converter::to_bool(context, s->WriteIndent);
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s) {
 					s->WriteIndent = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
 					return JS_UNDEFINED;
 				});
@@ -3690,25 +3690,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "JsonWriter class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "JsonWriter class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -3741,41 +3741,41 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
 						if constexpr (std::is_integral<T>::value) {
-							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_bigint64(ctx, argv[0]))));
+							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0]))));
 						}
 						else {
-							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_float64(ctx, argv[0]))));
+							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_float64(context, argv[0]))));
 						}
 					}
 					else {
 						s.reset(new Data<T>());
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -3849,52 +3849,52 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
+				return make_handle<Data<T>>(context, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle<T>(ctx, this_val, 0, nullptr, "getter", [&](Data<T>* s){
+				return handle<T>(context, this_val, 0, nullptr, "getter", [&](Data<T>* s){
 					if constexpr (std::is_integral<T>::value)
 					{
-						return JS::Converter::to_bigint(ctx, s->value);
+						return JS::Converter::to_bigint(context, s->value);
 					}
 					else
 					{
-						return JS::Converter::to_number(ctx, s->value);
+						return JS::Converter::to_number(context, s->value);
 					}
 				});
 			}
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle<T>(ctx, this_val, 0, nullptr, "setter", [&](Data<T>* s){
+				return handle<T>(context, this_val, 0, nullptr, "setter", [&](Data<T>* s){
 					if constexpr (std::is_integral<T>::value)
 					{
-						s->value = static_cast<T>(JS::Converter::get_bigint64(ctx, val));
+						s->value = static_cast<T>(JS::Converter::get_bigint64(context, val));
 					}
 					else
 					{
-						s->value = static_cast<T>(JS::Converter::get_float64(ctx, val));
+						s->value = static_cast<T>(JS::Converter::get_float64(context, val));
 					}
 					return JS_UNDEFINED;
 				});
@@ -3907,35 +3907,36 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id<T>.allocate_new(ctx);
+				class_id<T>.allocate_new(context);
 				auto class_name = fmt::format("{}", this_class<T>.class_name);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
-				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>.data(), proto_functions<T>.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
+				auto point_ctor = JS_NewCFunction2(context, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions<T>.data(), proto_functions<T>.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
 		}
+		
 
 
 		namespace APNGMakerSetting
 		{
 
-			using Data = Definition::APNGMakerSetting;
+			using Data = Kernel::APNGMakerSetting;
 
 			inline static auto class_id = temporary_class_id();
 
@@ -3949,32 +3950,32 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					using Uinteger32C = Number::Data<std::uint32_t>;
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 5) {
-						auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(ctx, argv[0]);
-						auto loop = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[1], Number::class_id<std::uint32_t>.value));
+						auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(context, argv[0]);
+						auto loop = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Number::class_id<std::uint32_t>.value));
 						if (loop == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto width = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[2], Number::class_id<std::uint32_t>.value));
+						auto width = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[2], Number::class_id<std::uint32_t>.value));
 						if (width == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto height = static_cast<Uinteger32C*>(JS_GetOpaque2(ctx, argv[3], Number::class_id<std::uint32_t>.value));
+						auto height = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[3], Number::class_id<std::uint32_t>.value));
 						if (height == nullptr) {
 							return JS_EXCEPTION;
 						}
-						auto trim = static_cast<Boolean::Data*>(JS_GetOpaque2(ctx, argv[4], Boolean::class_id.value));
+						auto trim = static_cast<Boolean::Data*>(JS_GetOpaque2(context, argv[4], Boolean::class_id.value));
 						if (trim == nullptr) {
 							return JS_EXCEPTION;
 						}
@@ -3983,20 +3984,20 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						s.reset(new Data());
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 					fail:
-						JS_FreeValue(ctx, obj);
+						JS_FreeValue(context, obj);
 						return JS_EXCEPTION; 
 				});
 			}
@@ -4014,47 +4015,47 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<GetterSetter>(magic))
 					{
 						case GetterSetter::delay_frames_list:
 						{
-							return JS::Converter::to_array(ctx, s->delay_frames_list);
+							return JS::Converter::to_array(context, s->delay_frames_list);
 						}
 						case GetterSetter::loop:
 						{
-							return JS::Converter::to_bigint(ctx, s->loop);
+							return JS::Converter::to_bigint(context, s->loop);
 						}
 						case GetterSetter::width:
 						{
-							return JS::Converter::to_bigint(ctx, s->width);
+							return JS::Converter::to_bigint(context, s->width);
 						}
 						case GetterSetter::height:
 						{
-							return JS::Converter::to_bigint(ctx, s->height);
+							return JS::Converter::to_bigint(context, s->height);
 						}
 						case GetterSetter::trim:
 						{
-							return JS::Converter::to_bool(ctx, s->trim);
+							return JS::Converter::to_bool(context, s->trim);
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot call getter from magic %d", magic);
+							JS_ThrowInternalError(context, "Cannot call getter from magic %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -4062,44 +4063,44 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<GetterSetter>(magic))
 					{
 						case GetterSetter::delay_frames_list:
 						{
 							s->delay_frames_list.clear();
-							auto delay_frames_list = JS::Converter::get_array<uint32_t>(ctx, val);
+							auto delay_frames_list = JS::Converter::get_array<uint32_t>(context, val);
 							s->delay_frames_list.assign(delay_frames_list.begin(), delay_frames_list.end());
 							break;
 						}
 						case GetterSetter::loop:
 						{
-							s->loop = static_cast<std::uint32_t>(JS::Converter::get_bigint64(ctx, val));
+							s->loop = static_cast<std::uint32_t>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case GetterSetter::width:
 						{
-							s->width = static_cast<std::uint32_t>(JS::Converter::get_bigint64(ctx, val));
+							s->width = static_cast<std::uint32_t>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case GetterSetter::height:
 						{
-							s->height = static_cast<std::uint32_t>(JS::Converter::get_bigint64(ctx, val));
+							s->height = static_cast<std::uint32_t>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case GetterSetter::trim:
 						{
-							s->trim = static_cast<bool>(JS::Converter::get_bool(ctx, val));
+							s->trim = static_cast<bool>(JS::Converter::get_bool(context, val));
 							break;
 						}
 						default: {
-							JS_ThrowInternalError(ctx, "Cannot call setter from magic %d", magic);
+							JS_ThrowInternalError(context, "Cannot call setter from magic %d", magic);
 							return JS_EXCEPTION;
 						}
 					}
@@ -4116,25 +4117,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -4162,37 +4163,37 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
-						s.reset(new Data{static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[0]))});
+						s.reset(new Data{static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0]))});
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Size class cannot be initialized because number of argument does not match. Expected: %d, got: %d", 1, argc);
+						JS_ThrowInternalError(context, "Size class cannot be initialized because number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -4210,36 +4211,36 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s){
-					return JS::Converter::to_bigint(ctx, s->value);
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s){
+					return JS::Converter::to_bigint(context, s->value);
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s){
-					s->value = JS::Converter::get_bigint64(ctx, val);
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s){
+					s->value = JS::Converter::get_bigint64(context, val);
 					return JS_UNDEFINED;
 				});
 			}
@@ -4249,22 +4250,22 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto instance(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::Size
 			{
-				return proxy_wrapper(ctx, "instance", [&](){
+				return proxy_wrapper(context, "instance", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data>(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto s = std::make_unique<Data>(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -4274,28 +4275,28 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Size class failed register", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Size class failed register", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{ctx, "instance"};
-				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atomData = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
+				auto atom = Atom{context, "instance"};
+				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atomData = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -4333,36 +4334,36 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::Character{};
 					if (argc == 1) {
-						s.reset(new Data<T>{static_cast<T>(JS::Converter::get_bigint64(ctx, argv[0]))});
+						s.reset(new Data<T>{static_cast<T>(JS::Converter::get_bigint64(context, argv[0]))});
 					}
 					else {
 						s.reset(new Data<T>());
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -4389,40 +4390,40 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T> 
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
-				return make_handle<Data<T>>(ctx, this_val, argc, argv, method_name, method, class_id<T>.value);
+				return make_handle<Data<T>>(context, this_val, argc, argv, method_name, method, class_id<T>.value);
 			}
 
 			template <typename T> 
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::bigint
 			{
-				return handle<T>(ctx, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
-					return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->value));
+				return handle<T>(context, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
+					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->value));
 				});
 			}
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle<T>(ctx, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
-					s->value = static_cast<T>(JS::Converter::get_bigint64(ctx, val));
+				return handle<T>(context, this_val, 0, nullptr, "getter", [&](Data<T>* s) {
+					s->value = static_cast<T>(JS::Converter::get_bigint64(context, val));
 					return JS_UNDEFINED;
 				});
 			}
@@ -4436,22 +4437,22 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto instance(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::Character
 			{
-				return proxy_wrapper(ctx, "instance", [&](){
+				return proxy_wrapper(context, "instance", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data<T>>(static_cast<T>(JS::Converter::get_bigint64(ctx, argv[0])));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto s = std::make_unique<Data<T>>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id<T>.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -4463,11 +4464,11 @@ namespace Sen::Kernel::Interface::Script
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id<T>.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", this_class<T>.class_name), "register_class");
+				class_id<T>.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", this_class<T>.class_name), "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (std::is_same<T, char>::value)
 				{
@@ -4481,22 +4482,22 @@ namespace Sen::Kernel::Interface::Script
 				{
 					class_name = "UCharacter"_sv;
 				}
-				auto point_ctor = JS_NewCFunction2(ctx, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto instance_c = JS_NewCFunction2(ctx, instance<T>, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{ctx, "instance"};
-				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions<T>.data(), proto_functions<T>.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atomData = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto instance_c = JS_NewCFunction2(context, instance<T>, "instance", 0, JS_CFUNC_generic, 0);
+				auto atom = Atom{context, "instance"};
+				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions<T>.data(), proto_functions<T>.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atomData = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -4549,22 +4550,22 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSValue
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::String{};
 					if (argc == 1) {
 						s.reset(new Data());
-						auto str = JS::Converter::get_string(ctx, argv[0]);
+						auto str = JS::Converter::get_string(context, argv[0]);
 						s->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
 						if (s->value == nullptr) {
-							JS_ThrowReferenceError(ctx, "could not allocate Kernel String");
+							JS_ThrowReferenceError(context, "could not allocate Kernel String");
 							return JS_EXCEPTION;
 						}
 						std::memcpy(s->value, str.data(), str.size());
@@ -4574,20 +4575,20 @@ namespace Sen::Kernel::Interface::Script
 					else {
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -4605,36 +4606,36 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::string
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_string(ctx, s->view());
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
+					return JS::Converter::to_string(context, s->view());
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s) {
-					auto str = JS::Converter::get_string(ctx, val);
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s) {
+					auto str = JS::Converter::get_string(context, val);
 					if (s->value != nullptr) {
 						std::free(s->value);
 					}
@@ -4651,27 +4652,27 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto instance(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::String
 			{
-				return proxy_wrapper(ctx, "instance", [&](){
+				return proxy_wrapper(context, "instance", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data>();
-					auto str = JS::Converter::get_string(ctx, argv[0]);
+					auto str = JS::Converter::get_string(context, argv[0]);
 					s->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
 					std::memcpy(s->value, str.data(), str.size());
 					s->size = str.size();
 					s->value[str.size()] = '\0';
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -4681,28 +4682,28 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "String class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "String class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{ctx, "instance"};
-				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom_data = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
+				auto atom = Atom{context, "instance"};
+				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom_data = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -4760,75 +4761,75 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto size(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "size", [&](Data* s){
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->value.size());
+				return handle(context, this_val, argc, argv, "size", [&](Data* s){
+					return JS::Converter::to_bigint<uint64_t>(context, s->value.size());
 				});
 			}
 
 			inline static auto capacity(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "capacity", [&](Data* s){
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->value.capacity());
+				return handle(context, this_val, argc, argv, "capacity", [&](Data* s){
+					return JS::Converter::to_bigint<uint64_t>(context, s->value.capacity());
 				});
 			}
 
 			inline static auto allocate(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "allocate", [&](Data* s){
+				return handle(context, this_val, argc, argv, "allocate", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "allocate");
-					s->value.reserve(static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[0])));
+					s->value.reserve(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto sub(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer
 			{
-				return handle(ctx, this_val, argc, argv, "sub", [&](Data* s){
+				return handle(context, this_val, argc, argv, "sub", [&](Data* s){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sub");
-					auto from = static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[0]));
-					auto to = static_cast<std::size_t>(JS::Converter::get_bigint64(ctx, argv[1]));
+					auto from = static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0]));
+					auto to = static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[1]));
 					assert_conditional(from < to, fmt::format("sub failed because {} >= {}", from, to), "sub");
 					assert_conditional(to < s->value.size(), fmt::format("sub failed because trying to reach outside bounds"), "sub");
 					assert_conditional(from >= 0, fmt::format("from cannot smaller than zero. Got value: {}", from), "sub");
-					return JS_NewArrayBufferCopy(ctx, s->value.data() + from, to);
+					return JS_NewArrayBufferCopy(context, s->value.data() + from, to);
 				});
 			}
 
 			template <auto use_big_endian>
 			inline static auto stream(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
@@ -4836,27 +4837,27 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				auto m_function_name = std::string{DataStreamView::_class_name<use_big_endian>().data(), DataStreamView::_class_name<use_big_endian>().size()};
-				return handle(ctx, this_val, argc, argv, m_function_name, [&](Data* s) {
-					auto sub = std::make_unique<Definition::Buffer::Stream<use_big_endian>>(s->value);
-					auto global_obj = JS_GetGlobalObject(ctx);
-					auto atom_1 = Atom{ctx, "Sen"};
-					auto sen_obj = JS_GetProperty(ctx, global_obj, atom_1.value);
-					auto atom_2 = Atom{ctx, "Kernel"};
-					auto kernel_obj = JS_GetProperty(ctx, sen_obj, atom_2.value);
+				return handle(context, this_val, argc, argv, m_function_name, [&](Data* s) {
+					auto sub = std::make_unique<Stream<use_big_endian>>(s->value);
+					auto global_obj = JS_GetGlobalObject(context);
+					auto atom_1 = Atom{context, "Sen"};
+					auto sen_obj = JS_GetProperty(context, global_obj, atom_1.value);
+					auto atom_2 = Atom{context, "Kernel"};
+					auto kernel_obj = JS_GetProperty(context, sen_obj, atom_2.value);
 					auto constructor_name = DataStreamView::_class_name<use_big_endian>();
-					auto stream_atom = Atom{ctx, constructor_name};
-					auto stream_ctor = JS_GetProperty(ctx, kernel_obj, stream_atom.value);
-					auto prototype_atom = Atom{ctx, "prototype"};
-					JS_FreeValue(ctx, global_obj);
-					JS_FreeValue(ctx, sen_obj);
-					JS_FreeValue(ctx, kernel_obj);
-					JS_FreeValue(ctx, stream_ctor);
-					auto proto = JS_GetProperty(ctx, stream_ctor, prototype_atom.value);
+					auto stream_atom = Atom{context, constructor_name};
+					auto stream_ctor = JS_GetProperty(context, kernel_obj, stream_atom.value);
+					auto prototype_atom = Atom{context, "prototype"};
+					JS_FreeValue(context, global_obj);
+					JS_FreeValue(context, sen_obj);
+					JS_FreeValue(context, kernel_obj);
+					JS_FreeValue(context, stream_ctor);
+					auto proto = JS_GetProperty(context, stream_ctor, prototype_atom.value);
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), m_function_name);
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, DataStreamView::class_id<use_big_endian>.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, DataStreamView::class_id<use_big_endian>.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						throw Exception("can't define class", std::source_location::current(), m_function_name);
 					}
@@ -4866,66 +4867,66 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSElement::Prototype{};
 					if (argc == 1) {
 						auto size = std::size_t{};
-						auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
+						auto data = JS_GetArrayBuffer(context, &size, argv[0]);
 						if (data == nullptr) {
 							return JS_EXCEPTION;
 						}
 						s.reset(new Data(make_list(data, size)));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "BinaryView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
+						JS_ThrowInternalError(context, "BinaryView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; });
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSValue
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s){
-					return JS_NewArrayBufferCopy(ctx, s->value.data(), s->value.size());
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s){
+					return JS_NewArrayBufferCopy(context, s->value.data(), s->value.size());
 				});
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSValue
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s){
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s){
 					auto byteLength = std::size_t{};
-					auto data = JS_GetArrayBuffer(ctx, &byteLength, val);
+					auto data = JS_GetArrayBuffer(context, &byteLength, val);
 					if (data == nullptr)
 					{
 						return JS_EXCEPTION;
@@ -4948,21 +4949,21 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto instance(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::BinaryView
 			{
-				return proxy_wrapper(ctx, "instance", [&]() {
+				return proxy_wrapper(context, "instance", [&]() {
 					auto s = std::make_unique<Data>();
-					auto atom_proto = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom_proto.value);
+					auto atom_proto = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom_proto.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -4972,28 +4973,28 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "BinaryView class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "BinaryView class register failed", "register_class");
 				auto class_name = "BinaryView"_sv;
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom(ctx, "instance");
-				JS_DefinePropertyValue(ctx, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom_data = Atom(ctx, class_name);
-				JS_DefinePropertyValue(ctx, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
+				auto atom = Atom(context, "instance");
+				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom_data = Atom(context, class_name);
+				JS_DefinePropertyValue(context, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -5007,37 +5008,37 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto class_id = temporary_class_id();
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::Canvas{};
 					if (argc == 2) {
-						s.reset(new Data(static_cast<int>(JS::Converter::get_bigint64(ctx, argv[0])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1]))));
+						s.reset(new Data(static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1]))));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Canvas class cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 2, argc);
+						JS_ThrowInternalError(context, "Canvas class cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 2, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -5055,153 +5056,153 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto scale (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "scale", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "scale", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
-					s->scale(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					s->scale(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]));
 					return JS_UNDEFINED;
 				});
 			}
 
 
 			inline static auto rotate (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "rotate", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "rotate", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
-					s->rotate(JS::Converter::get_float32(ctx, argv[0]));
+					s->rotate(JS::Converter::get_float32(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto translate (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "translate", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "translate", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "translate");
-					s->translate(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					s->translate(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto transform (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "transform", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "transform", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "transform");
-					s->transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					s->transform(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_float32(context, argv[5]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_transform (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_transform", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_transform", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_transform");
-					s->set_transform(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					s->set_transform(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_float32(context, argv[5]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_global_alpha (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_global_alpha", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_global_alpha", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_global_alpha");
-					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
+					s->set_global_alpha(JS::Converter::get_float32(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_shadow_color (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_shadow_color", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_shadow_color", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_color");
-					s->set_shadow_color(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->set_shadow_color(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_line_width (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_line_width", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_line_width", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_line_width");
-					s->set_line_width(JS::Converter::get_float32(ctx, argv[0]));
+					s->set_line_width(JS::Converter::get_float32(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_shadow_blur (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_shadow_blur", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_shadow_blur", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_blur");
-					s->set_global_alpha(JS::Converter::get_float32(ctx, argv[0]));
+					s->set_global_alpha(JS::Converter::get_float32(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_miter_limit (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_miter_limit", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_miter_limit", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_miter_limit");
-					s->set_miter_limit(JS::Converter::get_float32(ctx, argv[0]));
+					s->set_miter_limit(JS::Converter::get_float32(context, argv[0]));
 					return JS_UNDEFINED;
 				});
 			}
@@ -5209,380 +5210,380 @@ namespace Sen::Kernel::Interface::Script
 			using brush_type = canvas_ity::brush_type;
 
 			inline static auto set_color (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_color", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_color", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_color");
-					s->set_color(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					s->set_color(static_cast<brush_type>(JS::Converter::get_bigint64(context, argv[0])), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_linear_gradient (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_linear_gradient", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_linear_gradient", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_linear_gradient");
-					s->set_linear_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					s->set_linear_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(context, argv[0])), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_radial_gradient (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_radial_gradient", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_radial_gradient", [&](Data* s) {
 					assert_conditional(argc == 7, fmt::format("{} 7, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_radial_gradient");
-					s->set_radial_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]), JS::Converter::get_float32(ctx, argv[6]));
+					s->set_radial_gradient(static_cast<brush_type>(JS::Converter::get_bigint64(context, argv[0])), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_float32(context, argv[5]), JS::Converter::get_float32(context, argv[6]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto add_color_stop (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "add_color_stop", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "add_color_stop", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "add_color_stop");
-					s->add_color_stop(static_cast<brush_type>(JS::Converter::get_bigint64(ctx, argv[0])), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					s->add_color_stop(static_cast<brush_type>(JS::Converter::get_bigint64(context, argv[0])), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_float32(context, argv[5]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto begin_path (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "begin_path", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "begin_path", [&](Data* s) {
 					s->begin_path();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto move_to (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "move_to", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "move_to", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "move_to");
-					s->move_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					s->move_to(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto close_path (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "close_path", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "close_path", [&](Data* s) {
 					s->close_path();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto line_to (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "line_to", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "line_to", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "line_to");
-					s->line_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]));
+					s->line_to(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto quadratic_curve_to (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "quadratic_curve_to", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "quadratic_curve_to", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "quadratic_curve_to");
-					s->quadratic_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->quadratic_curve_to(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto bezier_curve_to (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "bezier_curve_to", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "bezier_curve_to", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "bezier_curve_to");
-					s->bezier_curve_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_float32(ctx, argv[5]));
+					s->bezier_curve_to(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_float32(context, argv[5]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto arc_to (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "arc_to", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "arc_to", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc_to");
-					s->arc_to(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]));
+					s->arc_to(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_image_color (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "set_image_color", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_image_color", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_image_color");
-					s->set_image_color(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->set_image_color(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED; 
 				});
 			}
 
 			inline static auto arc (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "arc", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "arc", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc");
-					s->arc(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]), JS::Converter::get_float32(ctx, argv[4]), JS::Converter::get_bool(ctx, argv[5]));
+					s->arc(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]), JS::Converter::get_float32(context, argv[4]), JS::Converter::get_bool(context, argv[5]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto rectangle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "rectangle", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rectangle");
-					s->rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->rectangle(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto fill (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "fill", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "fill", [&](Data* s) {
 					s->fill();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto stroke (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "stroke", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "stroke", [&](Data* s) {
 					s->stroke();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto clip (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "clip", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "clip", [&](Data* s) {
 					s->clip();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto is_point_in_path (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::boolean
 			{
-				return handle(ctx, this_val, argc, argv, "is_point_in_path", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "is_point_in_path", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_point_in_path");
-					return JS::Converter::to_bool(ctx, s->is_point_in_path(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1])));
+					return JS::Converter::to_bool(context, s->is_point_in_path(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1])));
 				});
 			}
 
 			inline static auto clear_rectangle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "clear_rectangle", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "clear_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "clear_rectangle");
-					s->clear_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->clear_rectangle(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto fill_rectangle(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "fill_rectangle", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "fill_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill_rectangle");
-					s->fill_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->fill_rectangle(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto stroke_rectangle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "stroke_rectangle", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "stroke_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "stroke_rectangle");
-					s->stroke_rectangle(JS::Converter::get_float32(ctx, argv[0]), JS::Converter::get_float32(ctx, argv[1]), JS::Converter::get_float32(ctx, argv[2]), JS::Converter::get_float32(ctx, argv[3]));
+					s->stroke_rectangle(JS::Converter::get_float32(context, argv[0]), JS::Converter::get_float32(context, argv[1]), JS::Converter::get_float32(context, argv[2]), JS::Converter::get_float32(context, argv[3]));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto set_font (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::boolean
 			{
-				return handle(ctx, this_val, argc, argv, "set_font", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "set_font", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_font");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					return JS::Converter::to_bool(ctx, s->set_font(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), size));
+					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					return JS::Converter::to_bool(context, s->set_font(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), size));
 				});
 			}
 
 			inline static auto draw_image (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "draw_image", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "draw_image", [&](Data* s) {
 					assert_conditional(argc == 8, fmt::format("{} 8, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "draw_image");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					s->draw_image(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<float>(JS::Converter::get_float32(ctx, argv[4])), static_cast<float>(JS::Converter::get_float32(ctx, argv[5])), static_cast<float>(JS::Converter::get_float32(ctx, argv[6])), static_cast<float>(JS::Converter::get_float32(ctx, argv[7])));
+					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					s->draw_image(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<float>(JS::Converter::get_float32(context, argv[4])), static_cast<float>(JS::Converter::get_float32(context, argv[5])), static_cast<float>(JS::Converter::get_float32(context, argv[6])), static_cast<float>(JS::Converter::get_float32(context, argv[7])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto get_image_data (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "get_image_data", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "get_image_data", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_image_data");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
+					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
 					if (data == nullptr) {
 						return JS_EXCEPTION;
 					}
-					s->get_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
+					s->get_image_data(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<int>(JS::Converter::get_bigint64(context, argv[4])), static_cast<int>(JS::Converter::get_bigint64(context, argv[5])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto put_image_data (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "put_image_data", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "put_image_data", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "put_image_data");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(ctx, &size, argv[0]);
-					s->put_image_data(data, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[2])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[3])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[4])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[5])));
+					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					s->put_image_data(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<int>(JS::Converter::get_bigint64(context, argv[4])), static_cast<int>(JS::Converter::get_bigint64(context, argv[5])));
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto save (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "save", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "save", [&](Data* s) {
 					s->save();
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto restore (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, argc, argv, "restore", [&](Data* s) {
+				return handle(context, this_val, argc, argv, "restore", [&](Data* s) {
 					s->restore();
 					return JS_UNDEFINED;
 				});
@@ -5629,25 +5630,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Canvas class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Canvas class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -5656,7 +5657,7 @@ namespace Sen::Kernel::Interface::Script
 		namespace DimensionView
 		{
 
-			using Data = Kernel::Definition::Dimension<int>;
+			using Data = Kernel::Dimension<int>;
 
 			inline static auto class_id = temporary_class_id();
 
@@ -5667,41 +5668,41 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::ImageView{};
 					if (argc == 1) {
-						auto width_atom = Atom{ctx, "width"};
-						auto height_atom = Atom{ctx, "height"};
-						auto width = get_property_bigint64(ctx, argv[0], width_atom.value);
-						auto height = get_property_bigint64(ctx, argv[0], height_atom.value);
+						auto width_atom = Atom{context, "width"};
+						auto height_atom = Atom{context, "height"};
+						auto width = get_property_bigint64(context, argv[0], width_atom.value);
+						auto height = get_property_bigint64(context, argv[0], height_atom.value);
 						s.reset(new Data(static_cast<int>(width),static_cast<int>(height)));
 					}
 					else {
-						JS_ThrowInternalError(ctx, "DimensionView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
+						JS_ThrowInternalError(context, "DimensionView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -5719,32 +5720,32 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s){
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s){
 					switch (static_cast<DimensionView::Magic>(magic))
 					{
 						case DimensionView::Magic::width:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->width));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
 						}
 						case DimensionView::Magic::height:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->height));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
 						}
 						default:
 						{
@@ -5755,23 +5756,23 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "setter", [&](Data* s){
+				return handle(context, this_val, 0, nullptr, "setter", [&](Data* s){
 					switch (static_cast<DimensionView::Magic>(magic))
 					{
 						case DimensionView::Magic::width:
 						{
-							s->width = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case DimensionView::Magic::height:
 						{
-							s->height = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						default:
@@ -5789,25 +5790,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "DimensionView class failed register", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "DimensionView class failed register", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom(ctx, class_name);
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom(context, class_name);
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -5816,7 +5817,7 @@ namespace Sen::Kernel::Interface::Script
 		namespace Rectangle
 		{
 
-			using Data = Kernel::Definition::Rectangle<int>;
+			using Data = Kernel::Rectangle<int>;
 
 			inline static auto class_id = temporary_class_id();
 
@@ -5829,45 +5830,45 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&]() {
+				return proxy_wrapper(context, "constructor", [&]() {
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::ImageView{};
 					if (argc == 1) {
-						auto width_atom = Atom{ctx, "width"};
-						auto height_atom = Atom{ctx, "height"};
-						auto x_atom = Atom{ctx, "x"};
-						auto y_atom = Atom{ctx, "y"};
-						auto width = get_property_bigint64(ctx, argv[0], width_atom.value);
-						auto height = get_property_bigint64(ctx, argv[0], height_atom.value);
-						auto x = get_property_bigint64(ctx, argv[0], x_atom.value);
-						auto y = get_property_bigint64(ctx, argv[0], y_atom.value);
+						auto width_atom = Atom{context, "width"};
+						auto height_atom = Atom{context, "height"};
+						auto x_atom = Atom{context, "x"};
+						auto y_atom = Atom{context, "y"};
+						auto width = get_property_bigint64(context, argv[0], width_atom.value);
+						auto height = get_property_bigint64(context, argv[0], height_atom.value);
+						auto x = get_property_bigint64(context, argv[0], x_atom.value);
+						auto y = get_property_bigint64(context, argv[0], y_atom.value);
 						s.reset(new Data{static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)});
 					}
 					else {
-						JS_ThrowInternalError(ctx, "Rectangle cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
+						JS_ThrowInternalError(context, "Rectangle cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; 
 				});
 			}
@@ -5885,40 +5886,40 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Rectangle::Magic>(magic))
 					{
 						case Rectangle::Magic::x:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->x));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->x));
 						}
 						case Rectangle::Magic::y:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->y));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->y));
 						}
 						case Rectangle::Magic::width:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->width));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
 						}
 						case Rectangle::Magic::height:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->height));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
 						}
 						default:
 						{
@@ -5929,33 +5930,33 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data* s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Rectangle::Magic>(magic))
 					{
 						case Rectangle::Magic::x:
 					{
-						s->x = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+						s->x = static_cast<int>(JS::Converter::get_bigint64(context, val));
 						break;
 					}
 					case Rectangle::Magic::y:
 					{
-						s->y = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+						s->y = static_cast<int>(JS::Converter::get_bigint64(context, val));
 						break;
 					}
 					case Rectangle::Magic::width:
 					{
-						s->width = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+						s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
 						break;
 					}
 					case Rectangle::Magic::height:
 					{
-						s->height = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+						s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
 						break;
 					}
 					default:
@@ -5975,25 +5976,25 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Rectangle class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Rectangle class register failed", "register_class");
 				auto class_name = "Rectangle"_sv;
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -6002,7 +6003,7 @@ namespace Sen::Kernel::Interface::Script
 		namespace ImageView
 		{
 
-			using Data = Kernel::Definition::Image<int>;
+			using Data = Kernel::Image<int>;
 
 			inline static auto class_id = temporary_class_id();
 
@@ -6019,60 +6020,60 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 			inline static auto constructor(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst new_target,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "constructor", [&](){
+				return proxy_wrapper(context, "constructor", [&](){
 					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
 					auto obj = JS_UNDEFINED;
 					auto proto = JSDefine::ImageView{};
 					if (argc == 1) {
-						auto width_atom = Atom{ctx, "width"};
-						auto height_atom = Atom{ctx, "height"};
-						auto bit_depth_atom = Atom{ctx, "bit_depth"};
-						auto color_type_atom = Atom{ctx, "color_type"};
-						auto interlace_type_atom = Atom{ctx, "interlace_type"};
-						auto channels_atom = Atom{ctx, "channels"};
-						auto rowbytes_atom = Atom{ctx, "rowbytes"};
-						auto data_atom = Atom{ctx, "data"};
-						auto width = get_property_bigint64(ctx, argv[0], width_atom.value);
-						auto height = get_property_bigint64(ctx, argv[0], height_atom.value);
-						auto bit_depth = get_property_bigint64(ctx, argv[0], bit_depth_atom.value);
-						auto color_type = get_property_bigint64(ctx, argv[0], color_type_atom.value);
-						auto interlace_type = get_property_bigint64(ctx, argv[0], interlace_type_atom.value);
-						auto channels = get_property_bigint64(ctx, argv[0], channels_atom.value);
-						auto rowbytes = get_property_bigint64(ctx, argv[0], rowbytes_atom.value);
-						auto data_val = JS_GetProperty(ctx, argv[0], data_atom.value);
+						auto width_atom = Atom{context, "width"};
+						auto height_atom = Atom{context, "height"};
+						auto bit_depth_atom = Atom{context, "bit_depth"};
+						auto color_type_atom = Atom{context, "color_type"};
+						auto interlace_type_atom = Atom{context, "interlace_type"};
+						auto channels_atom = Atom{context, "channels"};
+						auto rowbytes_atom = Atom{context, "rowbytes"};
+						auto data_atom = Atom{context, "data"};
+						auto width = get_property_bigint64(context, argv[0], width_atom.value);
+						auto height = get_property_bigint64(context, argv[0], height_atom.value);
+						auto bit_depth = get_property_bigint64(context, argv[0], bit_depth_atom.value);
+						auto color_type = get_property_bigint64(context, argv[0], color_type_atom.value);
+						auto interlace_type = get_property_bigint64(context, argv[0], interlace_type_atom.value);
+						auto channels = get_property_bigint64(context, argv[0], channels_atom.value);
+						auto rowbytes = get_property_bigint64(context, argv[0], rowbytes_atom.value);
+						auto data_val = JS_GetProperty(context, argv[0], data_atom.value);
 						if (JS_IsException(data_val)) {
 							return JS_EXCEPTION;
 						}
 						auto size = std::size_t{};
-						auto data = JS_GetArrayBuffer(ctx, &size, data_val);
-						JS_FreeValue(ctx, data_val);
+						auto data = JS_GetArrayBuffer(context, &size, data_val);
+						JS_FreeValue(context, data_val);
 						assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object", "constructor");
 						s.reset(new Data{static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size))});
 					}
 					else {
-						JS_ThrowInternalError(ctx, "ImageView cannot be initialized because the number of argument does not valid. Expected: %d, got: %d", 1, argc);
+						JS_ThrowInternalError(context, "ImageView cannot be initialized because the number of argument does not valid. Expected: %d, got: %d", 1, argc);
 						return JS_EXCEPTION;
 					}
-					auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+					auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 					if (JS_IsException(proto)) {
 						goto fail;
 					}
-					obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						goto fail;
 					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION;
 				});
 			}
@@ -6090,56 +6091,56 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			inline static auto handle (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
-				return make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+				return make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 			}
 
 			inline static auto getter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int magic
 			) -> JSElement::any
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data *s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data *s) {
 					switch (static_cast<ImageView::Magic>(magic))
 					{
 						case ImageView::Magic::bit_depth:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->bit_depth));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->bit_depth));
 						}
 						case ImageView::Magic::channels:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->channels));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->channels));
 						}
 						case ImageView::Magic::color_type:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->color_type));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->color_type));
 						}
 						case ImageView::Magic::interlace_type:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->interlace_type));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->interlace_type));
 						}
 						case ImageView::Magic::rowbytes:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->rowbytes));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->rowbytes));
 						}
 						case ImageView::Magic::width:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->width));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
 						}
 						case ImageView::Magic::height:
 						{
-							return JS::Converter::to_bigint(ctx, static_cast<std::int64_t>(s->height));
+							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
 						}
 						case ImageView::Magic::data:
 						{
-							return JS_NewArrayBufferCopy(ctx, s->data().data(), s->data().size());
+							return JS_NewArrayBufferCopy(context, s->data().data(), s->data().size());
 						}
 						default:
 						{
@@ -6150,54 +6151,54 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto setter(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
-				return handle(ctx, this_val, 0, nullptr, "getter", [&](Data *s) {
+				return handle(context, this_val, 0, nullptr, "getter", [&](Data *s) {
 					switch (static_cast<ImageView::Magic>(magic))
 					{
 						case ImageView::Magic::bit_depth:
 						{
-							s->bit_depth = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->bit_depth = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::channels:
 						{
-							s->channels = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->channels = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::color_type:
 						{
-							s->color_type = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->color_type = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::interlace_type:
 						{
-							s->interlace_type = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->interlace_type = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::rowbytes:
 						{
-							s->rowbytes = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->rowbytes = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::width:
 						{
-							s->width = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::height:
 						{
-							s->height = static_cast<int>(JS::Converter::get_bigint64(ctx, val));
+							s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
 						}
 						case ImageView::Magic::data:
 						{
 							auto size = std::size_t{};
-							auto data = JS_GetArrayBuffer(ctx, &size, val);
+							auto data = JS_GetArrayBuffer(context, &size, val);
 							if (data == nullptr)
 							{
 								throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
@@ -6215,62 +6216,62 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto area(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "area", [&](Data* s) {
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->area());
+				return handle(context, this_val, argc, argv, "area", [&](Data* s) {
+					return JS::Converter::to_bigint<uint64_t>(context, s->area());
 				});
 			}
 
 			inline static auto circumference(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::bigint
 			{
-				return handle(ctx, this_val, argc, argv, "circumference", [&](Data* s) {
-					return JS::Converter::to_bigint<uint64_t>(ctx, s->circumference());
+				return handle(context, this_val, argc, argv, "circumference", [&](Data* s) {
+					return JS::Converter::to_bigint<uint64_t>(context, s->circumference());
 				});
 			}
 
 			template <typename T>
 				requires std::is_integral<T>::value
-			using Rectangle = Kernel::Definition::Rectangle<T>;
+			using Rectangle = Kernel::Rectangle<T>;
 
 			inline static auto cut(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "cut", [&]() {
+				return proxy_wrapper(context, "cut", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					auto x_atom = Atom{ctx, "x"};
-					auto y_atom = Atom{ctx, "y"};
-					auto width_atom = Atom{ctx, "width"};
-					auto height_atom = Atom{ctx, "height"};
-					auto x = get_property_bigint64(ctx, argv[1], x_atom.value);
-					auto y = get_property_bigint64(ctx, argv[1], y_atom.value);
-					auto width = get_property_bigint64(ctx, argv[1], width_atom.value);
-					auto height = get_property_bigint64(ctx, argv[1], height_atom.value);
+					auto x_atom = Atom{context, "x"};
+					auto y_atom = Atom{context, "y"};
+					auto width_atom = Atom{context, "width"};
+					auto height_atom = Atom{context, "height"};
+					auto x = get_property_bigint64(context, argv[1], x_atom.value);
+					auto y = get_property_bigint64(context, argv[1], y_atom.value);
+					auto width = get_property_bigint64(context, argv[1], width_atom.value);
+					auto height = get_property_bigint64(context, argv[1], height_atom.value);
 					auto data = std::make_unique<Data>(std::move(Data::cut(*s, Rectangle<int>(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)))));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6280,26 +6281,26 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto resize (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "resize", [&]() {
+				return proxy_wrapper(context, "resize", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resize");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					auto data = std::unique_ptr<Data, decltype(make_deleter<Data>())>(new Data(std::move(Data::resize(*s, JS::Converter::get_float32(ctx, argv[1])))), make_deleter<Data>());
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto data = std::unique_ptr<Data, decltype(make_deleter<Data>())>(new Data(std::move(Data::resize(*s, JS::Converter::get_float32(context, argv[1])))), make_deleter<Data>());
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6309,26 +6310,26 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto scale(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "scale", [&]() {
+				return proxy_wrapper(context, "scale", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					auto data = std::make_unique<Data>(std::move(Data::scale(*s, JS::Converter::get_float64(ctx, argv[1]))));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto data = std::make_unique<Data>(std::move(Data::scale(*s, JS::Converter::get_float64(context, argv[1]))));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6338,26 +6339,26 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto rotate (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "rotate", [&]() {
+				return proxy_wrapper(context, "rotate", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[0], class_id.value));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					auto data = std::make_unique<Data>(std::move(Data::rotate(*s, JS::Converter::get_float64(ctx, argv[1]))));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto data = std::make_unique<Data>(std::move(Data::rotate(*s, JS::Converter::get_float64(context, argv[1]))));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6367,40 +6368,40 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto write_fs (
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSElement::undefined
 			{
-				return proxy_wrapper(ctx, "write_fs", [&]() {
+				return proxy_wrapper(context, "write_fs", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_fs");
-					auto s = static_cast<Data*>(JS_GetOpaque2(ctx, argv[1], class_id.value));
+					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[1], class_id.value));
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					Kernel::Definition::ImageIO::write_png(JS::Converter::get_string(ctx, argv[0]), *s);
+					Kernel::ImageIO::write_png(JS::Converter::get_string(context, argv[0]), *s);
 					return JS_UNDEFINED;
 				});
 			}
 
 			inline static auto read_fs(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "read_fs", [&]() {
+				return proxy_wrapper(context, "read_fs", [&]() {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_fs");
-					auto data = std::make_unique<Data>(std::move(Kernel::Definition::ImageIO::read_png(JS::Converter::get_string(ctx, argv[0]))));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto data = std::make_unique<Data>(std::move(Kernel::ImageIO::read_png(JS::Converter::get_string(context, argv[0]))));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6410,22 +6411,22 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			inline static auto instance(
-				JSContext *ctx,
+				JSContext *context,
 				JSValueConst this_val,
 				int argc,
 				JSValueConst *argv
 			) -> JSDefine::ImageView
 			{
-				return proxy_wrapper(ctx, "instance", [&]() {
+				return proxy_wrapper(context, "instance", [&]() {
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data>(0, 0, static_cast<int>(JS::Converter::get_bigint64(ctx, argv[0])), static_cast<int>(JS::Converter::get_bigint64(ctx, argv[1])), JS::Converter::to_binary_list(ctx, argv[2]));
-					auto atom = Atom{ctx, "prototype"};
-					auto proto = JS_GetProperty(ctx, this_val, atom.value);
+					auto s = std::make_unique<Data>(0, 0, static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), JS::Converter::to_binary_list(context, argv[2]));
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, this_val, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
-					auto obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-					JS_FreeValue(ctx, proto);
+					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						return JS_EXCEPTION;
 					}
@@ -6448,46 +6449,46 @@ namespace Sen::Kernel::Interface::Script
 			});
 
 			inline static auto register_class(
-				JSContext *ctx
+				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(ctx);
-				assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "ImageView class register failed", "register_class");
+				class_id.allocate_new(context);
+				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "ImageView class register failed", "register_class");
 				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(ctx);
-				auto instance_c = JS_NewCFunction2(ctx, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto instance_atom = Atom(ctx, "instance");
-				JS_DefinePropertyValue(ctx, point_ctor, instance_atom.value, instance_c, int{JS_PROP_C_W_E});
-				auto default_cut = JS_NewCFunction2(ctx, cut, "cut", 0, JS_CFUNC_generic, 0);
-				auto default_resize = JS_NewCFunction2(ctx, resize, "resize", 0, JS_CFUNC_generic, 0);
-				auto default_scale = JS_NewCFunction2(ctx, scale, "scale", 0, JS_CFUNC_generic, 0);
-				auto default_rotate = JS_NewCFunction2(ctx, rotate, "rotate", 0, JS_CFUNC_generic, 0);
-				auto default_read_fs = JS_NewCFunction2(ctx, read_fs, "read_fs", 0, JS_CFUNC_generic, 0);
-				auto default_write_fs = JS_NewCFunction2(ctx, write_fs, "write_fs", 0, JS_CFUNC_generic, 0);
-				auto atom_cut = Atom(ctx, "cut");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_cut.value, default_cut, int{JS_PROP_C_W_E});
-				auto atom_resize = Atom(ctx, "resize");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_resize.value, default_resize, int{JS_PROP_C_W_E});
-				auto atom_scale = Atom(ctx, "scale");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_scale.value, default_scale, int{JS_PROP_C_W_E});
-				auto atom_rotate = Atom(ctx, "rotate");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_rotate.value, default_rotate, int{JS_PROP_C_W_E});
-				auto atom_read_fs = Atom(ctx, "read_fs");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_read_fs.value, default_read_fs, int{JS_PROP_C_W_E});
-				auto atom_write_fs = Atom(ctx, "write_fs");
-				JS_DefinePropertyValue(ctx, point_ctor, atom_write_fs.value, default_write_fs, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(ctx, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(ctx);
-				auto obj1 = make_instance_object(ctx, global_obj, "Sen");
-				auto obj2 = make_instance_object(ctx, obj1, "Kernel");
-				auto atom = Atom{ctx, class_name};
-				JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(ctx, global_obj);
-				JS_FreeValue(ctx, obj1);
-				JS_FreeValue(ctx, obj2);
-				JS_FreeValue(ctx, proto);
+				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto proto = JS_NewObject(context);
+				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
+				auto instance_atom = Atom(context, "instance");
+				JS_DefinePropertyValue(context, point_ctor, instance_atom.value, instance_c, int{JS_PROP_C_W_E});
+				auto default_cut = JS_NewCFunction2(context, cut, "cut", 0, JS_CFUNC_generic, 0);
+				auto default_resize = JS_NewCFunction2(context, resize, "resize", 0, JS_CFUNC_generic, 0);
+				auto default_scale = JS_NewCFunction2(context, scale, "scale", 0, JS_CFUNC_generic, 0);
+				auto default_rotate = JS_NewCFunction2(context, rotate, "rotate", 0, JS_CFUNC_generic, 0);
+				auto default_read_fs = JS_NewCFunction2(context, read_fs, "read_fs", 0, JS_CFUNC_generic, 0);
+				auto default_write_fs = JS_NewCFunction2(context, write_fs, "write_fs", 0, JS_CFUNC_generic, 0);
+				auto atom_cut = Atom(context, "cut");
+				JS_DefinePropertyValue(context, point_ctor, atom_cut.value, default_cut, int{JS_PROP_C_W_E});
+				auto atom_resize = Atom(context, "resize");
+				JS_DefinePropertyValue(context, point_ctor, atom_resize.value, default_resize, int{JS_PROP_C_W_E});
+				auto atom_scale = Atom(context, "scale");
+				JS_DefinePropertyValue(context, point_ctor, atom_scale.value, default_scale, int{JS_PROP_C_W_E});
+				auto atom_rotate = Atom(context, "rotate");
+				JS_DefinePropertyValue(context, point_ctor, atom_rotate.value, default_rotate, int{JS_PROP_C_W_E});
+				auto atom_read_fs = Atom(context, "read_fs");
+				JS_DefinePropertyValue(context, point_ctor, atom_read_fs.value, default_read_fs, int{JS_PROP_C_W_E});
+				auto atom_write_fs = Atom(context, "write_fs");
+				JS_DefinePropertyValue(context, point_ctor, atom_write_fs.value, default_write_fs, int{JS_PROP_C_W_E});
+				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+				JS_SetConstructor(context, point_ctor, proto);
+				auto global_obj = JS_GetGlobalObject(context);
+				auto obj1 = make_instance_object(context, global_obj, "Sen");
+				auto obj2 = make_instance_object(context, obj1, "Kernel");
+				auto atom = Atom{context, class_name};
+				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+				JS_FreeValue(context, global_obj);
+				JS_FreeValue(context, obj1);
+				JS_FreeValue(context, obj2);
+				JS_FreeValue(context, proto);
 				return;
 			}
 
@@ -6507,16 +6508,16 @@ namespace Sen::Kernel::Interface::Script
 		 */
 
 		inline static auto sleep (
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			return proxy_wrapper(ctx, "sleep", [&](){
+			return proxy_wrapper(context, "sleep", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sleep");
-				auto time = JS::Converter::get_bigint64(ctx, argv[0]);
-				Sen::Kernel::Definition::Timer::sleep(time);
+				auto time = JS::Converter::get_bigint64(context, argv[0]);
+				Sen::Kernel::Timer::sleep(time);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6555,7 +6556,7 @@ namespace Sen::Kernel::Interface::Script
 					auto after_file = JS::Converter::get_string(context, argv[1]);
 					auto patch_file = JS::Converter::get_string(context, argv[2]);
 					auto flag = JS::Converter::get_int32(context, argv[3]);
-					Sen::Kernel::Definition::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Sen::Kernel::Definition::Diff::VCDiff::Flag>(flag));
+					Sen::Kernel::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Sen::Kernel::Diff::VCDiff::Flag>(flag));
 					return JS_UNDEFINED; 
 				});
 			}
@@ -6572,7 +6573,7 @@ namespace Sen::Kernel::Interface::Script
 					auto before_file = JS::Converter::get_string(context, argv[0]);
 					auto patch_file = JS::Converter::get_string(context, argv[1]);
 					auto after_file = JS::Converter::get_string(context, argv[2]);
-					Sen::Kernel::Definition::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
+					Sen::Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
 					return JS_UNDEFINED;
 				});
 			}
@@ -6745,17 +6746,17 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto random(
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			return proxy_wrapper(ctx, "random", [&](){
+			return proxy_wrapper(context, "random", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "random");
 				auto arrayBuffer = argv[0];
 				auto byteLength = std::size_t{};
-				auto data = JS_GetArrayBuffer(ctx, &byteLength, arrayBuffer);
+				auto data = JS_GetArrayBuffer(context, &byteLength, arrayBuffer);
 				if (data == nullptr) {
 					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
 				}
@@ -6767,18 +6768,18 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto fill(
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			return proxy_wrapper(ctx, "fill", [&](){
+			return proxy_wrapper(context, "fill", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill");
 				auto arrayBuffer = argv[0];
-				auto byte_c = static_cast<std::uint8_t>(JS::Converter::get_bigint64(ctx, argv[0]));
+				auto byte_c = static_cast<std::uint8_t>(JS::Converter::get_bigint64(context, argv[0]));
 				auto byteLength = std::size_t{};
-				auto data = JS_GetArrayBuffer(ctx, &byteLength, arrayBuffer);
+				auto data = JS_GetArrayBuffer(context, &byteLength, arrayBuffer);
 				if (data == nullptr) {
 					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "fill");
 				}
@@ -7448,7 +7449,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "open", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto image = Sen::Kernel::Definition::ImageIO::read_png(source);
+				auto image = Sen::Kernel::ImageIO::read_png(source);
 				auto image_obj = JSValue{};
 				auto area_func = JS_NewCFunction2(context, area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -7484,7 +7485,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			using Image = Sen::Kernel::Definition::Image<int>;
+			using Image = Sen::Kernel::Image<int>;
 			return proxy_wrapper(context, "write", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
 				auto source_file = JS::Converter::get_string(context, argv[0]);
@@ -7510,7 +7511,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(data != nullptr, "Cannot get ArrayBuffer from the current object", "write");
 				JS_FreeValue(context, data_val);
 				auto image = Image(static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
-				Sen::Kernel::Definition::ImageIO::write_png(source_file, image);
+				Sen::Kernel::ImageIO::write_png(source_file, image);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7532,7 +7533,7 @@ namespace Sen::Kernel::Interface::Script
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
-				Sen::Kernel::Definition::ImageIO::scale_png(source, destination, percentage);
+				Sen::Kernel::ImageIO::scale_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7549,7 +7550,7 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto width = JS::Converter::get_int32(context, argv[1]);
 				auto height = JS::Converter::get_int32(context, argv[2]);
-				Sen::Kernel::Definition::ImageIO::transparent_png(destination, width, height);
+				Sen::Kernel::ImageIO::transparent_png(destination, width, height);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7567,7 +7568,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			using Image = Sen::Kernel::Definition::Image<int>;
+			using Image = Sen::Kernel::Image<int>;
 			return proxy_wrapper(context, "join_png", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join_png");
 				auto destination = JS::Converter::get_string(context, argv[0]);
@@ -7577,7 +7578,7 @@ namespace Sen::Kernel::Interface::Script
 				auto width = get_property_bigint64(context, argv[1], atom_width.value);
 				auto height = get_property_bigint64(context, argv[1], atom_height.value);
 				auto length = get_property_int32(context, argv[2], atom_length.value);
-				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto m_data = List<Sen::Kernel::Image<int>>{};
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
@@ -7601,7 +7602,7 @@ namespace Sen::Kernel::Interface::Script
 					m_data[i].x = x_y[i].x;
 					m_data[i].y = x_y[i].y;
 				}
-				Sen::Kernel::Definition::ImageIO::join_png(destination, Sen::Kernel::Definition::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
+				Sen::Kernel::ImageIO::join_png(destination, Sen::Kernel::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7613,7 +7614,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv
 		) -> JSElement::Object
 		{
-			using Image = Sen::Kernel::Definition::Image<int>;
+			using Image = Sen::Kernel::Image<int>;
 			return proxy_wrapper(context, "join", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join");
 				auto atom_width = Atom{context, "width"};
@@ -7622,7 +7623,7 @@ namespace Sen::Kernel::Interface::Script
 				auto width = get_property_bigint64(context, argv[1], atom_width.value);
 				auto height = get_property_bigint64(context, argv[1], atom_height.value);
 				auto length = get_property_int32(context, argv[2], atom_length.value);
-				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto m_data = List<Sen::Kernel::Image<int>>{};
 				auto x_y = List<Coordinate>{};
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
@@ -7646,8 +7647,8 @@ namespace Sen::Kernel::Interface::Script
 					m_data[i].x = x_y[i].x;
 					m_data[i].y = x_y[i].y;
 				}
-				auto destination = Kernel::Definition::Image<int>::transparent(Kernel::Definition::Dimension<int>(static_cast<int>(width), static_cast<int>(height)));
-				Sen::Kernel::Definition::ImageIO::join(destination, m_data);
+				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(static_cast<int>(width), static_cast<int>(height)));
+				Sen::Kernel::ImageIO::join(destination, m_data);
 				auto image_obj = JS_NewObject(context);
 				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -7680,7 +7681,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValueConst *argv
 		) -> JSElement::Object
 		{
-			using Image = Sen::Kernel::Definition::Image<int>;
+			using Image = Sen::Kernel::Image<int>;
 			return proxy_wrapper(context, "join_extend", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join_extend");
 				auto atom_width = Atom{context, "width"};
@@ -7689,7 +7690,7 @@ namespace Sen::Kernel::Interface::Script
 				auto atlas_width = get_property_bigint64(context, argv[1], atom_width.value);
 				auto atlas_height = get_property_bigint64(context, argv[1], atom_height.value);
 				auto length = get_property_int32(context, argv[2], atom_length.value);
-				auto m_data = List<Sen::Kernel::Definition::Image<int>>{};
+				auto m_data = List<Sen::Kernel::Image<int>>{};
 				auto x_y = List<Coordinate>{};auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
@@ -7712,8 +7713,8 @@ namespace Sen::Kernel::Interface::Script
 					m_data[i].x = x_y[i].x;
 					m_data[i].y = x_y[i].y;
 				}
-				auto destination = Kernel::Definition::Image<int>::transparent(Kernel::Definition::Dimension<int>(atlas_width, atlas_height));
-				Sen::Kernel::Definition::ImageIO::join_extend(destination,m_data);
+				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(atlas_width, atlas_height));
+				Sen::Kernel::ImageIO::join_extend(destination,m_data);
 				auto image_obj = JS_NewObject(context);
 				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -7747,7 +7748,7 @@ namespace Sen::Kernel::Interface::Script
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
-				Sen::Kernel::Definition::ImageIO::resize_png(source, destination, percentage);
+				Sen::Kernel::ImageIO::resize_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7764,7 +7765,7 @@ namespace Sen::Kernel::Interface::Script
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float64(context, argv[2]);
-				Sen::Kernel::Definition::ImageIO::rotate_png(source, destination, percentage);
+				Sen::Kernel::ImageIO::rotate_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7788,7 +7789,7 @@ namespace Sen::Kernel::Interface::Script
 				auto rectangle_height = get_property_int32(context, argv[2], height_atom.value);
 				auto rectangle_x = get_property_int32(context, argv[2], x_atom.value);
 				auto rectangle_y = get_property_int32(context, argv[2], y_atom.value);
-				Sen::Kernel::Definition::ImageIO::cut_fs(source, destination, Sen::Kernel::Definition::Rectangle<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height));
+				Sen::Kernel::ImageIO::cut_fs(source, destination, Sen::Kernel::Rectangle<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height));
 				return JS_UNDEFINED;
 			});
 		}
@@ -7802,7 +7803,7 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "cut_multiple_fs", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut_multiple_fs");
-				auto data = List<Sen::Kernel::Definition::RectangleFileIO<int>>{};
+				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_int32(context, argv[1], length_atom.value);
@@ -7818,14 +7819,14 @@ namespace Sen::Kernel::Interface::Script
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
 						auto rectangle_y = get_property_int32(context, current_object, y_atom.value);
 						auto destination = get_property_string(context, current_object, destination_atom.value);
-						data.emplace_back(Sen::Kernel::Definition::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
+						data.emplace_back(Sen::Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
 						JS_FreeValue(context, current_object);
 					}
 				} else {
 					throw Exception("Cannot read property \"length\" of undefined", std::source_location::current(), "cut_multiple_fs");
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::Definition::ImageIO::cut_pngs(source, data);
+				Sen::Kernel::ImageIO::cut_pngs(source, data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7849,7 +7850,7 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "cut_multiple_fs_asynchronous", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut_multiple_fs");
-				auto data = List<Sen::Kernel::Definition::RectangleFileIO<int>>{};
+				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_int32(context, argv[1], length_atom.value);
@@ -7865,14 +7866,14 @@ namespace Sen::Kernel::Interface::Script
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
 						auto rectangle_y = get_property_int32(context, current_object, y_atom.value);
 						auto destination = get_property_string(context, current_object, destination_atom.value);
-						data.emplace_back(Sen::Kernel::Definition::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
+						data.emplace_back(Sen::Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
 						JS_FreeValue(context, current_object);
 					}
 				} else {
 					throw Exception("Cannot read property \"length\" of undefined", std::source_location::current(), "cut_multiple_fs_asynchronous");
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::Definition::ImageIO::cut_pngs_asynchronous(source, data);
+				Sen::Kernel::ImageIO::cut_pngs_asynchronous(source, data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7926,14 +7927,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer
 			{
-				using Mode = Kernel::Definition::Encryption::Rijndael::Mode;
+				using Mode = Kernel::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
 													 const List<std::uint8_t> &plain,
 													 std::string_view key,
 													 std::string_view iv) -> List<std::uint8_t>
 				{
 					static_assert(mode == Mode::CBC or mode == Mode::CFB or mode == Mode::ECB, "mode must be cbc or cfb or ecb");
-					return Kernel::Definition::Encryption::Rijndael::encrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
+					return Kernel::Encryption::Rijndael::encrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
 				};
 				return proxy_wrapper(context, "encrypt", [&](){
 					assert_conditional(argc == 4, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt");
@@ -7965,14 +7966,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValueConst *argv
 			) -> JSElement::ArrayBuffer
 			{
-				using Mode = Kernel::Definition::Encryption::Rijndael::Mode;
+				using Mode = Kernel::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
 													 const List<std::uint8_t> &plain,
 													 std::string_view key,
 													 std::string_view iv) -> List<std::uint8_t>
 				{
 					static_assert(mode == Mode::CBC or mode == Mode::CFB or mode == Mode::ECB, "mode must be cbc or cfb or ecb");
-					return Kernel::Definition::Encryption::Rijndael::decrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
+					return Kernel::Encryption::Rijndael::decrypt<std::size_t, Mode::CBC>(reinterpret_cast<char const *>(plain.data()), key, iv, plain.size());
 				};
 				return proxy_wrapper(context, "decrypt", [&](){
 					assert_conditional(argc == 4, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decrypt");
@@ -8012,7 +8013,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Definition::Encryption::FNV::Hash<std::uint32_t>{}.make_hash(source.data());
+					auto result = Kernel::Encryption::FNV::Hash<std::uint32_t>{}.make_hash(source.data());
 					return JS::Converter::to_bigint(context, result);
 				});
 			}
@@ -8027,7 +8028,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
+					auto result = Sen::Kernel::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
 					return JS::Converter::to_bigint(context, result);
 				});
 			}
@@ -8047,7 +8048,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Definition::Encryption::MD5::hash(Kernel::FileSystem::read_binary<unsigned char>(source));
+					auto result = Kernel::Encryption::MD5::hash(Kernel::FileSystem::read_binary<unsigned char>(source));
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8062,7 +8063,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::MD5::hash_fs(source);
+					auto result = Sen::Kernel::Encryption::MD5::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8081,7 +8082,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "encode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::Base64::encode(source);
+					auto result = Sen::Kernel::Encryption::Base64::encode(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8100,7 +8101,7 @@ namespace Sen::Kernel::Interface::Script
 						const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
 						paths.emplace_back(data);
 					}
-					Sen::Kernel::Definition::Encryption::Base64::encode_fs_as_multiple_thread(paths);
+					Sen::Kernel::Encryption::Base64::encode_fs_as_multiple_thread(paths);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8119,7 +8120,7 @@ namespace Sen::Kernel::Interface::Script
 						const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
 						paths.emplace_back(data);
 					}
-					Sen::Kernel::Definition::Encryption::Base64::encode_fs_as_multiple_thread(paths);
+					Sen::Kernel::Encryption::Base64::encode_fs_as_multiple_thread(paths);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8134,7 +8135,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "decode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::Base64::decode(source);
+					auto result = Sen::Kernel::Encryption::Base64::decode(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8150,7 +8151,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Encryption::Base64::encode_fs(source, destination);
+					Sen::Kernel::Encryption::Base64::encode_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8166,7 +8167,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Encryption::Base64::decode_fs(source, destination);
+					Sen::Kernel::Encryption::Base64::decode_fs(source, destination);
 					return JS_UNDEFINED; 
 				});
 			}
@@ -8185,7 +8186,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::Sha224::hash(source);
+					auto result = Sen::Kernel::Encryption::Sha224::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8200,7 +8201,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::Sha224::hash_fs(source);
+					auto result = Sen::Kernel::Encryption::Sha224::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8220,7 +8221,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA256::hash(source);
+					auto result = Sen::Kernel::Encryption::SHA256::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8235,7 +8236,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA256::hash_fs(source);
+					auto result = Sen::Kernel::Encryption::SHA256::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8254,7 +8255,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA384::hash(source);
+					auto result = Sen::Kernel::Encryption::SHA384::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8269,7 +8270,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA384::hash_fs(source);
+					auto result = Sen::Kernel::Encryption::SHA384::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8288,7 +8289,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA512::hash(source);
+					auto result = Sen::Kernel::Encryption::SHA512::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8303,7 +8304,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Definition::Encryption::SHA512::hash_fs(source);
+					auto result = Sen::Kernel::Encryption::SHA512::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -8323,7 +8324,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt");
 					auto plain = JS::Converter::to_binary_list(context, argv[0]);
 					auto key = JS::Converter::to_binary_list(context, argv[1]);
-					auto result = Sen::Kernel::Definition::Encryption::XOR::encrypt(plain, key);
+					auto result = Sen::Kernel::Encryption::XOR::encrypt(plain, key);
 					return JS::Converter::toArrayBuffer(context, result);
 				});
 			}
@@ -8340,7 +8341,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto key = JS::Converter::to_binary_list(context, argv[2]);
-					Sen::Kernel::Definition::Encryption::XOR::encrypt_fs(source, destination, key);
+					Sen::Kernel::Encryption::XOR::encrypt_fs(source, destination, key);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8368,7 +8369,7 @@ namespace Sen::Kernel::Interface::Script
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "directory");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Definition::Compression::Zip::Compress::directory(source, destination);
+						Sen::Kernel::Compression::Zip::Compress::directory(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8386,10 +8387,10 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						if (argc == 3) {
 							auto root = JS::Converter::get_string(context, argv[2]);
-							Sen::Kernel::Definition::Compression::Zip::Compress::file(source, destination, root);
+							Sen::Kernel::Compression::Zip::Compress::file(source, destination, root);
 						}
 						else {
-							Sen::Kernel::Definition::Compression::Zip::Compress::file(source, destination);
+							Sen::Kernel::Compression::Zip::Compress::file(source, destination);
 						}
 						return JS_UNDEFINED;
 					});
@@ -8411,7 +8412,7 @@ namespace Sen::Kernel::Interface::Script
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Definition::Compression::Zip::Uncompress::process(source, destination);
+						Sen::Kernel::Compression::Zip::Uncompress::process(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8435,11 +8436,11 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_int32(context, argv[2]);
-					if (!(static_cast<int>(Sen::Kernel::Definition::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Definition::Compression::Zlib::Level::LEVEL_9)))
+					if (!(static_cast<int>(Sen::Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Compression::Zlib::Level::LEVEL_9)))
 					{
 						throw Exception(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level), std::source_location::current(), "compress_fs");
 					}
-					Sen::Kernel::Definition::Compression::Zlib::compress_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Zlib::Level>(level));
+					Sen::Kernel::Compression::Zlib::compress_fs(source, destination, static_cast<Sen::Kernel::Compression::Zlib::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -8455,7 +8456,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Compression::Zlib::uncompress_fs(source, destination);
+					Sen::Kernel::Compression::Zlib::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8474,7 +8475,7 @@ namespace Sen::Kernel::Interface::Script
 					if (s == nullptr) {
 						return JS_EXCEPTION;
 					}
-					auto sub = std::make_unique<Data>(Sen::Kernel::Definition::Compression::Zlib::uncompress(s->value));
+					auto sub = std::make_unique<Data>(Sen::Kernel::Compression::Zlib::uncompress(s->value));
 					auto global_obj = JS_GetGlobalObject(context);
 					auto sen_atom = Atom{context, "Sen"};
 					auto kernel_atom = Atom{context, "Kernel"};
@@ -8509,8 +8510,8 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSDefine::BinaryView
 			{
 				using Data = Class::BinaryView::Data;
-				using Level = Definition::Compression::Zlib::Level;
-				using Zlib = Definition::Compression::Zlib;
+				using Level = Kernel::Compression::Zlib::Level;
+				using Zlib = Kernel::Compression::Zlib;
 				return proxy_wrapper(context, "compress", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress");
 					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id.value));
@@ -8609,7 +8610,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Compression::Bzip2::compress_fs(source, destination);
+					Sen::Kernel::Compression::Bzip2::compress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8625,7 +8626,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Compression::Bzip2::uncompress_fs(source, destination);
+					Sen::Kernel::Compression::Bzip2::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8647,7 +8648,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_bigint64(context, argv[2]);
-					Sen::Kernel::Definition::Compression::Lzma::compress_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Lzma::Level>(level));
+					Sen::Kernel::Compression::Lzma::compress_fs(source, destination, static_cast<Sen::Kernel::Compression::Lzma::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -8663,7 +8664,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Compression::Lzma::uncompress_fs(source, destination);
+					Sen::Kernel::Compression::Lzma::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -8685,11 +8686,11 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_int32(context, argv[2]);
-					if (!(static_cast<int>(Sen::Kernel::Definition::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Definition::Compression::Zlib::Level::LEVEL_9)))
+					if (!(static_cast<int>(Sen::Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Compression::Zlib::Level::LEVEL_9)))
 					{
 						throw std::invalid_argument(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level));
 					}
-					Sen::Kernel::Definition::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Sen::Kernel::Definition::Compression::Zlib::Level>(level));
+					Sen::Kernel::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Sen::Kernel::Compression::Zlib::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -8705,7 +8706,7 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Definition::Compression::Zlib::uncompress_gzip_fs(source, destination);
+					Sen::Kernel::Compression::Zlib::uncompress_gzip_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -10448,8 +10449,8 @@ namespace Sen::Kernel::Interface::Script
 
 		class JSFileWatcher {
 			public:
-				JSFileWatcher(JSContext* ctx, const std::string& directory)
-					: ctx(ctx), directory(directory), stopFlag(false), watcher(nullptr, Class::make_deleter<FileSystemWatcher>()) {}
+				JSFileWatcher(JSContext* context, const std::string& directory)
+					: context(context), directory(directory), stopFlag(false), watcher(nullptr, Class::make_deleter<FileSystemWatcher>()) {}
 
 				void start() {
 					watcher.reset(new FileSystemWatcher(directory));
@@ -10462,22 +10463,22 @@ namespace Sen::Kernel::Interface::Script
 					auto lock = std::lock_guard<std::mutex>(mtx);
 					auto it = eventCallbacks.find(event);
 					if (it != eventCallbacks.end()) {
-						auto jsFilename = JS_NewStringLen(ctx, filename.c_str(), filename.size());
+						auto jsFilename = JS_NewStringLen(context, filename.c_str(), filename.size());
 						it->second.function(jsFilename);  
-						JS_FreeValue(ctx, jsFilename);
+						JS_FreeValue(context, jsFilename);
 					}
 				}
 
 				void on(const std::string& eventType, JSValue callback) {
 					auto lock = std::lock_guard<std::mutex>(mtx);
-					JS_DupValue(ctx, callback);
+					JS_DupValue(context, callback);
 					auto cb = JSCallback{
 						callback, 
 						[this, callback](JSValue filename) {
 							auto args = std::array<JSValue, 1>{ filename };
-							auto value = JS_Call(ctx, callback, JS_UNDEFINED, args.size(), args.data());
+							auto value = JS_Call(context, callback, JS_UNDEFINED, args.size(), args.data());
 							if (!JS_IsUndefined(value)) {
-								JS_FreeValue(thiz.ctx, value);
+								JS_FreeValue(thiz.context, value);
 							}
 						}
 					};
@@ -10488,7 +10489,7 @@ namespace Sen::Kernel::Interface::Script
 					auto lock = std::lock_guard<std::mutex>(mtx);
 					stopFlag = true;
 					for (auto& [event, callbackStruct] : eventCallbacks) {
-						JS_FreeValue(ctx, callbackStruct.jsCallback); 
+						JS_FreeValue(context, callbackStruct.jsCallback); 
 					}
 					eventCallbacks.clear();
 					watcher.reset();
@@ -10496,13 +10497,13 @@ namespace Sen::Kernel::Interface::Script
 
 				~JSFileWatcher() {
 					for (auto& [event, callbackStruct] : eventCallbacks) {
-						JS_FreeValue(ctx, callbackStruct.jsCallback); 
+						JS_FreeValue(context, callbackStruct.jsCallback); 
 					}
 					stop();
 				}
 
 			private:
-				JSContext* ctx;
+				JSContext* context;
 				std::string directory;
 				std::unique_ptr<FileSystemWatcher, decltype(Class::make_deleter<FileSystemWatcher>())> watcher;
 				std::mutex mtx;
@@ -10516,38 +10517,38 @@ namespace Sen::Kernel::Interface::Script
 		using Data = JSFileWatcher;
 
 		inline static auto constructor(
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst new_target,
 			int argc,
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			return proxy_wrapper(ctx, "constructor", [&](){
+			return proxy_wrapper(context, "constructor", [&](){
 				auto s = std::unique_ptr<JSFileWatcher, decltype(Class::make_deleter<JSFileWatcher>())>(nullptr, Class::make_deleter<JSFileWatcher>());
 				auto obj = JS_UNDEFINED;
 				auto proto = JSElement::Prototype{};
 				if (argc == 1) {
-					auto source = JS::Converter::get_string(ctx, argv[0]);
-					s.reset(new JSFileWatcher(ctx, source));
+					auto source = JS::Converter::get_string(context, argv[0]);
+					s.reset(new JSFileWatcher(context, source));
 				}
 				else {
-					JS_ThrowInternalError(ctx, "FileWatcher cannot be initialized because argument does not satisfy constructor");
+					JS_ThrowInternalError(context, "FileWatcher cannot be initialized because argument does not satisfy constructor");
 					return JS_EXCEPTION;
 				}
-				auto atom = Atom{ctx, "prototype"};
-					proto = JS_GetProperty(ctx, new_target, atom.value);
+				auto atom = Atom{context, "prototype"};
+					proto = JS_GetProperty(context, new_target, atom.value);
 				if (JS_IsException(proto)) {
 					goto fail;
 				}
-				obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-				JS_FreeValue(ctx, proto);
+				obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+				JS_FreeValue(context, proto);
 				if (JS_IsException(obj)) {
 					goto fail;
 				}
 				JS_SetOpaque(obj, s.release());
 				return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; 
 			});
 		}
@@ -10565,26 +10566,26 @@ namespace Sen::Kernel::Interface::Script
 		);
 
 		inline static auto handle(
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst *argv,
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
-			return Class::make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+			return Class::make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 		}
 
 		inline static auto on(
-			JSContext* ctx,
+			JSContext* context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst* argv
 		) -> JSElement::undefined 
 		{
-			return handle(ctx, this_val, argc, argv, "on", [&](Data* s){
+			return handle(context, this_val, argc, argv, "on", [&](Data* s){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "on");
-				auto event = JS::Converter::get_string(ctx, argv[0]);
+				auto event = JS::Converter::get_string(context, argv[0]);
 				auto callback = argv[1];
 				s->on(event, callback);
 				return JS_UNDEFINED;
@@ -10592,13 +10593,13 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto start(
-			JSContext* ctx,
+			JSContext* context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst* argv
 		) -> JSElement::undefined  
 		{
-			return handle(ctx, this_val, argc, argv, "start", [&](Data* s){
+			return handle(context, this_val, argc, argv, "start", [&](Data* s){
 				s->start();
 				return JS_UNDEFINED;
 			});
@@ -10610,25 +10611,25 @@ namespace Sen::Kernel::Interface::Script
 		});
 
 		inline static auto register_class(
-			JSContext *ctx
+			JSContext *context
 		) -> void
 		{
-			class_id.allocate_new(ctx);
-			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "FileWatcher class register failed", "register_class");
+			class_id.allocate_new(context);
+			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileWatcher class register failed", "register_class");
 			auto class_name = _class_name();
-			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-			auto proto = JS_NewObject(ctx);
-			JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-			JS_SetConstructor(ctx, point_ctor, proto);
-			auto global_obj = JS_GetGlobalObject(ctx);
-			auto obj1 = Class::make_instance_object(ctx, global_obj, "Sen");
-			auto obj2 = Class::make_instance_object(ctx, obj1, "Kernel");
-			auto atom = Atom(ctx, class_name);
-			JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-			JS_FreeValue(ctx, global_obj);
-			JS_FreeValue(ctx, obj1);
-			JS_FreeValue(ctx, obj2);
-			JS_FreeValue(ctx, proto);
+			auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+			auto proto = JS_NewObject(context);
+			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+			JS_SetConstructor(context, point_ctor, proto);
+			auto global_obj = JS_GetGlobalObject(context);
+			auto obj1 = Class::make_instance_object(context, global_obj, "Sen");
+			auto obj2 = Class::make_instance_object(context, obj1, "Kernel");
+			auto atom = Atom(context, class_name);
+			JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+			JS_FreeValue(context, global_obj);
+			JS_FreeValue(context, obj1);
+			JS_FreeValue(context, obj2);
+			JS_FreeValue(context, proto);
 			return;
 		}
 
@@ -10720,30 +10721,30 @@ namespace Sen::Kernel::Interface::Script
 		inline static auto class_id = temporary_class_id();
 
 		inline static auto constructor(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst new_target, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSValue
 		{
-			return proxy_wrapper(ctx, "constructor", [&](){
+			return proxy_wrapper(context, "constructor", [&](){
 				auto s = std::make_unique<Data>();
 				auto obj = JS_UNDEFINED;
 				auto proto = JSElement::Prototype{};
-				auto atom = Atom{ctx, "prototype"};
-				proto = JS_GetProperty(ctx, new_target, atom.value);
+				auto atom = Atom{context, "prototype"};
+				proto = JS_GetProperty(context, new_target, atom.value);
 				if (JS_IsException(proto)) {
 					goto fail;
 				}
-				obj = JS_NewObjectProtoClass(ctx, proto, class_id.value);
-				JS_FreeValue(ctx, proto);
+				obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+				JS_FreeValue(context, proto);
 				if (JS_IsException(obj)) {
 					goto fail;
 				}
 				JS_SetOpaque(obj, s.release());
 				return obj;
 				fail:
-					JS_FreeValue(ctx, obj);
+					JS_FreeValue(context, obj);
 					return JS_EXCEPTION; 
 			});
 		}
@@ -10761,28 +10762,28 @@ namespace Sen::Kernel::Interface::Script
 		);
 
 		inline static auto handle(
-			JSContext *ctx,
+			JSContext *context,
 			JSValueConst this_val,
 			int argc,
 			JSValueConst *argv,
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
-			return Class::make_handle<Data>(ctx, this_val, argc, argv, method_name, method, class_id.value);
+			return Class::make_handle<Data>(context, this_val, argc, argv, method_name, method, class_id.value);
 		}
 
 		inline static auto start(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::undefined
 		{
-			return handle(ctx, this_val, argc, argv, "start", [&](Data *s) {
+			return handle(context, this_val, argc, argv, "start", [&](Data *s) {
 				try {
 					s->start();
 				} catch (const std::exception &e) {
-					JS_ThrowInternalError(ctx, e.what());
+					JS_ThrowInternalError(context, e.what());
 					return JS_UNDEFINED;
 				}
 				return JS_UNDEFINED;
@@ -10790,43 +10791,43 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto start_safe(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::undefined 
 		{
-			return handle(ctx, this_val, argc, argv, "start_safe", [&](Data *s) {
+			return handle(context, this_val, argc, argv, "start_safe", [&](Data *s) {
 				s->start_safe();
 				return JS_UNDEFINED;
 			});
 		}
 
 		inline static auto stop_safe(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::undefined 
 		{
-			return handle(ctx, this_val, argc, argv, "stop_safe", [&](Data* clock){
+			return handle(context, this_val, argc, argv, "stop_safe", [&](Data* clock){
 				clock->stop_safe();
 				return JS_UNDEFINED;
 			});
 		}
 
 		inline static auto stop(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::undefined 
 		{
-			return handle(ctx, this_val, argc, argv, "stop", [&](Data* clock){
+			return handle(context, this_val, argc, argv, "stop", [&](Data* clock){
 				try {
 					clock->stop();
 				} catch (const std::exception &e) {
-					JS_ThrowInternalError(ctx, e.what());
+					JS_ThrowInternalError(context, e.what());
 					return JS_UNDEFINED;
 				}
 				return JS_UNDEFINED;
@@ -10834,63 +10835,63 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto reset(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::undefined  
 		{
-			return handle(ctx, this_val, argc, argv, "reset", [&](Data* clock){
+			return handle(context, this_val, argc, argv, "reset", [&](Data* clock){
 				clock->reset();
 				return JS_UNDEFINED;
 			});
 		}
 
 		inline static auto get_duration(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::number 
 		{
-			return handle(ctx, this_val, argc, argv, "get_duration", [&](Data* clock){
-				return JS_NewInt64(ctx, clock->get_duration());
+			return handle(context, this_val, argc, argv, "get_duration", [&](Data* clock){
+				return JS_NewInt64(context, clock->get_duration());
 			});
 		}
 
 		inline static auto get_duration_as_seconds(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::number 
 		{
-			return handle(ctx, this_val, argc, argv, "get_duration_as_seconds", [&](Data* clock){
-				return JS_NewFloat64(ctx, static_cast<double>(static_cast<double>(clock->get_duration()) / 1000.0));
+			return handle(context, this_val, argc, argv, "get_duration_as_seconds", [&](Data* clock){
+				return JS_NewFloat64(context, static_cast<double>(static_cast<double>(clock->get_duration()) / 1000.0));
 			});
 		}
 
 		inline static auto is_started(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::boolean  
 		{
-			return handle(ctx, this_val, argc, argv, "is_started", [&](Data* clock){
-				return JS_NewBool(ctx, clock->is_started());
+			return handle(context, this_val, argc, argv, "is_started", [&](Data* clock){
+				return JS_NewBool(context, clock->is_started());
 			});
 		}
 
 		inline static auto is_stopped(
-			JSContext *ctx, 
+			JSContext *context, 
 			JSValueConst this_val, 
 			int argc, 
 			JSValueConst *argv
 		) -> JSElement::boolean  
 		{
-			return handle(ctx, this_val, argc, argv, "is_stopped", [&](Data* clock){
-				return JS_NewBool(ctx, clock->is_stopped());
+			return handle(context, this_val, argc, argv, "is_stopped", [&](Data* clock){
+				return JS_NewBool(context, clock->is_stopped());
 			});
 		}
 
@@ -10907,25 +10908,25 @@ namespace Sen::Kernel::Interface::Script
 		});
 
 		inline static auto register_class(
-			JSContext *ctx
+			JSContext *context
 		) -> void
 		{
-			class_id.allocate_new(ctx);
-			assert_conditional(JS_NewClass(JS_GetRuntime(ctx), class_id.value, &this_class) == 0, "Clock class register failed", "register_class");
+			class_id.allocate_new(context);
+			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Clock class register failed", "register_class");
 			auto class_name = _class_name();
-			auto point_ctor = JS_NewCFunction2(ctx, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-			auto proto = JS_NewObject(ctx);
-			JS_SetPropertyFunctionList(ctx, proto, proto_functions.data(), proto_functions.size());
-			JS_SetConstructor(ctx, point_ctor, proto);
-			auto global_obj = JS_GetGlobalObject(ctx);
-			auto obj1 = Class::make_instance_object(ctx, global_obj, "Sen");
-			auto obj2 = Class::make_instance_object(ctx, obj1, "Kernel");
-			auto atom = Atom(ctx, class_name);
-			JS_DefinePropertyValue(ctx, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-			JS_FreeValue(ctx, global_obj);
-			JS_FreeValue(ctx, obj1);
-			JS_FreeValue(ctx, obj2);
-			JS_FreeValue(ctx, proto);
+			auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
+			auto proto = JS_NewObject(context);
+			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+			JS_SetConstructor(context, point_ctor, proto);
+			auto global_obj = JS_GetGlobalObject(context);
+			auto obj1 = Class::make_instance_object(context, global_obj, "Sen");
+			auto obj2 = Class::make_instance_object(context, obj1, "Kernel");
+			auto atom = Atom(context, class_name);
+			JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
+			JS_FreeValue(context, global_obj);
+			JS_FreeValue(context, obj1);
+			JS_FreeValue(context, obj2);
+			JS_FreeValue(context, proto);
 			return;
 		}
 
@@ -11155,7 +11156,7 @@ namespace Sen::Kernel::Interface::Script
 				if (s == nullptr) {
 					return JS_EXCEPTION;
 				}
-				Kernel::Definition::APNGMaker::process_fs(a, b, s);
+				Kernel::APNGMaker::process_fs(a, b, s);
 				return JS_UNDEFINED; 
 			});
 		}

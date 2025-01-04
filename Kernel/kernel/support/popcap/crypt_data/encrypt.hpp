@@ -42,7 +42,7 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 			{
             	auto size = view.size();
 				auto result = DataStreamView{};
-				result.append<uint8_t, BasicDefinition::magic.size()>(BasicDefinition::magic);
+				result.append<uint8_t, magic.size()>(magic);
 				result.writeUint64(size);
 				auto code = List<uint8_t>{key.begin(), key.end()};
 				if (size >= 0x100)

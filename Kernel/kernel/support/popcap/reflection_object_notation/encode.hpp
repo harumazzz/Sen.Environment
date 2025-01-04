@@ -1,11 +1,11 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/reflection_object_notation/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 {
-    using namespace Definition;
+    
 
     using namespace simdjson;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 {
@@ -80,7 +80,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             {
                 for (auto &[data_id, image_info] : texture_sprite_view_stored)
                 {
-                    auto resized_image = Definition::Image<int>::resize(image_info.data, resolution_resize_ratio);
+                    auto resized_image = Image<int>::resize(image_info.data, resolution_resize_ratio);
                     image_info.data.width = resized_image.width;
                     image_info.data.height = resized_image.height;
                     image_info.data.copy_data(resized_image.data());
@@ -110,7 +110,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 image_packet.dimension.height = max_rects_bin.height;
                 image_packet.additional.format = format;
                 image_packet.additional.index = i;
-                auto image_list = List<Definition::Image<int>>{};
+                auto image_list = List<Image<int>>{};
                 image_list.resize(max_rects_bin.rects.size());
                 for (auto i : Range(max_rects_bin.rects.size()))
                 {
@@ -140,8 +140,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     image_list[i].height = image_info.data.height;
                     image_list[i].copy_data(image_info.data.data());
                 }
-                auto atlas_image = Definition::Image<int>::transparent(Definition::Dimension{max_rects_bin.width, max_rects_bin.height});
-                Definition::Image<int>::join_extend(atlas_image, image_list);
+                auto atlas_image = Image<int>::transparent(Dimension{max_rects_bin.width, max_rects_bin.height});
+                Image<int>::join_extend(atlas_image, image_list);
                 auto texture_path = fmt::format("atlases/{}.ptx", image_id_index);
                 auto &texture_data = packet_info.resource_data_section_view_stored[toupper_back(String::to_windows_style(texture_path))];
                 auto image_format = exchange_image_format(texture_format_category, format);

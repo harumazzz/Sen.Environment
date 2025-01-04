@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/zlib/uncompress.hpp"
 
 namespace Sen::Kernel::Support::PopCap::CompiledText
@@ -10,13 +10,13 @@ namespace Sen::Kernel::Support::PopCap::CompiledText
 	 * Use Sen Buffer
 	 */
 
-	using namespace Sen::Kernel::Definition;
+	using namespace Sen::Kernel;
 
 	/**
 	 * Use base64
 	 */
 
-	using namespace Sen::Kernel::Definition::Encryption;
+	using namespace Sen::Kernel::Encryption;
 
 	/**
 	 * Compiled Text decode struct

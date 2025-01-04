@@ -1,14 +1,14 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/re_animation/definition.hpp"
 #include "kernel/support/popcap/re_animation/common.hpp"
 #include "kernel/support/popcap/zlib/uncompress.hpp"
-#include "kernel/definition/basic/string.hpp"
+#include "kernel/utility/container/string.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ReAnimation
 {
-    using namespace Definition;
+    
 
     class Decode : Common
     {

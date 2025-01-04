@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/package/definition.hpp"
 #include "kernel/support/popcap/package/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Package
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -120,7 +120,7 @@ namespace Sen::Kernel::Support::PopCap::Package
                     .path = resource_information.path,
                     .time = resource_information.time});
                 auto resource_data = stream.readBytes(resource_information.size);
-                write_bytes(fmt::format("{}/{}", resource_directory, resource_information.path), definition.zlib_compression ? Definition::Compression::Zlib::uncompress(resource_data) : resource_data);
+                write_bytes(fmt::format("{}/{}", resource_directory, resource_information.path), definition.zlib_compression ? Compression::Zlib::uncompress(resource_data) : resource_data);
             }
             return;
         }

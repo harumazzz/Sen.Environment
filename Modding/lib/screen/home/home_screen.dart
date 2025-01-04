@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/item.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
 import 'package:sen/screen/home/configuration/javascript_category_configuration.dart';
 import 'package:sen/screen/home/configuration/level_maker_configuration.dart';
@@ -57,11 +56,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _initJSModule() {
-    final setting = ref.read(settingProvider);
     items[1].onWidget = () {
-      return JavaScriptCategory(
-        toolChain: setting.toolChain,
-      );
+      return const JavaScriptCategory();
     };
     items[1].onSetting = _showJsSettings;
   }

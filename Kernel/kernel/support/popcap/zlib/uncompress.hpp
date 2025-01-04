@@ -1,13 +1,13 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/zlib/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Zlib {
 
 	// use namespace
 
-	using namespace Definition;
+	
 
 	// virtual to inherit
 

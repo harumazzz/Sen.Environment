@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/model/script.dart';
+import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/javascript_category/javascript_card.dart';
 import 'package:sen/service/file_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class JavaScriptCategory extends StatelessWidget {
+class JavaScriptCategory extends ConsumerWidget {
   const JavaScriptCategory({
     super.key,
-    required this.toolChain,
   });
 
-  final String toolChain;
-
-  Future<ScriptData?> _loadData() async {
-    final scriptPath = '$toolChain/Script/Helper/script.json';
+  Future<ScriptData?> _loadData(WidgetRef ref) async {
+    final scriptPath = '${ref.read(settingProvider).toolChain}/Script/Helper/script.json';
     if (FileService.isFile(scriptPath)) {
       final json = await FileService.readJsonAsync(source: scriptPath);
       final data = ScriptData.fromJson(json);
@@ -23,7 +22,7 @@ class JavaScriptCategory extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
@@ -32,7 +31,7 @@ class JavaScriptCategory extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder(
-          future: _loadData(),
+          future: _loadData(ref),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.hasData && snapshot.data != null) {
@@ -43,7 +42,7 @@ class JavaScriptCategory extends StatelessWidget {
                     final script = data.data[index];
                     return JavaScriptCard(
                       item: script,
-                      toolChain: toolChain,
+                      toolChain: ref.read(settingProvider).toolChain,
                     );
                   },
                 );

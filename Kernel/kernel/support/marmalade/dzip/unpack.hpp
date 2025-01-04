@@ -1,12 +1,12 @@
 #pragma once
 
-#include "kernel/definition/utility.hpp"
+#include "kernel/utility/utility.hpp"
 #include "kernel/support/marmalade/dzip/definition.hpp"
 #include "kernel/support/marmalade/dzip/common.hpp"
 
 namespace Sen::Kernel::Support::Marmalade::DZip
 {
-    using namespace Definition;
+    
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
@@ -79,7 +79,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                         assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::zlib;
                         stream.read_pos += 10_size;
-                        chunk_data = Kernel::Definition::Compression::Zlib::uncompress_deflate(stream.readBytes(chunk_size_compressed - 10_size));
+                        chunk_data = Compression::Zlib::uncompress_deflate(stream.readBytes(chunk_size_compressed - 10_size));
                     }
                     if (chunk_flag.test(ChunkFlag::bzip2)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
@@ -87,7 +87,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                         assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::bzip2;
                         auto chunk_stream = DataStreamView{};
-                        chunk_data = Kernel::Definition::Compression::Bzip2::uncompress(stream.readBytes(chunk_size_compressed));
+                        chunk_data = Compression::Bzip2::uncompress(stream.readBytes(chunk_size_compressed));
                     }
                     if (chunk_flag.test(ChunkFlag::mp3)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
@@ -119,7 +119,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                         assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::lzma;
                         auto chunk_stream = DataStreamView{};
-                        chunk_data = Kernel::Definition::Compression::Lzma::uncompress<false>(stream.readBytes(chunk_size_compressed));
+                        chunk_data = Compression::Lzma::uncompress<false>(stream.readBytes(chunk_size_compressed));
                     }
                     if (chunk_flag.test(ChunkFlag::random_access)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");

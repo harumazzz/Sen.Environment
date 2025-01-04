@@ -27,12 +27,17 @@ endif()
 
 add_executable (
     ${PROJECT_NAME} 
-    ./library/color.hpp
-    ./library/dialog.hpp
-    ./library/string.hpp
+    ./bridge/data.cppm
+    ./bridge/executor.cppm
+    ./library/version.cppm
+    ./library/standard.cppm
+    ./library/color.cppm
+    ./library/dialog.cppm
+    ./library/string.cppm
     ./library/macro.hpp
-    ./library/callback.hpp
-    ./shell.cpp 
+    ./library/callback.cppm
+    ./library/loader.cppm
+    ./shell.cppm
     $<$<PLATFORM_ID:Windows>:./shell.rc>
 )
 
@@ -44,7 +49,7 @@ endif()
 
 target_include_directories(
 	${PROJECT_NAME} PRIVATE
-	..
+    .
 )
 
 if(NOT (CMAKE_SYSTEM_NAME MATCHES "iOS" OR CMAKE_SYSTEM_NAME MATCHES "Android"))
