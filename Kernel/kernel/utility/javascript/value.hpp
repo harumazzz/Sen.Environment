@@ -10,6 +10,8 @@ namespace Sen::Kernel::JavaScript {
 
 			Pointer<JSContext> context;
 
+		public:
+
 			JSValue value;
 
 		public:

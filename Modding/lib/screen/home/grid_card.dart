@@ -1,5 +1,6 @@
 part of 'home_screen.dart';
 
+@immutable
 class GridCard extends StatelessWidget {
   final Item item;
   final bool isValid;
@@ -14,6 +15,17 @@ class GridCard extends StatelessWidget {
     super.key,
   });
 
+  void _onClick(BuildContext context) {
+    Navigator.push(
+      context,
+      PageTransition(
+        duration: const Duration(milliseconds: 300),
+        type: PageTransitionType.rightToLeft,
+        child: item.onWidget(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Tooltip(
@@ -24,18 +36,7 @@ class GridCard extends StatelessWidget {
             clipBehavior: Clip.none,
             child: InkWell(
               splashColor: Colors.blue.withAlpha(30),
-              onTap: isValid
-                  ? () {
-                      Navigator.push(
-                        context,
-                        PageTransition(
-                          duration: const Duration(milliseconds: 300),
-                          type: PageTransitionType.rightToLeft,
-                          child: item.onWidget(),
-                        ),
-                      );
-                    }
-                  : null,
+              onTap: isValid ? () => _onClick(context) : null,
               child: Container(
                 width: 250.0,
                 margin: const EdgeInsets.symmetric(horizontal: 8.0),

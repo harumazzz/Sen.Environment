@@ -17,6 +17,7 @@ namespace Sen::Kernel::JavaScript
 		std::is_integral<Type>::value or std::is_floating_point<Type>::value;
 		
 	struct Handler {
+		
 		protected:
 
 			using JS = Handler;

@@ -76,6 +76,13 @@ namespace Sen::Kernel::JavaScript {
 		) = delete;
 
 		Context(
+			Pointer<JSContext>& const value
+		) : value{value}
+		{
+
+		}
+
+		Context(
 			Context const & other
 		) = delete;
 

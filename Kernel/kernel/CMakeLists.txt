@@ -46,7 +46,7 @@ add_library(
 	./utility/javascript/value.hpp
 	./utility/javascript/runtime.hpp
 	./utility/javascript/converter.hpp
-	./utility/javascript/value_adapter.hpp
+	./utility/javascript/proxy.hpp
 	./utility/diff/vcdiff.hpp
 
 	./dependencies/fmt.hpp

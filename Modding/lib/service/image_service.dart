@@ -2,8 +2,6 @@ import 'package:sen/model/dimension.dart';
 import 'package:sen/service/file_service.dart';
 import 'package:image/image.dart';
 
-/// Document : https://github.com/brendan-duncan/image/blob/main/doc/README.md
-
 class ImageService {
   static void saveImage(
     String source,

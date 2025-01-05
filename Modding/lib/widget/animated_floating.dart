@@ -12,8 +12,7 @@ class AnimatedFloating extends StatefulWidget {
   State<AnimatedFloating> createState() => _AnimatedFloatingState();
 }
 
-class _AnimatedFloatingState extends State<AnimatedFloating>
-    with SingleTickerProviderStateMixin {
+class _AnimatedFloatingState extends State<AnimatedFloating> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _steamAnimation;
   late Animation<double> _scaleAnimation;

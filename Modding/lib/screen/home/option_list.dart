@@ -51,7 +51,12 @@ class OptionList extends ConsumerWidget {
     );
   }
 
-  Widget _buildCard(Item item, SettingState settings, AppLocalizations los, bool isDesktop) {
+  Widget _buildCard(
+    Item item,
+    SettingState settings,
+    AppLocalizations los,
+    bool isDesktop,
+  ) {
     if (item.isDisabled) {
       return const SizedBox.shrink();
     }

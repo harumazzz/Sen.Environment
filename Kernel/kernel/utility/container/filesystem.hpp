@@ -837,9 +837,9 @@ namespace Sen::Kernel::FileSystem
 						do {
 							pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buffer[offset]);
 							auto wfilename = std::wstring(pNotify->FileName, pNotify->FileName + pNotify->FileNameLength / sizeof(WCHAR));
-							auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wfilename.c_str(), static_cast<int>(wfilename.size()), nullptr, 0, nullptr, nullptr);
+							auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wfilename.data(), static_cast<int>(wfilename.size()), nullptr, 0, nullptr, nullptr);
 							auto filename = std::string(size_needed, 0);
-							WideCharToMultiByte(CP_UTF8, 0, wfilename.c_str(), static_cast<int>(wfilename.size()), &filename[0], size_needed, nullptr, nullptr);
+							WideCharToMultiByte(CP_UTF8, 0, wfilename.data(), static_cast<int>(wfilename.size()), &filename[0], size_needed, nullptr, nullptr);
 							auto event = std::string{};
 							switch (pNotify->Action) {
 								case FILE_ACTION_ADDED:

@@ -35,6 +35,7 @@ namespace Sen::Kernel::Interface {
 	) -> List<std::string>
 	{
         auto result = List<std::string> {};
+		result.reserve(param->size);
         for (auto i : Range<size_t>(param->size)){
             result.emplace_back(std::string {param->data[i].data, param->data[i].size});
         }

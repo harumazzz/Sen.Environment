@@ -251,7 +251,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 			} else if constexpr (std::is_same<T, long long>::value) {
 				JS_SetPropertyUint32(context, js_array, i, JS_NewBigInt64(context, vec[i]));
 			} else if constexpr (std::is_same<T, std::string>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewString(context, vec[i].c_str()));
+				JS_SetPropertyUint32(context, js_array, i, JS_NewString(context, vec[i].data()));
 			}
 		}
 		return js_array;

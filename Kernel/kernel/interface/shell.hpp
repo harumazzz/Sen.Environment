@@ -36,7 +36,7 @@ namespace Sen::Kernel::Interface {
 	// Construct CStringView from standard String
 
 	inline static auto construct_string(
-		const std::string & that
+		std::string_view that
 	) -> CStringView
 	{
 		return CStringView {
@@ -66,7 +66,7 @@ namespace Sen::Kernel::Interface {
 	) -> std::shared_ptr<CStringList>
 	{
 		auto destination = std::make_shared<CStringList>(new StringView[that.size()], that.size());
-		for (auto i = 0; i < that.size(); ++i) {
+		for (auto i = std::size_t{0}; i < that.size(); ++i) {
 			destination->value[i] = construct_string(that.at(i));
 		}
 		return destination;
@@ -78,6 +78,7 @@ namespace Sen::Kernel::Interface {
 	) -> List<std::string>
 	{
 		auto destination = List<std::string>{};
+		destination.reserve(that->size);
 		for (auto i : Range(static_cast<std::size_t>(that->size))) {
 			destination.emplace_back(std::string{ that->value[i].value, static_cast<std::size_t>(that->value[i].size) });
 		}
