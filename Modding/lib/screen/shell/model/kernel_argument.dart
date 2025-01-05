@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:sen/model/api.dart';
-import 'package:sen/service/pointer_service.dart';
+import 'package:sen/service/pointer_helper.dart';
 
 class KernelArgument {
   final String currentShell;
@@ -29,8 +29,8 @@ class KernelArgument {
   void _allocateFull(List<String> arguments) {
     final argumentPointer = calloc<CStringView>(arguments.length);
     for (var i = 0; i < arguments.length; ++i) {
-      final currentArgument = PointerService.toUint8List(arguments[i]);
-      final currentArgumentPointer = PointerService.utf8ListToCString(currentArgument);
+      final currentArgument = PointerHelper.toUint8List(arguments[i]);
+      final currentArgumentPointer = PointerHelper.utf8ListToCString(currentArgument);
       (argumentPointer + i).ref
         ..size = currentArgument.length
         ..value = currentArgumentPointer;

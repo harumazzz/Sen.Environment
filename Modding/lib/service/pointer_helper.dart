@@ -4,17 +4,19 @@ import 'package:ffi/ffi.dart';
 import 'package:sen/model/api.dart';
 import 'dart:convert' as convert;
 
-class PointerService {
+class PointerHelper {
   static String toDartString(Pointer<CStringView> str) {
     var charCodes = str.ref.value.cast<Uint8>().asTypedList(str.ref.size);
     return String.fromCharCodes(charCodes);
   }
 
+  static String fromNativeToDartString(CStringView str) {
+    var charCodes = str.value.cast<Uint8>().asTypedList(str.size);
+    return String.fromCharCodes(charCodes);
+  }
+
   static List<String> toList(CStringList list) {
-    var result = <String>[];
-    for (var i = 0; i < list.size; ++i) {
-      result.add((list.value + i).ref.value.toDartString());
-    }
+    var result = List<String>.generate(list.size, (i) => fromNativeToDartString(list.value[i]));
     return result;
   }
 

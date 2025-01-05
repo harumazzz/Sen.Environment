@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sen/provider/setting_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 
 @immutable
-class LocaleOption extends ConsumerWidget {
+class LocaleOption extends StatelessWidget {
   const LocaleOption({
     super.key,
     required this.title,
@@ -14,19 +14,24 @@ class LocaleOption extends ConsumerWidget {
 
   final String value;
 
-  void _onChange(String? value, WidgetRef ref) {
+  void _onChange(
+    String? value,
+    BuildContext context,
+  ) async {
     if (value == null) return;
-    ref.watch(settingProvider.notifier).setLocale(value);
+    await BlocProvider.of<SettingsCubit>(context).setLocale(value);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListTile(
       title: Text(title),
-      leading: Radio<String>(
-        value: value,
-        groupValue: ref.read(settingProvider).locale,
-        onChanged: (String? value) => _onChange(value, ref),
+      leading: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, state) => Radio<String>(
+          value: value,
+          groupValue: state.locale,
+          onChanged: (String? value) => _onChange(value, context),
+        ),
       ),
     );
   }

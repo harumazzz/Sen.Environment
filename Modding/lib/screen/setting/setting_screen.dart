@@ -1,28 +1,30 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/translator.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/setting/locale_option.dart';
 import 'package:sen/screen/setting/notification_option.dart';
 import 'package:sen/screen/setting/theme_option.dart';
 import 'package:sen/screen/setting/translator_page.dart';
-import 'package:sen/service/android_service.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/android_helper.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/widget/hyperlink.dart';
 
-class SettingScreen extends ConsumerStatefulWidget {
-  const SettingScreen({super.key});
+class SettingScreen extends StatefulWidget {
+  const SettingScreen({
+    super.key,
+  });
 
   @override
-  ConsumerState<SettingScreen> createState() => _SettingScreenState();
+  State<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends ConsumerState<SettingScreen> {
+class _SettingScreenState extends State<SettingScreen> {
   bool _hasPermission = false;
 
   late TextEditingController _controller;
@@ -37,7 +39,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
       });
     });
     _controller = TextEditingController(
-      text: ref.read(settingProvider).toolChain,
+      text: BlocProvider.of<SettingsCubit>(context).state.toolChain,
     );
   }
 
@@ -51,41 +53,52 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => Consumer(
-        builder: (context, ref, child) => AlertDialog(
-          title: Text(los.theme),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThemeOption(
-                title: los.system,
-                value: 'system',
-              ),
-              ThemeOption(
-                title: los.light,
-                value: 'light',
-              ),
-              ThemeOption(
-                title: los.dark,
-                value: 'dark',
-              ),
-              const SizedBox(height: 10),
-              _onCloseButton(),
-            ],
-          ),
+      builder: (context) => AlertDialog(
+        title: Text(los.theme),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeOption(
+              title: los.system,
+              value: 'system',
+            ),
+            ThemeOption(
+              title: los.light,
+              value: 'light',
+            ),
+            ThemeOption(
+              title: los.dark,
+              value: 'dark',
+            ),
+            const SizedBox(height: 10),
+            _onCloseButton(),
+          ],
         ),
       ),
+    );
+  }
+
+  void _onClose() {
+    Navigator.of(context).pop();
+  }
+
+  Widget _toolChainValidator() {
+    final los = AppLocalizations.of(context)!;
+    return TextButton(
+      onPressed: () async {
+        await BlocProvider.of<SettingsCubit>(context).setToolChain(_controller.text);
+        _onCheckValidator();
+        _onClose();
+      },
+      child: Text(los.okay),
     );
   }
 
   Widget _onCloseButton() {
     final los = AppLocalizations.of(context)!;
     return TextButton(
-      onPressed: () {
-        _onCheckValidator();
-        Navigator.of(context).pop();
-      },
+      onPressed: _onClose,
       child: Text(los.okay),
     );
   }
@@ -94,33 +107,40 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => Consumer(
-        builder: (context, ref, child) => AlertDialog(
-          title: Text(los.send_notification),
-          actions: [
-            NotificationOption(
-              title: los.enable,
-              value: true,
-            ),
-            NotificationOption(
-              title: los.disable,
-              value: false,
-            ),
-            const SizedBox(height: 10),
-            _onCloseButton(),
-          ],
+      builder: (context) => AlertDialog(
+        title: Text(los.send_notification),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NotificationOption(
+                title: los.enable,
+                value: true,
+              ),
+              NotificationOption(
+                title: los.disable,
+                value: false,
+              ),
+            ],
+          ),
         ),
+        actions: [
+          _onCloseButton(),
+        ],
       ),
     );
   }
 
-  void _onCheckValidator() {
-    if (ref.watch(settingProvider).toolChain.isNotEmpty) {
-      final state = _existKernel(ref.watch(settingProvider).toolChain) &&
+  void _onCheckValidator() async {
+    if (BlocProvider.of<SettingsCubit>(context).state.toolChain.isNotEmpty) {
+      final state = _existKernel(BlocProvider.of<SettingsCubit>(context).state.toolChain) &&
           _existScript(
-            ref.watch(settingProvider).toolChain,
+            BlocProvider.of<SettingsCubit>(context).state.toolChain,
           );
-      ref.watch(settingProvider.notifier).setIsValid(state);
+      await BlocProvider.of<SettingsCubit>(context).setIsValid(state);
     }
   }
 
@@ -129,69 +149,65 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
       return true;
     }
     if (Platform.isWindows) {
-      return FileService.isFile('$path/Kernel.dll');
+      return FileHelper.isFile('$path/Kernel.dll');
     }
     if (Platform.isLinux) {
-      return FileService.isFile('$path/libKernel.so');
+      return FileHelper.isFile('$path/libKernel.so');
     }
     if (Platform.isIOS || Platform.isMacOS) {
-      return FileService.isFile('$path/libKernel.dylib');
+      return FileHelper.isFile('$path/libKernel.dylib');
     }
     return false;
   }
 
   Future<bool> _checkDefaultPermission() async {
     if (Platform.isAndroid) {
-      return await AndroidService.checkStoragePermission();
+      return await AndroidHelper.checkStoragePermission();
     }
     return true;
   }
 
   bool _existScript(String path) {
-    return FileService.isFile('$path/Script/main.js');
+    return FileHelper.isFile('$path/Script/main.js');
   }
 
   void _onChangeToolChain() async {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => Consumer(
-        builder: (context, ref, child) => AlertDialog(
-          title: Text(los.toolchain),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    onChanged: (String value) {
-                      _controller.text = value;
-                      ref.watch(settingProvider.notifier).setToolChain(_controller.text);
-                      _onCheckValidator();
-                    },
-                  ),
-                ),
-                Tooltip(
-                  message: los.upload_directory,
-                  child: IconButton(
-                    onPressed: () async {
-                      final directory = await FileService.uploadDirectory();
-                      if (directory == null) {
-                        return;
-                      }
-                      _controller.text = directory;
-                      ref.watch(settingProvider.notifier).setToolChain(directory);
-                      _onCheckValidator();
-                    },
-                    icon: const Icon(Symbols.drive_folder_upload),
-                  ),
-                ),
-              ],
+      builder: (context) => AlertDialog(
+        title: Text(los.toolchain),
+        content: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controller,
+              ),
             ),
-            const SizedBox(height: 10),
-            _onCloseButton(),
+            Tooltip(
+              message: los.upload_directory,
+              child: IconButton(
+                onPressed: () async {
+                  Future<void> setDirectory() async {
+                    await BlocProvider.of<SettingsCubit>(context).setToolChain(_controller.text);
+                  }
+
+                  final directory = await FileHelper.uploadDirectory();
+                  if (directory == null) {
+                    return;
+                  }
+                  _controller.text = directory;
+                  await setDirectory();
+                  _onCheckValidator();
+                },
+                icon: const Icon(Symbols.drive_folder_upload),
+              ),
+            ),
           ],
         ),
+        actions: [
+          _toolChainValidator(),
+        ],
       ),
     );
   }
@@ -301,8 +317,18 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
     return data[key] ?? key;
   }
 
+  String _exchangeTheme(String theme) {
+    final localization = AppLocalizations.of(context)!;
+    final Map<String, String> data = {
+      'system': localization.system,
+      'dark': localization.dark,
+      'light': localization.light,
+    };
+    return data[theme] ?? theme;
+  }
+
   void _requestPermission() async {
-    await AndroidService.requestStoragePermission();
+    await AndroidHelper.requestStoragePermission();
     setState(() {});
   }
 
@@ -325,8 +351,9 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    toolchainPath() =>
-        ref.watch(settingProvider).toolChain == '' ? los.not_specified : ref.read(settingProvider).toolChain;
+    String toolchainPath() => BlocProvider.of<SettingsCubit>(context).state.toolChain == ''
+        ? los.not_specified
+        : BlocProvider.of<SettingsCubit>(context).state.toolChain;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -337,95 +364,101 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
           constraints: BoxConstraints(
             minHeight: MediaQuery.of(context).size.height,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(los.default_setting),
-              const SizedBox(height: 15),
-              ListTile(
-                leading: const Icon(Symbols.dark_mode),
-                title: Text(los.theme),
-                onTap: _onChangeTheme,
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: const Icon(Symbols.translate),
-                title: Text(los.language),
-                subtitle: Text(_exchangeLocale(ref.read(settingProvider).locale)),
-                onTap: _onChangeLocale,
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: const Icon(Symbols.person_2),
-                title: Text(los.author),
-                subtitle: Text(los.author_of_this_locale),
-                onTap: _onViewTranslator,
-              ),
-              const Divider(),
-              Text(los.application_setting),
-              const SizedBox(height: 15),
-              ListTile(
-                leading: const Icon(Symbols.notifications),
-                title: Text(los.send_notification),
-                onTap: _onChangeNotification,
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: const Icon(Symbols.storage),
-                title: Text(los.storage_permission),
-                subtitle: _hasPermission ? Text(los.granted) : Text(los.denied),
-                onTap: !_hasPermission ? _requestPermission : null,
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: const Icon(Symbols.build),
-                title: Text(los.toolchain),
-                subtitle: Text(toolchainPath()),
-                onTap: _onChangeToolChain,
-                enabled: !Platform.isAndroid,
-              ),
-              AboutListTile(
-                icon: const Icon(Symbols.info),
-                applicationIcon: Image.asset(
-                  'assets/images/logo.png',
-                  width: 50,
-                  height: 50,
-                ),
-                applicationName: 'Sen',
-                aboutBoxChildren: [
-                  Text('${los.version}: ${BuildDistribution.version}'),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Copyright © ${DateTime.now().year} ${BuildDistribution.kApplicationName}. All Rights Reserved.',
-                    style: const TextStyle(fontStyle: FontStyle.italic),
+          child: BlocBuilder<SettingsCubit, SettingsState>(
+            builder: (context, state) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(los.default_setting),
+                  const SizedBox(height: 15),
+                  ListTile(
+                    leading: const Icon(Symbols.dark_mode),
+                    title: Text(los.theme),
+                    subtitle: Text(_exchangeTheme(state.theme)),
+                    onTap: _onChangeTheme,
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Project is under GPLv3 License.',
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ListTile(
+                    leading: const Icon(Symbols.translate),
+                    title: Text(los.language),
+                    subtitle: Text(_exchangeLocale(state.locale)),
+                    onTap: _onChangeLocale,
                   ),
                   const SizedBox(height: 10),
-                  _makeCustomizeRow(
-                    title: 'Official Website',
-                    description: 'Website',
-                    link: 'https://haruma-vn.github.io/Sen.Environment/',
+                  ListTile(
+                    leading: const Icon(Symbols.person_2),
+                    title: Text(los.author),
+                    subtitle: Text(los.author_of_this_locale),
+                    onTap: _onViewTranslator,
+                  ),
+                  const Divider(),
+                  Text(los.application_setting),
+                  const SizedBox(height: 15),
+                  ListTile(
+                    leading: const Icon(Symbols.notifications),
+                    title: Text(los.send_notification),
+                    subtitle: Text(state.sendNotification ? los.enable : los.disable),
+                    onTap: _onChangeNotification,
                   ),
                   const SizedBox(height: 10),
-                  _makeCustomizeRow(
-                    title: 'Repo',
-                    description: 'GitHub',
-                    link: 'https://github.com/Haruma-VN/Sen.Environment',
+                  ListTile(
+                    leading: const Icon(Symbols.storage),
+                    title: Text(los.storage_permission),
+                    subtitle: _hasPermission ? Text(los.granted) : Text(los.denied),
+                    onTap: !_hasPermission ? _requestPermission : null,
                   ),
                   const SizedBox(height: 10),
-                  _makeCustomizeRow(
-                    title: 'Discord',
-                    description: 'Server',
-                    link: 'https://discord.com/invite/C2Xr2kaBYJ',
+                  ListTile(
+                    leading: const Icon(Symbols.build),
+                    title: Text(los.toolchain),
+                    subtitle: Text(toolchainPath()),
+                    onTap: _onChangeToolChain,
+                    enabled: !Platform.isAndroid,
+                  ),
+                  AboutListTile(
+                    icon: const Icon(Symbols.info),
+                    applicationIcon: Image.asset(
+                      'assets/images/logo.png',
+                      width: 50,
+                      height: 50,
+                    ),
+                    applicationName: 'Sen',
+                    aboutBoxChildren: [
+                      Text('${los.version}: ${BuildDistribution.version}'),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Copyright © ${DateTime.now().year} ${BuildDistribution.kApplicationName}. All Rights Reserved.',
+                        style: const TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Project is under GPLv3 License.',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                      const SizedBox(height: 10),
+                      _makeCustomizeRow(
+                        title: 'Official Website',
+                        description: 'Website',
+                        link: 'https://haruma-vn.github.io/Sen.Environment/',
+                      ),
+                      const SizedBox(height: 10),
+                      _makeCustomizeRow(
+                        title: 'Repo',
+                        description: 'GitHub',
+                        link: 'https://github.com/Haruma-VN/Sen.Environment',
+                      ),
+                      const SizedBox(height: 10),
+                      _makeCustomizeRow(
+                        title: 'Discord',
+                        description: 'Server',
+                        link: 'https://discord.com/invite/C2Xr2kaBYJ',
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

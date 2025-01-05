@@ -4,7 +4,7 @@ import 'package:local_notifier/local_notifier.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:window_manager/window_manager.dart';
 
-class NotificationService {
+class NotificationHelper {
   static FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
 
   static Future<void> initialize() async {
@@ -14,10 +14,7 @@ class NotificationService {
         shortcutPolicy: ShortcutPolicy.requireCreate,
       );
     }
-    if (Platform.isLinux ||
-        Platform.isMacOS ||
-        Platform.isAndroid ||
-        Platform.isIOS) {
+    if (Platform.isLinux || Platform.isMacOS || Platform.isAndroid || Platform.isIOS) {
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       var initializationSettings = InitializationSettings(
         android: const AndroidInitializationSettings(
@@ -54,10 +51,7 @@ class NotificationService {
       };
       await notification.show();
     }
-    if (Platform.isLinux ||
-        Platform.isMacOS ||
-        Platform.isAndroid ||
-        Platform.isIOS) {
+    if (Platform.isLinux || Platform.isMacOS || Platform.isAndroid || Platform.isIOS) {
       await _flutterLocalNotificationsPlugin!.show(
         DateTime.now().millisecondsSinceEpoch % 0x80000000,
         title,

@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:sen/model/script.dart';
-import 'package:sen/provider/js_provider.dart';
+import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
+import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class JavaScriptCard extends ConsumerWidget {
+@immutable
+class JavaScriptCard extends StatelessWidget {
   const JavaScriptCard({
     super.key,
     required this.item,
     required this.toolChain,
   });
 
-  final Holder item;
+  final Script item;
 
   final String toolChain;
 
-  Color? _color(BuildContext context) {
+  Color? _color(
+    BuildContext context,
+  ) {
     return Theme.of(context).brightness == Brightness.dark ? Colors.yellowAccent.withValues(alpha: 0.8) : null;
   }
 
@@ -34,12 +37,10 @@ class JavaScriptCard extends ConsumerWidget {
     ];
   }
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  void _onTap(BuildContext context) async {
     if (context.mounted) {
-      await _onConfirm(
-        ref,
-        context,
-        () async => await Navigator.of(context).push(
+      await _onConfirm(context, () async {
+        await Navigator.of(context).push(
           PageTransition(
             duration: const Duration(milliseconds: 300),
             type: PageTransitionType.rightToLeft,
@@ -47,18 +48,17 @@ class JavaScriptCard extends ConsumerWidget {
               arguments: _makeArguments(),
             ),
           ),
-        ),
-      );
+        );
+      });
     }
   }
 
   Future<void> _onConfirm(
-    WidgetRef ref,
     BuildContext context,
     Future<dynamic> Function() function,
   ) async {
     final los = AppLocalizations.of(context)!;
-    if (ref.read(jsProvider).showConfirmDialog) {
+    if (BlocProvider.of<JavascriptCubit>(context).state.showConfirmDialog) {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -85,7 +85,7 @@ class JavaScriptCard extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return Card(
       child: ListTile(
@@ -98,7 +98,7 @@ class JavaScriptCard extends ConsumerWidget {
           item.description,
           style: Theme.of(context).textTheme.labelSmall,
         ),
-        onTap: () => _onTap(context, ref),
+        onTap: () => _onTap(context),
         trailing: Tooltip(
           message: los.js_execute,
           child: const Icon(Symbols.arrow_forward),

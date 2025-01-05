@@ -1,17 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/miscellaneous/backup_setting.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:dio/dio.dart';
 
-class MiscellaenousScreen extends ConsumerWidget {
+class MiscellaenousScreen extends StatelessWidget {
   const MiscellaenousScreen({
     super.key,
   });
@@ -30,7 +30,6 @@ class MiscellaenousScreen extends ConsumerWidget {
   void _onDownloadScript(
     AppLocalizations los,
     BuildContext context,
-    WidgetRef ref,
   ) async {
     void showSuccessDialog() async {
       final los = AppLocalizations.of(context)!;
@@ -51,9 +50,19 @@ class MiscellaenousScreen extends ConsumerWidget {
       );
     }
 
-    final destination = '${await FileService.getWorkingDirectory()}/CDN ${BuildDistribution.version}';
-    if (!FileService.isDirectory(destination)) {
-      FileService.createDirectory(destination);
+    void setToolChain({
+      required String destination,
+    }) async {
+      await BlocProvider.of<SettingsCubit>(context).setToolChain(destination);
+    }
+
+    void setValidate() async {
+      await BlocProvider.of<SettingsCubit>(context).setIsValid(true);
+    }
+
+    final destination = '${await FileHelper.getWorkingDirectory()}/CDN ${BuildDistribution.version}';
+    if (!FileHelper.isDirectory(destination)) {
+      FileHelper.createDirectory(destination);
     }
     final source = '$destination/Script.zip';
     final dio = Dio();
@@ -61,16 +70,16 @@ class MiscellaenousScreen extends ConsumerWidget {
       'https://github.com/harumazzz/Sen.Environment/releases/download/script/Script.zip',
       source,
     );
-    await FileService.unzipFile(source, '$destination/Script');
+    await FileHelper.unzipFile(source, '$destination/Script');
 
-    FileService.removeFile(source);
-    await ref.read(settingProvider.notifier).setToolChain(destination);
-    await ref.read(settingProvider.notifier).setIsValid(true);
+    FileHelper.removeFile(source);
     showSuccessDialog();
+    setToolChain(destination: destination);
+    setValidate();
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -99,7 +108,7 @@ class MiscellaenousScreen extends ConsumerWidget {
                   leading: const Icon(Symbols.download_2),
                   title: Text(los.download_script),
                   subtitle: Text(los.download_script_description),
-                  onTap: () => _onDownloadScript(los, context, ref),
+                  onTap: () => _onDownloadScript(los, context),
                   enabled: Platform.isAndroid,
                 ),
               ),

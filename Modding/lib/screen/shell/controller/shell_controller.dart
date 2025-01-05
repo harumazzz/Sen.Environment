@@ -2,10 +2,11 @@ import 'dart:ffi';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/shell/helper/kernel_helper.dart';
 
 class ShellController {
@@ -15,7 +16,7 @@ class ShellController {
   final void Function()? onBefore;
   final List<Message> messages;
 
-  ShellController({
+  const ShellController({
     required this.onFinish,
     required this.setState,
     required this.onAfter,
@@ -116,7 +117,7 @@ class ShellController {
   }
 
   Future<void> run({
-    required WidgetRef ref,
+    required BuildContext context,
     required List<String> arguments,
     required Future<void> Function(Pointer<CStringView> destination) inputString,
     required Future<void> Function(Pointer<CStringView> destination, List<String> restStatement) inputEnumeration,
@@ -124,10 +125,10 @@ class ShellController {
     required Future<void> Function(Pointer<CStringView> destination) pickFile,
     required Future<void> Function(Pointer<CStringView> destination) pickDirectory,
   }) async {
-    final SettingState setting = ref.read(settingProvider);
+    final setting = BlocProvider.of<SettingsCubit>(context);
     final mainReceivePort = ReceivePort();
     final mainStreamQueue = StreamQueue<dynamic>(mainReceivePort);
-    await _launchIsolate(mainReceivePort, ref);
+    await _launchIsolate(mainReceivePort, context);
     final subSendPort = await mainStreamQueue.next as SendPort;
     _sendInitialConfiguration(subSendPort, setting, arguments);
     await _processEvents(
@@ -143,18 +144,18 @@ class ShellController {
 
   Future<void> _launchIsolate(
     ReceivePort mainReceivePort,
-    WidgetRef ref,
+    BuildContext context,
   ) async {
-    final kernelPath = KernelHelper.queryKernelPath(ref);
+    final kernelPath = KernelHelper.queryKernelPath(context);
     await Isolate.spawn(KernelHelper.run, [mainReceivePort.sendPort, kernelPath]);
   }
 
   void _sendInitialConfiguration(
     SendPort subSendPort,
-    SettingState setting,
+    SettingsCubit setting,
     List<String> arguments,
   ) {
-    subSendPort.send(['${setting.toolChain}/Script/main.js', (setting.toolChain), arguments]);
+    subSendPort.send(['${setting.state.toolChain}/Script/main.js', (setting.state.toolChain), arguments]);
   }
 
   Future<void> _processEvents(

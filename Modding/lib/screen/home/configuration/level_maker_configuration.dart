@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/provider/level_provider.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class LevelMakerConfiguration extends ConsumerStatefulWidget {
-  const LevelMakerConfiguration({super.key});
+class LevelMakerConfiguration extends StatefulWidget {
+  const LevelMakerConfiguration({
+    super.key,
+  });
 
   @override
-  ConsumerState<LevelMakerConfiguration> createState() => _LevelMakerConfigurationState();
+  State<LevelMakerConfiguration> createState() => _LevelMakerConfigurationState();
 }
 
-class _LevelMakerConfigurationState extends ConsumerState<LevelMakerConfiguration> {
+class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   late TextEditingController _resourceLocationController;
 
   @override
   void initState() {
     super.initState();
-    _resourceLocationController = TextEditingController(text: '');
+    _resourceLocationController = TextEditingController(
+      text: BlocProvider.of<LevelMakerCubit>(context).state.resourceLocation,
+    );
   }
 
   @override
@@ -34,7 +38,7 @@ class _LevelMakerConfigurationState extends ConsumerState<LevelMakerConfiguratio
 
   Future<void> _onValueChange() async {
     final value = _resourceLocationController.text;
-    await ref.watch(levelProvider.notifier).setResourceLocation(value);
+    await BlocProvider.of<LevelMakerCubit>(context).setResourceLocation(value);
   }
 
   void _onChangeSetting(String? value) async {
@@ -44,7 +48,7 @@ class _LevelMakerConfigurationState extends ConsumerState<LevelMakerConfiguratio
   }
 
   void _onUploadDirectory() async {
-    var result = await FileService.uploadDirectory();
+    var result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
       await _onValueChange();
@@ -54,14 +58,6 @@ class _LevelMakerConfigurationState extends ConsumerState<LevelMakerConfiguratio
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    if (ref.watch(levelProvider).isLoading) {
-      return const CircularProgressIndicator.adaptive();
-    } else {
-      final value = ref.watch(levelProvider).resourceLocation;
-      if (value != null) {
-        _resourceLocationController.text = value;
-      }
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 12.0,

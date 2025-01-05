@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:sen/model/api.dart';
-import 'package:sen/service/pointer_service.dart';
+import 'package:sen/service/pointer_helper.dart';
 
 class KernelScript {
   final String scriptPath;
@@ -13,8 +13,8 @@ class KernelScript {
   }
 
   void _allocateFull() {
-    final scriptNativeString = PointerService.toUint8List(scriptPath);
-    final scriptPointer = PointerService.utf8ListToCString(scriptNativeString);
+    final scriptNativeString = PointerHelper.toUint8List(scriptPath);
+    final scriptPointer = PointerHelper.utf8ListToCString(scriptNativeString);
     value.ref
       ..value = scriptPointer
       ..size = scriptNativeString.length;

@@ -26,6 +26,20 @@ class GridCard extends StatelessWidget {
     );
   }
 
+  Widget _settingsSymbol(
+    BuildContext context,
+  ) {
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: IconButton(
+        icon: const Icon(Symbols.settings),
+        onPressed: onSetting,
+        tooltip: AppLocalizations.of(context)!.settings,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Tooltip(
@@ -70,17 +84,7 @@ class GridCard extends StatelessWidget {
               ),
             ),
           ),
-          onSetting != null
-              ? Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    icon: const Icon(Symbols.settings),
-                    onPressed: onSetting,
-                    tooltip: AppLocalizations.of(context)!.settings,
-                  ),
-                )
-              : const SizedBox.shrink(),
+          onSetting != null ? _settingsSymbol(context) : const SizedBox.shrink(),
         ],
       ),
     );

@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/application.dart';
-import 'package:sen/service/android_service.dart';
-import 'package:sen/service/notification_service.dart';
+import 'package:sen/service/android_helper.dart';
+import 'package:sen/service/notification_helper.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> main(
@@ -19,9 +19,9 @@ Future<void> main(
     await windowManager.show();
     await windowManager.focus();
   }
-  await NotificationService.initialize();
+  await NotificationHelper.initialize();
   if (Platform.isAndroid) {
-    AndroidService.initialize();
+    AndroidHelper.initialize();
   }
   runApp(
     const ProviderScope(

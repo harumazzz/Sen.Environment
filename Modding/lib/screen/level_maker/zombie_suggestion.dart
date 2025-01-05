@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -39,7 +39,7 @@ class _ZombieSelectionState extends State<ZombieSelection> {
             zombie: p.withoutExtension(p.basename(e)),
             image: Image(
               image: MemoryImage(
-                FileService.readBuffer(source: e),
+                FileHelper.readBuffer(source: e),
               ),
             ),
           ),
@@ -63,9 +63,7 @@ class _ZombieSelectionState extends State<ZombieSelection> {
         }
         return _zombies.where(
           (_ZombieSelection e) {
-            return e.zombie
-                .toLowerCase()
-                .contains(textEditingValue.text.toLowerCase());
+            return e.zombie.toLowerCase().contains(textEditingValue.text.toLowerCase());
           },
         );
       },
@@ -180,7 +178,7 @@ class _ZombiePickerState extends State<ZombiePicker> {
               width: 50,
               height: 50,
               image: MemoryImage(
-                FileService.readBuffer(source: e),
+                FileHelper.readBuffer(source: e),
               ),
             ),
           ),

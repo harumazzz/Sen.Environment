@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/zombie_suggestion.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 
 class StormPage extends StatefulWidget {
   const StormPage({
@@ -43,10 +43,8 @@ class _StormPageState extends State<StormPage> {
     _xStart = TextEditingController(text: widget.wave.columnStart.toString());
     _xEnd = TextEditingController(text: widget.wave.columnEnd.toString());
     _groupSize = TextEditingController(text: widget.wave.groupSize.toString());
-    _delay =
-        TextEditingController(text: widget.wave.timeBetweenGroups.toString());
-    _plantfood =
-        TextEditingController(text: widget.wave.additionalPlantfood.toString());
+    _delay = TextEditingController(text: widget.wave.timeBetweenGroups.toString());
+    _plantfood = TextEditingController(text: widget.wave.additionalPlantfood.toString());
     _zombie = TextEditingController();
     _formKey = GlobalKey<FormState>();
     _eventName = widget.wave.eventName;
@@ -74,12 +72,11 @@ class _StormPageState extends State<StormPage> {
     for (var zombie in _zombies) {
       final col = _columnEnd == _columnStart
           ? _columnEnd
-          : random.nextInt((_columnEnd - _columnStart)) +
-              int.parse(_xStart.text);
+          : random.nextInt((_columnEnd - _columnStart)) + int.parse(_xStart.text);
       final row = random.nextInt(5);
       final index = row * 9 + col;
       final state = '${widget.resource}/zombie/$zombie.png';
-      _cellItems[index] = MemoryImage(FileService.readBuffer(source: state));
+      _cellItems[index] = MemoryImage(FileHelper.readBuffer(source: state));
     }
   }
 
@@ -275,8 +272,7 @@ class _StormPageState extends State<StormPage> {
                     _buildTextField(
                       controller: _delay,
                       label: los.delay_between_groups,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d*'),

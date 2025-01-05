@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/provider/setting_provider.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -38,21 +38,19 @@ class _BackupSettingState extends State<BackupSetting> {
   void _loadConfig({
     required String source,
   }) {
-    final sourceFiles = FileService.readDirectory(
-            source: source, recursive: false)
+    final sourceFiles = FileHelper.readDirectory(source: source, recursive: false)
         .where((e) => RegExp(r'(.+)\.json$', caseSensitive: false).hasMatch(e))
         .toList();
     _configuration = {};
-    for (var e in sourceFiles) {
-      _configuration![p.basenameWithoutExtension(e)] =
-          jsonDecode(FileService.readFile(source: e));
+    for (final e in sourceFiles) {
+      _configuration![p.basenameWithoutExtension(e)] = jsonDecode(FileHelper.readFile(source: e));
     }
   }
 
   void _loadDumpedConfiguration({
     required String source,
   }) {
-    _configuration = jsonDecode(FileService.readFile(source: source));
+    _configuration = jsonDecode(FileHelper.readFile(source: source));
     for (var e in _configuration!.entries) {
       _configuration![e.key] = e.value;
     }
@@ -74,7 +72,7 @@ class _BackupSettingState extends State<BackupSetting> {
 
   void _onUploadConfiguration() async {
     final los = AppLocalizations.of(context)!;
-    var source = await FileService.uploadFile();
+    var source = await FileHelper.uploadFile();
     if (source == null) {
       return;
     }
@@ -189,12 +187,11 @@ class _BackupSettingState extends State<BackupSetting> {
   }) {
     final configuration = '$toolChain/Script/Executor/Configuration';
     for (var e in _configuration!.entries) {
-      if (e.value is Map<String, dynamic> &&
-          (e.value as Map<String, dynamic>).isNotEmpty) {
+      if (e.value is Map<String, dynamic> && (e.value as Map<String, dynamic>).isNotEmpty) {
         final destination = '$configuration/${e.key}.json';
-        final current = FileService.readJson(source: destination);
+        final current = FileHelper.readJson(source: destination);
         _applyChange(current, e.value);
-        FileService.writeJson(source: destination, data: current);
+        FileHelper.writeJson(source: destination, data: current);
       }
     }
   }
@@ -241,11 +238,37 @@ class _BackupSettingState extends State<BackupSetting> {
 
   void _saveConfiguration() async {
     if (_configuration == null) {}
-    final destination = await FileService.saveFile(
+    final destination = await FileHelper.saveFile(
       suggestedName: 'configuration.json',
     );
     if (destination == null) return;
-    FileService.writeJson(source: destination, data: _configuration);
+    FileHelper.writeJson(source: destination, data: _configuration);
+  }
+
+  Widget _buildExpandableList() {
+    final los = AppLocalizations.of(context)!;
+    return Column(
+      children: _configuration!.entries
+          .map(
+            (e) => Card(
+              child: ListTile(
+                leading: const Icon(Symbols.data_object),
+                title: Text(e.key),
+                trailing: Tooltip(
+                  message: los.info,
+                  child: IconButton(
+                    icon: const Icon(Symbols.info),
+                    onPressed: () => _onPreviewJson(
+                      file: e.key,
+                      message: const JsonEncoder.withIndent('\t').convert(e.value),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
   }
 
   @override
@@ -280,10 +303,8 @@ class _BackupSettingState extends State<BackupSetting> {
                 child: ListTile(
                   leading: const Icon(Symbols.package_2),
                   title: Text(los.toolchain),
-                  subtitle: Consumer(
-                    builder: (context, ref, child) => Text(
-                      ref.read(settingProvider).toolChain,
-                    ),
+                  subtitle: Text(
+                    BlocProvider.of<SettingsCubit>(context).state.toolChain,
                   ),
                 ),
               ),
@@ -291,61 +312,32 @@ class _BackupSettingState extends State<BackupSetting> {
               Row(
                 children: [
                   Expanded(
-                    child: Consumer(
-                      builder: (context, ref, child) => ElevatedButton(
-                        onPressed: () => _onLoadConfiguration(
-                          toolChain: ref.read(settingProvider).toolChain,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text(los.load_configuration),
-                        ),
+                    child: ElevatedButton(
+                      onPressed: () => _onLoadConfiguration(
+                        toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: Text(los.load_configuration),
                       ),
                     ),
                   ),
                   const SizedBox(width: 15.0),
                   Expanded(
-                    child: Consumer(
-                      builder: (context, ref, child) => ElevatedButton(
-                        onPressed: () => _onApplyConfiguration(
-                          toolChain: ref.read(settingProvider).toolChain,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text(los.apply_configuration),
-                        ),
+                    child: ElevatedButton(
+                      onPressed: () => _onApplyConfiguration(
+                        toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: Text(los.apply_configuration),
                       ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 15),
-              _configuration == null
-                  ? const SizedBox.shrink()
-                  : Column(
-                      children: _configuration!.entries
-                          .map(
-                            (e) => Card(
-                              child: ListTile(
-                                leading: const Icon(Symbols.data_object),
-                                title: Text(e.key),
-                                trailing: Tooltip(
-                                  message: los.info,
-                                  child: IconButton(
-                                    icon: const Icon(Symbols.info),
-                                    onPressed: () => _onPreviewJson(
-                                      file: e.key,
-                                      message:
-                                          const JsonEncoder.withIndent('\t')
-                                              .convert(e.value),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
+              _configuration == null ? const SizedBox.shrink() : _buildExpandableList(),
             ],
           ),
         ),

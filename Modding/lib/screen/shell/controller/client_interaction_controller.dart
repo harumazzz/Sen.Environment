@@ -4,8 +4,8 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
-import 'package:sen/service/file_service.dart';
-import 'package:sen/service/pointer_service.dart';
+import 'package:sen/service/file_helper.dart';
+import 'package:sen/service/pointer_helper.dart';
 
 class ClientInteractionController {
   final BuildContext context;
@@ -34,8 +34,8 @@ class ClientInteractionController {
     final e = await completer.future;
     if (e == null) return;
 
-    final units = PointerService.toUint8List(e);
-    final utf8Str = PointerService.utf8ListToCString(units);
+    final units = PointerHelper.toUint8List(e);
+    final utf8Str = PointerHelper.utf8ListToCString(units);
     destination.ref
       ..size = units.length
       ..value = utf8Str;
@@ -82,12 +82,12 @@ class ClientInteractionController {
   Future<void> pickFile(
     Pointer<CStringView> destination,
   ) async {
-    return await _handleInput(destination, FileService.uploadFile);
+    return await _handleInput(destination, FileHelper.uploadFile);
   }
 
   Future<void> pickDirectory(
     Pointer<CStringView> destination,
   ) async {
-    return await _handleInput(destination, FileService.uploadDirectory);
+    return await _handleInput(destination, FileHelper.uploadDirectory);
   }
 }

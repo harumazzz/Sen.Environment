@@ -9,7 +9,7 @@ import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -48,7 +48,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
             ),
             IconButton(
               onPressed: () async {
-                final directory = await FileService.uploadDirectory();
+                final directory = await FileHelper.uploadDirectory();
                 if (directory != null) {
                   _controller.text = directory;
                   _mediaDirectory = directory;
@@ -152,7 +152,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
   }
 
   void _onUploadFile() async {
-    final file = await FileService.uploadFile();
+    final file = await FileHelper.uploadFile();
     if (file != null) {
       try {
         _animationFile = file;

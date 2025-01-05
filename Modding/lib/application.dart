@@ -3,27 +3,30 @@ import 'dart:io';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
+import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
+import 'package:sen/cubit/map_editor_cubit/map_editor_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
 import 'package:sen/screen/javascript_category/javascript_category.dart';
 import 'package:sen/screen/level_maker/level_maker.dart';
 import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/root_screen.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class Application extends ConsumerStatefulWidget {
+class Application extends StatefulWidget {
   const Application({super.key});
 
   @override
-  ConsumerState<Application> createState() => _ApplicationState();
+  State<Application> createState() => _ApplicationState();
 }
 
-class _ApplicationState extends ConsumerState<Application> {
+class _ApplicationState extends State<Application> {
   late GlobalKey<NavigatorState> _navigatorKey;
 
   @override
@@ -87,33 +90,51 @@ class _ApplicationState extends ConsumerState<Application> {
 
   @override
   Widget build(BuildContext context) {
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) => MaterialApp(
-        navigatorKey: _navigatorKey,
-        debugShowCheckedModeBanner: false,
-        title: BuildDistribution.kApplicationName,
-        theme: MaterialDesign.lightTheme.copyWith(
-          colorScheme: lightDynamic,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<SettingsCubit>(
+          create: (context) => SettingsCubit(),
         ),
-        darkTheme: MaterialDesign.darkTheme.copyWith(
-          colorScheme: darkDynamic,
+        BlocProvider<JavascriptCubit>(
+          create: (context) => JavascriptCubit(),
         ),
-        themeMode: ref.watch(settingProvider).themeData,
-        home: const RootScreen(title: BuildDistribution.kApplicationName),
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('vi'),
-          Locale('es'),
-          Locale('ru'),
-        ],
-        locale: Locale(ref.read(settingProvider).locale),
-      ),
+        BlocProvider<MapEditorCubit>(
+          create: (context) => MapEditorCubit(),
+        ),
+        BlocProvider<LevelMakerCubit>(
+          create: (context) => LevelMakerCubit(),
+        ),
+      ],
+      child: Builder(builder: (context) {
+        return DynamicColorBuilder(
+          builder: (lightDynamic, darkDynamic) => MaterialApp(
+            navigatorKey: _navigatorKey,
+            debugShowCheckedModeBanner: false,
+            title: BuildDistribution.kApplicationName,
+            theme: MaterialDesign.lightTheme.copyWith(
+              colorScheme: lightDynamic,
+            ),
+            darkTheme: MaterialDesign.darkTheme.copyWith(
+              colorScheme: darkDynamic,
+            ),
+            themeMode: BlocProvider.of<SettingsCubit>(context, listen: true).themeData,
+            home: const RootScreen(title: BuildDistribution.kApplicationName),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('vi'),
+              Locale('es'),
+              Locale('ru'),
+            ],
+            locale: Locale(BlocProvider.of<SettingsCubit>(context).state.locale),
+          ),
+        );
+      }),
     );
   }
 }

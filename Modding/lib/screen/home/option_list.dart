@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/item.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/home/home_screen.dart';
 
-class OptionList extends ConsumerWidget {
+class OptionList extends StatelessWidget {
   const OptionList({
     super.key,
     required this.items,
@@ -16,14 +16,18 @@ class OptionList extends ConsumerWidget {
   final List<Item> items;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     final isDesktop = Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-    final settings = ref.watch(settingProvider);
+    final settings = BlocProvider.of<SettingsCubit>(context);
     return isDesktop ? _buildGridView(context, settings, los) : _buildListView(settings, los);
   }
 
-  Widget _buildGridView(BuildContext context, SettingState settings, AppLocalizations los) {
+  Widget _buildGridView(
+    BuildContext context,
+    SettingsCubit settings,
+    AppLocalizations los,
+  ) {
     final screenWidth = MediaQuery.of(context).size.width;
     const itemWidth = 250.0;
     final crossAxisCount = (screenWidth / itemWidth).floor();
@@ -41,7 +45,10 @@ class OptionList extends ConsumerWidget {
     );
   }
 
-  Widget _buildListView(SettingState settings, AppLocalizations los) {
+  Widget _buildListView(
+    SettingsCubit settings,
+    AppLocalizations los,
+  ) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -53,7 +60,7 @@ class OptionList extends ConsumerWidget {
 
   Widget _buildCard(
     Item item,
-    SettingState settings,
+    SettingsCubit settings,
     AppLocalizations los,
     bool isDesktop,
   ) {
@@ -63,13 +70,13 @@ class OptionList extends ConsumerWidget {
     return isDesktop
         ? GridCard(
             item: item,
-            isValid: settings.isValid,
+            isValid: settings.state.isValid,
             invalidMessage: los.toolchain_is_invalid,
             onSetting: item.onSetting,
           )
         : ListCard(
             item: item,
-            isValid: settings.isValid,
+            isValid: settings.state.isValid,
             invalidMessage: los.toolchain_is_invalid,
             onSetting: item.onSetting,
           );

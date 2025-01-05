@@ -1,27 +1,27 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:sen/provider/setting_provider.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
-import 'package:sen/service/android_service.dart';
+import 'package:sen/service/android_helper.dart';
 
-class RootScreen extends ConsumerStatefulWidget {
+class RootScreen extends StatefulWidget {
   const RootScreen({super.key, required this.title});
 
   final String title;
 
   @override
-  ConsumerState<RootScreen> createState() => _RootScreenState();
+  State<RootScreen> createState() => _RootScreenState();
 }
 
-class _RootScreenState extends ConsumerState<RootScreen> {
+class _RootScreenState extends State<RootScreen> {
   int _currentPageIndex = 0;
 
   final _labelBehavior = NavigationDestinationLabelBehavior.alwaysShow;
@@ -130,28 +130,32 @@ class _RootScreenState extends ConsumerState<RootScreen> {
     if (!Platform.isAndroid) return;
     Future.sync(
       () async {
-        final provider = ref.read(settingProvider);
+        void setPermission() {
+          BlocProvider.of<SettingsCubit>(context).setRequestedPermission(true);
+        }
+
+        final provider = BlocProvider.of<SettingsCubit>(context).state;
         if (!provider.requestedPermission) {
-          if (!(await AndroidService.checkStoragePermission())) {
+          if (!(await AndroidHelper.checkStoragePermission())) {
             await _displayAllowDialog();
-            await AndroidService.requestStoragePermission();
+            await AndroidHelper.requestStoragePermission();
           }
         }
-        ref.watch(settingProvider.notifier).setRequestedPermission(true);
+        setPermission();
       },
     );
   }
 
   void _loadArgumentOnAndroid() {
     if (!Platform.isAndroid) return;
-    if (AndroidService.arguments != null) {
+    if (AndroidHelper.arguments != null) {
       _hasNavigated = true;
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
           Navigator.of(context).push(
             PageTransition(
               child: ShellScreen(
-                arguments: AndroidService.arguments!,
+                arguments: AndroidHelper.arguments!,
               ),
               type: PageTransitionType.fade,
               duration: const Duration(

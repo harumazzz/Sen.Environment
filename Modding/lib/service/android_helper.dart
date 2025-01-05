@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-class AndroidService {
+class AndroidHelper {
   static const MethodChannel _methodChannel = MethodChannel(
     'com.haruma.sen.environment',
   );

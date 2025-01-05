@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/provider/map_provider.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MapEditorConfiguration extends ConsumerStatefulWidget {
@@ -44,7 +44,7 @@ class _MapEditorConfigurationState extends ConsumerState<MapEditorConfiguration>
   }
 
   void _onUploadDirectory() async {
-    var result = await FileService.uploadDirectory();
+    var result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
       await _onValueChange();

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/screen/shell/controller/client_interaction_controller.dart';
@@ -15,10 +14,10 @@ import 'package:sen/screen/shell/view/finished_stage.dart';
 import 'package:sen/screen/shell/view/option_selector.dart';
 import 'package:sen/screen/shell/controller/shell_controller.dart';
 import 'package:sen/screen/shell/view/string_stage.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-class ShellScreen extends ConsumerStatefulWidget {
+class ShellScreen extends StatefulWidget {
   final List<String> arguments;
 
   const ShellScreen({
@@ -27,10 +26,10 @@ class ShellScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ShellScreen> createState() => _ShellScreenState();
+  State<ShellScreen> createState() => _ShellScreenState();
 }
 
-class _ShellScreenState extends ConsumerState<ShellScreen> {
+class _ShellScreenState extends State<ShellScreen> {
   TextEditingController? _inputController;
   late ScrollController _scrollController;
   bool _finished = false;
@@ -160,7 +159,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     _setPendingJob();
     _clearMessage();
     await _shellController.run(
-      ref: ref,
+      context: context,
       arguments: arguments,
       inputString: _inputString,
       inputEnumeration: _inputEnumeration,
@@ -207,8 +206,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       context: context,
       builder: (BuildContext context) {
         return OptionSelector(
-          onUploadFile: FileService.uploadFile,
-          onUploadDirectory: FileService.uploadDirectory,
+          onUploadFile: FileHelper.uploadFile,
+          onUploadDirectory: FileHelper.uploadDirectory,
           inputController: _inputController,
           scrollToBottom: _scrollToBottom,
         );

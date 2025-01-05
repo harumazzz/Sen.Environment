@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LevelOptions extends StatefulWidget {
@@ -42,7 +42,7 @@ class _LevelOptionsState extends State<LevelOptions> with TickerProviderStateMix
     if (_imageCache.containsKey(path)) {
       return _imageCache[path]!;
     }
-    final buffer = await FileService.readBufferAsync(source: path);
+    final buffer = await FileHelper.readBufferAsync(source: path);
     final image = MemoryImage(buffer);
     _imageCache[path] = image;
     return image;

@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart' as file_selector;
-import 'package:sen/service/android_service.dart';
+import 'package:sen/service/android_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:archive/archive.dart';
 
-class FileService {
+class FileHelper {
   static List<String> readDirectory({
     required String source,
     required bool recursive,
@@ -44,7 +44,7 @@ class FileService {
           ?.path;
     }
     if (Platform.isAndroid) {
-      outputFile = (await AndroidService.saveFileFromDocument());
+      outputFile = (await AndroidHelper.saveFileFromDocument());
     }
     return outputFile != null ? p.absolute(outputFile) : null;
   }
@@ -125,7 +125,7 @@ class FileService {
   static Future<String?> uploadDirectory() async {
     var directory = null as String?;
     if (Platform.isAndroid) {
-      directory = await AndroidService.pickDirectoryFromDocument();
+      directory = await AndroidHelper.pickDirectoryFromDocument();
     } else {
       directory = (await file_selector.getDirectoryPath());
     }
@@ -137,7 +137,7 @@ class FileService {
 
   static Future<String?> uploadFile() async {
     if (Platform.isAndroid) {
-      return await AndroidService.pickFileFromDocument();
+      return await AndroidHelper.pickFileFromDocument();
     }
     return await _uploadFilePicker();
   }

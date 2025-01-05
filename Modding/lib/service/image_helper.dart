@@ -1,13 +1,13 @@
 import 'package:sen/model/dimension.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'package:image/image.dart';
 
-class ImageService {
+class ImageHelper {
   static void saveImage(
     String source,
     Image data,
   ) {
-    FileService.writeBuffer(source: source, data: encodePng(data));
+    FileHelper.writeBuffer(source: source, data: encodePng(data));
     return;
   }
 
@@ -16,7 +16,7 @@ class ImageService {
     Dimension newDimension,
     String destination,
   ) {
-    final bytes = FileService.readBuffer(source: source);
+    final bytes = FileHelper.readBuffer(source: source);
     final image = decodeImage(bytes)!;
     final result = copyResize(
       image,
@@ -30,14 +30,13 @@ class ImageService {
     return;
   }
 
-  static Image readImage(
+  static Image? readImage(
     String source,
-  ) =>
-      decodeImage(
-        FileService.readBuffer(
-          source: source,
-        ),
-      )!;
+  ) {
+    return decodeImage(
+      FileHelper.readBuffer(source: source),
+    );
+  }
 
   static void cropImage({
     required Image original,

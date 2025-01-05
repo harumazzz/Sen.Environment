@@ -2,13 +2,14 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:async/async.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/api.dart';
-import 'package:sen/provider/setting_provider.dart';
 import 'package:sen/screen/shell/helper/command_handler.dart';
 import 'package:sen/screen/shell/model/kernel_argument.dart';
 import 'package:sen/screen/shell/model/kernel_script.dart';
-import 'package:sen/service/pointer_service.dart';
+import 'package:sen/service/pointer_helper.dart';
 
 class KernelHelper {
   static SendPort? _sendPort;
@@ -17,7 +18,7 @@ class KernelHelper {
     Pointer<CStringList> list,
     Pointer<CStringView> destination,
   ) {
-    var result = PointerService.toList(list.ref);
+    var result = PointerHelper.toList(list.ref);
     var command = result.removeAt(0);
     final handler = CommandHandler(_sendPort);
     handler.handle(command, result, destination);
@@ -33,8 +34,8 @@ class KernelHelper {
     _sendPort = null;
   }
 
-  static String queryKernelPath(WidgetRef ref) {
-    final toolChain = ref.read(settingProvider).toolChain;
+  static String queryKernelPath(BuildContext context) {
+    final toolChain = BlocProvider.of<SettingsCubit>(context).state.toolChain;
     if (Platform.isAndroid) {
       return 'libKernel.so';
     }

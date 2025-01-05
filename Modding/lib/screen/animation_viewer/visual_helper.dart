@@ -4,7 +4,7 @@ import 'package:sen/model/animation.dart' as model;
 import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
 import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 import 'dart:collection';
 import 'dart:math' as math;
 
@@ -40,7 +40,7 @@ class VisualHelper {
   static Future<void> loadAnimation(String path) async {
     dispose();
     animation = model.SexyAnimation.fromJson(
-      await FileService.readJson(source: path),
+      await FileHelper.readJson(source: path),
     );
     return;
   }
@@ -51,8 +51,8 @@ class VisualHelper {
     for (var image in animation.image) {
       var file = '$directory/${image.path}.png';
       var source = null as MemoryImage?;
-      if (FileService.isFile(file)) {
-        source = MemoryImage(FileService.readBuffer(source: file));
+      if (FileHelper.isFile(file)) {
+        source = MemoryImage(FileHelper.readBuffer(source: file));
       }
       imageSource.add(source);
     }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sen/model/wave.dart';
 import 'package:path/path.dart' as p;
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 
 class DinoPage extends StatefulWidget {
   const DinoPage({
@@ -36,7 +36,7 @@ class _DinoPageState extends State<DinoPage> {
         .map(
           (e) => _DinoWrapper(
             dinoType: p.basenameWithoutExtension(e),
-            image: MemoryImage(FileService.readBuffer(source: e)),
+            image: MemoryImage(FileHelper.readBuffer(source: e)),
           ),
         )
         .toList();
@@ -77,10 +77,7 @@ class _DinoPageState extends State<DinoPage> {
                   children: [
                     Text(
                       los.entry,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16.0),
                     _buildDinoTypeDropdown(los),

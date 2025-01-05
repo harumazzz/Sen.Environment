@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sen/provider/setting_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 
 @immutable
-class NotificationOption extends ConsumerWidget {
+class NotificationOption extends StatelessWidget {
   const NotificationOption({
     super.key,
     required this.title,
@@ -14,19 +14,26 @@ class NotificationOption extends ConsumerWidget {
 
   final bool value;
 
-  void _onChange(bool? value, WidgetRef ref) {
+  void _onChange(
+    bool? value,
+    BuildContext context,
+  ) async {
     if (value == null) return;
-    ref.watch(settingProvider.notifier).setNotification(value);
+    await BlocProvider.of<SettingsCubit>(context).setNotification(value);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListTile(
       title: Text(title),
-      leading: Radio<bool>(
-        value: value,
-        groupValue: ref.watch(settingProvider).sendNotification,
-        onChanged: (bool? value) => _onChange(value, ref),
+      leading: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, state) {
+          return Radio<bool>(
+            value: value,
+            groupValue: state.sendNotification,
+            onChanged: (bool? value) => _onChange(value, context),
+          );
+        },
       ),
     );
   }

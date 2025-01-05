@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
 import 'package:sen/model/wave.dart';
-import 'package:sen/provider/level_provider.dart';
 import 'package:sen/screen/level_maker/code_preview.dart';
 import 'package:sen/screen/level_maker/level_definition.dart';
 import 'package:sen/screen/level_maker/level_initializer.dart';
 import 'package:sen/screen/level_maker/music_type.dart';
 import 'package:sen/screen/level_maker/wave_manager.dart';
-import 'package:sen/service/file_service.dart';
+import 'package:sen/service/file_helper.dart';
 
-class LevelMaker extends ConsumerStatefulWidget {
+class LevelMaker extends StatefulWidget {
   const LevelMaker({super.key});
 
   @override
-  ConsumerState<LevelMaker> createState() => _LevelMakerState();
+  State<LevelMaker> createState() => _LevelMakerState();
 }
 
-class _LevelMakerState extends ConsumerState<LevelMaker>
-    with TickerProviderStateMixin {
+class _LevelMakerState extends State<LevelMaker> with TickerProviderStateMixin {
   late TabController _tabController;
 
   late TextEditingController _levelNameController;
@@ -36,8 +35,6 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
 
   late LevelModule _levelModule;
 
-  bool _isLoaded = false;
-
   @override
   void initState() {
     super.initState();
@@ -49,46 +46,35 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
     _musicType = MusicType.normal;
     _waves = [];
     _hasSunFalling = true;
+    _loadResources();
   }
 
-  Future<void> _loadResources() async {
+  void _loadResources() async {
     final los = AppLocalizations.of(context)!;
-    await Future.doWhile(() async {
-      if (ref.read(levelProvider).isLoading) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        return true;
-      }
-      return false;
-    });
-    final setting = ref.read(levelProvider).resourceLocation;
-    if (setting == null || setting.isEmpty) {
+    final setting = BlocProvider.of<LevelMakerCubit>(context).state.resourceLocation;
+    if (setting.isEmpty) {
       throw Exception(los.please_configure_resource_location);
     }
     _resource = setting;
-
-    _plants = await FileService.readDirectoryAsync(
+    _plants = await FileHelper.readDirectoryAsync(
       source: '$_resource/plant',
       recursive: false,
     );
-    _zombies = await FileService.readDirectoryAsync(
+    _zombies = await FileHelper.readDirectoryAsync(
       source: '$_resource/zombie',
       recursive: false,
     );
-    _gridItems = await FileService.readDirectoryAsync(
+    _gridItems = await FileHelper.readDirectoryAsync(
       source: '$_resource/item',
       recursive: false,
     );
-    _dinos = await FileService.readDirectoryAsync(
+    _dinos = await FileHelper.readDirectoryAsync(
       source: '$_resource/dino',
       recursive: false,
     );
-
     _levelModule = LevelModule.fromJson(
-      FileService.readJson(source: '$_resource/level_module.json'),
+      FileHelper.readJson(source: '$_resource/level_module.json'),
     );
-    setState(() {
-      _isLoaded = true;
-    });
   }
 
   @override
@@ -118,73 +104,53 @@ class _LevelMakerState extends ConsumerState<LevelMaker>
           ],
         ),
       ),
-      body: _isLoaded
-          ? TabBarView(
-              controller: _tabController,
-              children: <Widget>[
-                LevelDefinition(
-                  levelNameController: _levelNameController,
-                  levelDescriptionController: _levelDescriptionController,
-                  lawnMowerController: _lawnMowerController,
-                  levelStageController: _levelStageController,
-                  levelModule: _levelModule,
-                  musicType: _musicType,
-                  onChangeMusicType: (newValue) {
-                    if (newValue == null) return;
-                    setState(() {
-                      _musicType = newValue;
-                    });
-                  },
-                  hasSunFalling: _hasSunFalling,
-                  onToggleSunFalling: (bool? newValue) {
-                    if (newValue == null) return;
-                    setState(() {
-                      _hasSunFalling = newValue;
-                    });
-                  },
-                ),
-                LevelInitializer(
-                  plants: _plants,
-                  zombies: _zombies,
-                  gridItem: _gridItems,
-                ),
-                WaveManager(
-                  resource: _resource,
-                  waves: _waves,
-                  zombies: _zombies,
-                  dinos: _dinos,
-                  levelModule: _levelModule,
-                ),
-                CodePreview(
-                  levelNameController: _levelNameController,
-                  levelDescriptionController: _levelDescriptionController,
-                  levelStageController: _levelStageController,
-                  lawnMowerController: _lawnMowerController,
-                  hasSunFalling: _hasSunFalling,
-                  musicType: _musicType,
-                  wave: _waves,
-                ),
-              ],
-            )
-          : FutureBuilder<void>(
-              future: _loadResources(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      '${los.loading_error}: ${snapshot.error}',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
-            ),
+      body: TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          LevelDefinition(
+            levelNameController: _levelNameController,
+            levelDescriptionController: _levelDescriptionController,
+            lawnMowerController: _lawnMowerController,
+            levelStageController: _levelStageController,
+            levelModule: _levelModule,
+            musicType: _musicType,
+            onChangeMusicType: (newValue) {
+              if (newValue == null) return;
+              setState(() {
+                _musicType = newValue;
+              });
+            },
+            hasSunFalling: _hasSunFalling,
+            onToggleSunFalling: (bool? newValue) {
+              if (newValue == null) return;
+              setState(() {
+                _hasSunFalling = newValue;
+              });
+            },
+          ),
+          LevelInitializer(
+            plants: _plants,
+            zombies: _zombies,
+            gridItem: _gridItems,
+          ),
+          WaveManager(
+            resource: _resource,
+            waves: _waves,
+            zombies: _zombies,
+            dinos: _dinos,
+            levelModule: _levelModule,
+          ),
+          CodePreview(
+            levelNameController: _levelNameController,
+            levelDescriptionController: _levelDescriptionController,
+            levelStageController: _levelStageController,
+            lawnMowerController: _lawnMowerController,
+            hasSunFalling: _hasSunFalling,
+            musicType: _musicType,
+            wave: _waves,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -265,5 +265,6 @@
 	"disable_all_sprite": "Disable all sprites",
 	"disable_all_image": "Disable all images",
 	"enable_all_sprite": "Enable all sprites",
-	"enable_all_image": "Enable all images"
+	"enable_all_image": "Enable all images",
+	"reload_script": "Reload Scripts"
 }
