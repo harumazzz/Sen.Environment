@@ -18,9 +18,9 @@ namespace Sen.Script.Executor {
 	// Method Executor should implement direct forward, batch forward and async forward
 
 	export interface MethodExecutor<
-		Argument extends Sen.Script.Executor.Base,
-		BatchArgument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		BatchArgument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	> {
 		id: string;
 		configuration_file: string;
@@ -59,11 +59,7 @@ namespace Sen.Script.Executor {
 
 	const methods: Map<
 		string,
-		Sen.Script.Executor.MethodExecutor<
-			Sen.Script.Executor.Base,
-			Sen.Script.Executor.Base,
-			Sen.Script.Executor.Configuration
-		>
+		Executor.MethodExecutor<Executor.Base, Executor.Base, Executor.Configuration>
 	> = new Map();
 
 	/**
@@ -77,9 +73,9 @@ namespace Sen.Script.Executor {
 	 */
 
 	export function push_as_module<
-		Argument extends Sen.Script.Executor.Base,
-		BatchArgument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		BatchArgument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	>(worker: MethodExecutor<Argument, BatchArgument, Configuration>): void {
 		const primary_id: string = worker.id!;
 		delete (worker as any).id;
@@ -98,7 +94,7 @@ namespace Sen.Script.Executor {
 	 * ----------------------------------------------------------
 	 */
 
-	export function defined_or_default<Argument extends Sen.Script.Executor.Base, T>(
+	export function defined_or_default<Argument extends Executor.Base, T>(
 		argument: Argument,
 		key: string,
 		defined_value: T,
@@ -120,8 +116,8 @@ namespace Sen.Script.Executor {
 	 */
 
 	export function load_bigint<
-		Argument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	>(
 		argument: Argument,
 		key: keyof Argument & keyof Configuration,
@@ -187,8 +183,8 @@ namespace Sen.Script.Executor {
 	 */
 
 	export function input_range<
-		Argument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	>(
 		argument: Argument,
 		key: keyof Argument & keyof Configuration,
@@ -253,8 +249,8 @@ namespace Sen.Script.Executor {
 	 */
 
 	export function load_string<
-		Argument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	>(
 		argument: Argument,
 		key: keyof Argument & keyof Configuration,
@@ -307,8 +303,8 @@ namespace Sen.Script.Executor {
 	 */
 
 	export function load_boolean<
-		Argument extends Sen.Script.Executor.Base,
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
 	>(
 		argument: Argument,
 		key: keyof Argument & keyof Configuration,
@@ -372,7 +368,7 @@ namespace Sen.Script.Executor {
 				if (/^\d+$/.test(input) && (rule as Array<bigint>).includes(BigInt(input))) {
 					break;
 				}
-				Console.warning(Sen.Kernel.Language.get('js.invalid_input_value'));
+				Console.warning(Kernel.Language.get('js.invalid_input_value'));
 			}
 		}
 		return BigInt(input);
@@ -392,7 +388,7 @@ namespace Sen.Script.Executor {
 	 * ----------------------------------------------------------
 	 */
 
-	export function configurate_or_input<Argument extends Sen.Script.Executor.Base, T>(
+	export function configurate_or_input<Argument extends Executor.Base, T>(
 		argument: Argument,
 		key: keyof Argument,
 		rule: Array<bigint> | Array<[bigint, string, string]>,
@@ -431,17 +427,16 @@ namespace Sen.Script.Executor {
 	export function test([type, pattern]: [MethodType, RegExp], source: string): boolean {
 		let is_valid: boolean = undefined!;
 		switch (type) {
-			case 'file': {
+			case 'file':
 				is_valid = Kernel.FileSystem.is_file(source);
 				break;
-			}
-			case 'directory': {
+			case 'directory':
 				is_valid = Kernel.FileSystem.is_directory(source);
 				break;
-			}
-			case 'any': {
+
+			case 'any':
 				is_valid = true;
-			}
+				break;
 		}
 		is_valid &&= pattern.test(source);
 		return is_valid;
@@ -453,21 +448,21 @@ namespace Sen.Script.Executor {
 	): boolean {
 		let is_valid: boolean = true;
 		switch (type) {
-			case 'file': {
+			case 'file':
 				is_valid = source.every(function make_assert(e: string): boolean {
 					return Kernel.FileSystem.is_file(e);
 				});
 				break;
-			}
-			case 'directory': {
+
+			case 'directory':
 				is_valid = source.every(function make_assert(e: string): boolean {
 					return Kernel.FileSystem.is_directory(e);
 				});
 				break;
-			}
-			case 'any': {
+
+			case 'any':
 				is_valid = true;
-			}
+				break;
 		}
 		return is_valid && method.every((e: RegExp) => source.some((i: string) => e.test(i)));
 	}
@@ -484,17 +479,13 @@ namespace Sen.Script.Executor {
 	 * ----------------------------------------------------------
 	 */
 
-	export function run_as_module<Argument extends Sen.Script.Executor.Base>(
+	export function run_as_module<Argument extends Executor.Base>(
 		id: string,
 		argument: Argument,
-		forward_type: Sen.Script.Executor.Forward,
+		forward_type: Executor.Forward,
 	): void {
 		const worker:
-			| Sen.Script.Executor.MethodExecutor<
-					Sen.Script.Executor.Base,
-					Sen.Script.Executor.Base,
-					Sen.Script.Executor.Configuration
-			  >
+			| Executor.MethodExecutor<Executor.Base, Executor.Base, Executor.Configuration>
 			| undefined = methods.get(id);
 		assert(worker !== undefined, format(Kernel.Language.get('js.method_not_found'), id));
 		worker.configuration = Kernel.JSON.deserialize_fs<Configuration>(worker.configuration_file);
@@ -504,21 +495,20 @@ namespace Sen.Script.Executor {
 			Definition.Console.Color.GREEN,
 		);
 		switch (forward_type) {
-			case Forward.BATCH: {
+			case Forward.BATCH:
 				assert(
 					worker.batch_forward !== undefined,
 					format(Kernel.Language.get('method_does_not_support_batch_implementation'), id),
 				);
 				worker.batch_forward(argument);
 				break;
-			}
-			case Forward.DIRECT: {
+
+			case Forward.DIRECT:
 				worker.direct_forward(argument);
 				break;
-			}
-			default: {
+
+			default:
 				assert(false, format(Kernel.Language.get('js.method_does_not_execute')));
-			}
 		}
 		clock.stop_safe();
 		Console.send(
@@ -628,19 +618,16 @@ namespace Sen.Script.Executor {
 		modules.forEach(print_statement);
 		const view: Array<bigint> = Array.from(modules.keys());
 		switch (view.length) {
-			case 0: {
+			case 0:
 				Console.error(Kernel.Language.get('js.argument_ignored'));
 				break;
-			}
-			case 1: {
+			case 1:
 				execute<Argument>(argument, modules.get(view[0])!, Forward.DIRECT, load);
 				break;
-			}
-			default: {
+			default:
 				const input_value: bigint = input_option(view);
 				if (input_value === 0n) return;
 				execute<Argument>(argument, modules.get(input_value)!, Forward.DIRECT, load);
-			}
 		}
 		return;
 	}
@@ -747,20 +734,19 @@ namespace Sen.Script.Executor {
 			switch (input) {
 				case '':
 					return;
-				case ':p': {
+				case ':p':
 					Console.argument(Kernel.Language.get('input_type'));
 					[Kernel.Language.get('file'), Kernel.Language.get('directory')].forEach(
 						(e, i) => print_statement(e, BigInt(i + 1)),
 					);
 					const result = input_integer([1n, 2n]);
 					if (result === 1n) {
-						input = Shell.callback(['pick_file']);
+						input = Console.path(Kernel.Language.get('input_file'), 'file');
 					} else {
-						input = Shell.callback(['pick_directory']);
+						input = Console.path(Kernel.Language.get('input_directory'), 'directory');
 					}
 					if (input.length === 0) continue;
 					break;
-				}
 				case ':b':
 					Console.argument(Kernel.Language.get('input_number_to_process_batch_function'));
 					const modules: Map<bigint, string> = new Map<bigint, string>();
@@ -829,7 +815,7 @@ namespace Sen.Script.Executor {
 			print_statement(Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n);
 			const input: bigint = input_integer([1n, 2n, 3n, 4n]);
 			switch (input) {
-				case 1n: {
+				case 1n:
 					load_module({ source: argument.source }, 'whole');
 					Console.finished(
 						format(
@@ -838,14 +824,14 @@ namespace Sen.Script.Executor {
 						),
 					);
 					break;
-				}
-				case 2n: {
+
+				case 2n:
 					(argument.source as Array<string>).forEach((e) =>
 						load_module({ source: e }, 'simple'),
 					);
 					break;
-				}
-				case 3n: {
+
+				case 3n:
 					execute<Argument>(
 						argument,
 						'popcap.atlas.split_by_resource_group',
@@ -853,8 +839,8 @@ namespace Sen.Script.Executor {
 						'simple',
 					);
 					break;
-				}
-				case 4n: {
+
+				case 4n:
 					execute<Argument>(
 						argument,
 						'popcap.atlas.split_by_res_info',
@@ -862,7 +848,6 @@ namespace Sen.Script.Executor {
 						'simple',
 					);
 					break;
-				}
 			}
 		} else {
 			(argument.source as Array<string>).forEach(function process_package(e: string) {
@@ -890,9 +875,9 @@ namespace Sen.Script.Executor {
 	}
 
 	export function basic_batch<
-		Argument extends Sen.Script.Executor.Base,
-		BatchArgument extends Sen.Script.Executor.Base & { directory: string },
-		Configuration extends Sen.Script.Executor.Configuration,
+		Argument extends Executor.Base,
+		BatchArgument extends Executor.Base & { directory: string },
+		Configuration extends Executor.Configuration,
 	>(
 		thiz: MethodExecutor<Argument, BatchArgument, Configuration>,
 		argument: BatchArgument,

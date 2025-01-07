@@ -150,12 +150,9 @@ namespace Sen.Script {
 				destination = Kernel.Console.readline();
 				switch (destination) {
 					case ':p':
-						if (type === 'file') {
-							destination = Shell.callback(['pick_file']);
-						}
-						if (type === 'directory') {
-							destination = Shell.callback(['pick_directory']);
-						}
+						if (type === 'file') destination = Shell.callback(['pick_file']);
+						else destination = Shell.callback(['pick_directory']);
+
 						Console.obtained(destination);
 						break loop;
 
@@ -212,7 +209,7 @@ namespace Sen.Script {
 		 */
 
 		export function setup(): void {
-			participant = Kernel.Path.dirname(Sen.Kernel.Home.script());
+			participant = Kernel.Path.dirname(Kernel.Home.script());
 			return;
 		}
 
@@ -295,7 +292,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 8 as const;
+	export const version = 9 as const;
 
 	/**
 	 * --------------------------------------------------
@@ -360,7 +357,7 @@ namespace Sen.Script {
 
 		export function load(): void {
 			for (const script of script_list) {
-				Sen.Kernel.JavaScript.evaluate_fs(Home.query(script));
+				Kernel.JavaScript.evaluate_fs(Home.query(script));
 			}
 			return;
 		}

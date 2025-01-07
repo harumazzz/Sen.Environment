@@ -3,7 +3,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 	 * Argument for the current method
 	 */
 
-	export interface Argument extends Sen.Script.Executor.Base {
+	export interface Argument extends Executor.Base {
 		source: string;
 		format?: string;
 		destination?: string;
@@ -13,7 +13,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 	 * Argument for batch method
 	 */
 
-	export interface BatchArgument extends Sen.Script.Executor.Base {
+	export interface BatchArgument extends Executor.Base {
 		directory: string;
 	}
 
@@ -21,7 +21,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 	 * Configuration file if needed
 	 */
 
-	export interface Configuration extends Sen.Script.Executor.Configuration {
+	export interface Configuration extends Executor.Configuration {
 		format: Support.Texture.Format | '?';
 	}
 
@@ -61,48 +61,47 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 
 		export function exchange_format(m_format: string): Support.Texture.Format {
 			switch (m_format) {
-				case 'argb_8888': {
+				case 'argb_8888':
 					return Support.Texture.Format.ARGB_8888;
-				}
-				case 'rgba_8888': {
+
+				case 'rgba_8888':
 					return Support.Texture.Format.RGBA_8888;
-				}
-				case 'rgba_4444': {
+
+				case 'rgba_4444':
 					return Support.Texture.Format.RGBA_4444;
-				}
-				case 'rgb_565': {
+
+				case 'rgb_565':
 					return Support.Texture.Format.RGB_565;
-				}
-				case 'rgba_5551': {
+
+				case 'rgba_5551':
 					return Support.Texture.Format.RGBA_5551;
-				}
-				case 'rgba_4444_tiled': {
+
+				case 'rgba_4444_tiled':
 					return Support.Texture.Format.RGBA_4444_TILED;
-				}
-				case 'rgb_565_tiled': {
+
+				case 'rgb_565_tiled':
 					return Support.Texture.Format.RGB_565_TILED;
-				}
-				case 'rgba_5551_tiled': {
+
+				case 'rgba_5551_tiled':
 					return Support.Texture.Format.RGBA_5551_TILED;
-				}
-				case 'rgba_pvrtc4': {
+
+				case 'rgba_pvrtc4':
 					return Support.Texture.Format.RGBA_PVRTC_4BPP;
-				}
-				case 'rgb_etc1_a_8': {
+
+				case 'rgb_etc1_a_8':
 					return Support.Texture.Format.RGB_ETC1_A_8;
-				}
-				case 'rgb_etc1_a_palette': {
+
+				case 'rgb_etc1_a_palette':
 					return Support.Texture.Format.RGB_ETC1_A_PALETTE;
-				}
-				case 'rgb_pvrtc4_a_8': {
+
+				case 'rgb_pvrtc4_a_8':
 					return Support.Texture.Format.RGB_PVRTC_4BPP_A_8;
-				}
-				default: {
+
+				default:
 					assert(
 						false,
 						Script.format(Kernel.Language.get('popcap.ptx.unsupported_format'), format),
 					);
-				}
 			}
 		}
 	}
@@ -115,10 +114,10 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 	 */
 
 	export function forward(): void {
-		Sen.Script.Executor.push_as_module<
-			Sen.Script.Executor.Methods.PopCap.PTX.Encode.Argument,
-			Sen.Script.Executor.Methods.PopCap.PTX.Encode.BatchArgument,
-			Sen.Script.Executor.Methods.PopCap.PTX.Encode.Configuration
+		return push_as_module<
+			Methods.PopCap.PTX.Encode.Argument,
+			Methods.PopCap.PTX.Encode.BatchArgument,
+			Methods.PopCap.PTX.Encode.Configuration
 		>({
 			id: 'popcap.ptx.encode',
 			configuration_file: Home.query('~/Executor/Configuration/popcap.ptx.encode.json'),

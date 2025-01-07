@@ -137,25 +137,22 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 		 */
 
 		export function to_packable(
-			resource: Sen.Script.Support.PopCap.Atlas.Structure.Definition,
-		): Array<Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number>> {
+			resource: Structure.Definition,
+		): Array<Detail.MaxRectsPackableData<number>> {
 			const members: Array<string> = Object.keys(resource.groups) as Array<string>;
-			const result: Array<
-				Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number>
-			> = new Array<
-				Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number>
+			const result: Array<Detail.MaxRectsPackableData<number>> = new Array<
+				Detail.MaxRectsPackableData<number>
 			>();
 			for (const member of members) {
-				const data: Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number> =
-					{
-						id: member,
-						path: resource.groups[member].path.split('/'),
-						additional_x: Number(resource.groups[member].default.x) ?? 0,
-						additional_y: Number(resource.groups[member].default.y) ?? 0,
-						height: undefined!,
-						source: undefined!,
-						width: undefined!,
-					};
+				const data: Detail.MaxRectsPackableData<number> = {
+					id: member,
+					path: resource.groups[member].path.split('/'),
+					additional_x: Number(resource.groups[member].default.x) ?? 0,
+					additional_y: Number(resource.groups[member].default.y) ?? 0,
+					height: undefined!,
+					source: undefined!,
+					width: undefined!,
+				};
 				if (resource.groups[member].default.cols) {
 					data.cols = Number(resource.groups[member].default.cols);
 				}
@@ -173,7 +170,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const collection of list) {
 				collection.forEach((e: Detail.MaxRectsAfterData<T>) =>
 					assert(
-						'oversized' in e && e.oversized!,
+						!('oversized' in e && e.oversized!),
 						Kernel.Language.get('popcap.atlas.contains_oversized_image'),
 					),
 				);
@@ -198,25 +195,19 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 
 		export function process(
 			source: string,
-			size: Sen.Script.Support.PopCap.Atlas.Pack.Detail.SizeRange<number>,
-			detail: Sen.Script.Support.PopCap.Atlas.Pack.Detail.Data,
+			size: Detail.SizeRange<number>,
+			detail: Detail.Data,
 		): [
-			Sen.Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-			...Array<Sen.Kernel.Dimension.Image>,
+			Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
+			...Array<Kernel.Dimension.Image>,
 		] {
-			const json_source: string = Sen.Kernel.Path.resolve(
-				Sen.Kernel.Path.join(source, 'atlas.json'),
-			);
-			const media_path: string = Sen.Kernel.Path.resolve(
-				Sen.Kernel.Path.join(source, 'media'),
-			);
-			const definition: Sen.Script.Support.PopCap.Atlas.Structure.Definition =
-				Sen.Kernel.JSON.deserialize_fs<Sen.Script.Support.PopCap.Atlas.Structure.Definition>(
-					json_source,
-				);
+			const json_source: string = Kernel.Path.resolve(Kernel.Path.join(source, 'atlas.json'));
+			const media_path: string = Kernel.Path.resolve(Kernel.Path.join(source, 'media'));
+			const definition: Structure.Definition =
+				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [
-				Sen.Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-				...Array<Sen.Kernel.Dimension.Image>,
+				Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
+				...Array<Kernel.Dimension.Image>,
 			] = [
 				{
 					id: definition.subgroup,
@@ -227,9 +218,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				},
 			];
 			const is_path: boolean = definition.method === 'path';
-			const prepare: Array<
-				Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number>
-			> = Sen.Script.Support.PopCap.Atlas.Pack.Algorithm.to_packable(definition);
+			const prepare: Array<Detail.MaxRectsPackableData<number>> =
+				Algorithm.to_packable(definition);
 			const images: Map<string, Kernel.Dimension.Image> = new Map<
 				string,
 				Kernel.Dimension.Image
@@ -237,22 +227,22 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Sen.Kernel.Path.resolve(
-						Sen.Kernel.Path.join(media_path, `${data.path[data.path.length - 1]}.png`),
+					source_file = Kernel.Path.resolve(
+						Kernel.Path.join(media_path, `${data.path[data.path.length - 1]}.png`),
 					);
 				} else {
-					source_file = Sen.Kernel.Path.resolve(
-						Sen.Kernel.Path.join(media_path, `${data.id}.png`),
+					source_file = Kernel.Path.resolve(
+						Kernel.Path.join(media_path, `${data.id}.png`),
 					);
 				}
-				const image: Sen.Kernel.Dimension.Image = Sen.Kernel.Image.open(source_file);
+				const image: Kernel.Dimension.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
-				data.source = Sen.Kernel.Path.resolve(source_file);
+				data.source = Kernel.Path.resolve(source_file);
 			}
 			const list_view: Array<Array<Detail.MaxRectsAfterData<number>>> = new Array();
-			const packer = new Sen.Script.Third.MaxRectsAlgorithm.MaxRectsPacker(
+			const packer = new Third.MaxRectsAlgorithm.MaxRectsPacker(
 				size.width,
 				size.height,
 				size.padding,
@@ -268,7 +258,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				Console.output(Kernel.Language.get('popcap.atlas.pack.use_trim'));
 			}
 			const is_string_style: boolean = definition.expand_path === 'string';
-			for (const i in list_view) {
+			for (let i in list_view) {
 				const destination_size: Detail.MaxDimensionView<number> = definition.trim
 					? Detail.reducer_trim(list_view[i])
 					: Detail.square_trim(list_view[i]);
@@ -305,7 +295,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					height: BigInt(destination_size.height),
 					runtime: true,
 				} as Kernel.Support.PopCap.ResourceGroup.ResourceContainsAtlas);
-				for (const j in list_view[i]) {
+				for (let j in list_view[i]) {
 					const resource_data: Kernel.Support.PopCap.ResourceGroup.ResourceContainsSprite =
 						{
 							slot: undefined!,
@@ -363,25 +353,22 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 
 		export function process_fs(
 			source: string,
-			size: Sen.Script.Support.PopCap.Atlas.Pack.Detail.SizeRange<number>,
-			detail: Sen.Script.Support.PopCap.Atlas.Pack.Detail.Data,
+			size: Detail.SizeRange<number>,
+			detail: Detail.Data,
 			destination: string,
 		): void {
 			const [definition, ...images]: [
-				Sen.Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-				...Array<Sen.Kernel.Dimension.Image>,
-			] = Sen.Script.Support.PopCap.Atlas.Pack.ResourceGroup.process(source, size, detail);
-			Sen.Kernel.JSON.serialize_fs<Sen.Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup>(
-				Sen.Kernel.Path.join(destination, `${definition.id}.json`),
+				Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
+				...Array<Kernel.Dimension.Image>,
+			] = ResourceGroup.process(source, size, detail);
+			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup>(
+				Kernel.Path.join(destination, `${definition.id}.json`),
 				definition,
 				1,
 				false,
 			);
-			images.forEach((image: Sen.Kernel.Dimension.Image) =>
-				Sen.Kernel.Image.write(
-					Sen.Kernel.Path.join(destination, image.source_file!),
-					image,
-				),
+			images.forEach((image: Kernel.Dimension.Image) =>
+				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
 			return;
 		}
@@ -398,7 +385,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 
 		export type Wrapper = {
 			id: string;
-			value: Sen.Kernel.Support.PopCap.ResInfo.Atlas;
+			value: Kernel.Support.PopCap.ResInfo.Atlas;
 		};
 
 		/**
@@ -412,20 +399,14 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 
 		export function process(
 			source: string,
-			size: Sen.Script.Support.PopCap.Atlas.Pack.Detail.SizeRange<number>,
-			detail: Sen.Script.Support.PopCap.Atlas.Pack.Detail.Data,
-		): [Wrapper, ...Array<Sen.Kernel.Dimension.Image>] {
-			const json_source: string = Sen.Kernel.Path.resolve(
-				Sen.Kernel.Path.join(source, 'atlas.json'),
-			);
-			const media_path: string = Sen.Kernel.Path.resolve(
-				Sen.Kernel.Path.join(source, 'media'),
-			);
-			const definition: Sen.Script.Support.PopCap.Atlas.Structure.Definition =
-				Sen.Kernel.JSON.deserialize_fs<Sen.Script.Support.PopCap.Atlas.Structure.Definition>(
-					json_source,
-				);
-			const destination: [Wrapper, ...Array<Sen.Kernel.Dimension.Image>] = [
+			size: Detail.SizeRange<number>,
+			detail: Detail.Data,
+		): [Wrapper, ...Array<Kernel.Dimension.Image>] {
+			const json_source: string = Kernel.Path.resolve(Kernel.Path.join(source, 'atlas.json'));
+			const media_path: string = Kernel.Path.resolve(Kernel.Path.join(source, 'media'));
+			const definition: Structure.Definition =
+				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
+			const destination: [Wrapper, ...Array<Kernel.Dimension.Image>] = [
 				{
 					id: definition.subgroup,
 					value: {
@@ -435,9 +416,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				},
 			];
 			const is_path: boolean = definition.method === 'path';
-			const prepare: Array<
-				Sen.Script.Support.PopCap.Atlas.Pack.Detail.MaxRectsPackableData<number>
-			> = Sen.Script.Support.PopCap.Atlas.Pack.Algorithm.to_packable(definition);
+			const prepare: Array<Detail.MaxRectsPackableData<number>> =
+				Algorithm.to_packable(definition);
 			const images: Map<string, Kernel.Dimension.Image> = new Map<
 				string,
 				Kernel.Dimension.Image
@@ -445,22 +425,22 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Sen.Kernel.Path.resolve(
-						Sen.Kernel.Path.join(media_path, `${data.path[data.path.length - 1]}.png`),
+					source_file = Kernel.Path.resolve(
+						Kernel.Path.join(media_path, `${data.path[data.path.length - 1]}.png`),
 					);
 				} else {
-					source_file = Sen.Kernel.Path.resolve(
-						Sen.Kernel.Path.join(media_path, `${data.id}.png`),
+					source_file = Kernel.Path.resolve(
+						Kernel.Path.join(media_path, `${data.id}.png`),
 					);
 				}
-				const image: Sen.Kernel.Dimension.Image = Sen.Kernel.Image.open(source_file);
+				const image: Kernel.Dimension.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
-				data.source = Sen.Kernel.Path.resolve(source_file);
+				data.source = Kernel.Path.resolve(source_file);
 			}
 			const list_view: Array<Array<Detail.MaxRectsAfterData<number>>> = new Array();
-			const packer = new Sen.Script.Third.MaxRectsAlgorithm.MaxRectsPacker(
+			const packer = new Third.MaxRectsAlgorithm.MaxRectsPacker(
 				size.width,
 				size.height,
 				size.padding + 2,
@@ -567,26 +547,23 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 
 		export function process_fs(
 			source: string,
-			size: Sen.Script.Support.PopCap.Atlas.Pack.Detail.SizeRange<number>,
-			detail: Sen.Script.Support.PopCap.Atlas.Pack.Detail.Data,
+			size: Detail.SizeRange<number>,
+			detail: Detail.Data,
 			destination: string,
 		): void {
-			const [wrapper, ...images]: [Wrapper, ...Array<Sen.Kernel.Dimension.Image>] = process(
+			const [wrapper, ...images]: [Wrapper, ...Array<Kernel.Dimension.Image>] = process(
 				source,
 				size,
 				detail,
 			);
-			Sen.Kernel.JSON.serialize_fs<Sen.Kernel.Support.PopCap.ResInfo.Atlas>(
-				Sen.Kernel.Path.join(destination, `${wrapper.id}.json`),
+			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResInfo.Atlas>(
+				Kernel.Path.join(destination, `${wrapper.id}.json`),
 				wrapper.value,
 				1,
 				false,
 			);
-			images.forEach((image: Sen.Kernel.Dimension.Image) =>
-				Sen.Kernel.Image.write(
-					Sen.Kernel.Path.join(destination, image.source_file!),
-					image,
-				),
+			images.forEach((image: Kernel.Dimension.Image) =>
+				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
 			return;
 		}

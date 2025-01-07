@@ -1,145 +1,191 @@
 namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
-    // Generic
+	// Generic
 
-    export type Generic = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Generic;
+	export type Generic = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Generic;
 
-    /**
-     * Argument for the current method
-     */
+	// Setting
+	export type Setting = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting;
 
-    export interface Argument extends Sen.Script.Executor.Base {
-        source: string;
-        destination?: string;
-        generic?: Generic;
-        key?: string;
-        iv?: string;
-        manifest?: boolean;
-        packages?: boolean;
-    }
+	/**
+	 * Argument for the current method
+	 */
 
-    /**
-     * Argument for batch method
-     */
+	export interface Argument extends Executor.Base {
+		source: string;
+		destination?: string;
+		generic?: Generic;
+		key?: string;
+		iv?: string;
+		manifest?: boolean;
+		packages?: boolean;
+	}
 
-    export interface BatchArgument extends Sen.Script.Executor.Base {
-        directory: string;
-    }
+	/**
+	 * Argument for batch method
+	 */
 
-    /**
-     * Configuration file if needed
-     */
+	export interface BatchArgument extends Executor.Base {
+		directory: string;
+	}
 
-    export interface Configuration extends Sen.Script.Executor.Configuration {
-        layout: string | "?";
-        generic: string | "?";
-        packages_setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting;
-    }
+	/**
+	 * Configuration file if needed
+	 */
 
-    /**
-     * ----------------------------------------------
-     * JavaScript forward method, this method need
-     * to be evaluated during script loading time
-     * ----------------------------------------------
-     */
+	export interface Configuration extends Executor.Configuration {
+		layout: string | '?';
+		generic: string | '?';
+		packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting;
+	}
 
-    export interface PackagesFileList {
-        rton_file: string[];
-        json_file: string[];
-    }
+	/**
+	 * ----------------------------------------------
+	 * JavaScript forward method, this method need
+	 * to be evaluated during script loading time
+	 * ----------------------------------------------
+	 */
 
-    export interface PackagesInfo {
-        compression: 1n | 2n | 3n | 4n;
-        chinese: boolean;
-        encode: boolean;
-    }
+	export interface PackagesFileList {
+		rton_file: string[];
+		json_file: string[];
+	}
 
-    export function load_packages(source: string, packages_info: null | PackagesInfo): Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting {
-        const packages_setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting = {
-            rton_count: 0n,
-            json_count: 0n,
-            key: "",
-            iv: "",
-        };
-        if (packages_info !== null) {
-            const packages_list = Kernel.FileSystem.read_directory(`${source}/packages`);
-            if (packages_info.encode) {
-                const json_file_list = new Set<string>();
-                for (let element of packages_list) {
-                    const currentElement = element.slice(0, element.length - 5);
-                    if (Kernel.Path.extname(element).toLowerCase() === ".json") {
-                        json_file_list.add(currentElement);
-                        ++packages_setting.json_count;
-                    }
-                    if (Kernel.Path.extname(element).toLowerCase() === ".rton") {
-                        const hasValue: boolean = json_file_list.has(currentElement);
-                        if (hasValue) {
-                            json_file_list.delete(currentElement);
-                        }
-                        ++packages_setting.rton_count;
-                    }
-                }
-                packages_setting.rton_count += BigInt(json_file_list.size);
-            } else {
-                for (let element of packages_list) {
-                    if (Kernel.Path.extname(element).toLowerCase() === ".rton") {
-                        ++packages_setting.rton_count;
-                    }
-                }
-            }
-        }
-        return packages_setting;
-    }
+	export interface PackagesInfo {
+		compression: 1n | 2n | 3n | 4n;
+		chinese: boolean;
+		encode: boolean;
+	}
 
-    export function forward(): void {
-        Sen.Script.Executor.push_as_module<
-            Sen.Script.Executor.Methods.PopCap.RSB.BuildProject.Argument,
-            Sen.Script.Executor.Methods.PopCap.RSB.BuildProject.BatchArgument,
-            Sen.Script.Executor.Methods.PopCap.RSB.BuildProject.Configuration
-        >({
-            id: "popcap.rsb.build_project",
-            configuration_file: Home.query("~/Executor/Configuration/popcap.rsb.build_project.json"),
-            direct_forward(argument: Argument): void {
-                is_valid_source(argument, true);
-                Console.obtained(argument.source);
-                defined_or_default<Argument, string>(argument, "destination", Kernel.Path.except_extension(argument.source));
-                check_overwrite(argument as { destination: string }, "file");
-                Console.output(argument.destination!);
-                load_bigint(argument, "generic", this.configuration, Script.Executor.Methods.PopCap.RSB.InitProject.Detail.generic(), Kernel.Language.get("popcap.rsb.custom.generic"));
-                const packages_info: PackagesInfo | null = (Kernel.JSON.deserialize_fs(`${argument.source}/data.json`) as any).packages_info;
-                const packages_setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting = load_packages(argument.source, packages_info);
-                if (packages_info !== null) {
-                    if (packages_setting.json_count !== 0n && packages_info.encode) {
-                        Console.output(`${Kernel.Language.get("popcap.rsb.build_project.total_json_count")}: ${packages_setting.json_count}`);
-                        if (packages_setting.json_count !== 0n && packages_info.chinese) {
-                            load_string(argument, "key", this.configuration.packages_setting, Kernel.Language.get("popcap.rsb.build_project.key"));
-                            load_string(argument, "iv", this.configuration.packages_setting, Kernel.Language.get("popcap.rsb.build_project.iv"));
-                            packages_setting.key = argument.key!;
-                            packages_setting.iv = argument.iv!;
-                        }
-                    }
-                    Console.output(`${Kernel.Language.get("popcap.rsb.build_project.total_rton_count")}: ${packages_setting.rton_count}`);
-                } else {
-                    Console.output(Kernel.Language.get("popcap.rsb.build_project.packages_does_not_use"));
-                }
-                const setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting = {
-                    texture_format_category: argument.generic!,
-                    only_high_resolution: false,
-                    packages_setting,
-                    unpack_packages: true,
-                };
-                clock.start_safe();
-                Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(argument.source, argument.destination!, setting);
-                clock.stop_safe();
-                return;
-            },
-            batch_forward: undefined!,
-            is_enabled: true,
-            configuration: undefined!,
-            filter: ["directory", /(.*)\.bundle$/i],
-            option: 55n,
-        });
-        return;
-    }
+	export function load_packages(
+		source: string,
+		packages_info: null | PackagesInfo,
+	): Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting {
+		const packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting =
+			{
+				rton_count: 0n,
+				json_count: 0n,
+				key: '',
+				iv: '',
+			};
+		if (packages_info !== null) {
+			const packages_list = Kernel.FileSystem.read_directory(`${source}/packages`);
+			if (packages_info.encode) {
+				const json_file_list = new Set<string>();
+				for (let element of packages_list) {
+					const currentElement = element.slice(0, element.length - 5);
+					if (Kernel.Path.extname(element).toLowerCase() === '.json') {
+						json_file_list.add(currentElement);
+						++packages_setting.json_count;
+					}
+					if (Kernel.Path.extname(element).toLowerCase() === '.rton') {
+						const hasValue: boolean = json_file_list.has(currentElement);
+						if (hasValue) {
+							json_file_list.delete(currentElement);
+						}
+						++packages_setting.rton_count;
+					}
+				}
+				packages_setting.rton_count += BigInt(json_file_list.size);
+			} else {
+				for (let element of packages_list) {
+					if (Kernel.Path.extname(element).toLowerCase() === '.rton') {
+						++packages_setting.rton_count;
+					}
+				}
+			}
+		}
+		return packages_setting;
+	}
+
+	export function forward(): void {
+		return push_as_module<
+			Methods.PopCap.RSB.BuildProject.Argument,
+			Methods.PopCap.RSB.BuildProject.BatchArgument,
+			Methods.PopCap.RSB.BuildProject.Configuration
+		>({
+			id: 'popcap.rsb.build_project',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.rsb.build_project.json',
+			),
+			direct_forward(argument: Argument): void {
+				is_valid_source(argument, true);
+				Console.obtained(argument.source);
+				defined_or_default<Argument, string>(
+					argument,
+					'destination',
+					Kernel.Path.except_extension(argument.source),
+				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				load_bigint(
+					argument,
+					'generic',
+					this.configuration,
+					InitProject.Detail.generic(),
+					Kernel.Language.get('popcap.rsb.custom.generic'),
+				);
+				const packages_info: PackagesInfo | null = (
+					Kernel.JSON.deserialize_fs(`${argument.source}/data.json`) as any
+				).packages_info;
+				const packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting =
+					load_packages(argument.source, packages_info);
+				if (packages_info !== null) {
+					if (packages_setting.json_count !== 0n && packages_info.encode) {
+						Console.output(
+							`${Kernel.Language.get('popcap.rsb.build_project.total_json_count')}: ${
+								packages_setting.json_count
+							}`,
+						);
+						if (packages_setting.json_count !== 0n && packages_info.chinese) {
+							load_string(
+								argument,
+								'key',
+								this.configuration.packages_setting,
+								Kernel.Language.get('popcap.rsb.build_project.key'),
+							);
+							load_string(
+								argument,
+								'iv',
+								this.configuration.packages_setting,
+								Kernel.Language.get('popcap.rsb.build_project.iv'),
+							);
+							packages_setting.key = argument.key!;
+							packages_setting.iv = argument.iv!;
+						}
+					}
+					Console.output(
+						`${Kernel.Language.get('popcap.rsb.build_project.total_rton_count')}: ${
+							packages_setting.rton_count
+						}`,
+					);
+				} else {
+					Console.output(
+						Kernel.Language.get('popcap.rsb.build_project.packages_does_not_use'),
+					);
+				}
+				const setting: Setting = {
+					texture_format_category: argument.generic!,
+					only_high_resolution: false,
+					packages_setting,
+					unpack_packages: true,
+				};
+				clock.start_safe();
+				Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(
+					argument.source,
+					argument.destination!,
+					setting,
+				);
+				clock.stop_safe();
+				return;
+			},
+			batch_forward: undefined!,
+			is_enabled: true,
+			configuration: undefined!,
+			filter: ['directory', /(.*)\.bundle$/i],
+			option: 55n,
+		});
+		return;
+	}
 }
 
 Sen.Script.Executor.Methods.PopCap.RSB.BuildProject.forward();

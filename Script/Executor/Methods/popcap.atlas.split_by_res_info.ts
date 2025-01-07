@@ -3,24 +3,24 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo {
 	 * Argument for the current method
 	 */
 
-	export interface Argument extends Sen.Script.Executor.Base {
+	export interface Argument extends Executor.Base {
 		source: [string, ...Array<string>];
 		destination?: string;
-		split_method?: Sen.Script.Support.PopCap.Atlas.Structure.TypicalMethod;
-		style?: Sen.Script.Support.PopCap.Atlas.Structure.PathStyle;
+		split_method?: Support.PopCap.Atlas.Structure.TypicalMethod;
+		style?: Support.PopCap.Atlas.Structure.PathStyle;
 	}
 
 	/**
 	 * Argument for batch method
 	 */
 
-	export interface BatchArgument extends Sen.Script.Executor.Base {}
+	export interface BatchArgument extends Executor.Base {}
 
 	/**
 	 * Configuration file if needed
 	 */
 
-	export interface Configuration extends Sen.Script.Executor.Configuration {
+	export interface Configuration extends Executor.Configuration {
 		split_method: '?' | 'path' | 'id';
 		style: '?' | 'string' | 'array';
 	}
@@ -61,7 +61,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo {
 	 * Configuration file if needed
 	 */
 
-	export interface Configuration extends Sen.Script.Executor.Configuration {}
+	export interface Configuration extends Executor.Configuration {}
 
 	/**
 	 * ----------------------------------------------
@@ -71,10 +71,10 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo {
 	 */
 
 	export function forward(): void {
-		Sen.Script.Executor.push_as_module<
-			Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo.Argument,
-			Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo.BatchArgument,
-			Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo.Configuration
+		return push_as_module<
+			Methods.PopCap.Atlas.SplitByResInfo.Argument,
+			Methods.PopCap.Atlas.SplitByResInfo.BatchArgument,
+			Methods.PopCap.Atlas.SplitByResInfo.Configuration
 		>({
 			id: 'popcap.atlas.split_by_res_info',
 			configuration_file: Home.query(

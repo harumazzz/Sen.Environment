@@ -130,34 +130,33 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 	export function read_rtid(stream: DataStreamView): string {
 		const bytecode = stream.readUint8();
 		switch (bytecode) {
-			case json_table.rtid_0_sc: {
+			case json_table.rtid_0_sc:
 				return json_table.rtid_0_s;
-			}
+
 			case json_table.rtid_1_sc: {
 				const value_0x1_2 = stream.readVarInt32();
 				const value_0x1_1 = stream.readVarInt32();
 				const x16_1 = get_id(stream);
 				return `RTID(${value_0x1_1}.${value_0x1_2}.${x16_1}@)`;
 			}
+
 			case json_table.rtid_2_sc: {
-				//  const length = stream.readVarInt32();
 				const str = read_utf8_string(stream);
 				const value_0x1_2 = stream.readVarInt32();
 				const value_0x1_1 = stream.readVarInt32();
 				const x16_1 = get_id(stream);
 				return `RTID(${value_0x1_1}.${value_0x1_2}.${x16_1}@${str})`;
 			}
+
 			case json_table.rtid_3_sc: {
-				// const length = stream.readVarInt32();
 				const str_2 = read_utf8_string(stream);
-				// const length_2 = stream.readVarInt32();
 				const str_1 = read_utf8_string(stream);
 				return `RTID(${str_1}@${str_2})`;
 			}
-			default: {
+
+			default:
 				catch_error(bytecode, stream, 'read_rtid');
 				return '';
-			}
 		}
 	}
 
@@ -202,22 +201,22 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 
 	export function read_bytecode(stream: DataStreamView, bytecode: bigint): void {
 		switch (bytecode) {
-			case 0x0n: {
+			case 0x0n:
 				writer.writeBoolean(false);
-				return;
-			}
-			case 0x1n: {
+				break;
+
+			case 0x1n:
 				writer.writeBoolean(true);
-				return;
-			}
-			case 0x2n: {
+				break;
+
+			case 0x2n:
 				writer.writeString(json_table.star_s);
-				return;
-			}
-			case 0x8n: {
+				break;
+
+			case 0x8n:
 				writer.writeBigInt(stream.readUint8());
-				return;
-			}
+				break;
+
 			case 0x9n:
 			case 0xbn:
 			case 0x11n:
@@ -227,161 +226,155 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 			case 0x27n:
 			case 0x41n:
 			case 0x43n:
-			case 0x47n: {
+			case 0x47n:
 				writer.writeBigInt(0n);
-				return;
-			}
-			case 0xan: {
+				break;
+
+			case 0xan:
 				writer.writeBigInt(stream.readInt8());
-				return;
-			}
-			case 0x10n: {
+				break;
+
+			case 0x10n:
 				writer.writeBigInt(stream.readInt16());
-				return;
-			}
-			case 0x12n: {
+				break;
+
+			case 0x12n:
 				writer.writeBigInt(stream.readUint16());
-				return;
-			}
-			case 0x20n: {
+				break;
+
+			case 0x20n:
 				writer.writeBigInt(stream.readInt32());
-				return;
-			}
-			case 0x22n: {
+				break;
+
+			case 0x22n:
 				writer.writeNumber(stream.readFloat());
-				return;
-			}
-			case 0x24n: {
+				break;
+
+			case 0x24n:
 				writer.writeBigInt(stream.readVarInt32());
-				return;
-			}
-			case 0x25n: {
+				break;
+
+			case 0x25n:
 				writer.writeBigInt(stream.readZigZag32());
-				return;
-			}
-			case 0x26n: {
+				break;
+
+			case 0x26n:
 				writer.writeBigInt(stream.readUint32());
-				return;
-			}
-			case 0x28n: {
+				break;
+
+			case 0x28n:
 				writer.writeBigInt(stream.readVarUint32());
-				return;
-			}
-			case 0x40n: {
+				break;
+
+			case 0x40n:
 				writer.writeBigInt(stream.readInt64());
-				return;
-			}
-			case 0x42n: {
+				break;
+
+			case 0x42n:
 				writer.writeNumber(stream.readDouble());
-				return;
-			}
-			case 0x44n: {
+				break;
+
+			case 0x44n:
 				writer.writeBigInt(stream.readVarInt64());
-				return;
-			}
-			case 0x45n: {
+				break;
+
+			case 0x45n:
 				writer.writeBigInt(stream.readZigZag64());
-				return;
-			}
-			case 0x46n: {
+				break;
+
+			case 0x46n:
 				writer.writeBigInt(stream.readUint64());
-				return;
-			}
-			case 0x48n: {
+				break;
+
+			case 0x48n:
 				writer.writeBigInt(stream.readVarUint64());
-				return;
-			}
-			case 0x82n: {
-				// const length = stream.readVarInt32();
+				break;
+
+			case 0x82n:
 				writer.writeString(read_utf8_string(stream));
-				return;
-			}
-			case 0x83n: {
+				break;
+
+			case 0x83n:
 				writer.writeString(read_rtid(stream));
-				return;
-			}
-			case 0x84n: {
+				break;
+			case 0x84n:
 				writer.writeString(json_table.rtid_0_s);
-				return;
-			}
-			case 0x85n: {
+				break;
+
+			case 0x85n:
 				read_object(stream);
-				return;
-			}
-			case 0x86n: {
+				break;
+
+			case 0x86n:
 				read_array(stream);
-				return;
-			}
-			case 0x87n: {
+				break;
+
+			case 0x87n:
 				writer.writeString(read_binary(stream));
-				return;
-			}
-			case 0x90n: {
-				const temp_string = stream.readStringByVarInt32();
-				r0x90_list.push(temp_string);
-				writer.writeString(temp_string);
-				return;
-			}
-			case 0x91n: {
+				break;
+
+			case 0x90n:
+				const t_string = stream.readStringByVarInt32();
+				r0x90_list.push(t_string);
+				writer.writeString(t_string);
+				break;
+
+			case 0x91n:
 				writer.writeString(r0x90_list[Number(stream.readVarInt32())]);
-				return;
-			}
-			case 0x92n: {
-				// const length = stream.readVarInt32();
+				break;
+
+			case 0x92n:
 				const temp_string = read_utf8_string(stream);
 				r0x92_list.push(temp_string);
 				writer.writeString(temp_string);
-				return;
-			}
-			case 0x93n: {
+				break;
+
+			case 0x93n:
 				writer.writeString(r0x92_list[Number(stream.readVarInt32())]);
-				return;
-			}
-			default: {
+				break;
+
+			default:
 				catch_error(bytecode, stream, 'read_bytecode');
-				return;
-			}
+				break;
 		}
 	}
 
 	export function read_bytecode_property(stream: DataStreamView, bytecode: bigint): string {
 		switch (bytecode) {
-			case json_table.star_s_bytecode: {
+			case json_table.star_s_bytecode:
 				return json_table.star_s;
-			}
-			case json_table.varint32_string_bytecode: {
+
+			case json_table.varint32_string_bytecode:
 				return stream.readStringByVarInt32();
-			}
-			case json_table.rtid_bytecode: {
+
+			case json_table.rtid_bytecode:
 				return read_rtid(stream);
-			}
-			case json_table.rtid_0_s_bytecode: {
+
+			case json_table.rtid_0_s_bytecode:
 				return json_table.rtid_0_s;
-			}
-			case json_table.binary_bytecode: {
+
+			case json_table.binary_bytecode:
 				return read_binary(stream);
-			}
-			case json_table.varint32_temp_string_bytecode: {
-				const temp_string = stream.readStringByVarInt32();
-				r0x90_list.push(temp_string);
-				return temp_string;
-			}
-			case json_table.varint32_indexed_string_bytecode: {
+
+			case json_table.varint32_temp_string_bytecode:
+				const t_string = stream.readStringByVarInt32();
+				r0x90_list.push(t_string);
+				return t_string;
+
+			case json_table.varint32_indexed_string_bytecode:
 				return r0x90_list[Number(stream.readVarInt32())];
-			}
-			case json_table.varint32_int32_temp_string_bytecode: {
-				//  const length = stream.readVarInt32();
+
+			case json_table.varint32_int32_temp_string_bytecode:
 				const temp_string = read_utf8_string(stream);
 				r0x92_list.push(temp_string);
 				return temp_string;
-			}
-			case json_table.varint32_indexed_string2_bytecode: {
+
+			case json_table.varint32_indexed_string2_bytecode:
 				return r0x92_list[Number(stream.readVarInt32())];
-			}
-			default: {
+
+			default:
 				catch_error(bytecode, stream, 'read_bytecode_property');
 				return 'null';
-			}
 		}
 	}
 

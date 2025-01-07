@@ -53,17 +53,16 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 				if (destination !== -1) {
 					for (let k: number = i + 1; k < destination - 1; ++k) {
 						test_case: switch (text_list[k]) {
-							case '': {
+							case '':
 								text_ripe = text_ripe.concat('\r\n');
 								break test_case;
-							}
-							default: {
+
+							default:
 								if (text_ripe !== '') {
 									text_ripe = text_ripe.concat('\r\n');
 								}
 								text_ripe = text_ripe.concat(text_list[k]);
 								break test_case;
-							}
 						}
 						++i;
 					}
@@ -76,13 +75,12 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 					}
 					for (let k: number = i + 1; k < destination - 1; ++k) {
 						switch (text_list[k]) {
-							case '': {
+							case '':
 								text_ripe = text_ripe.concat('\r\n');
 								break;
-							}
-							default: {
+
+							default:
 								text_ripe = text_ripe.concat(text_list[k]);
-							}
 						}
 						++i;
 					}
@@ -267,27 +265,26 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 		);
 		switch (source_type) {
 			case 'cn-text':
-			case 'text': {
+			case 'text':
 				if (destination_type === 'array') {
 					return text_to_array(source as string) as Value;
 				} else {
 					return text_to_map(source as string) as Value;
 				}
-			}
-			case 'array': {
+
+			case 'array':
 				if (destination_type === 'text') {
 					return array_to_text(source as JsonArray) as Value;
 				} else {
 					return array_to_map(source as JsonArray) as Value;
 				}
-			}
-			case 'map': {
+
+			case 'map':
 				if (destination_type === 'text') {
 					return map_to_text(source as JsonMap) as Value;
 				} else {
 					return map_to_array(source as JsonMap) as Value;
 				}
-			}
 		}
 	}
 
@@ -310,20 +307,20 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 	): void {
 		let source_data: string | JsonArray | JsonMap = undefined!;
 		switch (source_type) {
-			case 'text': {
+			case 'text':
 				source_data = Kernel.FileSystem.read_file_encode_with_utf16le(source);
 				break;
-			}
-			case 'cn-text': {
+
+			case 'cn-text':
 				source_data = Kernel.FileSystem.read_file(source);
 				break;
-			}
+
 			case 'array':
-			case 'map': {
+			case 'map':
 				source_data = Kernel.JSON.deserialize_fs(source);
 				break;
-			}
-			default: {
+
+			default:
 				assert(
 					false,
 					format(
@@ -331,7 +328,6 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 						source_type,
 					),
 				);
-			}
 		}
 		const destination_data: string | JsonMap | JsonArray = process(
 			source_data,
@@ -339,23 +335,23 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 			destination_type,
 		);
 		switch (destination_type) {
-			case 'text': {
+			case 'text':
 				Kernel.FileSystem.write_file_encode_with_utf16le(
 					destination,
 					destination_data as string,
 				);
 				break;
-			}
-			case 'cn-text': {
+
+			case 'cn-text':
 				Kernel.FileSystem.write_file(destination, destination_data as string);
 				break;
-			}
+
 			case 'map':
-			case 'array': {
+			case 'array':
 				Kernel.JSON.serialize_fs(destination, destination_data, 1, false);
 				break;
-			}
-			default: {
+
+			default:
 				assert(
 					false,
 					format(
@@ -363,7 +359,6 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 						source_type,
 					),
 				);
-			}
 		}
 		return;
 	}

@@ -3,7 +3,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 	 * Argument for the current method
 	 */
 
-	export interface Argument extends Sen.Script.Executor.Base {
+	export interface Argument extends Executor.Base {
 		source: string;
 		destination?: string;
 		layout?: string;
@@ -13,7 +13,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 	 * Argument for batch method
 	 */
 
-	export interface BatchArgument extends Sen.Script.Executor.Base {
+	export interface BatchArgument extends Executor.Base {
 		directory: string;
 		layout?: string;
 	}
@@ -22,7 +22,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 	 * Configuration file if needed
 	 */
 
-	export interface Configuration extends Sen.Script.Executor.Configuration {
+	export interface Configuration extends Executor.Configuration {
 		layout: string;
 	}
 
@@ -39,13 +39,13 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 
 		export function exchange_layout(layout: string): Support.PopCap.ResourceGroup.PathStyle {
 			switch (layout) {
-				case 'string': {
+				case 'string':
 					return Support.PopCap.ResourceGroup.PathStyle.WindowStyle;
-				}
-				case 'array': {
+
+				case 'array':
 					return Support.PopCap.ResourceGroup.PathStyle.ArrayStyle;
-				}
-				default: {
+
+				default:
 					assert(
 						false,
 						format(
@@ -55,7 +55,6 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 							layout,
 						),
 					);
-				}
 			}
 		}
 		/**
@@ -80,10 +79,10 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 	 */
 
 	export function forward(): void {
-		Sen.Script.Executor.push_as_module<
-			Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert.Argument,
-			Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert.BatchArgument,
-			Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert.Configuration
+		return push_as_module<
+			Methods.PopCap.ResourceGroup.Convert.Argument,
+			Methods.PopCap.ResourceGroup.Convert.BatchArgument,
+			Methods.PopCap.ResourceGroup.Convert.Configuration
 		>({
 			id: 'popcap.resource_group.convert',
 			configuration_file: Home.query(

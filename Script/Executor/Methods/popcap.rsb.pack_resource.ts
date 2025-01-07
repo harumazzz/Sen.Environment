@@ -1,61 +1,67 @@
 namespace Sen.Script.Executor.Methods.PopCap.RSB.PackResource {
-    /**
-     * Argument for the current method
-     */
+	/**
+	 * Argument for the current method
+	 */
 
-    export interface Argument extends Sen.Script.Executor.Base {
-        source: string;
-        destination?: string;
-    }
+	export interface Argument extends Executor.Base {
+		source: string;
+		destination?: string;
+	}
 
-    /**
-     * Argument for batch method
-     */
+	/**
+	 * Argument for batch method
+	 */
 
-    export interface BatchArgument extends Sen.Script.Executor.Base {
-        directory: string;
-    }
+	export interface BatchArgument extends Executor.Base {
+		directory: string;
+	}
 
-    /**
-     * Configuration file if needed
-     */
+	/**
+	 * Configuration file if needed
+	 */
 
-    export interface Configuration extends Sen.Script.Executor.Configuration {}
+	export interface Configuration extends Executor.Configuration {}
 
-    /**
-     * ----------------------------------------------
-     * JavaScript forward method, this method need
-     * to be evaluated during script loading time
-     * ----------------------------------------------
-     */
+	/**
+	 * ----------------------------------------------
+	 * JavaScript forward method, this method need
+	 * to be evaluated during script loading time
+	 * ----------------------------------------------
+	 */
 
-    export function forward(): void {
-        Sen.Script.Executor.push_as_module<
-            Sen.Script.Executor.Methods.PopCap.RSB.PackResource.Argument,
-            Sen.Script.Executor.Methods.PopCap.RSB.PackResource.BatchArgument,
-            Sen.Script.Executor.Methods.PopCap.RSB.PackResource.Configuration
-        >({
-            id: "popcap.rsb.pack_resource",
-            configuration_file: Home.query("~/Executor/Configuration/popcap.rsb.pack_resource.json"),
-            direct_forward(argument: Argument): void {
-                is_valid_source(argument, true);
-                Console.obtained(argument.source);
-                defined_or_default<Argument, string>(argument, "destination", Kernel.Path.except_extension(argument.source));
-                check_overwrite(argument as { destination: string }, "file");
-                Console.output(argument.destination!);
-                clock.start_safe();
-                Kernel.Support.PopCap.RSB.pack_resource(argument.source, argument.destination!);
-                clock.stop_safe();
-                return;
-            },
-            batch_forward: undefined!,
-            is_enabled: true,
-            configuration: undefined!,
-            filter: ["directory", /(.*)\.bundle$/i],
-            option: 56n,
-        });
-        return;
-    }
+	export function forward(): void {
+		return push_as_module<
+			Methods.PopCap.RSB.PackResource.Argument,
+			Methods.PopCap.RSB.PackResource.BatchArgument,
+			Methods.PopCap.RSB.PackResource.Configuration
+		>({
+			id: 'popcap.rsb.pack_resource',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.rsb.pack_resource.json',
+			),
+			direct_forward(argument: Argument): void {
+				is_valid_source(argument, true);
+				Console.obtained(argument.source);
+				defined_or_default<Argument, string>(
+					argument,
+					'destination',
+					Kernel.Path.except_extension(argument.source),
+				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.RSB.pack_resource(argument.source, argument.destination!);
+				clock.stop_safe();
+				return;
+			},
+			batch_forward: undefined!,
+			is_enabled: true,
+			configuration: undefined!,
+			filter: ['directory', /(.*)\.bundle$/i],
+			option: 56n,
+		});
+		return;
+	}
 }
 
 Sen.Script.Executor.Methods.PopCap.RSB.PackResource.forward();

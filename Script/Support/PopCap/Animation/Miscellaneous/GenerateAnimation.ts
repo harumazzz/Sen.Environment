@@ -119,7 +119,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 			}
 			new_rule.push(e[0]);
 		});
-		return rule[Number(Sen.Script.Executor.input_integer(new_rule) - 1n)][1];
+		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
 	}
 
 	export function exchange_sprite_disable(animation: SexyAnimation, setting: Setting) {
@@ -138,16 +138,16 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 			);
 			const input_generic = load_bigint(Detail.sprite_generic());
 			switch (input_generic) {
-				case 0n: {
+				case 0n:
 					break;
-				}
-				case 1n: {
+
+				case 1n:
 					sprite_list.map((e, i) => {
 						setting.sprite_disable.push(BigInt(i));
 					});
 					break;
-				}
-				case 2n: {
+
+				case 2n:
 					const rule: Array<bigint> = [0n];
 					sprite_list.map((e, i) => {
 						rule.push(BigInt(i + 1));
@@ -159,25 +159,19 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 							if (range.length > 0) {
 								return;
 							}
-							Console.warning(Sen.Kernel.Language.get('js.invalid_input_value'));
+							Console.warning(Kernel.Language.get('js.invalid_input_value'));
 						};
 						let range: Array<bigint> = [];
-						/*
-                        if (input.includes(" ")) {
-                            range = input.split(" ").filter( e => !isNaN(Number(e)) && rule.includes(BigInt(e))).map(e => BigInt(e)); 
-                            check_vaild(range);
-                        }
-                        */
 						if (input.includes(',')) {
 							range = input
 								.split(',')
-								.filter((e) => !isNaN(Number(e)) && rule.includes(BigInt(e)))
+								.filter((e) => !Number.isNaN(Number(e)) && rule.includes(BigInt(e)))
 								.map((e) => BigInt(e));
 							check_vaild(range);
 						} else if (input.includes('-')) {
 							const range_selected = input
 								.split('-')
-								.filter((e) => !isNaN(Number(e)) && rule.includes(BigInt(e)))
+								.filter((e) => !Number.isNaN(Number(e)) && rule.includes(BigInt(e)))
 								.map((e) => BigInt(e));
 							if (range_selected.length == 2) {
 								for (let i = range_selected[0]; i <= range_selected[1]; ++i) {
@@ -187,7 +181,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 							check_vaild(range);
 						} else {
 							range = [input]
-								.filter((e) => !isNaN(Number(e)) && rule.includes(BigInt(e)))
+								.filter((e) => !Number.isNaN(Number(e)) && rule.includes(BigInt(e)))
 								.map((e) => BigInt(e));
 							check_vaild(range);
 						}
@@ -242,7 +236,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 						}
 					});
 					break;
-				}
 			}
 		} else {
 			Console.finished(
@@ -254,23 +247,22 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 
 	export function variant_to_matrix(transform: number[]): Matrix {
 		switch (transform.length) {
-			case 2: {
+			case 2:
 				return [1.0, 0.0, 0.0, 1.0, transform[0], transform[1]];
-			}
-			case 3: {
+
+			case 3:
 				const cos: number = Math.cos(transform[0]);
 				const sin: number = Math.sin(transform[0]);
 				return [cos, sin, -sin, cos, transform[1], transform[2]];
-			}
-			case 6: {
+
+			case 6:
 				return [...transform] as Matrix;
-			}
-			default: {
+
+			default:
 				assert(
 					false,
 					Kernel.Language.get('popcap.animation.from_animation.invalid_transform'),
 				);
-			}
 		}
 	}
 
