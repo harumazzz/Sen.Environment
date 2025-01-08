@@ -192,8 +192,10 @@ export namespace Sen::Shell {
 			destination->value = memory.release();
 		}
 		else {
+			memory.reset(new char[1]);
+			memory.get()[0] = '\0';
 			destination->size = 0;
-			destination->value = "";
+			destination->value = memory.release();
 		}
 	}
 
@@ -316,7 +318,6 @@ export namespace Sen::Shell {
 		auto memory = std::unique_ptr<char[], Finalizer>(nullptr, [](char* ptr) {
 			finalizer(ptr);
 		});
-		std::cout << result[0] << std::endl;
 		switch (hash_string(result[0].data())) {
 			case hash_string("display"):
 				display_argument(result);

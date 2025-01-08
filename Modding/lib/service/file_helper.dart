@@ -38,10 +38,7 @@ class FileHelper {
   }) async {
     var outputFile = null as String?;
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS || Platform.isIOS) {
-      outputFile = (await file_selector.getSaveLocation(
-        suggestedName: suggestedName,
-      ))
-          ?.path;
+      outputFile = (await file_selector.getSaveLocation(suggestedName: suggestedName))?.path;
     }
     if (Platform.isAndroid) {
       outputFile = (await AndroidHelper.saveFileFromDocument());
@@ -122,12 +119,16 @@ class FileHelper {
     return jsonDecode(await readFileAsync(source: source));
   }
 
-  static Future<String?> uploadDirectory() async {
+  static Future<String?> uploadDirectory({
+    String? initialDirectory,
+  }) async {
     var directory = null as String?;
     if (Platform.isAndroid) {
-      directory = await AndroidHelper.pickDirectoryFromDocument();
+      directory = await AndroidHelper.pickDirectoryFromDocument(initialDirectory);
     } else {
-      directory = (await file_selector.getDirectoryPath());
+      directory = (await file_selector.getDirectoryPath(
+        initialDirectory: initialDirectory,
+      ));
     }
     if (directory == null || directory.isEmpty) {
       return null;
@@ -135,15 +136,19 @@ class FileHelper {
     return directory;
   }
 
-  static Future<String?> uploadFile() async {
+  static Future<String?> uploadFile({
+    String? initialDirectory,
+  }) async {
     if (Platform.isAndroid) {
-      return await AndroidHelper.pickFileFromDocument();
+      return await AndroidHelper.pickFileFromDocument(initialDirectory);
     }
-    return await _uploadFilePicker();
+    return await _uploadFilePicker(initialDirectory);
   }
 
-  static Future<String?> _uploadFilePicker() async {
-    var result = (await file_selector.openFile())?.path;
+  static Future<String?> _uploadFilePicker(
+    String? initialDirectory,
+  ) async {
+    final result = (await file_selector.openFile(initialDirectory: initialDirectory))?.path;
     if (result == null) {
       return null;
     } else {

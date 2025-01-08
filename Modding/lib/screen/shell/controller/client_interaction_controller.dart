@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/service/file_helper.dart';
@@ -82,12 +84,36 @@ class ClientInteractionController {
   Future<void> pickFile(
     Pointer<CStringView> destination,
   ) async {
-    return await _handleInput(destination, FileHelper.uploadFile);
+    return await _handleInput(destination, () async {
+      void setWorkingDirectory(String source) {
+        BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfFile(source: source);
+      }
+
+      final file = await FileHelper.uploadFile(
+        initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+      );
+      if (file != null) {
+        setWorkingDirectory(file);
+      }
+      return file;
+    });
   }
 
   Future<void> pickDirectory(
     Pointer<CStringView> destination,
   ) async {
-    return await _handleInput(destination, FileHelper.uploadDirectory);
+    return await _handleInput(destination, () async {
+      void setWorkingDirectory(String source) {
+        BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfDirectory(source: source);
+      }
+
+      final directory = await FileHelper.uploadDirectory(
+        initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+      );
+      if (directory != null) {
+        setWorkingDirectory(directory);
+      }
+      return directory;
+    });
   }
 }

@@ -18,11 +18,11 @@ auto execute (
         kernel.prepare();
         kernel.execute();
         Executor::unregister_external();
-        Executor::clean_arguments();
     }
     catch(...)
     {
-        auto parameters = construct_string_list(std::array<std::string, 4>{std::string{"display"}, fmt::format("Runtime Exception found: {}", parse_exception().what()), std::string{""}, std::string{"red"}});
+        auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+        construct_string_list(std::array<std::string, 4>{std::string{"display"}, std::string{"Unknown Exception"}, fmt::format("Caught unknown exception: {}", parse_exception().what()), std::string{"red"}}, parameters.operator*());
         Shell::callback(parameters.get(), nullptr);
         return 1;
     }

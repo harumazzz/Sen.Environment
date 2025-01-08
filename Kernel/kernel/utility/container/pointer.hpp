@@ -16,8 +16,8 @@ namespace Sen::Kernel {
 	};
 
 	// free c++ memory allocation
-
-	inline static auto constexpr free_array = [](auto p)
+	template <typename T>
+	inline static auto constexpr free_array = [](T* p)
 	{
 		if (p != nullptr) {
 			delete[] p;

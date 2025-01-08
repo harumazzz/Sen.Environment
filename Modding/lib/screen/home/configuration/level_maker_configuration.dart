@@ -48,7 +48,7 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   }
 
   void _onUploadDirectory() async {
-    var result = await FileHelper.uploadDirectory();
+    final result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
       await _onValueChange();

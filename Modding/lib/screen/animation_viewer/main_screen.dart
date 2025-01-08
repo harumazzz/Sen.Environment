@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
 import 'package:sen/screen/animation_viewer/control_button.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
@@ -48,10 +50,17 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
             ),
             IconButton(
               onPressed: () async {
-                final directory = await FileHelper.uploadDirectory();
+                void setWorkingDirectory(String source) {
+                  BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfDirectory(source: source);
+                }
+
+                final directory = await FileHelper.uploadDirectory(
+                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+                );
                 if (directory != null) {
                   _controller.text = directory;
                   _mediaDirectory = directory;
+                  setWorkingDirectory(directory);
                 }
               },
               icon: const Icon(Symbols.drive_folder_upload),
@@ -151,10 +160,17 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
     }
   }
 
+  void _setWorkingDirectory(String source) {
+    BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfFile(source: source);
+  }
+
   void _onUploadFile() async {
-    final file = await FileHelper.uploadFile();
+    final file = await FileHelper.uploadFile(
+      initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+    );
     if (file != null) {
       try {
+        _setWorkingDirectory(file);
         _animationFile = file;
         ref.read(selectedLabel.notifier).resetLabel();
         ref.read(selectedImageListProvider.notifier).reset();

@@ -17,7 +17,7 @@ class OptionSelector extends StatelessWidget {
   });
 
   Future<void> _handleUploadFile(VoidCallback pop) async {
-    var result = await onUploadFile();
+    final result = await onUploadFile();
     if (result != null && inputController != null) {
       inputController!.text = result;
       scrollToBottom();
@@ -26,7 +26,7 @@ class OptionSelector extends StatelessWidget {
   }
 
   Future<void> _handleUploadDirectory(VoidCallback pop) async {
-    var result = await onUploadDirectory();
+    final result = await onUploadDirectory();
     if (result != null && inputController != null) {
       inputController!.text = result;
       scrollToBottom();

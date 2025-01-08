@@ -55,6 +55,7 @@ namespace Sen::Kernel::Interface {
 				clean_up<StringView>(list.value[i]);
 			}
 			delete[] list.value;
+			list.value = nullptr;
 		}
 		return;
 	}
@@ -96,10 +97,19 @@ namespace Sen::Kernel::Interface {
 		std::string_view that
 	) -> StringView
 	{
-		return StringView{
-			.value = that.data(),
+		auto temporary = std::unique_ptr<char[], void(*)(char*)>(new char[that.size() + 1], [](char* p) { 
+			if (p != nullptr) {
+				delete[] p;
+			}
+		 });
+		auto destination = StringView {
+			.value = nullptr,
 			.size = that.size(),
 		};
+		std::memcpy(temporary.get(), that.data(), that.size());
+		temporary.get()[that.size()] = '\0';
+		destination.value = temporary.release();
+		return destination;
 	}
 
 	inline static auto construct_string(
@@ -113,38 +123,30 @@ namespace Sen::Kernel::Interface {
 	}
 
 	inline static auto construct_string_list(
-		const List<std::string>& that
-	) -> std::shared_ptr<CStringList>
+		const List<std::string>& that,
+		CStringList& destination
+	) -> void
 	{
-		auto destination = std::make_shared<CStringList>(new StringView[that.size()], that.size());
+		destination.value = new StringView[that.size()];
+		destination.size = that.size();
 		for (auto i : Range(that.size())) {
-			destination->value[i] = construct_string(that[i]);
+			destination.value[i] = construct_string(that[i]);
 		}
-		return destination;
+		return;
 	}
 
 	template <std::size_t N>
 	inline static auto construct_string_list(
-		const Array<std::string, N>& that
-	) -> std::shared_ptr<CStringList>
+		const Array<std::string, N>& that,
+		CStringList& destination
+	) -> void
 	{
-		auto destination = std::make_shared<CStringList>(new StringView[N], N);
+		destination.value = new StringView[N];
+		destination.size = N;
 		for (auto i : Range(N)) {
-			destination->value[i] = construct_string(that[i]);
+			destination.value[i] = construct_string(that[i]);
 		}
-		return destination;
-	}
-
-	inline static auto destruct_string_list(
-		CStringList* that
-	) -> List<std::string>
-	{
-		auto destination = List<std::string>{};
-		destination.reserve(that->size);
-		for (auto i : Range(static_cast<std::size_t>(that->size))) {
-			destination.emplace_back(std::string{ that->value[i].value, static_cast<std::size_t>(that->value[i].size) });
-		}
-		return destination;
+		return;
 	}
 	
 

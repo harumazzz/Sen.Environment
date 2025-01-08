@@ -21,10 +21,6 @@ if (WIN32)
   add_compile_options(/w)
 endif()
 
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "This project only supports x64 builds.")
-endif()
-
 add_executable (
     ${PROJECT_NAME} 
     ./bridge/data.cppm

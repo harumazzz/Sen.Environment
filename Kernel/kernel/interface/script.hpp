@@ -194,7 +194,7 @@ namespace Sen::Kernel::Interface::Script
 		return proxy_wrapper(context, "callback", [&]() {
 			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "callback");
 			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-			auto parameters = std::make_unique<CStringList>();
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
 			to_string_list(context, argv[0], parameters.operator*());
 			Shell::callback(parameters.get(), destination.get());
 			return to_string(context, destination.get());
@@ -6770,21 +6770,25 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "print", [&](){
 				assert_conditional(argc >= 1, fmt::format("argument expected greater than {} but received {}", "1", argc), "print");
+				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
 				switch (argc)
 				{
 					case 1:
 					{
-						Shell::callback(construct_string_list(std::array<std::string, 2>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}).get(), nullptr);
+						construct_string_list(std::array<std::string, 2>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}, parameters.operator*());
+						Shell::callback(parameters.get(), nullptr);
 						break;
 					}
 					case 2:
 					{
-						Shell::callback(construct_string_list(std::array<std::string, 3>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}).get(), nullptr);
+						construct_string_list(std::array<std::string, 3>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}, parameters.operator*());
+						Shell::callback(parameters.get(), nullptr);
 						break;
 					}
 					default:
 					{
-						Shell::callback(construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}).get(), nullptr);
+						construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}, parameters.operator*());
+						Shell::callback(parameters.get(), nullptr);
 						break;
 					}
 				}
@@ -6800,9 +6804,13 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "readline", [&](){
-				Shell::callback(construct_string_list(std::array<std::string, 1>{std::string{"wait"}}).get(), nullptr);
+				auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+				construct_string_list(std::array<std::string, 1>{std::string{"wait"}}, wait_parameters.operator*());
+				Shell::callback(wait_parameters.get(), nullptr);
 				auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-				Shell::callback(construct_string_list(std::array<std::string, 1>{std::string{"input"}}).get(), destination.get());
+				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+				construct_string_list(std::array<std::string, 1>{std::string{"input"}}, parameters.operator*());
+				Shell::callback(parameters.get(), destination.get());
 				return to_string(context, destination.get());
 			});
 		}

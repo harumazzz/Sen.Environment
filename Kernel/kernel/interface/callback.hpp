@@ -54,7 +54,9 @@ namespace Sen::Kernel::Interface {
 							JSValue* argv
 						) -> JSValue {
 							auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-							Shell::callback(construct_string_list(Array<std::string, 1>{std::string{ "is_gui" }}).get(), is_gui.get());
+							auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+							construct_string_list(Array<std::string, 1>{std::string{ "is_gui" }}, parameters.operator*());
+							Shell::callback(parameters.get(), is_gui.get());
 							auto state = Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell");
 							auto destination = JS::Converter::to_bool(context, static_cast<bool>(state));
 							return destination;
@@ -68,7 +70,9 @@ namespace Sen::Kernel::Interface {
 							JSValue *argv
 						) -> JSValue {
 							auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-							Shell::callback(construct_string_list(Array<std::string, 1>{std::string{"version"}}).get(), shell_version.get());
+							auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+							construct_string_list(Array<std::string, 1>{std::string{"version"}}, parameters.operator*());
+							Shell::callback(parameters.get(), shell_version.get());
 							auto state = static_cast<int>(Converter::to_int32(std::string{ shell_version->value, static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
 							auto destination = JS::Converter::to_number(context, state);
 							return destination;

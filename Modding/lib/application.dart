@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
 import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
 import 'package:sen/cubit/map_editor_cubit/map_editor_cubit.dart';
@@ -103,6 +104,9 @@ class _ApplicationState extends State<Application> {
         ),
         BlocProvider<LevelMakerCubit>(
           create: (context) => LevelMakerCubit(),
+        ),
+        BlocProvider<InitialDirectoryCubit>(
+          create: (context) => InitialDirectoryCubit(),
         ),
       ],
       child: Builder(builder: (context) {

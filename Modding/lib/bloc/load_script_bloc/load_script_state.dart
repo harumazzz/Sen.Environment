@@ -1,5 +1,6 @@
 part of 'load_script_bloc.dart';
 
+@immutable
 abstract class LoadScriptState extends Equatable {
   const LoadScriptState();
 

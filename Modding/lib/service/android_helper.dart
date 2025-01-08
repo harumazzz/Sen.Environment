@@ -39,17 +39,24 @@ class AndroidHelper {
     return result!;
   }
 
-  static Future<String?> pickFileFromDocument() async {
+  static Future<String?> pickFileFromDocument(
+    String? initialDirectory,
+  ) async {
     final result = await _methodChannel.invokeMethod<String?>(
       'pick_file',
+      {
+        'initialDirectory': initialDirectory,
+      },
     );
     return result;
   }
 
-  static Future<String?> pickDirectoryFromDocument() async {
-    final result = await _methodChannel.invokeMethod<String?>(
-      'pick_directory',
-    );
+  static Future<String?> pickDirectoryFromDocument(
+    String? initialDirectory,
+  ) async {
+    final result = await _methodChannel.invokeMethod<String?>('pick_directory', {
+      'initialDirectory': initialDirectory,
+    });
     return result;
   }
 

@@ -129,7 +129,8 @@ class MainActivity: FlutterActivity() {
         try {
             when (call.method) {
                 "pick_file" -> {
-                    val destination = this.pickStorageFileFromDocument()
+                    val initialDirectory = call.argument<String?>("initialDirectory")
+                    val destination = this.pickStorageFileFromDocument(initialDirectory)
                     if (destination != null) {
                         val uri = Uri.parse(destination)
                         result.success(resolveUri(uri))
@@ -139,7 +140,8 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 "pick_directory" -> {
-                    val destination = this.pickDirectoryFromDocument()
+                    val initialDirectory = call.argument<String?>("initialDirectory")
+                    val destination = this.pickDirectoryFromDocument(initialDirectory)
                     if (destination != null) {
                         val uri = Uri.parse(destination)
                         result.success(resolveUri(uri))
@@ -175,14 +177,20 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private suspend fun pickStorageFileFromDocument(): String? {
+    private suspend fun pickStorageFileFromDocument(
+        initialDirectory: String?
+    ): String? {
         val intent = Intent()
         intent.setAction(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.setType("*/*")
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+        var initialDirectorySafe = ""
         val primaryDirectory = Environment.getExternalStorageDirectory().absolutePath + "/"
-        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode("")}"))
+		if (initialDirectory != null && initialDirectory.startsWith(primaryDirectory)) {
+			initialDirectorySafe = initialDirectory.substring(primaryDirectory.length)
+		}
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode(initialDirectorySafe)}"))
         this@MainActivity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
         val targetUri = this.continuation.receive() as Uri?
         return targetUri?.toString()
@@ -194,17 +202,23 @@ class MainActivity: FlutterActivity() {
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.setType("*/*")
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-        val primaryDirectory = Environment.getExternalStorageDirectory().absolutePath + "/"
-        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode("")}"))
         this@MainActivity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
         val targetUri = this.continuation.receive() as Uri?
         return targetUri?.toString()
     }
 
-    private suspend fun pickDirectoryFromDocument(): String? {
+    private suspend fun pickDirectoryFromDocument(
+        initialDirectory: String?
+    ): String? {
         val intent = Intent()
         intent.action = Intent.ACTION_OPEN_DOCUMENT_TREE
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+        var initialDirectorySafe = ""
+        val primaryDirectory = Environment.getExternalStorageDirectory().absolutePath + "/"
+        if (initialDirectory != null && initialDirectory.startsWith(primaryDirectory)) {
+			initialDirectorySafe = initialDirectory.substring(primaryDirectory.length)
+		}
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode(initialDirectorySafe)}"))
         this@MainActivity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
         val targetUri = this.continuation.receive() as Uri?
         return targetUri?.toString()

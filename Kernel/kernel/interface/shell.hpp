@@ -23,8 +23,6 @@ namespace Sen::Kernel::Interface {
 		
 		inline static Pointer<CStringList> arguments{nullptr};
 
-		inline static List<Pointer<CStringList>> allocated{};
-
 		inline static auto register_external (
 			const Pointer<CStringView>& script,
 			const Pointer<CStringList>& arguments
@@ -32,31 +30,6 @@ namespace Sen::Kernel::Interface {
 		{
 			Executor::script = script;
 			Executor::arguments = arguments;
-			allocated.reserve(1000);
-			return;
-		}
-
-		inline static auto clean_arguments (
-
-		) -> void
-		{
-			for (auto & e : allocated) {
-				if (e != nullptr) {
-					if (e->value != nullptr) {
-						for (auto i : Range(e->size)) {
-							if (e->value[i].value != nullptr) {
-								delete[] e->value[i].value;
-								e->value[i].value = nullptr;
-							}
-						}
-						delete[] e->value;
-						e->value = nullptr;
-						delete e;
-						e = nullptr;
-					}
-				}
-			}
-			allocated.clear();
 			return;
 		}
 

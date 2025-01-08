@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
@@ -70,13 +71,20 @@ class _BackupSettingState extends State<BackupSetting> {
     }
   }
 
+  void _setWorkingDirectory(String source) {
+    BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfFile(source: source);
+  }
+
   void _onUploadConfiguration() async {
     final los = AppLocalizations.of(context)!;
-    var source = await FileHelper.uploadFile();
+    final source = await FileHelper.uploadFile(
+      initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+    );
     if (source == null) {
       return;
     }
     try {
+      _setWorkingDirectory(source);
       _loadDumpedConfiguration(source: source);
       setState(() {});
       _onSuccess(message: los.configuration_has_been_loaded);
