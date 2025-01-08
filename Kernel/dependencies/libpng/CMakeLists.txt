@@ -50,3 +50,5 @@ endif()
 if (ANDROID)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC PNG_ARM_NEON_OPT=0)
 endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)

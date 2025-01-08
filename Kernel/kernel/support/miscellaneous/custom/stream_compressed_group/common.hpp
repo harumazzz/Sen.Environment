@@ -242,18 +242,19 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 }
                 assert_conditional(false, fmt::format("{}", Language::get("popcap.rsb.project.invalid_res_type")), "exchange_custom_resource_info");
             };
-            auto first_where = [](
-                                   nlohmann::ordered_json const &data,
-                                   std::string const &id) -> size_t
+            auto constexpr first_where = [](
+                nlohmann::ordered_json const &data,
+                std::string const &id
+            ) -> size_t
             {
-                for (auto index : Range(data.size()))
+                for (auto index = std::size_t{0}; index < data.size(); ++index)
                 {
                     if (data[index]["id"].get<std::string>() == id)
                     {
                         return index;
                     }
                 }
-                return std::string::npos;
+                return std::string::npos; 
             };
             auto index = k_begin_index;
             while (index < data["groups"].size())

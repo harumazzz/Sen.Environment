@@ -11,7 +11,6 @@
 #include "kernel/utility/container/string.hpp"
 #include "kernel/utility/container/path.hpp"
 #include "kernel/utility/container/converter.hpp"
-#include "kernel/utility/container/timer.hpp"
 #include "kernel/utility/container/image.hpp"
 #include "kernel/utility/container/json.hpp"
 #include "kernel/utility/container/json_writer.hpp"

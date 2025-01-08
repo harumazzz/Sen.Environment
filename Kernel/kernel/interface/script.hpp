@@ -3758,61 +3758,61 @@ namespace Sen::Kernel::Interface::Script
 			);
 
 			template <>
-			inline static auto this_class<int8_t> = make_class_definition<Data<int8_t>>(
+			auto this_class<int8_t> = make_class_definition<Data<int8_t>>(
 				"Integer8",
 				class_id<int8_t>.value
 			);
 
 			template <>
-			inline static auto this_class<int16_t> = make_class_definition<Data<int16_t>>(
+			auto this_class<int16_t> = make_class_definition<Data<int16_t>>(
 				"Integer16",
 				class_id<int16_t>.value
 			);
 
 			template <>
-			inline static auto this_class<int32_t> = make_class_definition<Data<int32_t>>(
+			auto this_class<int32_t> = make_class_definition<Data<int32_t>>(
 				"Integer32",
 				class_id<int32_t>.value
 			);
 
 			template <>
-			inline static auto this_class<int64_t> = make_class_definition<Data<int64_t>>(
+			auto this_class<int64_t> = make_class_definition<Data<int64_t>>(
 				"Integer64",
 				class_id<int64_t>.value
 			);
 
 			template <>
-			inline static auto this_class<uint8_t> = make_class_definition<Data<uint8_t>>(
+			auto this_class<uint8_t> = make_class_definition<Data<uint8_t>>(
 				"UInteger8",
 				class_id<uint8_t>.value
 			);
 
 			template <>
-			inline static auto this_class<uint16_t> = make_class_definition<Data<uint16_t>>(
+			auto this_class<uint16_t> = make_class_definition<Data<uint16_t>>(
 				"UInteger16",
 				class_id<uint16_t>.value
 			);
 
 			template <>
-			inline static auto this_class<uint32_t> = make_class_definition<Data<uint32_t>>(
+			auto this_class<uint32_t> = make_class_definition<Data<uint32_t>>(
 				"UInteger32",
 				class_id<uint32_t>.value
 			);
 
 			template <>
-			inline static auto this_class<uint64_t> = make_class_definition<Data<uint64_t>>(
+			auto this_class<uint64_t> = make_class_definition<Data<uint64_t>>(
 				"UInteger64",
 				class_id<uint64_t>.value
 			);
 
 			template <>
-			inline static auto this_class<float> = make_class_definition<Data<float>>(
+			auto this_class<float> = make_class_definition<Data<float>>(
 				"Float",
 				class_id<float>.value
 			);
 
 			template <>
-			inline static auto this_class<double> = make_class_definition<Data<double>>(
+			auto this_class<double> = make_class_definition<Data<double>>(
 				"Double",
 				class_id<double>.value
 			);
@@ -4330,19 +4330,19 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto this_class = make_class_definition<Data<T>>(
+			auto this_class = make_class_definition<Data<T>>(
 				"Character",
 				class_id<T>.value
 			);
 
 			template <>
-			inline static auto this_class<unsigned char> = make_class_definition<Data<unsigned char>>(
+			auto this_class<unsigned char> = make_class_definition<Data<unsigned char>>(
 				"UCharacter",
 				class_id<unsigned char>.value
 			); 
 
 			template <>
-			inline static auto this_class<wchar_t> = make_class_definition<Data<wchar_t>>(
+			auto this_class<wchar_t> = make_class_definition<Data<wchar_t>>(
 				"WideCharacter",
 				class_id<wchar_t>.value
 			);
@@ -6407,7 +6407,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "sleep", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sleep");
 				auto time = JS::Converter::get_bigint64(context, argv[0]);
-				Sen::Kernel::Timer::sleep(time);
+				std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(time)));
 				return JS_UNDEFINED;
 			});
 		}

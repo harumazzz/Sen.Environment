@@ -2,6 +2,8 @@
 #define SHA224_SHA244CRYPTOSERVICEPROVIDER_H
 
 #include <string>
+#include <cstdint>
+
 
 class SHA224CryptoServiceProvider {
 

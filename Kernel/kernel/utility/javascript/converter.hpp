@@ -203,7 +203,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 	}
 
 	template <>
-	inline static auto get_vector<std::string>(JSContext* context, const JSValue& that) -> List<std::string> {
+	auto get_vector<std::string>(JSContext* context, const JSValue& that) -> List<std::string> {
 		auto atom = Atom{context, "length"};
 		auto len_val = JS_GetProperty(context, that, atom.value);
 		auto length = get_int32(context, len_val);
@@ -218,24 +218,8 @@ namespace Sen::Kernel::JavaScript::Converter {
 		return m_list;
 	}
 
-	template <>
-	inline static auto get_vector<std::string_view>(JSContext* context, const JSValue& that) -> List<std::string_view> {
-		auto atom = Atom{context, "length"};
-		auto len_val = JS_GetProperty(context, that, atom.value);
-		auto length = get_int32(context, len_val);
-		JS_FreeValue(context, len_val);
-		auto m_list = List<std::string_view>{};
-		m_list.reserve(static_cast<std::size_t>(length));
-		for (auto i : Range<int>(length)) {
-			auto val = JS_GetPropertyUint32(context, that, i);
-			m_list.emplace_back(get_string(context, val));
-			JS_FreeValue(context, val);
-		}
-		return m_list;
-	}
-
 	template <typename T>
-	inline static auto to_array(JSContext* context, const List<T>& vec) -> JSValue {
+	auto to_array(JSContext* context, const List<T>& vec) -> JSValue {
 		auto js_array = JS_NewArray(context);
 		for (auto i : Range<std::size_t>(vec.size())) {
 			if constexpr (std::is_same<T, int>::value) {

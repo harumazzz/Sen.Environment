@@ -20,7 +20,6 @@ add_library(
 	./utility/container/language.hpp
 	./utility/container/path.hpp
 	./utility/container/pointer.hpp
-	./utility/container/timer.hpp
 	./utility/container/image.hpp
 	./utility/container/json.hpp
 	./utility/container/buffer.hpp

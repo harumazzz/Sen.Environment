@@ -3,6 +3,8 @@
 
 #include <string>
 #include <array>
+#include <cstdint>
+
 
 class SHA256 {
 

@@ -18,3 +18,7 @@ if (MSVC)
 else ()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif ()
+
+if (UNIX AND NOT APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()

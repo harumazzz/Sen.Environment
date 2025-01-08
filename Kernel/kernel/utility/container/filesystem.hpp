@@ -256,7 +256,7 @@ namespace Sen::Kernel::FileSystem
 		auto content = std::wstring((std::istreambuf_iterator<wchar_t>(wif)), std::istreambuf_iterator<wchar_t>());
 		return content;
 	#else
-		auto wif = std::wifstream(std::wstring{ source.begin(), source.end() });
+		auto wif = std::wifstream(source.data());
 		if (!wif.is_open()) {
 			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), source), std::source_location::current(), "read_file_by_utf16");
 		}

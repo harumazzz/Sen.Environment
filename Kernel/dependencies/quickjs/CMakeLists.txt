@@ -84,4 +84,28 @@ if (WIN32)
             /wd5045  
         )
     endif()
+else()
+    if(NOT DEFINED CLOCK_MONOTONIC)
+        add_definitions(-DCLOCK_MONOTONIC=1)
+    endif()
+    add_definitions(-D_POSIX_C_SOURCE=200809L)
+    add_definitions(-Dtm_gmtoff=__tm_gmtoff)
 endif()
+
+if(UNIX AND NOT APPLE)
+    add_definitions(-D_POSIX_C_SOURCE=200809L)
+
+    if(DEFINED CMAKE_SYSTEM_NAME AND (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+                                       CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+                                       CMAKE_SYSTEM_NAME STREQUAL "NetBSD"))
+        add_definitions(-D_POSIX_C_SOURCE=200809L)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "ENVRION_DEFINED")
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "SIGHANDLER_T_DEFINED")
+    endif()
+endif()
+
+if(UNIX AND NOT APPLE)
+    add_compile_options(-fPIC)
+endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)

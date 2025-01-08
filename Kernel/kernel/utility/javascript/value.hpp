@@ -348,30 +348,6 @@ namespace Sen::Kernel::JavaScript {
 			template <typename T>
 			auto get() -> T;
 
-			template <>
-			auto get(
-
-			) -> std::string
-			{
-				assert_conditional(thiz.is_string(), "Value is not string", "get");
-				auto size = std::size_t{};
-				auto str = JS_ToCStringLen(thiz.context, &size, thiz.value);
-				auto result = std::string{str, size};
-				JS_FreeCString(thiz.context, str);
-				return result;
-			}
-
-			template <>
-			auto get(
-
-			) -> bool
-			{
-				assert_conditional(thiz.is_boolean(), "Value is not boolean", "get");
-				auto val = JS_ToBool(thiz.context, thiz.value);
-				auto result = val == 1;
-				return result;
-			}
-
 			template <typename T> requires std::is_floating_point<T>::value and (!std::is_integral<T>::value)
 			auto get_number(
 
@@ -449,5 +425,29 @@ namespace Sen::Kernel::JavaScript {
 				return result;
 			}
 	};
+
+	template <>
+	auto Value::get<std::string>(
+
+	) -> std::string
+	{
+		assert_conditional(is_string(), "Value is not string", "get");
+		auto size = std::size_t{};
+		auto str = JS_ToCStringLen(context, &size, value);
+		auto result = std::string{str, size};
+		JS_FreeCString(context, str);
+		return result;
+	}
+
+	template <>
+	auto Value::get<bool>(
+
+	) -> bool
+	{
+		assert_conditional(is_boolean(), "Value is not boolean", "get");
+		auto val = JS_ToBool(context, value);
+		auto result = val == 1;
+		return result;
+	}
 
 }

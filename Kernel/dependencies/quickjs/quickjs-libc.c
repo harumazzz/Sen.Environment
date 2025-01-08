@@ -76,6 +76,10 @@ typedef sig_t sighandler_t;
 #if defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__)
 typedef sig_t sighandler_t;
 extern char **environ;
+#elif defined(__linux__)
+#include <signal.h>
+extern char **environ;
+typedef void (*sighandler_t)(int);
 #endif
 
 #endif /* _WIN32 */
