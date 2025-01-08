@@ -5,15 +5,15 @@ typedef Color = List<double>;
 typedef Matrix = List<double>;
 
 class FrameNode {
-  int index;
-  int duration;
-  int resource;
-  bool sprite;
-  int? firstFrame;
-  Transform transform;
-  Color color;
+  final int index;
+  final int duration;
+  final int resource;
+  final bool sprite;
+  final int? firstFrame;
+  final Transform transform;
+  final Color color;
 
-  FrameNode({
+  const FrameNode({
     required this.index,
     required this.duration,
     required this.resource,
@@ -34,6 +34,38 @@ class FrameNode {
       color: List<double>.from(json['color']),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'index': index,
+      'duration': duration,
+      'resource': resource,
+      'sprite': sprite,
+      'firstFrame': firstFrame,
+      'transform': transform,
+      'color': color,
+    };
+  }
+
+  FrameNode copyWith({
+    int? index,
+    int? duration,
+    int? resource,
+    bool? sprite,
+    int? firstFrame,
+    Transform? transform,
+    Color? color,
+  }) {
+    return FrameNode(
+      index: index ?? this.index,
+      duration: duration ?? this.duration,
+      resource: resource ?? this.resource,
+      sprite: sprite ?? this.sprite,
+      firstFrame: this.firstFrame,
+      transform: transform ?? this.transform,
+      color: color ?? this.color,
+    );
+  }
 }
 
 typedef FrameNodeList = List<FrameNode>;
@@ -47,16 +79,16 @@ enum State {
 }
 
 class Model {
-  State state;
-  int resource;
-  bool sprite;
-  Transform transform;
-  Color color;
-  int frameStart;
-  int frameDuration;
-  int? index;
+  final State state;
+  final int resource;
+  final bool sprite;
+  final Transform transform;
+  final Color color;
+  final int frameStart;
+  final int frameDuration;
+  final int? index;
 
-  Model({
+  const Model({
     required this.state,
     required this.resource,
     required this.sprite,
@@ -79,18 +111,53 @@ class Model {
       index: json['index'] != null ? (json['index']) : null,
     );
   }
+
+  Model copyWith({
+    State? state,
+    int? resource,
+    bool? sprite,
+    Transform? transform,
+    Color? color,
+    int? frameStart,
+    int? frameDuration,
+    int? index,
+  }) {
+    return Model(
+      state: state ?? this.state,
+      resource: resource ?? this.resource,
+      sprite: sprite ?? this.sprite,
+      transform: transform ?? this.transform,
+      color: color ?? this.color,
+      frameStart: frameStart ?? this.frameStart,
+      frameDuration: frameDuration ?? this.frameDuration,
+      index: this.index,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'state': state,
+      'resource': resource,
+      'sprite': sprite,
+      'transform': transform,
+      'color': color,
+      'frameStart': frameStart,
+      'frameDuration': frameDuration,
+      'index': index,
+    };
+  }
 }
 
 class SexyAnimation {
-  int version;
-  int frameRate;
-  AnimationPosition position;
-  AnimationSize size;
-  List<AnimationImage> image;
-  List<AnimationSprite> sprite;
-  AnimationSprite mainSprite;
+  final int version;
+  final int frameRate;
+  final AnimationPosition position;
+  final AnimationSize size;
+  final List<AnimationImage> image;
+  final List<AnimationSprite> sprite;
+  final AnimationSprite mainSprite;
 
-  SexyAnimation({
+  const SexyAnimation({
     required this.version,
     required this.frameRate,
     required this.position,
@@ -106,22 +173,50 @@ class SexyAnimation {
       frameRate: (json['frame_rate']),
       position: AnimationPosition.fromJson(json['position']),
       size: AnimationSize.fromJson(json['size']),
-      image: (json['image'] as List)
-          .map((i) => AnimationImage.fromJson(i))
-          .toList(),
-      sprite: (json['sprite'] as List)
-          .map((i) => AnimationSprite.fromJson(i))
-          .toList(),
+      image: (json['image'] as List).map((i) => AnimationImage.fromJson(i)).toList(),
+      sprite: (json['sprite'] as List).map((i) => AnimationSprite.fromJson(i)).toList(),
       mainSprite: AnimationSprite.fromJson(json['main_sprite']),
     );
+  }
+
+  SexyAnimation copyWith({
+    int? version,
+    int? frameRate,
+    AnimationPosition? position,
+    AnimationSize? size,
+    List<AnimationImage>? image,
+    List<AnimationSprite>? sprite,
+    AnimationSprite? mainSprite,
+  }) {
+    return SexyAnimation(
+      version: version ?? this.version,
+      frameRate: frameRate ?? this.frameRate,
+      position: position ?? this.position,
+      size: size ?? this.size,
+      image: image ?? this.image,
+      sprite: sprite ?? this.sprite,
+      mainSprite: mainSprite ?? this.mainSprite,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'version': version,
+      'frameRate': frameRate,
+      'position': position.toJson(),
+      'size': size.toJson(),
+      'image': image.map((x) => x.toJson()).toList(),
+      'sprite': sprite.map((x) => x.toJson()).toList(),
+      'mainSprite': mainSprite.toJson(),
+    };
   }
 }
 
 class AnimationPosition {
-  double x;
-  double y;
+  final double x;
+  final double y;
 
-  AnimationPosition({
+  const AnimationPosition({
     required this.x,
     required this.y,
   });
@@ -132,13 +227,30 @@ class AnimationPosition {
       y: json['y'].toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'x': x,
+      'y': y,
+    };
+  }
+
+  AnimationPosition copyWith({
+    double? x,
+    double? y,
+  }) {
+    return AnimationPosition(
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
+  }
 }
 
 class AnimationSize {
-  double width;
-  double height;
+  final double width;
+  final double height;
 
-  AnimationSize({
+  const AnimationSize({
     required this.width,
     required this.height,
   });
@@ -149,15 +261,39 @@ class AnimationSize {
       height: json['height'].toDouble(),
     );
   }
+
+  AnimationSize copyWith({
+    double? width,
+    double? height,
+  }) {
+    return AnimationSize(
+      width: width ?? this.width,
+      height: height ?? this.height,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'width': width,
+      'height': height,
+    };
+  }
+
+  factory AnimationSize.fromMap(Map<String, dynamic> map) {
+    return AnimationSize(
+      width: map['width']?.toDouble() ?? 0.0,
+      height: map['height']?.toDouble() ?? 0.0,
+    );
+  }
 }
 
 class AnimationImage {
-  String path;
-  String id;
-  AnimationDimension dimension;
-  List<double> transform;
+  final String path;
+  final String id;
+  final AnimationDimension dimension;
+  final List<double> transform;
 
-  AnimationImage({
+  const AnimationImage({
     required this.path,
     required this.id,
     required this.dimension,
@@ -172,13 +308,36 @@ class AnimationImage {
       transform: List<double>.from(json['transform']),
     );
   }
+
+  AnimationImage copyWith({
+    String? path,
+    String? id,
+    AnimationDimension? dimension,
+    List<double>? transform,
+  }) {
+    return AnimationImage(
+      path: path ?? this.path,
+      id: id ?? this.id,
+      dimension: dimension ?? this.dimension,
+      transform: transform ?? this.transform,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'path': path,
+      'id': id,
+      'dimension': dimension.toJson(),
+      'transform': transform,
+    };
+  }
 }
 
 class AnimationDimension {
-  int width;
-  int height;
+  final int width;
+  final int height;
 
-  AnimationDimension({
+  const AnimationDimension({
     required this.width,
     required this.height,
   });
@@ -189,14 +348,31 @@ class AnimationDimension {
       height: json['height'],
     );
   }
+
+  AnimationDimension copyWith({
+    int? width,
+    int? height,
+  }) {
+    return AnimationDimension(
+      width: width ?? this.width,
+      height: height ?? this.height,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'width': width,
+      'height': height,
+    };
+  }
 }
 
 class AnimationSprite {
-  String name;
-  AnimationWorkArea workArea;
-  List<AnimationFrame> frame;
+  final String name;
+  final AnimationWorkArea workArea;
+  final List<AnimationFrame> frame;
 
-  AnimationSprite({
+  const AnimationSprite({
     required this.name,
     required this.workArea,
     required this.frame,
@@ -206,18 +382,36 @@ class AnimationSprite {
     return AnimationSprite(
       name: json['name'],
       workArea: AnimationWorkArea.fromJson(json['work_area']),
-      frame: (json['frame'] as List)
-          .map((i) => AnimationFrame.fromJson(i))
-          .toList(),
+      frame: (json['frame'] as List).map((i) => AnimationFrame.fromJson(i)).toList(),
     );
+  }
+
+  AnimationSprite copyWith({
+    String? name,
+    AnimationWorkArea? workArea,
+    List<AnimationFrame>? frame,
+  }) {
+    return AnimationSprite(
+      name: name ?? this.name,
+      workArea: workArea ?? this.workArea,
+      frame: frame ?? this.frame,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'workArea': workArea.toJson(),
+      'frame': frame.map((x) => x.toJson()).toList(),
+    };
   }
 }
 
 class AnimationWorkArea {
-  int start;
-  int duration;
+  final int start;
+  final int duration;
 
-  AnimationWorkArea({
+  const AnimationWorkArea({
     required this.start,
     required this.duration,
   });
@@ -228,17 +422,34 @@ class AnimationWorkArea {
       duration: (json['duration']),
     );
   }
+
+  AnimationWorkArea copyWith({
+    int? start,
+    int? duration,
+  }) {
+    return AnimationWorkArea(
+      start: start ?? this.start,
+      duration: duration ?? this.duration,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'start': start,
+      'duration': duration,
+    };
+  }
 }
 
 class AnimationFrame {
-  String label;
-  bool stop;
-  List<AnimationCommand> command;
-  List<int> remove;
-  List<AnimationAppend> append;
-  List<AnimationMove> change;
+  final String label;
+  final bool stop;
+  final List<AnimationCommand> command;
+  final List<int> remove;
+  final List<AnimationAppend> append;
+  final List<AnimationMove> change;
 
-  AnimationFrame({
+  const AnimationFrame({
     required this.label,
     required this.stop,
     required this.command,
@@ -251,26 +462,48 @@ class AnimationFrame {
     return AnimationFrame(
       label: json['label'],
       stop: json['stop'],
-      command: (json['command'] as List)
-          .map((i) => AnimationCommand.fromJson(i))
-          .toList(),
-      remove:
-          (json['remove'] as List).map((i) => int.parse(i.toString())).toList(),
-      append: (json['append'] as List)
-          .map((i) => AnimationAppend.fromJson(i))
-          .toList(),
-      change: (json['change'] as List)
-          .map((i) => AnimationMove.fromJson(i))
-          .toList(),
+      command: (json['command'] as List).map((i) => AnimationCommand.fromJson(i)).toList(),
+      remove: (json['remove'] as List).map((i) => int.parse(i.toString())).toList(),
+      append: (json['append'] as List).map((i) => AnimationAppend.fromJson(i)).toList(),
+      change: (json['change'] as List).map((i) => AnimationMove.fromJson(i)).toList(),
     );
+  }
+
+  AnimationFrame copyWith({
+    String? label,
+    bool? stop,
+    List<AnimationCommand>? command,
+    List<int>? remove,
+    List<AnimationAppend>? append,
+    List<AnimationMove>? change,
+  }) {
+    return AnimationFrame(
+      label: label ?? this.label,
+      stop: stop ?? this.stop,
+      command: command ?? this.command,
+      remove: remove ?? this.remove,
+      append: append ?? this.append,
+      change: change ?? this.change,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'label': label,
+      'stop': stop,
+      'command': command.map((x) => x.toJson()).toList(),
+      'remove': remove,
+      'append': append.map((x) => x.toJson()).toList(),
+      'change': change.map((x) => x.toJson()).toList(),
+    };
   }
 }
 
 class AnimationCommand {
-  String command;
-  String argument;
+  final String command;
+  final String argument;
 
-  AnimationCommand({
+  const AnimationCommand({
     required this.command,
     required this.argument,
   });
@@ -281,18 +514,35 @@ class AnimationCommand {
       argument: json['argument'],
     );
   }
+
+  AnimationCommand copyWith({
+    String? command,
+    String? argument,
+  }) {
+    return AnimationCommand(
+      command: command ?? this.command,
+      argument: argument ?? this.argument,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'command': command,
+      'argument': argument,
+    };
+  }
 }
 
 class AnimationAppend {
-  int index;
-  String name;
-  int resource;
-  bool sprite;
-  bool additive;
-  int preloadFrame;
-  double timeScale;
+  final int index;
+  final String name;
+  final int resource;
+  final bool sprite;
+  final bool additive;
+  final int preloadFrame;
+  final double timeScale;
 
-  AnimationAppend({
+  const AnimationAppend({
     required this.index,
     required this.name,
     required this.resource,
@@ -313,16 +563,48 @@ class AnimationAppend {
       timeScale: json['time_scale'].toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'index': index,
+      'name': name,
+      'resource': resource,
+      'sprite': sprite,
+      'additive': additive,
+      'preloadFrame': preloadFrame,
+      'timeScale': timeScale,
+    };
+  }
+
+  AnimationAppend copyWith({
+    int? index,
+    String? name,
+    int? resource,
+    bool? sprite,
+    bool? additive,
+    int? preloadFrame,
+    double? timeScale,
+  }) {
+    return AnimationAppend(
+      index: index ?? this.index,
+      name: name ?? this.name,
+      resource: resource ?? this.resource,
+      sprite: sprite ?? this.sprite,
+      additive: additive ?? this.additive,
+      preloadFrame: preloadFrame ?? this.preloadFrame,
+      timeScale: timeScale ?? this.timeScale,
+    );
+  }
 }
 
 class AnimationMove {
-  int index;
-  List<double> transform;
-  Color? color;
-  List<double>? sourceRectangle;
-  int spriteFrameNumber;
+  final int index;
+  final List<double> transform;
+  final Color? color;
+  final List<double>? sourceRectangle;
+  final int spriteFrameNumber;
 
-  AnimationMove({
+  const AnimationMove({
     required this.index,
     required this.transform,
     this.color,
@@ -335,10 +617,34 @@ class AnimationMove {
       index: (json['index']),
       transform: List<double>.from(json['transform']),
       color: json['color'] != null ? List<double>.from(json['color']) : null,
-      sourceRectangle: json['source_rectangle'] != null
-          ? List<double>.from(json['source_rectangle'])
-          : null,
+      sourceRectangle: json['source_rectangle'] != null ? List<double>.from(json['source_rectangle']) : null,
       spriteFrameNumber: (json['sprite_frame_number']),
     );
+  }
+
+  AnimationMove copyWith({
+    int? index,
+    List<double>? transform,
+    Color? color,
+    List<double>? sourceRectangle,
+    int? spriteFrameNumber,
+  }) {
+    return AnimationMove(
+      index: index ?? this.index,
+      transform: transform ?? this.transform,
+      color: this.color,
+      sourceRectangle: this.sourceRectangle,
+      spriteFrameNumber: spriteFrameNumber ?? this.spriteFrameNumber,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'index': index,
+      'transform': transform,
+      'color': color,
+      'sourceRectangle': sourceRectangle,
+      'spriteFrameNumber': spriteFrameNumber,
+    };
   }
 }

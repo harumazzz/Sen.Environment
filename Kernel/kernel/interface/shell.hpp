@@ -8,121 +8,64 @@
 
 namespace Sen::Kernel::Interface {
 
-	struct StringView {
-		public:
-			size_t size;
-			const char* value;
-	};
-
-	struct StringList {
-		public:
-			StringView* value;
-			size_t size;
-
-			~StringList(
-
-			) 
-			{
-				delete[] thiz.value;
-			}
-	};
-
-	using CStringView = StringView;
-	
-	using CStringList = StringList;
-
-	typedef void (*ShellCallback)(CStringList* list, StringView* destination);
-
-	// Construct CStringView from standard String
-
-	inline static auto construct_string(
-		std::string_view that
-	) -> CStringView
-	{
-		return CStringView {
-			.size = that.size(),
-			.value = that.data(),
-		};
-	}
-
-	// Construct std::string from CStringView
-
-	inline static auto make_standard_string(
-		CStringView* that
-	) -> std::string
-	{
-		return std::string{that->value, that->size};
-	}
-
-	inline static auto construct_standard_string(
-		const CStringView & that
-	) -> std::string
-	{
-		return std::string{that.value, that.size};
-	}
-
-	inline static auto construct_string_list(
-		const List<std::string>& that
-	) -> std::shared_ptr<CStringList>
-	{
-		auto destination = std::make_shared<CStringList>(new StringView[that.size()], that.size());
-		for (auto i = std::size_t{0}; i < that.size(); ++i) {
-			destination->value[i] = construct_string(that.at(i));
-		}
-		return destination;
-	}
-
-
-	inline static auto destruct_string_list(
-		CStringList* that
-	) -> List<std::string>
-	{
-		auto destination = List<std::string>{};
-		destination.reserve(that->size);
-		for (auto i : Range(static_cast<std::size_t>(that->size))) {
-			destination.emplace_back(std::string{ that->value[i].value, static_cast<std::size_t>(that->value[i].size) });
-		}
-		return destination;
-	}
-
+	template <typename T>
+	using Pointer = T*;
 
 	struct Shell {
-		private:
 
-			inline static auto shell_cb(
-				CStringList* list,
-				CStringView* destination
-			) -> void
-			{
-				return;
-			}
+		inline static Callback callback{nullptr};
 
-		public:
-
-			inline static Interface::ShellCallback callback = shell_cb;
 	};
 
-	struct MShellAPI {
+	struct Executor {
 
-		public:
-			unsigned int version;
-
-			bool is_gui;
-	};
-
-	struct Additional {
-
-		inline static std::unique_ptr<std::string> script{nullptr};
+		inline static Pointer<CStringView> script{nullptr};
 		
-		inline static std::unique_ptr<List<std::string>> arguments{nullptr};
+		inline static Pointer<CStringList> arguments{nullptr};
 
-		static auto assign(
-			const std::string& script_value,  
-			const List<std::string>& arguments_value  
+		inline static List<Pointer<CStringList>> allocated{};
+
+		inline static auto register_external (
+			const Pointer<CStringView>& script,
+			const Pointer<CStringList>& arguments
 		) -> void
 		{
-			Additional::script = std::make_unique<std::string>(script_value);
-			Additional::arguments = std::make_unique<List<std::string>>(arguments_value);
+			Executor::script = script;
+			Executor::arguments = arguments;
+			allocated.reserve(1000);
+			return;
+		}
+
+		inline static auto clean_arguments (
+
+		) -> void
+		{
+			for (auto & e : allocated) {
+				if (e != nullptr) {
+					if (e->value != nullptr) {
+						for (auto i : Range(e->size)) {
+							if (e->value[i].value != nullptr) {
+								delete[] e->value[i].value;
+								e->value[i].value = nullptr;
+							}
+						}
+						delete[] e->value;
+						e->value = nullptr;
+						delete e;
+						e = nullptr;
+					}
+				}
+			}
+			allocated.clear();
+			return;
+		}
+
+		inline static auto unregister_external (
+
+		) -> void
+		{
+			script = nullptr;
+			arguments = nullptr;
 		}
 
 	};

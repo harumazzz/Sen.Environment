@@ -55,12 +55,17 @@ export namespace Sen::Shell {
 		return myconv.to_bytes(wstr);
 	}
 
-	constexpr auto hash_string(
-		const char* str, 
-		int h = 0
-	) -> unsigned int
-	{
-		return !str[h] ? 5381 : (hash_string(str, h + 1) * 33) ^ str[h];
+	inline constexpr auto hash_string (
+		std::string_view const & string
+	) -> std::uint64_t {
+		auto offset = std::uint64_t{14695981039346656037ull};
+		auto prime = std::uint64_t{1099511628211ull};
+		auto result = offset;
+		for (auto & element : string) {
+			result ^= static_cast<std::uint8_t>(element);
+			result *= prime;
+		}
+		return result;
 	}
 
 

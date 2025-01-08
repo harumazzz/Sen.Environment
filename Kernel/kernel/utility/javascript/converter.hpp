@@ -209,6 +209,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 		auto length = get_int32(context, len_val);
 		JS_FreeValue(context, len_val);
 		auto m_list = List<std::string>{};
+		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
 			auto val = JS_GetPropertyUint32(context, that, i);
 			m_list.emplace_back(get_string(context, val));
@@ -224,6 +225,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 		auto length = get_int32(context, len_val);
 		JS_FreeValue(context, len_val);
 		auto m_list = List<std::string_view>{};
+		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
 			auto val = JS_GetPropertyUint32(context, that, i);
 			m_list.emplace_back(get_string(context, val));

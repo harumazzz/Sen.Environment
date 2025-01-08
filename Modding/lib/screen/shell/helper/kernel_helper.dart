@@ -8,7 +8,6 @@ import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/screen/shell/helper/command_handler.dart';
 import 'package:sen/screen/shell/model/kernel_argument.dart';
-import 'package:sen/screen/shell/model/kernel_script.dart';
 import 'package:sen/service/pointer_helper.dart';
 
 class KernelHelper {
@@ -66,10 +65,8 @@ class KernelHelper {
     final scriptPath = subEvent[0] as String;
     final currentShell = subEvent[1] as String;
     final arguments = subEvent[2] as List<String>;
-    final script = KernelScript(scriptPath);
     final argument = KernelArgument(currentShell, kernelPath, scriptPath, arguments);
-    execute(script.value, argument.value, Pointer.fromFunction(_callback));
-    script.cleanup();
+    execute(argument.value, Pointer.fromFunction(_callback));
     argument.cleanup();
     mainSendPort.send(null);
     _release();

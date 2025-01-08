@@ -140,7 +140,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			if constexpr (sprite_type == SpriteType::main_sprite)
 			{
 				auto name_child = dom_symbol_item->FindAttribute("name");
-				assert_conditional((name_child != nullptr || name_child->Value() == "main_sprite"), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_name")), sprite_name), "exchange_sprite_document");
+				assert_conditional((name_child != nullptr || hash_string(name_child->Value()) == hash_string("main_sprite"_sv)), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_sprite_name")), sprite_name), "exchange_sprite_document");
 			}
 			auto timeline = dom_symbol_item->FirstChildElement("timeline");
 			assert_conditional(timeline != nullptr, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.sprite_has_no_timeline")), sprite_name), "exchange_sprite_document");
@@ -178,7 +178,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					auto regex_result = std::regex_search(library_item_name, match_result, name_match);
 					assert_conditional(regex_result, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_name_match")), sprite_name, std::to_string(frame_index)), "exchange_sprite_document");
 					assert_conditional(match_result[0] == match_result[1], String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.mismatch_name_match")), sprite_name, std::to_string(dom_layer_index), library_item_name, std::string{"sprite or image"}), "exchange_sprite_document");
-					auto is_sprite = match_result[0].str() == "sprite";
+					auto is_sprite = hash_string(match_result[0].str()) == hash_string("sprite"_sv);
 					auto resource_name = library_item_name.substr(match_result[0].str().size() + 1_size);
 					auto resource = k_native_index;
 					auto resource_index = k_begin_index;
@@ -343,9 +343,9 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			auto dom_document = document.FirstChildElement("DOMDocument");
 			auto dom_timeline = dom_document->FirstChildElement("timelines")->FirstChildElement("DOMTimeline");
-			assert_conditional(std::string_view{dom_timeline->FindAttribute("name")->Value()} == "animation"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_label_info");
+			assert_conditional(hash_string(dom_timeline->FindAttribute("name")->Value()) == hash_string("animation"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_label_info");
 			auto label_layer = dom_timeline->FirstChildElement("layers")->FirstChildElement("DOMLayer");
-			assert_conditional(std::string_view{label_layer->FindAttribute("name")->Value()} == "label"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.label_layer_name_must_be_label")), "exchange_label_info");
+			assert_conditional(hash_string(label_layer->FindAttribute("name")->Value()) == hash_string("label"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.label_layer_name_must_be_label")), "exchange_label_info");
 			auto label_frames = label_layer->FirstChildElement("frames");
 			auto frame_count = k_begin_index_int;
 			for (auto dom_frame = label_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
@@ -378,7 +378,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			definition.size = AnimationSize(width != nullptr ? Converter::to_int32(width->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})) : 390, 
 			height != nullptr ? Converter::to_int32(height->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})) : 390);
 			auto dom_timeline = dom_document->FirstChildElement("timelines")->FirstChildElement("DOMTimeline");
-			assert_conditional(std::string_view{dom_timeline->FindAttribute("name")->Value()} == "animation"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_dom_document");
+			assert_conditional(hash_string(dom_timeline->FindAttribute("name")->Value()) == hash_string("animation"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_dom_document");
 			auto frame_count = k_begin_index_int;
 			for (auto &[label_name, label_info] : label)
 			{
@@ -386,7 +386,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				definition.main_sprite.frame[label_info.start].label = label_name;
 			}
 			auto action_layer = dom_timeline->FirstChildElement("layers")->FirstChildElement("DOMLayer")->NextSiblingElement("DOMLayer");
-			assert_conditional(std::string_view{action_layer->FindAttribute("name")->Value()} == "action"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.action_layer_name_must_be_action")), "exchange_dom_document");
+			assert_conditional(hash_string(action_layer->FindAttribute("name")->Value()) == hash_string("action"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.action_layer_name_must_be_action")), "exchange_dom_document");
 			auto action_frames = action_layer->FirstChildElement("frames");
 			for (auto dom_frame = action_frames->FirstChildElement("DOMFrame"); dom_frame != nullptr; dom_frame = dom_frame->NextSiblingElement("DOMFrame"))
 			{
@@ -407,7 +407,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				for (auto &command : script_list)
 				{
 					trim(command);
-					if (command == "stop()")
+					if (hash_string(command) == hash_string("stop()"_sv))
 					{
 						definition.main_sprite.frame[frame_index].stop = true;
 						continue;
@@ -420,7 +420,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				}
 			}
 			auto instance_layer = action_layer->NextSiblingElement("DOMLayer");
-			assert_conditional(std::string_view{instance_layer->FindAttribute("name")->Value()} == "instance"_sv, fmt::format("{}", Language::get("popcap.animation.from_flash.instance_layer_name_must_be_instance")), "exchange_dom_document");
+			assert_conditional(hash_string(instance_layer->FindAttribute("name")->Value()) == hash_string("instance"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.instance_layer_name_must_be_instance")), "exchange_dom_document");
 			auto instance_frames = instance_layer->FirstChildElement("frames");
 			if (frame_count > definition.main_sprite.frame.size())
 			{

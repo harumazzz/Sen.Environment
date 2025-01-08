@@ -14,11 +14,9 @@ namespace Sen::Kernel::Interface {
 
 	// callback
 
-	class Callback {
+	class Runtime {
 
 		private:
-
-			ShellCallback callback;
 
 			JS::Handler javascript;
 
@@ -26,8 +24,7 @@ namespace Sen::Kernel::Interface {
 
 		public:
 
-			explicit Callback(
-				ShellCallback callback
+			explicit Runtime(
 			) : javascript{}
 			{
 
@@ -37,7 +34,7 @@ namespace Sen::Kernel::Interface {
 			 * Destructor
 			*/
 
-			~Callback(
+			~Runtime(
 
 			) = default;
 
@@ -56,9 +53,11 @@ namespace Sen::Kernel::Interface {
 							int argc,
 							JSValue* argv
 						) -> JSValue {
-							auto is_gui = std::make_unique<CStringView>();
-							Shell::callback(construct_string_list(List<std::string>{std::string{"is_gui"}}).get(), is_gui.get());
-							return JS::Converter::to_bool(context, static_cast<bool>(Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell")));
+							auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
+							Shell::callback(construct_string_list(Array<std::string, 1>{std::string{ "is_gui" }}).get(), is_gui.get());
+							auto state = Converter::to_int32(std::string{is_gui->value, static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell");
+							auto destination = JS::Converter::to_bool(context, static_cast<bool>(state));
+							return destination;
 						}, "Sen"_sv, "Shell"_sv, "is_gui"_sv);
 					}
 					{
@@ -68,9 +67,11 @@ namespace Sen::Kernel::Interface {
 							int argc,
 							JSValue *argv
 						) -> JSValue {
-							auto shell_version = std::make_unique<CStringView>();
-							Shell:: callback(construct_string_list(List<std::string>{std::string{"version"}}).get(), shell_version.get());
-							return JS::Converter::to_number(context, static_cast<int>(Converter::to_int32(std::string{shell_version->value, static_cast<std::size_t>(shell_version->size)}, "Cannot get the Shell version"))); 
+							auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
+							Shell::callback(construct_string_list(Array<std::string, 1>{std::string{"version"}}).get(), shell_version.get());
+							auto state = static_cast<int>(Converter::to_int32(std::string{ shell_version->value, static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
+							auto destination = JS::Converter::to_number(context, state);
+							return destination;
 						}, "Sen"_sv, "Shell"_sv, "version"_sv);
 					}
 					// version
@@ -92,7 +93,7 @@ namespace Sen::Kernel::Interface {
 						JSValue *argv
 					) -> JSValue 
 					{
-						return JS::Converter::to_array(context, *Additional::arguments.get()); 
+						return Script::to_array_of_string(context, Executor::arguments);
 					}, "Sen"_sv, "Kernel"_sv, "arguments"_sv);
 				}
 				// xml
@@ -126,7 +127,7 @@ namespace Sen::Kernel::Interface {
 						int argc,
 						JSValue *argv
 					) -> JSValue {
-						return JS::Converter::to_string(context, String::to_posix_style(Additional::script.get()->data())); 
+						return JS::Converter::to_string(context, String::to_posix_style(construct_string(Executor::script)));
 					}, "Sen"_sv, "Kernel"_sv, "Home"_sv, "script"_sv);
 				}
 				// vcdiff
@@ -710,7 +711,7 @@ namespace Sen::Kernel::Interface {
 				// Clock
 				javascript.register_object(Script::Clock::register_class);
 				// execute the script
-				javascript.evaluate_fs(*Additional::script);
+				javascript.evaluate_fs(construct_string(Executor::script));
 				return;
 			}
 

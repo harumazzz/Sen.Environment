@@ -5,19 +5,13 @@
 
 namespace Sen::Kernel {
 
-	// free c memory allocation
-
-	inline static auto constexpr free_c_memory = [](auto p)
-	{
-		free(p);
-		return;
-	};
-
 	// free c++ memory allocation
 
 	inline static auto constexpr free_memory = [](auto p)
 	{
-		delete p;
+		if (p != nullptr) {
+			delete p;
+		}
 		return;
 	};
 
@@ -25,7 +19,9 @@ namespace Sen::Kernel {
 
 	inline static auto constexpr free_array = [](auto p)
 	{
-		delete[] p;
+		if (p != nullptr) {
+			delete[] p;
+		}
 		return;
 	};
 

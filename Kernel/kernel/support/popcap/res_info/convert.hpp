@@ -257,7 +257,7 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
 			{
 				assert_conditional(res_info.find("expand_path") != res_info.end(), fmt::format("{}", Kernel::Language::get("popcap.res_info.convert.expand_path_is_null_in_res_info")), "process");
 				assert_conditional(res_info.find("groups") != res_info.end(), fmt::format("{}", Kernel::Language::get("popcap.res_info.convert.groups_is_null_in_res_info")), "process");
-				if(res_info["expand_path"].get<std::string>() == "string"){
+				if(hash_string(res_info["expand_path"].get<std::string>()) == hash_string("string"_sv)){
 					thiz.use_string_for_style = true;
 				}
 				else{

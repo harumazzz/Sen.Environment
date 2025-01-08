@@ -85,14 +85,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 				sen->writeInt32(resource["slot_count"].get<int>());
 				sen->writeInt32(static_cast<int>(resource["groups"].size()));
 				for(auto & m_data : thiz.resource["groups"]){
-					if(m_data["type"] == "composite"){
-						sen->writeUint8(0x01);
-					}
-					else if(m_data["type"] == "simple"){
-						sen->writeUint8(0x02);
-					}
-					else{
-						throw Exception(fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.encode.unknown_type"), m_data["type"].get<std::string>(), Kernel::Language::get("popcap.newton.encode.at_group_id"), m_data["id"].get<std::string>()), std::source_location::current(), "process");
+					switch (hash_string(m_data["type"].get<std::string>())) {
+						case hash_string("composite"_sv):
+							sen->writeUint8(0x01);
+							break;
+						case hash_string("simple"_sv):
+							sen->writeUint8(0x02);
+							break;
+						default:
+							assert_conditional(false, fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.encode.unknown_type"), m_data["type"].get<std::string>(), Kernel::Language::get("popcap.newton.encode.at_group_id"), m_data["id"].get<std::string>()), "process");
 					}
 					auto subgroups_count = is_null_object(m_data, "subgroups") ? 0x00 : m_data["subgroups"].size();
       				auto resources_count = is_null_object(m_data, "resources") ? 0x00 : m_data["resources"].size();
@@ -112,142 +113,146 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 						sen->writeUint32(m_data["parent"].get<std::string>().size());
 						sen->writeString(m_data["parent"].get<std::string>());
 					}
-					if(m_data["type"] == "composite"){
-						assert_conditional(is_null_object(m_data, "resources"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.resource_must_be_null_with_composite")), "process");
-						for(auto & current : m_data["subgroups"]){
-							if(is_not_null_object(current, "res")){
-								sen->writeInt32(Converter::to_int32(current["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), current["res"].get<std::string>())));
+					switch (hash_string(m_data["type"].get<std::string>())) {
+						case hash_string("composite"_sv): {
+							assert_conditional(is_null_object(m_data, "resources"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.resource_must_be_null_with_composite")), "process");
+							for(auto & current : m_data["subgroups"]){
+								if(is_not_null_object(current, "res")){
+									sen->writeInt32(Converter::to_int32(current["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), current["res"].get<std::string>())));
+								}
+								else{
+									sen->writeInt32(0x00);
+								}
+								sen->writeUint32(current["id"].get<std::string>().size());
+								sen->writeString(current["id"].get<std::string>());
 							}
-							else{
-								sen->writeInt32(0x00);
-							}
-							sen->writeUint32(current["id"].get<std::string>().size());
-							sen->writeString(current["id"].get<std::string>());
+							break;
 						}
-					}
-					if(m_data["type"] == "simple"){
-						assert_conditional(is_null_object(m_data, "subgroups"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.subgroup_must_be_null_with_simple")), "process");
-						for(auto & resource_x : m_data["resources"]){
-							auto m_type = resource_x["type"].get<std::string>();
-							if(m_type == "Image"){
-								sen->writeUint8(0x01);
-							}
-							else if(m_type == "PopAnim"){
-								sen->writeUint8(0x02);
-							}
-							else if(m_type == "SoundBank"){
-								sen->writeUint8(0x03);
-							}
-							else if(m_type == "File"){
-								sen->writeUint8(0x04);
-							}
-							else if(m_type == "PrimeFont"){
-								sen->writeUint8(0x05);
-							}
-							else if(m_type == "RenderEffect"){
-								sen->writeUint8(0x06);
-							}
-							else if(m_type == "DecodedSoundBank"){
-								sen->writeUint8(0x07);
-							}
-							else {
-								throw Exception(fmt::format("{} {} {}", Kernel::Language::get("popcap.newton.encode.invalid_type"), Kernel::Language::get("popcap.newton.encode.at_group_id"), resource_x["id"].get<std::string>()), std::source_location::current(), "process");
-							}
-							sen->writeInt32(resource_x["slot"]);
-							if (is_null_object(resource_x, "width")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["width"]);
-							}
-							if (is_null_object(resource_x, "height")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["height"]);
-							}
-							auto is_sprite = is_not_null_object(resource_x, "aw") and resource_x["aw"] != 0 and is_not_null_object(resource_x, "ah") and resource_x["ah"] != 0;
-							if (is_null_object(resource_x, "x")) {
-								if (is_sprite) {
+						case hash_string("simple"_sv): {
+							assert_conditional(is_null_object(m_data, "subgroups"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.subgroup_must_be_null_with_simple")), "process");
+							for(auto & resource_x : m_data["resources"]){
+								switch (hash_string(resource_x["type"].get<std::string>())) {
+									case hash_string("Image"_sv):
+										sen->writeUint8(0x01);
+										break;
+									case hash_string("PopAnim"_sv):
+										sen->writeUint8(0x02);
+										break;
+									case hash_string("SoundBank"_sv):
+										sen->writeUint8(0x03);
+										break;
+									case hash_string("File"_sv):
+										sen->writeUint8(0x04);
+										break;
+									case hash_string("PrimeFont"_sv):
+										sen->writeUint8(0x05);
+										break;
+									case hash_string("RenderEffect"_sv):
+										sen->writeUint8(0x06);
+										break;
+									case hash_string("DecodedSoundBank"_sv):
+										sen->writeUint8(0x07);
+										break;
+									default:
+										assert_conditional(false, fmt::format("{} {} {}", Kernel::Language::get("popcap.newton.encode.invalid_type"), Kernel::Language::get("popcap.newton.encode.at_group_id"), resource_x["id"].get<std::string>()), "process");
+								}
+								sen->writeInt32(resource_x["slot"]);
+								if (is_null_object(resource_x, "width")) {
 									sen->writeInt32(0x00);
 								} 
 								else {
-									sen->writeInt32(0x7FFFFFFF);
+									sen->writeInt32(resource_x["width"]);
 								}
-							} 
-							else {
-								sen->writeInt32(resource_x["x"]);
-							}
-							if (is_null_object(resource_x, "y")) {
-								if (is_sprite) {
+								if (is_null_object(resource_x, "height")) {
 									sen->writeInt32(0x00);
 								} 
 								else {
-									sen->writeInt32(0x7FFFFFFF);
+									sen->writeInt32(resource_x["height"]);
 								}
-							} 
-							else {
-								sen->writeInt32(resource_x["y"]);
-							}
-							if (is_null_object(resource_x, "ax")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["ax"]);
-							}
-							if (is_null_object(resource_x, "ay")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["ay"]);
-							}
-							if (is_null_object(resource_x, "aw")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["aw"]);
-							}
-							if (is_null_object(resource_x, "ah")) {
-								sen->writeInt32(0x00);
-							} 
-							else {
-								sen->writeInt32(resource_x["ah"]);
-							}
-							if (is_null_object(resource_x, "cols")) {
-								sen->writeInt32(0x01);
-							} 
-							else {
-								sen->writeInt32(resource_x["cols"]);
-							}
-							if (is_null_object(resource_x, "rows")) {
-								sen->writeInt32(0x01);
-							} 
-							else {
-								sen->writeInt32(resource_x["rows"]);
-							}
-							if (is_not_null_object(resource_x, "atlas") and resource_x["atlas"]) {
+								auto is_sprite = is_not_null_object(resource_x, "aw") and resource_x["aw"] != 0 and is_not_null_object(resource_x, "ah") and resource_x["ah"] != 0;
+								if (is_null_object(resource_x, "x")) {
+									if (is_sprite) {
+										sen->writeInt32(0x00);
+									} 
+									else {
+										sen->writeInt32(0x7FFFFFFF);
+									}
+								} 
+								else {
+									sen->writeInt32(resource_x["x"]);
+								}
+								if (is_null_object(resource_x, "y")) {
+									if (is_sprite) {
+										sen->writeInt32(0x00);
+									} 
+									else {
+										sen->writeInt32(0x7FFFFFFF);
+									}
+								} 
+								else {
+									sen->writeInt32(resource_x["y"]);
+								}
+								if (is_null_object(resource_x, "ax")) {
+									sen->writeInt32(0x00);
+								} 
+								else {
+									sen->writeInt32(resource_x["ax"]);
+								}
+								if (is_null_object(resource_x, "ay")) {
+									sen->writeInt32(0x00);
+								} 
+								else {
+									sen->writeInt32(resource_x["ay"]);
+								}
+								if (is_null_object(resource_x, "aw")) {
+									sen->writeInt32(0x00);
+								} 
+								else {
+									sen->writeInt32(resource_x["aw"]);
+								}
+								if (is_null_object(resource_x, "ah")) {
+									sen->writeInt32(0x00);
+								} 
+								else {
+									sen->writeInt32(resource_x["ah"]);
+								}
+								if (is_null_object(resource_x, "cols")) {
+									sen->writeInt32(0x01);
+								} 
+								else {
+									sen->writeInt32(resource_x["cols"]);
+								}
+								if (is_null_object(resource_x, "rows")) {
+									sen->writeInt32(0x01);
+								} 
+								else {
+									sen->writeInt32(resource_x["rows"]);
+								}
+								if (is_not_null_object(resource_x, "atlas") and resource_x["atlas"]) {
+									sen->writeUint8(0x01);
+								} 
+								else {
+									sen->writeUint8(0x00);
+								}
 								sen->writeUint8(0x01);
-							} 
-							else {
-								sen->writeUint8(0x00);
-							}
-							sen->writeUint8(0x01);
-							sen->writeUint8(0x01);
-							auto resource_has_parent = is_not_null_object(resource_x, "parent");
-							if (resource_has_parent) {
 								sen->writeUint8(0x01);
-							} 
-							else {
-								sen->writeUint8(0x00);
+								auto resource_has_parent = is_not_null_object(resource_x, "parent");
+								if (resource_has_parent) {
+									sen->writeUint8(0x01);
+								} 
+								else {
+									sen->writeUint8(0x00);
+								}
+								sen->writeUint32(resource_x["id"].get<std::string>().size());
+								sen->writeString(resource_x["id"].get<std::string>());
+								sen->writeUint32(resource_x["path"].get<std::string>().size());
+								sen->writeString(resource_x["path"].get<std::string>());
+								if (resource_has_parent) {
+									sen->writeUint32(resource_x["parent"].get<std::string>().size());
+									sen->writeString(resource_x["parent"].get<std::string>());
+								}
 							}
-							sen->writeUint32(resource_x["id"].get<std::string>().size());
-							sen->writeString(resource_x["id"].get<std::string>());
-							sen->writeUint32(resource_x["path"].get<std::string>().size());
-							sen->writeString(resource_x["path"].get<std::string>());
-							if (resource_has_parent) {
-								sen->writeUint32(resource_x["parent"].get<std::string>().size());
-								sen->writeString(resource_x["parent"].get<std::string>());
-							}
+							break;
 						}
 					}
 				}

@@ -86,7 +86,6 @@ export namespace Sen::Shell {
 		#endif
 			int result;
 			std::string kernel;
-			std::string script;
 
 		#if WINDOWS
 			HMODULE hinst_lib;
@@ -129,10 +128,8 @@ export namespace Sen::Shell {
 			{
 				#if WINDOWS
 				kernel = utf16_to_utf8(argv[1]);
-				script = utf16_to_utf8(argv[2]);
 				#else
 				kernel = std::string{argv[1], std::strlen(argv[1])};
-				script = std::string{argv[2], std::strlen(argv[2])};
 				#endif
 			}
 
@@ -175,29 +172,26 @@ export namespace Sen::Shell {
 				this->argument_list = std::make_unique<StringList>();
 				this->argument_list->size = static_cast<size_t>(argc);
 				this->argument_list->value = new String[argument_list->size];
-				this->argument_list->value[0] = String{kernel.size(), kernel.data()};
-				this->argument_list->value[1] = String{script.size(), script.data()};
-				for (auto i = std::size_t{0}; i != 1, i != 2, i < argc; ++i) {
+				for (auto i = std::size_t{0}; i < argc; ++i) {
 					#if WINDOWS
 						auto arg_value = utf16_to_utf8(argv[i]);
 						auto value_copy = std::make_unique<char[]>(arg_value.size() + 1);
 						std::memcpy(value_copy.get(), arg_value.data(), arg_value.size());
 						value_copy[arg_value.size()] = '\0';
-						this->argument_list->value[i] = String{arg_value.size(), value_copy.release()};
+						this->argument_list->value[i] = String{value_copy.release(), arg_value.size()};
 						#else
-						argument_list->value[i] = String{std::strlen(argv[i]), argv[i]};
+						argument_list->value[i] = String{argv[i], std::strlen(argv[i])};
 						#endif
 				}
 				return;
 			}
 
-			template <typename function, typename callable> requires std::is_invocable_r<int, function, String*, StringList*, callable>::value && std::is_invocable_r<void, callable, StringList*, String*>::value
+			template <typename function, typename callable> requires std::is_invocable_r<int, function, StringList*, callable>::value && std::is_invocable_r<int, callable, StringList*, String*>::value
 			inline auto execute_kernel(
 				function execute_method
 			) -> int 
 			{
-				auto script_pointer = String{script.size(), script.data()};
-				return execute_method(&script_pointer, this->argument_list.get(), callback);
+				return execute_method(this->argument_list.get(), callback);
 			}
 
 			inline auto cleanup(

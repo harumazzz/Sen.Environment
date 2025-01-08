@@ -24,15 +24,19 @@ namespace Sen::Kernel::JavaScript
 
 			using Atom = JavaScript::Atom;
 
+			using Mutex = std::mutex;
+
+			using Boolean = bool;
+
 		private:
 
 			Runtime runtime;
 
 			Context context;
 
-			std::mutex mutex;
+			Mutex mutex;
 
-			bool is_module;
+			Boolean is_module;
 
 		public:
 

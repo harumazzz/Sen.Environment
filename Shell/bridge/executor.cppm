@@ -6,8 +6,8 @@ export module sen.environment.shell.bridge.executor;
 
 export namespace Sen::Shell {
 
-	using Callback = void(*)(StringList* list, String* destination);
+	using Callback = int(*)(StringList* list, String* destination);
 
-	using Execute = int(*)(String* script, StringList* argument, Callback m_callback);
+	using Execute = int(*)(StringList* argument, Callback callback);
 
 }

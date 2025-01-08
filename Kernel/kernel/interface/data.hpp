@@ -6,49 +6,146 @@
 
 namespace Sen::Kernel::Interface {
 
-	// basic string view
+	template <typename T, std::size_t N>
+	using Array = std::array<T, N>;
+
+	struct StringView {
+
+		const char* value{nullptr};
+
+		size_t size{0};
+
+	};
+
+	struct StringList {
+
+		StringView* value{nullptr};
+
+		size_t size{0};
+
+	};
+
+	template <typename T>
+	auto clean_up(
+		T& value
+	) -> void
+	{
+		return;
+	}
+
+	template <>
+	auto clean_up<StringView>(
+		StringView& str
+	) -> void
+	{
+		if (str.value != nullptr) {
+			delete[] str.value;
+			str.value = nullptr;
+		}
+		return;
+	}
+
+	template <>
+	auto clean_up<StringList>(
+		StringList& list
+	) -> void
+	{
+		if (list.value != nullptr) {
+			for (auto i : Range(list.size)) {
+				clean_up<StringView>(list.value[i]);
+			}
+			delete[] list.value;
+		}
+		return;
+	}
+
+	template <typename T>
+	auto finalizer(
+		T* ptr
+	) -> void
+	{
+		if (ptr != nullptr) {
+			delete ptr;  
+		}
+	}
+
+	template <>
+	auto finalizer<StringView>(
+		StringView* ptr
+	) -> void
+	{
+		if (ptr != nullptr) {
+			if (ptr->value != nullptr) {
+				delete[] ptr->value;  
+			}
+			delete ptr;
+		}
+	}
+
+	using CStringView = StringView;
 	
-	struct BasicStringView {
-		const char* data;
-		size_t size;
-	};
+	using CStringList = StringList;
 
-	// call back
+	using Callback = int(*)(CStringList* list, StringView* destination);
 
-	typedef void (*callback)(const char*, const Sen::Kernel::Interface::Color);
+	using StringFinalizer = void(*)(StringView*);
 
-	// input
+	using StringListFinalizer = void(*)(StringList*);
 
-	typedef struct BasicStringView (*input)();
+	inline static auto construct_string(
+		std::string_view that
+	) -> StringView
+	{
+		return StringView{
+			.value = that.data(),
+			.size = that.size(),
+		};
+	}
 
-	// parameter
+	inline static auto construct_string(
+		StringView* that
+	) -> std::string
+	{
+		return std::string{
+			that->value,
+			that->size,
+		};
+	}
 
-	struct Parameter {
-		BasicStringView* data;
-		size_t size;
-	};
+	inline static auto construct_string_list(
+		const List<std::string>& that
+	) -> std::shared_ptr<CStringList>
+	{
+		auto destination = std::make_shared<CStringList>(new StringView[that.size()], that.size());
+		for (auto i : Range(that.size())) {
+			destination->value[i] = construct_string(that[i]);
+		}
+		return destination;
+	}
 
-	// param -> vector<string>
+	template <std::size_t N>
+	inline static auto construct_string_list(
+		const Array<std::string, N>& that
+	) -> std::shared_ptr<CStringList>
+	{
+		auto destination = std::make_shared<CStringList>(new StringView[N], N);
+		for (auto i : Range(N)) {
+			destination->value[i] = construct_string(that[i]);
+		}
+		return destination;
+	}
 
-	inline static auto convert_parameter_to_vector_string(
-		Parameter* param
+	inline static auto destruct_string_list(
+		CStringList* that
 	) -> List<std::string>
 	{
-        auto result = List<std::string> {};
-		result.reserve(param->size);
-        for (auto i : Range<size_t>(param->size)){
-            result.emplace_back(std::string {param->data[i].data, param->data[i].size});
-        }
-        return result;
-    }
-
-	// C Struct -> C++ String
-
-	inline static auto convert_basic_string_view_to_string(
-		BasicStringView* argument
-	) -> std::string const
-	{
-		return std::string{argument->data, argument->size};
+		auto destination = List<std::string>{};
+		destination.reserve(that->size);
+		for (auto i : Range(static_cast<std::size_t>(that->size))) {
+			destination.emplace_back(std::string{ that->value[i].value, static_cast<std::size_t>(that->value[i].size) });
+		}
+		return destination;
 	}
+	
 
 }

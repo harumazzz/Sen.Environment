@@ -864,7 +864,7 @@ namespace Sen::Kernel {
 			// delimiter: provide delimiter to split
 			// result: the vector of string after split
 
-			inline constexpr static auto split(
+			inline static auto split(
 				std::string str,
 				std::string_view delimiter
 			) -> List<string> const
@@ -881,8 +881,6 @@ namespace Sen::Kernel {
 				return result;
 			}
 
-			// posix style test: a/b/c/d
-
 			inline static auto to_posix_style(
 				std::string str
 			) -> std::string const
@@ -897,9 +895,7 @@ namespace Sen::Kernel {
 				return str;
 			}
 
-			// windows style test: a\b\c
-
-			inline static auto constexpr to_windows_style(
+			inline static auto to_windows_style(
 				std::string str
 			) -> std::string
 			{
@@ -907,20 +903,13 @@ namespace Sen::Kernel {
 				return str;
 			}
 
-			// windows style test: a\b\c
-
-			inline static auto constexpr to_windows_style(
+			inline static auto to_windows_style(
 				std::wstring str
 			) -> std::wstring
 			{
 				std::replace(str.begin(), str.end(), L'/', L'\\');
 				return str;
 			}
-
-			/*
-				Join function between string
-				Example: ["s", "a", "m"] -> sam
-			*/
 
 			inline static auto join(
 				const List<string> &data,
@@ -1298,5 +1287,18 @@ namespace Sen::Kernel {
 	) -> OptimizeString
 	{
 		return OptimizeString{ ptr, size };
+	}
+
+	inline constexpr auto hash_string (
+		std::string_view const & string
+	) -> std::uint64_t {
+		auto offset = std::uint64_t{14695981039346656037ull};
+		auto prime = std::uint64_t{1099511628211ull};
+		auto result = offset;
+		for (auto & element : string) {
+			result ^= static_cast<std::uint8_t>(element);
+			result *= prime;
+		}
+		return result;
 	}
 }

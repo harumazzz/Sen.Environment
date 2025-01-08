@@ -18,29 +18,8 @@ namespace Sen::Kernel::Support::Marmalade::DZip
             std::string const &resource_directory) -> void
         {
             stream.writeUint32(k_magic_identifier);
-            /*
-            auto information_structure = Information{};
-            information_structure.resource_file.resize(definition.resource.size());
-            information_structure.resource_directory.resize(definition.resource.size() + 1_size);
-            information_structure.resource_information.resize(definition.resource.size());
-            auto global_chunk_index = k_begin_index;
-            for (auto resource_index : Range(definition.resource.size())) {
-                auto & resource_definition = definition.resource[resource_index];
-                auto & resource_information_structure = information_structure.resource_information[resource_index];
-                auto   resource_directory_string = String::to_windows_style(Path::getParents(resource_definition.path));
-                information_structure.resource_file.emplace_back(Path::getFileName(resource_definition.path));
-                if (std::find(information_structure.resource_directory.begin(), information_structure.resource_directory.end(), resource_directory_string) == information_structure.resource_directory.end()) {
-                    information_structure.resource_directory.emplace_back(resource_directory_string);
-                }
-                resource_information_structure.chunk_index.resize(static_cast<size_t>(resource_definition.chunk.size()));
-                information_structure.chunk_information.resize(resource_definition.chunk.size());
-                global_chunk_index += resource_definition.chunk.size();
-            }
-            */
             auto information_structure = Information{};
             information_structure.archive_setting.version = static_cast<uint8_t>(k_version);
-           // information_structure.resource_file.resize(definition.resource.size());
-          //  information_structure.resource_directory.resize(definition.resource.size() + 1_size);
             information_structure.resource_directory.emplace_back(""_sv);
             information_structure.resource_information.resize(definition.resource.size());
             auto global_chunk_index = k_begin_index;
@@ -62,7 +41,6 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     information_structure.resource_directory.emplace_back(resource_directory_string);
                 }
                 resource_information_structure.chunk_index.resize(static_cast<size_t>(resource_definition.chunk.size()));
-               // information_structure.chunk_information.resize(static_cast<size_t>(resource_definition.chunk.size()));
                 for (auto chunk_index : Range(resource_definition.chunk.size()))
                 {
                     resource_information_structure.chunk_index[chunk_index] = static_cast<uint16_t>(global_chunk_index);

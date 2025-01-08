@@ -198,10 +198,14 @@ export namespace Sen::Shell {
 	}
 
 	inline auto is_gui(
+		std::unique_ptr<char[], Finalizer> & memory,
 		String* destination
 	) -> void
 	{
-		destination->value = "0";
+		memory.reset(new char[2]);
+		memory.get()[0] = '0';
+    	memory.get()[1] = '\0';
+		destination->value = memory.release();
 		destination->size = 1;
 		return;
 	}
@@ -305,31 +309,41 @@ export namespace Sen::Shell {
 	inline auto callback(
 		StringList* list,
 		String* destination
-	) -> void
+	) -> int
 	{
 		auto result = to_vector(list);
 		assert_conditional(result.size() >= 1, "argument must be greater than 1");
 		auto memory = std::unique_ptr<char[], Finalizer>(nullptr, [](char* ptr) {
 			finalizer(ptr);
 		});
+		std::cout << result[0] << std::endl;
 		switch (hash_string(result[0].data())) {
 			case hash_string("display"):
-				return display_argument(result);
+				display_argument(result);
+				break;
 			case hash_string("input"):
-				return input_argument(memory, destination);
+				input_argument(memory, destination);
+				break;
 			case hash_string("is_gui"):
-				return is_gui(destination);
+				is_gui(memory, destination);
+				break;
 			case hash_string("wait"):
-				return wait();
+				wait();
+				break;
 			case hash_string("clear"):
-				return clear();
+				clear();
+				break;
 			case hash_string("version"):
-				return current_version(destination, memory);
+				current_version(destination, memory);
+				break;
 			case hash_string("pick_file"):
-				return pick_file(destination, memory);
+				pick_file(destination, memory);
+				break;
 			case hash_string("pick_directory"):
-				return pick_directory(destination, memory);
+				pick_directory(destination, memory);
+				break;
 		};
+		return 0;
 	}
 
 }

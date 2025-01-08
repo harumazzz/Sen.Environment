@@ -398,7 +398,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     {
                     case DataType::ImageData:
                     {
-                        assert_conditional(Path::getExtension(resource_info.path) == ".json", String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), resource_info.path), "exchange_texture_simple");
+                        assert_conditional(hash_string(Path::getExtension(resource_info.path)) == hash_string(".json"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), resource_info.path), "exchange_texture_simple");
                         auto subgroup_id_with_resolution = fmt::format("{}_{}", subgroup_id, highest_resolution);
                         auto &packet_info = packet_information[subgroup_id_with_resolution];
                         packet_info.packet_structure.version = definition.version;

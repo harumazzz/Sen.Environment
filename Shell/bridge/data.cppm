@@ -9,9 +9,9 @@ export namespace Sen::Shell {
 
 	export struct String {
 
-		size_t size{0};
-
 		const char* value{ nullptr };
+
+		size_t size{0};
 
 	};
 

@@ -9,10 +9,6 @@ namespace Sen::Kernel::Interface::Script
 
 	namespace JS = Sen::Kernel::JavaScript;
 
-	using Context = JS::Context;
-
-	using Value = JS::Value;
-
 	inline auto constexpr get_property_string = JS::Converter::get_property_string;
 
 	inline auto constexpr get_property_int32 = JS::Converter::get_property_int32;
@@ -31,23 +27,11 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr temporary_class_id = JS::temporary_class_id;
 
-	/**
-	 * ----------------------------------------
-	 * JS Atom is used
-	 * ----------------------------------------
-	 */
-
 	using Atom = JS::Atom;
 
-	/**
-	 * ----------------------------------------
-	 * JS Method Declaration
-	 * ----------------------------------------
-	 */
+	using ClassID = JS::ClassID;
 
-	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValue, int, JSValue *);
-
-	// JS Type
+	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValueConst, int, JSValueConst *);
 
 	namespace JSElement
 	{
@@ -109,6 +93,52 @@ namespace Sen::Kernel::Interface::Script
 		using APNGMakerSetting = JSValue;
 	}
 
+	inline static auto to_array_of_string (
+		JSContext* context, 
+		const StringList* list
+	) -> JSValue
+	{
+		auto destination = JS_NewArray(context);
+		for (auto i : Range<std::size_t>(list->size)) {
+			auto& str_view = list->value[i];
+			auto js_str = JS_NewStringLen(context, str_view.value, str_view.size);
+			JS_SetPropertyUint32(context, destination, static_cast<uint32_t>(i), js_str);
+		}
+		return destination;
+	}
+
+	inline static auto to_string_list(
+		JSContext* context,
+		JSValue value,
+		StringList& list
+	) -> void
+	{
+		if (!JS_IsArray(context, value)) {
+			throw Exception("not an array", std::source_location::current(), "to_string_list");
+		}
+		auto atom = Atom{ context, "length" };
+		auto array_length = get_property_int32(context, value, atom.value);
+		list.size = array_length;
+		list.value = new StringView[array_length];
+		for (auto i : Range<std::int32_t>{ array_length }) {
+			auto js_element = JS_GetPropertyUint32(context, value, i);
+			if (JS_IsString(js_element)) {
+				auto str_len = size_t{};
+				auto str = JS_ToCStringLen(context, &str_len, js_element);
+				list.value[i].value = str;
+				list.value[i].size = str_len;
+				JS_FreeCString(context, str);
+			}
+			else {
+				list.value[i].value = nullptr;
+				list.value[i].size = 0;
+			}
+
+			JS_FreeValue(context, js_element);
+		}
+		return;
+	}
+
 	inline static auto throw_exception(
 		JSContext *context, 
 		const std::string& error, 
@@ -122,7 +152,7 @@ namespace Sen::Kernel::Interface::Script
 		evaluate_context += "throw e;";
 		evaluate_context += "}";
 		evaluate_context += fmt::format("\n{}();", function_name);
-		JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_TYPE_GLOBAL);
+		JS_Eval(context, evaluate_context.c_str(), evaluate_context.length(), source.c_str(), JS_EVAL_TYPE_GLOBAL);
 		return JS_EXCEPTION;
 	}
 
@@ -145,18 +175,29 @@ namespace Sen::Kernel::Interface::Script
 		return result;  
 	}
 
+
+	inline static auto to_string (
+		JSContext* context,
+		CStringView* value
+	) -> JSValue 
+	{
+		return JS_NewStringLen(context, value->value, value->size);
+	}
+
 	inline static auto callback(
 		JSContext *context,
 		JSValue value,
 		int argc,
-		JSValue *argv
+		JSValue* argv
 	) -> JSElement::undefined
 	{
 		return proxy_wrapper(context, "callback", [&]() {
 			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "callback");
-			auto destination = std::make_unique<CStringView>();
-			Shell::callback(construct_string_list(JS::Converter::get_vector<std::string>(context, argv[0])).get(), destination.get());
-			return JS::Converter::to_string(context, construct_standard_string(*destination));
+			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
+			auto parameters = std::make_unique<CStringList>();
+			to_string_list(context, argv[0], parameters.operator*());
+			Shell::callback(parameters.get(), destination.get());
+			return to_string(context, destination.get());
 		});
 	}
 
@@ -224,7 +265,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object {
 			return proxy_wrapper(context, "deserialize", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
@@ -239,7 +280,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object {
 			return proxy_wrapper(context, "deserialize_fs", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
@@ -252,7 +293,7 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto object_to_json(
 			JSContext *context,
-			JSValue value
+			JSValueConst value
 		) -> nlohmann::ordered_json
 		{
 			switch (JS_VALUE_GET_TAG(value))
@@ -352,7 +393,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string {
 			return proxy_wrapper(context, "serialize", [&]() {
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
@@ -368,7 +409,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "serialize_fs", [&]() {
@@ -395,7 +436,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "load_language", [&]() {
@@ -411,7 +452,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "get", [&]() {
@@ -495,7 +536,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(T*)> method,
 				JSClassID class_id
@@ -509,6 +550,71 @@ namespace Sen::Kernel::Interface::Script
 					return method(s);
 				});
 			}
+
+			template <typename T>
+			inline static auto throw_constructor_error(
+				JSContext* context, 
+				std::string_view error_message
+			) -> JSValue
+			{
+				JS_ThrowInternalError(context, error_message.data());
+				return JS_EXCEPTION;
+			}
+
+			template <typename T>
+			inline static auto generate_constructor(
+				JSContext* context, 
+				JSValue value, 
+				std::unique_ptr<T, decltype(make_deleter<T>())> class_ptr,
+				ClassID & class_id
+			) -> JSValue
+			{
+				auto atom = Atom{context, "prototype"};
+				auto proto = JS_GetProperty(context, value, atom.value);
+				if (JS_IsException(proto)) {
+					return throw_constructor_error<T>(context, "Failed to get prototype");
+				}
+				auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+				JS_FreeValue(context, proto);
+				if (JS_IsException(obj)) {
+					return throw_constructor_error<T>(context, "Failed to create JS object");
+				}
+				JS_SetOpaque(obj, class_ptr.release());
+				return obj;
+			}
+
+			template <typename T> requires std::is_class<T>::value
+			inline static auto initialize_constructor(
+				JSContext* context,
+				JSValue value,
+				int argc,
+				JSValueConst* argv,
+				std::function<T* (int argc, JSValueConst* argv)> initializer,
+				ClassID & class_id,
+				std::string_view error_message
+			) -> JSValue 
+			{
+				if (initializer) {
+					auto class_pointer = std::unique_ptr<T, decltype(make_deleter<T>())>(initializer(argc, argv), make_deleter<T>());
+					if (class_pointer != nullptr) {
+						return generate_constructor<T>(context, value, std::move(class_pointer), class_id);
+					}
+				}
+				return throw_constructor_error<T>(context, error_message);
+			}
+
+			template <typename T>
+			inline static auto get_opaque_value(
+				JSContext* context, 
+				JSValue value, 
+				JSClassID class_id
+			) -> T* 
+			{
+				auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
+				assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
+				return obj;
+			}
+
 
 
 		namespace DataStreamView
@@ -528,46 +634,30 @@ namespace Sen::Kernel::Interface::Script
 				requires BooleanConstraint
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						s.reset(new Data<T>{ JS::Converter::get_string(context, argv[0])});
-					} else if (argc == 0) {
-						s.reset(new Data<T>{});
-					} else {
-						JS_ThrowInternalError(context, fmt::format("{}", Kernel::Language::get("data_stream_view_cannot_be_initialize")).data());
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-
-				fail:
-					JS_FreeValue(context, obj);
-					if constexpr (T) {
-						JS_ThrowInternalError(context, "Failed to initialize DataStreamViewUseBigEndian");
-					} else {
-						JS_ThrowInternalError(context, "Failed to initialize DataStreamView");
-					}
-					return JS_EXCEPTION;
+					return initialize_constructor<Data<T>>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data<T>* {
+							if (argc == 1) {
+								return new Data<T>(JS::Converter::get_string(context, argv[0]));
+							} else if (argc == 0) {
+								return new Data<T>();
+							}
+							return nullptr;
+						},
+						class_id<T>,
+						Kernel::Language::get("data_stream_view_cannot_be_initialize")
+					);
 				});
 			}
 
@@ -597,7 +687,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
@@ -628,7 +718,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::bigint 
 			{
@@ -654,7 +744,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -669,7 +759,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -684,7 +774,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -701,7 +791,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -744,7 +834,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::Uint8Array {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -759,7 +849,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -774,7 +864,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -792,7 +882,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::Uint8Array 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -811,7 +901,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -827,7 +917,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -844,7 +934,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -861,7 +951,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -884,7 +974,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -907,7 +997,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -930,7 +1020,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -953,7 +1043,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -976,7 +1066,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -999,7 +1089,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1022,7 +1112,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1045,7 +1135,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1068,7 +1158,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1118,7 +1208,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1141,7 +1231,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1164,7 +1254,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1187,7 +1277,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1210,7 +1300,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1233,7 +1323,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1256,7 +1346,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1279,7 +1369,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1302,7 +1392,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1325,7 +1415,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1348,7 +1438,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1371,7 +1461,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1394,7 +1484,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1417,7 +1507,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1440,7 +1530,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1463,7 +1553,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1486,7 +1576,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1509,7 +1599,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1532,7 +1622,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1555,7 +1645,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1579,7 +1669,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1603,7 +1693,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1627,7 +1717,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1651,7 +1741,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1675,7 +1765,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1699,7 +1789,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1723,7 +1813,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1747,7 +1837,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1771,7 +1861,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1795,7 +1885,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1819,7 +1909,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1843,7 +1933,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1867,7 +1957,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1891,7 +1981,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1915,7 +2005,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1939,7 +2029,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1963,7 +2053,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -1987,7 +2077,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2011,7 +2101,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2035,7 +2125,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2059,7 +2149,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2083,7 +2173,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2107,7 +2197,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2131,7 +2221,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2155,7 +2245,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::number
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2179,7 +2269,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::number
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2203,7 +2293,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				static_assert(T == true or T == false, "T must be true or false");
@@ -2300,7 +2390,7 @@ namespace Sen::Kernel::Interface::Script
 				class_id<use_big_endian>.allocate_new(JS_GetRuntime(context));
 				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<use_big_endian>.value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
 				auto class_name = _class_name<use_big_endian>();
-				auto make_constructor = JS_NewCFunction2(context, constructor<use_big_endian>, class_name.data(), 2, JS_CFUNC_constructor, 0);
+				auto make_constructor = JS_NewCFunction2(context, constructor<use_big_endian>, class_name.data(), 0, JS_CFUNC_constructor, 0);
 				auto proto = JS_NewObject(context);
 				JS_SetPropertyFunctionList(context, proto, proto_functions<use_big_endian>.data(), proto_functions<use_big_endian>.size());
 				JS_SetConstructor(context, make_constructor, proto);
@@ -2339,36 +2429,26 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						s.reset(new Data(JS_VALUE_GET_BOOL(argv[0]) == 0 ? false : true));
-					}
-					else {
-						JS_ThrowInternalError(context, "Constructor for Boolean class does not match, expected 1 argument");
-						return JS_EXCEPTION;
-					}
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								return new Data(JS_VALUE_GET_BOOL(argv[0]) == 0 ? false : true);
+							}
+							return nullptr;
+						},
+						class_id,
+						Kernel::Language::get("Constructor for Boolean class does not match, expected 1 argument")
+					);
 				});
 			}
 
@@ -2388,7 +2468,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -2409,7 +2489,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -2428,14 +2508,14 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::Boolean
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(Data));
 				auto s = std::make_unique<Data>(T);
-				
-				auto proto = JS_GetPrototype(context, value);
+				auto atom = Atom{context, "prototype"};
+				auto proto = JS_GetProperty(context, value, atom.value);
 				if (JS_IsException(proto)) {
 					return JS_EXCEPTION;
 				}
@@ -2495,42 +2575,31 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 3) {
-						auto name = JS::Converter::get_string(context, argv[0]);
-						auto id = JS::Converter::get_string(context, argv[1]);
-						auto transform = JS::Converter::get_vector<double>(context, argv[2]);
-						auto matrix = Matrix{};
-						matrix_from_transform(matrix, transform);
-						s.reset(new Data(name, id, matrix));
-					}
-					else {
-						JS_ThrowInternalError(context, "Constructor for Image class does not match, expected 3 argument, got: %d", argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 3) {
+								auto name = JS::Converter::get_string(context, argv[0]);
+								auto id = JS::Converter::get_string(context, argv[1]);
+								auto transform = JS::Converter::get_vector<double>(context, argv[2]);
+								auto matrix = Matrix{};
+								matrix_from_transform(matrix, transform);
+								return new Data(name, id, matrix);
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Constructor for Image class does not match, expected 3 argument, got: {}", argc)
+					);
 				});
 			}
 
@@ -2557,7 +2626,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -2596,7 +2665,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -2690,45 +2759,34 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 4) {
-						auto name = JS::Converter::get_string(context, argv[0]);
-						auto link = JS::Converter::get_string(context, argv[1]);
-						auto transform = JS::Converter::get_vector<double>(context, argv[2]);
-						auto color = JS::Converter::get_vector<double>(context, argv[3]);
-						auto matrix = Matrix{};
-						auto basic_color = Color{};
-						matrix_from_transform(matrix, transform);
-						color_from_transform(basic_color, color);
-						s.reset(new Data(name, link, matrix, basic_color));
-					}
-					else {
-						JS_ThrowInternalError(context, "Constructor for Sprite class does not match, expected 4 argument, got: %d", argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; 
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 4) {
+								auto name = JS::Converter::get_string(context, argv[0]);
+								auto link = JS::Converter::get_string(context, argv[1]);
+								auto transform = JS::Converter::get_vector<double>(context, argv[2]);
+								auto color = JS::Converter::get_vector<double>(context, argv[3]);
+								auto matrix = Matrix{};
+								auto basic_color = Color{};
+								matrix_from_transform(matrix, transform);
+								color_from_transform(basic_color, color);
+								return new Data(name, link, matrix, basic_color);
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Constructor for Sprite class does not match, expected 4 argument, got: {}", argc)
+					);
 				});
 			}
 
@@ -2736,7 +2794,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -2799,7 +2857,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -2882,38 +2940,27 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						auto source = JS::Converter::get_string(context, argv[0]);
-						s.reset(new Data(source, "rb"));
-					}
-					else {
-						JS_ThrowInternalError(context, "FileInputStream cannot be initialized because argument does not satisfy constructor");
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto source = JS::Converter::get_string(context, argv[0]);
+								return new Data(source, "rb");
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Constructor for FileInputStream class does not match, expected 1 argument, got: {}", argc)
+					);
 				});
 			}
 
@@ -2933,7 +2980,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -2944,7 +2991,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s) {
@@ -2957,7 +3004,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s) {
@@ -2969,7 +3016,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "read", [&](Data* s) {
@@ -2981,7 +3028,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				return handle(context, value, argc, argv, "read_all", [&](Data* s) {
@@ -3004,7 +3051,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -3056,38 +3103,27 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						auto source = JS::Converter::get_string(context, argv[0]);
-						s.reset(new Data(source, "wb"));
-					}
-					else {
-						JS_ThrowInternalError(context, "FileOutputStream cannot be initialized because the constructor does not satisfy the argument count");
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; 
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto source = JS::Converter::get_string(context, argv[0]);
+								return new Data(source, "wb");
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Constructor for FileOutputStream class does not match, expected 1 argument, got: {}", argc)
+					);
 				});
 			}
 
@@ -3107,7 +3143,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -3118,7 +3154,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s) {
@@ -3131,7 +3167,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s) {
@@ -3143,7 +3179,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "write", [&](Data* s) {
@@ -3157,7 +3193,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "write_all", [&](Data* s) {
@@ -3181,7 +3217,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -3233,38 +3269,27 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						auto source = JS::Converter::get_string(context, argv[0]);
-						s.reset(new Data(source, "w+b"));
-					}
-					else {
-						JS_ThrowInternalError(context, "FileStream cannot be initialized because expected argument count = 1 but got: %d", argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto source = JS::Converter::get_string(context, argv[0]);
+								return new Data(source, "w+b");
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Constructor for FileStream class does not match, expected 1 argument, got: {}", argc)
+					);
 				});
 			}
 
@@ -3284,7 +3309,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -3295,7 +3320,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s){
@@ -3308,7 +3333,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s){
@@ -3320,7 +3345,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "write", [&](Data* s){
@@ -3334,7 +3359,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "write_all", [&](Data* s){
@@ -3348,7 +3373,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "read", [&](Data* s){
@@ -3360,7 +3385,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				return handle(context, value, argc, argv, "read_all", [&](Data* s){
@@ -3383,7 +3408,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -3437,30 +3462,23 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::make_unique<Data>();
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;					
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							return new Data();
+						},
+						class_id,
+						"Cannot initialize JSON Writer class"
+					);	
 				});
 			}
 
@@ -3480,7 +3498,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -3491,7 +3509,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "clear", [&](Data* s) {
@@ -3504,7 +3522,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return handle(context, value, argc, argv, "toString", [&](Data* s) {
@@ -3516,7 +3534,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeStartArray", [&](Data* s) {
@@ -3529,7 +3547,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeEndArray", [&](Data* s) {
@@ -3542,7 +3560,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeStartObject", [&](Data* s) {
@@ -3555,7 +3573,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeEndObject", [&](Data* s) {
@@ -3568,7 +3586,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeBoolean", [&](Data* s) {
@@ -3582,7 +3600,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writeNull", [&](Data* s) {
@@ -3595,7 +3613,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "writePropertyName", [&](Data* s) {
@@ -3611,7 +3629,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				auto function_name = std::string{};
@@ -3656,7 +3674,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -3731,47 +3749,7 @@ namespace Sen::Kernel::Interface::Script
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto class_id = temporary_class_id();
 
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto constructor(
-				JSContext *context,
-				JSValue new_target,
-				int argc,
-				JSValue *argv
-			) -> JSElement::undefined
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						if constexpr (std::is_integral<T>::value) {
-							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0]))));
-						}
-						else {
-							s.reset(new Data<T>(static_cast<T>(JS::Converter::get_float64(context, argv[0]))));
-						}
-					}
-					else {
-						s.reset(new Data<T>());
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
-				});
-			}
+			
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto this_class = make_class_definition<Data<T>>(
@@ -3841,11 +3819,43 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
+			inline static auto constructor(
+				JSContext *context,
+				JSValue value,
+				int argc,
+				JSValue* argv
+			) -> JSElement::undefined
+			{
+				return proxy_wrapper(context, "constructor", [&]() {
+					return initialize_constructor<Data<T>>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data<T>* {
+							if (argc == 1) {
+								if constexpr (std::is_integral<T>::value) {
+									return new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
+								}
+								else {
+									return new Data<T>(static_cast<T>(JS::Converter::get_float64(context, argv[0])));
+								}
+							}
+							return new Data<T>();
+						},
+						class_id<T>,
+						fmt::format("Cannot initialize {} class", this_class<T>.class_name)
+					);
+				});
+			}
+
+			template <typename T>
+				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
 			inline static auto handle(
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
@@ -3876,7 +3886,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -3944,54 +3954,32 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					using Uinteger32C = Number::Data<std::uint32_t>;
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 5) {
-						auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(context, argv[0]);
-						auto loop = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Number::class_id<std::uint32_t>.value));
-						if (loop == nullptr) {
-							return JS_EXCEPTION;
-						}
-						auto width = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[2], Number::class_id<std::uint32_t>.value));
-						if (width == nullptr) {
-							return JS_EXCEPTION;
-						}
-						auto height = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[3], Number::class_id<std::uint32_t>.value));
-						if (height == nullptr) {
-							return JS_EXCEPTION;
-						}
-						auto trim = static_cast<Boolean::Data*>(JS_GetOpaque2(context, argv[4], Boolean::class_id.value));
-						if (trim == nullptr) {
-							return JS_EXCEPTION;
-						}
-						s.reset(new Data(delay_frames_list, loop->value, width->value, height->value, trim->value));
-						}
-					else {
-						s.reset(new Data());
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-					fail:
-						JS_FreeValue(context, obj);
-						return JS_EXCEPTION; 
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 5) {
+								auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(context, argv[0]);
+								auto loop = get_opaque_value<Uinteger32C>(context, argv[1], Number::class_id<std::uint32_t>.value);
+								auto width = get_opaque_value<Uinteger32C>(context, argv[2], Number::class_id<std::uint32_t>.value);
+								auto height = get_opaque_value<Uinteger32C>(context, argv[3], Number::class_id<std::uint32_t>.value);
+								auto trim = get_opaque_value<Boolean::Data>(context, argv[4], Boolean::class_id.value);
+								return new Data(delay_frames_list, loop->value, width->value, height->value, trim->value);
+							}
+							return new Data();
+						},
+						class_id,
+						"Cannot initialize APNGMakerSetting class"
+					);
 				});
 			}
 
@@ -4011,7 +3999,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -4058,7 +4046,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -4157,37 +4145,26 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						s.reset(new Data{static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0]))});
-					}
-					else {
-						JS_ThrowInternalError(context, "Size class cannot be initialized because number of argument does not match. Expected: %d, got: %d", 1, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								return new Data(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Size class cannot be initialized because number of argument does not match. Expected: {}, got: {}", 1, argc)
+					);
 				});
 			}
 
@@ -4207,7 +4184,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -4228,7 +4205,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -4246,14 +4223,14 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::Size
 			{
 				return proxy_wrapper(context, "instance", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data>(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -4328,36 +4305,26 @@ namespace Sen::Kernel::Interface::Script
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data<T>, decltype(make_deleter<Data<T>>())>(nullptr, make_deleter<Data<T>>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::Character{};
-					if (argc == 1) {
-						s.reset(new Data<T>{static_cast<T>(JS::Converter::get_bigint64(context, argv[0]))});
-					}
-					else {
-						s.reset(new Data<T>());
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data<T>>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data<T>* {
+							if (argc == 1) {
+								return new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
+							}
+							return new Data<T>();
+						},
+						class_id<T>,
+						fmt::format("Character class cannot be initialized due to internal error")
+					);
 				});
 			}
 
@@ -4386,7 +4353,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data<T>*)> method
 			) -> JSValue {
@@ -4411,7 +4378,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -4433,14 +4400,14 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::Character
 			{
 				return proxy_wrapper(context, "instance", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data<T>>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -4544,45 +4511,33 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::String{};
-					if (argc == 1) {
-						s.reset(new Data());
-						auto str = JS::Converter::get_string(context, argv[0]);
-						s->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
-						if (s->value == nullptr) {
-							JS_ThrowReferenceError(context, "could not allocate Kernel String");
-							return JS_EXCEPTION;
-						}
-						std::memcpy(s->value, str.data(), str.size());
-						s->size = str.size();
-						s->value[str.size()] = '\0';
-					}
-					else {
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto ptr = new Data();
+								auto str = JS::Converter::get_string(context, argv[0]);
+								ptr->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
+								assert_conditional(ptr->value != nullptr, "could not allocate Kernel String", "lambda");
+								std::memcpy(ptr->value, str.data(), str.size());
+								ptr->size = str.size();
+								ptr->value[str.size()] = '\0';
+								return ptr;
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("String class cannot be initialized due to internal error")
+					);
 				});
 			}
 
@@ -4602,7 +4557,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -4623,7 +4578,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -4648,7 +4603,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::String
 			{
 				return proxy_wrapper(context, "instance", [&](){
@@ -4659,8 +4614,8 @@ namespace Sen::Kernel::Interface::Script
 					std::memcpy(s->value, str.data(), str.size());
 					s->size = str.size();
 					s->value[str.size()] = '\0';
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -4757,7 +4712,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -4768,7 +4723,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s){
@@ -4780,7 +4735,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "capacity", [&](Data* s){
@@ -4792,7 +4747,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "allocate", [&](Data* s){
@@ -4806,7 +4761,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				return handle(context, value, argc, argv, "sub", [&](Data* s){
@@ -4825,7 +4780,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::DataStreamView
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
@@ -4840,11 +4795,12 @@ namespace Sen::Kernel::Interface::Script
 					auto constructor_name = DataStreamView::_class_name<use_big_endian>();
 					auto stream_atom = Atom{context, constructor_name};
 					auto stream_ctor = JS_GetProperty(context, kernel_obj, stream_atom.value);
+					auto prototype_atom = Atom{context, "prototype"};
 					JS_FreeValue(context, global_obj);
 					JS_FreeValue(context, sen_obj);
 					JS_FreeValue(context, kernel_obj);
 					JS_FreeValue(context, stream_ctor);
-					auto proto = JS_GetPrototype(context, stream_ctor);
+					auto proto = JS_GetProperty(context, stream_ctor, prototype_atom.value);
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), m_function_name);
 					}
@@ -4860,42 +4816,30 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSElement::Prototype{};
-					if (argc == 1) {
-						auto size = std::size_t{};
-						auto data = JS_GetArrayBuffer(context, &size, argv[0]);
-						if (data == nullptr) {
-							return JS_EXCEPTION;
-						}
-						s.reset(new Data(make_list(data, size)));
-					}
-					else {
-						JS_ThrowInternalError(context, "BinaryView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; });
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto size = std::size_t{};
+								auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+								assert_conditional(data != nullptr, "Cannot get instance of ArrayBuffer", "lambda");
+								return new Data(make_list(data, size));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("BinaryView cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 1, argc)
+					);
+				});
 			}
 
 			inline static auto getter(
@@ -4912,7 +4856,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSValue
 			{
@@ -4944,12 +4888,13 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::BinaryView
 			{
 				return proxy_wrapper(context, "instance", [&]() {
 					auto s = std::make_unique<Data>();
-					auto proto = JS_GetPrototype(context, value);
+					auto atom_proto = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom_proto.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -5000,37 +4945,26 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::Canvas{};
-					if (argc == 2) {
-						s.reset(new Data(static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1]))));
-					}
-					else {
-						JS_ThrowInternalError(context, "Canvas class cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 2, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 2) {
+								return new Data(static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1])));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Canvas class cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 2, argc)
+					);
 				});
 			}
 
@@ -5050,7 +4984,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -5061,7 +4995,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "scale", [&](Data* s) {
@@ -5076,7 +5010,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "rotate", [&](Data* s) {
@@ -5090,7 +5024,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "translate", [&](Data* s) {
@@ -5104,7 +5038,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "transform", [&](Data* s) {
@@ -5118,7 +5052,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_transform", [&](Data* s) {
@@ -5132,7 +5066,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_global_alpha", [&](Data* s) {
@@ -5146,7 +5080,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_shadow_color", [&](Data* s) {
@@ -5160,7 +5094,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_line_width", [&](Data* s) {
@@ -5174,7 +5108,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_shadow_blur", [&](Data* s) {
@@ -5188,7 +5122,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_miter_limit", [&](Data* s) {
@@ -5204,7 +5138,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_color", [&](Data* s) {
@@ -5218,7 +5152,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_linear_gradient", [&](Data* s) {
@@ -5232,7 +5166,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_radial_gradient", [&](Data* s) {
@@ -5246,7 +5180,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "add_color_stop", [&](Data* s) {
@@ -5260,7 +5194,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "begin_path", [&](Data* s) {
@@ -5273,7 +5207,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "move_to", [&](Data* s) {
@@ -5287,7 +5221,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "close_path", [&](Data* s) {
@@ -5300,7 +5234,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "line_to", [&](Data* s) {
@@ -5314,7 +5248,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "quadratic_curve_to", [&](Data* s) {
@@ -5328,7 +5262,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "bezier_curve_to", [&](Data* s) {
@@ -5342,7 +5276,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "arc_to", [&](Data* s) {
@@ -5356,7 +5290,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "set_image_color", [&](Data* s) {
@@ -5370,7 +5304,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "arc", [&](Data* s) {
@@ -5384,7 +5318,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "rectangle", [&](Data* s) {
@@ -5398,7 +5332,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "fill", [&](Data* s) {
@@ -5411,7 +5345,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "stroke", [&](Data* s) {
@@ -5424,7 +5358,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "clip", [&](Data* s) {
@@ -5437,7 +5371,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::boolean
 			{
 				return handle(context, value, argc, argv, "is_point_in_path", [&](Data* s) {
@@ -5450,7 +5384,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "clear_rectangle", [&](Data* s) {
@@ -5464,7 +5398,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "fill_rectangle", [&](Data* s) {
@@ -5478,7 +5412,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "stroke_rectangle", [&](Data* s) {
@@ -5492,7 +5426,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::boolean
 			{
 				return handle(context, value, argc, argv, "set_font", [&](Data* s) {
@@ -5507,7 +5441,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "draw_image", [&](Data* s) {
@@ -5523,7 +5457,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "get_image_data", [&](Data* s) {
@@ -5542,7 +5476,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "put_image_data", [&](Data* s) {
@@ -5558,7 +5492,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "save", [&](Data* s) {
@@ -5571,7 +5505,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return handle(context, value, argc, argv, "restore", [&](Data* s) {
@@ -5660,41 +5594,30 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::ImageView{};
-					if (argc == 1) {
-						auto width_atom = Atom{context, "width"};
-						auto height_atom = Atom{context, "height"};
-						auto width = get_property_bigint64(context, argv[0], width_atom.value);
-						auto height = get_property_bigint64(context, argv[0], height_atom.value);
-						s.reset(new Data(static_cast<int>(width),static_cast<int>(height)));
-					}
-					else {
-						JS_ThrowInternalError(context, "DimensionView cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto width_atom = Atom{context, "width"};
+								auto height_atom = Atom{context, "height"};
+								auto width = get_property_bigint64(context, argv[0], width_atom.value);
+								auto height = get_property_bigint64(context, argv[0], height_atom.value);
+								return new Data(static_cast<int>(width),static_cast<int>(height));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("DimensionView cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 1, argc)
+					);
 				});
 			}
 
@@ -5714,7 +5637,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -5749,7 +5672,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -5822,45 +5745,34 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::ImageView{};
-					if (argc == 1) {
-						auto width_atom = Atom{context, "width"};
-						auto height_atom = Atom{context, "height"};
-						auto x_atom = Atom{context, "x"};
-						auto y_atom = Atom{context, "y"};
-						auto width = get_property_bigint64(context, argv[0], width_atom.value);
-						auto height = get_property_bigint64(context, argv[0], height_atom.value);
-						auto x = get_property_bigint64(context, argv[0], x_atom.value);
-						auto y = get_property_bigint64(context, argv[0], y_atom.value);
-						s.reset(new Data{static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)});
-					}
-					else {
-						JS_ThrowInternalError(context, "Rectangle cannot be initialized because the number of argument does not match. Expected: %d, got: %d", 1, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; 
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto width_atom = Atom{context, "width"};
+								auto height_atom = Atom{context, "height"};
+								auto x_atom = Atom{context, "x"};
+								auto y_atom = Atom{context, "y"};
+								auto width = get_property_bigint64(context, argv[0], width_atom.value);
+								auto height = get_property_bigint64(context, argv[0], height_atom.value);
+								auto x = get_property_bigint64(context, argv[0], x_atom.value);
+								auto y = get_property_bigint64(context, argv[0], y_atom.value);
+								return new Data(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("Rectangle cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 1, argc)
+					);
 				});
 			}
 
@@ -5880,7 +5792,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -5923,7 +5835,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -6012,60 +5924,47 @@ namespace Sen::Kernel::Interface::Script
 
 			inline static auto constructor(
 				JSContext *context,
-				JSValue new_target,
+				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "constructor", [&](){
-					auto s = std::unique_ptr<Data, decltype(make_deleter<Data>())>(nullptr, make_deleter<Data>());
-					auto obj = JS_UNDEFINED;
-					auto proto = JSDefine::ImageView{};
-					if (argc == 1) {
-						auto width_atom = Atom{context, "width"};
-						auto height_atom = Atom{context, "height"};
-						auto bit_depth_atom = Atom{context, "bit_depth"};
-						auto color_type_atom = Atom{context, "color_type"};
-						auto interlace_type_atom = Atom{context, "interlace_type"};
-						auto channels_atom = Atom{context, "channels"};
-						auto rowbytes_atom = Atom{context, "rowbytes"};
-						auto data_atom = Atom{context, "data"};
-						auto width = get_property_bigint64(context, argv[0], width_atom.value);
-						auto height = get_property_bigint64(context, argv[0], height_atom.value);
-						auto bit_depth = get_property_bigint64(context, argv[0], bit_depth_atom.value);
-						auto color_type = get_property_bigint64(context, argv[0], color_type_atom.value);
-						auto interlace_type = get_property_bigint64(context, argv[0], interlace_type_atom.value);
-						auto channels = get_property_bigint64(context, argv[0], channels_atom.value);
-						auto rowbytes = get_property_bigint64(context, argv[0], rowbytes_atom.value);
-						auto data_val = JS_GetProperty(context, argv[0], data_atom.value);
-						if (JS_IsException(data_val)) {
-							return JS_EXCEPTION;
-						}
-						auto size = std::size_t{};
-						auto data = JS_GetArrayBuffer(context, &size, data_val);
-						JS_FreeValue(context, data_val);
-						assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object", "constructor");
-						s.reset(new Data{static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size))});
-					}
-					else {
-						JS_ThrowInternalError(context, "ImageView cannot be initialized because the number of argument does not valid. Expected: %d, got: %d", 1, argc);
-						return JS_EXCEPTION;
-					}
-					
-					proto = JS_GetPrototype(context, new_target);
-					if (JS_IsException(proto)) {
-						goto fail;
-					}
-					obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						goto fail;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION;
+					return initialize_constructor<Data>(
+						context,
+						value,
+						argc,
+						argv,
+						[&](int argc, JSValue* argv) -> Data* {
+							if (argc == 1) {
+								auto width_atom = Atom{context, "width"};
+								auto height_atom = Atom{context, "height"};
+								auto bit_depth_atom = Atom{context, "bit_depth"};
+								auto color_type_atom = Atom{context, "color_type"};
+								auto interlace_type_atom = Atom{context, "interlace_type"};
+								auto channels_atom = Atom{context, "channels"};
+								auto rowbytes_atom = Atom{context, "rowbytes"};
+								auto data_atom = Atom{context, "data"};
+								auto width = get_property_bigint64(context, argv[0], width_atom.value);
+								auto height = get_property_bigint64(context, argv[0], height_atom.value);
+								auto bit_depth = get_property_bigint64(context, argv[0], bit_depth_atom.value);
+								auto color_type = get_property_bigint64(context, argv[0], color_type_atom.value);
+								auto interlace_type = get_property_bigint64(context, argv[0], interlace_type_atom.value);
+								auto channels = get_property_bigint64(context, argv[0], channels_atom.value);
+								auto rowbytes = get_property_bigint64(context, argv[0], rowbytes_atom.value);
+								auto data_val = JS_GetProperty(context, argv[0], data_atom.value);
+								assert_conditional(!JS_IsException(data_val), fmt::format("\"data\" property inside current object is undefined"), "constructor");
+								auto size = std::size_t{};
+								auto data = JS_GetArrayBuffer(context, &size, data_val);
+								JS_FreeValue(context, data_val);
+								assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object", "constructor");
+								return new Data(static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size)));
+							}
+							return nullptr;
+						},
+						class_id,
+						fmt::format("ImageView cannot be initialized because the number of argument does not valid. Expected: {}, got: {}", 1, argc)
+					);
 				});
 			}
 
@@ -6085,7 +5984,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv,
+				JSValue* argv,
 				std::string_view method_name,
 				std::function<JSValue(Data*)> method
 			) -> JSValue {
@@ -6144,7 +6043,7 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValue val,
+				JSValueConst val,
 				int magic
 			) -> JSElement::undefined
 			{
@@ -6210,7 +6109,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "area", [&](Data* s) {
@@ -6222,7 +6121,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return handle(context, value, argc, argv, "circumference", [&](Data* s) {
@@ -6238,7 +6137,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "cut", [&]() {
@@ -6256,8 +6155,8 @@ namespace Sen::Kernel::Interface::Script
 					auto width = get_property_bigint64(context, argv[1], width_atom.value);
 					auto height = get_property_bigint64(context, argv[1], height_atom.value);
 					auto data = std::make_unique<Data>(std::move(Data::cut(*s, Rectangle<int>(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)))));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6275,7 +6174,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "resize", [&]() {
@@ -6285,8 +6184,8 @@ namespace Sen::Kernel::Interface::Script
 						return JS_EXCEPTION;
 					}
 					auto data = std::unique_ptr<Data, decltype(make_deleter<Data>())>(new Data(std::move(Data::resize(*s, JS::Converter::get_float32(context, argv[1])))), make_deleter<Data>());
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6304,7 +6203,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "scale", [&]() {
@@ -6314,8 +6213,8 @@ namespace Sen::Kernel::Interface::Script
 						return JS_EXCEPTION;
 					}
 					auto data = std::make_unique<Data>(std::move(Data::scale(*s, JS::Converter::get_float64(context, argv[1]))));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6333,7 +6232,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "rotate", [&]() {
@@ -6343,8 +6242,8 @@ namespace Sen::Kernel::Interface::Script
 						return JS_EXCEPTION;
 					}
 					auto data = std::make_unique<Data>(std::move(Data::rotate(*s, JS::Converter::get_float64(context, argv[1]))));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6362,7 +6261,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "write_fs", [&]() {
@@ -6380,14 +6279,14 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "read_fs", [&]() {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_fs");
 					auto data = std::make_unique<Data>(std::move(Kernel::ImageIO::read_png(JS::Converter::get_string(context, argv[0]))));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6405,14 +6304,14 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::ImageView
 			{
 				return proxy_wrapper(context, "instance", [&]() {
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data>(0, 0, static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), JS::Converter::to_binary_list(context, argv[2]));
-					
-					auto proto = JS_GetPrototype(context, value);
+					auto atom = Atom{context, "prototype"};
+					auto proto = JS_GetProperty(context, value, atom.value);
 					if (JS_IsException(proto)) {
 						return JS_EXCEPTION;
 					}
@@ -6502,7 +6401,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "sleep", [&](){
@@ -6517,7 +6416,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::number
 		{
 			return proxy_wrapper(context, "now", [&](){
@@ -6538,7 +6437,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
@@ -6556,7 +6455,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
@@ -6580,7 +6479,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "current", [&](){
@@ -6633,7 +6532,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "architecture", [&](){
@@ -6676,25 +6575,17 @@ namespace Sen::Kernel::Interface::Script
 					result += buffer.data();
 				}
 				result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
-				if (result == "x86_64")
-				{
-					return JS::Converter::to_string(context, std::string{"x64"});
-				}
-				else if (result == "i686")
-				{
-					return JS::Converter::to_string(context, std::string{"x86"});
-				}
-				else if (result == "aarch64")
-				{
-					return JS::Converter::to_string(context, std::string{"arm64"});
-				}
-				else if (result == "armv7l")
-				{
-					return JS::Converter::to_string(context, std::string{"arm"});
-				}
-				else
-				{
-					return JS::Converter::to_string(context, std::string{"Unknown"});
+				switch (hash_string(result)) {
+					case hash_string("x86_64"_sv): 
+						return JS::Converter::to_string(context, std::string{"x64"});
+					case hash_string("i686"_sv): 
+						return JS::Converter::to_string(context, std::string{"x86"});
+					case hash_string("aarch64"_sv): 
+						return JS::Converter::to_string(context, std::string{"arm64"});
+					case hash_string("armv7l"_sv): 
+						return JS::Converter::to_string(context, std::string{"arm"});
+					default:
+						return JS::Converter::to_string(context, std::string{"Unknown"});
 				}
 				#endif
 			});
@@ -6709,7 +6600,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "open", [&]() {
@@ -6724,7 +6615,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "out", [&]() {
@@ -6740,7 +6631,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "random", [&](){
@@ -6762,7 +6653,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "fill", [&](){
@@ -6790,7 +6681,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "run", [&](){
@@ -6805,7 +6696,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean
 		{
 			return proxy_wrapper(context, "is_exists_in_path_environment", [&](){
@@ -6820,7 +6711,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "get_path_environment", [&](){
@@ -6835,7 +6726,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "execute", [&](){
@@ -6856,30 +6747,25 @@ namespace Sen::Kernel::Interface::Script
 		) -> std::string
 		{
 			using Color = Sen::Kernel::Interface::Color;
-			if (color == Color::RED)
-			{
-				return "red";
+			switch (color) {
+				case Color::RED:
+					return "red";
+				case Color::GREEN:
+					return "green";
+				case Color::CYAN:
+					return "cyan";
+				case Color::YELLOW:
+					return "YELLOW";
+				default:
+					return "default";
 			}
-			if (color == Color::GREEN)
-			{
-				return "green";
-			}
-			if (color == Color::CYAN)
-			{
-				return "cyan";
-			}
-			if (color == Color::YELLOW)
-			{
-				return "yellow";
-			}
-			return "default";
 		}
 
 		inline static auto print(
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "print", [&](){
@@ -6888,17 +6774,17 @@ namespace Sen::Kernel::Interface::Script
 				{
 					case 1:
 					{
-						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}).get(), nullptr);
+						Shell::callback(construct_string_list(std::array<std::string, 2>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}).get(), nullptr);
 						break;
 					}
 					case 2:
 					{
-						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}).get(), nullptr);
+						Shell::callback(construct_string_list(std::array<std::string, 3>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}).get(), nullptr);
 						break;
 					}
 					default:
 					{
-						Shell::callback(construct_string_list(List<std::string>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}).get(), nullptr);
+						Shell::callback(construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}).get(), nullptr);
 						break;
 					}
 				}
@@ -6910,14 +6796,14 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "readline", [&](){
-				Shell::callback(construct_string_list(List<std::string>{std::string{"wait"}}).get(), nullptr);
-				auto destination = std::make_unique<CStringView>();
-				Shell::callback(construct_string_list(List<std::string>{std::string{"input"}}).get(), destination.get());
-				return JS::Converter::to_string(context, std::string{destination->value, static_cast<std::size_t>(destination->size)});
+				Shell::callback(construct_string_list(std::array<std::string, 1>{std::string{"wait"}}).get(), nullptr);
+				auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
+				Shell::callback(construct_string_list(std::array<std::string, 1>{std::string{"input"}}).get(), destination.get());
+				return to_string(context, destination.get());
 			});
 		}
 	}
@@ -6929,7 +6815,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "join", [&](){
@@ -6947,7 +6833,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "basename", [&](){
@@ -6962,7 +6848,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "delimiter", [&](){
@@ -6975,7 +6861,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "dirname", [&](){
@@ -6990,7 +6876,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "format", [&](){
@@ -7008,7 +6894,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "normalize", [&](){
@@ -7023,7 +6909,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "base_without_extension", [&](){
@@ -7038,7 +6924,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "except_extension", [&](){
@@ -7053,7 +6939,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "resolve", [&](){
@@ -7068,7 +6954,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "extname", [&](){
@@ -7083,7 +6969,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean
 		{
 			return proxy_wrapper(context, "extname", [&](){
@@ -7098,7 +6984,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "relative", [&](){
@@ -7119,7 +7005,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "read_file", [&](){
@@ -7134,7 +7020,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "read_file_encode_with_utf16le", [&](){
@@ -7151,7 +7037,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "write_file", [&](){
@@ -7167,7 +7053,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "write_file_encode_with_utf16le", [&](){
@@ -7185,7 +7071,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Array<JSElement::string>
 		{
 			return proxy_wrapper(context, "read_current_directory", [&](){
@@ -7200,7 +7086,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Array<JSElement::string>
 		{
 			return proxy_wrapper(context, "read_directory_only_file", [&](){
@@ -7215,7 +7101,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Array<JSElement::string>
 		{
 			return proxy_wrapper(context, "read_directory_only_directory", [&](){
@@ -7230,7 +7116,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Array<JSElement::string>
 		{
 			return proxy_wrapper(context, "read_directory", [&](){
@@ -7245,7 +7131,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "create_directory", [&](){
@@ -7260,7 +7146,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean
 		{
 			return proxy_wrapper(context, "is_file", [&](){
@@ -7274,7 +7160,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean
 		{
 			return proxy_wrapper(context, "is_directory", [&](){
@@ -7291,7 +7177,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "rename", [&](){
@@ -7307,7 +7193,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "copy", [&](){
@@ -7323,7 +7209,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "copy_directory", [&](){
@@ -7339,7 +7225,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "remove", [&](){
@@ -7354,7 +7240,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "remove_all", [&](){
@@ -7375,7 +7261,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::bigint
 		{
 			return proxy_wrapper(context, "area", [&](){
@@ -7392,7 +7278,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::bigint
 		{
 			return proxy_wrapper(context, "circumference", [&](){
@@ -7409,7 +7295,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			return proxy_wrapper(context, "instance", [&](){
@@ -7434,7 +7320,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			return proxy_wrapper(context, "open", [&](){
@@ -7473,7 +7359,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			using Image = Sen::Kernel::Image<int>;
@@ -7516,7 +7402,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "scale_fs", [&](){
@@ -7533,7 +7419,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "transparent_fs", [&](){
@@ -7556,7 +7442,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			using Image = Sen::Kernel::Image<int>;
@@ -7602,7 +7488,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			using Image = Sen::Kernel::Image<int>;
@@ -7669,7 +7555,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			using Image = Sen::Kernel::Image<int>;
@@ -7731,7 +7617,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "resize_fs", [&](){
@@ -7748,7 +7634,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "rotate_fs", [&](){
@@ -7765,7 +7651,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "cut_fs", [&](){
@@ -7789,7 +7675,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "cut_multiple_fs", [&](){
@@ -7836,7 +7722,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "cut_multiple_fs_asynchronous", [&](){
@@ -7878,7 +7764,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::any
 		{
 			return proxy_wrapper(context, "evaluate", [&](){
@@ -7893,7 +7779,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::any
 		{
 			return proxy_wrapper(context, "evaluate", [&](){
@@ -7915,7 +7801,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				using Mode = Kernel::Encryption::Rijndael::Mode;
@@ -7954,7 +7840,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				using Mode = Kernel::Encryption::Rijndael::Mode;
@@ -7998,7 +7884,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8013,7 +7899,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::bigint
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
@@ -8033,7 +7919,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8048,7 +7934,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
@@ -8067,7 +7953,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "encode", [&](){
@@ -8082,7 +7968,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "encode_fs_as_multiple_threads", [&](){
@@ -8101,7 +7987,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "decode_fs_as_multiple_threads", [&](){
@@ -8120,7 +8006,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "decode", [&](){
@@ -8135,7 +8021,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
@@ -8151,7 +8037,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
@@ -8171,7 +8057,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8186,7 +8072,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
@@ -8206,7 +8092,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8221,7 +8107,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
@@ -8240,7 +8126,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8255,7 +8141,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
@@ -8274,7 +8160,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8289,7 +8175,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::string
 			{
 				return proxy_wrapper(context, "hash", [&](){
@@ -8308,7 +8194,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::ArrayBuffer
 			{
 				return proxy_wrapper(context, "encrypt", [&](){
@@ -8324,7 +8210,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "encrypt_fs", [&](){
@@ -8353,7 +8239,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "directory", [&](){
@@ -8369,7 +8255,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "file", [&](){
@@ -8396,7 +8282,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "process", [&](){
@@ -8419,7 +8305,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
@@ -8440,7 +8326,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
@@ -8456,7 +8342,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::BinaryView
 			{
 				using Data = Class::BinaryView::Data;
@@ -8471,13 +8357,14 @@ namespace Sen::Kernel::Interface::Script
 					auto sen_atom = Atom{context, "Sen"};
 					auto kernel_atom = Atom{context, "Kernel"};
 					auto binary_view_atom = Atom{context, "BinaryView"};
+					auto proto_atom = Atom{context, "prototype"};
 					auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
 					JS_FreeValue(context, global_obj);
 					auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
 					JS_FreeValue(context, sen_obj);
 					auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
 					JS_FreeValue(context, kernel_obj);
-					auto proto = JS_GetPrototype(context, binary_ctor);
+					auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
 					JS_FreeValue(context, binary_ctor);
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), "uncompress");
@@ -8496,7 +8383,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSDefine::BinaryView
 			{
 				using Data = Class::BinaryView::Data;
@@ -8562,13 +8449,14 @@ namespace Sen::Kernel::Interface::Script
 					auto sen_atom = Atom{context, "Sen"};
 					auto kernel_atom = Atom{context, "Kernel"};
 					auto binary_view_atom = Atom{context, "BinaryView"};
+					auto proto_atom = Atom{context, "prototype"};
 					auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
 					JS_FreeValue(context, global_obj);
 					auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
 					JS_FreeValue(context, sen_obj);
 					auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
 					JS_FreeValue(context, kernel_obj);
-					auto proto = JS_GetPrototype(context, binary_ctor);
+					auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
 					JS_FreeValue(context, binary_ctor);
 					if (JS_IsException(proto)) {
 						throw Exception("not a constructor", std::source_location::current(), "compress");
@@ -8592,7 +8480,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
@@ -8608,7 +8496,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
@@ -8629,7 +8517,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
@@ -8646,7 +8534,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
@@ -8667,7 +8555,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
@@ -8688,7 +8576,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
@@ -8712,7 +8600,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
@@ -8731,7 +8619,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int argc,
-				JSValue *argv
+				JSValue* argv
 			) -> JSElement::undefined
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
@@ -8755,7 +8643,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_fs", [&](){
@@ -8771,7 +8659,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_fs", [&](){
@@ -8796,7 +8684,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_fs", [&](){
@@ -8818,7 +8706,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					using Data = Class::BinaryView::Data;
@@ -8846,13 +8734,14 @@ namespace Sen::Kernel::Interface::Script
 						auto sen_atom = Atom{context, "Sen"};
 						auto kernel_atom = Atom{context, "Kernel"};
 						auto binary_view_atom = Atom{context, "BinaryView"};
+						auto proto_atom = Atom{context, "prototype"};
 						auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
 						JS_FreeValue(context, global_obj);
 						auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
 						JS_FreeValue(context, sen_obj);
 						auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
 						JS_FreeValue(context, kernel_obj);
-						auto proto = JS_GetPrototype(context, binary_ctor);
+						auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
 						JS_FreeValue(context, binary_ctor);
 						if (JS_IsException(proto)) {
 							assert_conditional(false, "not a constructor", "compress");
@@ -8871,7 +8760,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "uncompress_fs", [&](){
@@ -8893,7 +8782,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSDefine::BinaryView
 				{
 					using Data = Class::BinaryView::Data;
@@ -8914,13 +8803,14 @@ namespace Sen::Kernel::Interface::Script
 						auto sen_atom = Atom{context, "Sen"};
 						auto kernel_atom = Atom{context, "Kernel"};
 						auto binary_view_atom = Atom{context, "BinaryView"};
+						auto proto_atom = Atom{context, "prototype"};
 						auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
 						JS_FreeValue(context, global_obj);
 						auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
 						JS_FreeValue(context, sen_obj);
 						auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
 						JS_FreeValue(context, kernel_obj);
-						auto proto = JS_GetPrototype(context, binary_ctor);
+						auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
 						JS_FreeValue(context, binary_ctor);
 						if (JS_IsException(proto)) {
 							assert_conditional(false, "not a constructor", "uncompress");
@@ -8948,7 +8838,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs", [&](){
@@ -8967,7 +8857,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs", [&](){
@@ -8991,7 +8881,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "split_fs"_sv, [&](){
@@ -9007,7 +8897,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "merge_fs"_sv, [&](){
@@ -9023,7 +8913,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					using PathStyle = Sen::Kernel::Support::PopCap::ResourceGroup::PathStyle;
@@ -9055,7 +8945,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "split_fs"_sv, [&](){
@@ -9071,7 +8961,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "merge_fs"_sv, [&](){
@@ -9087,7 +8977,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
@@ -9108,7 +8998,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
@@ -9124,7 +9014,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
@@ -9145,7 +9035,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -9161,7 +9051,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -9183,29 +9073,21 @@ namespace Sen::Kernel::Interface::Script
 					std::string_view platform
 				) -> Platform
 				{
-					if (platform == "pc"_sv)
-					{
-						return Platform::PC_Compile;
-					}
-					if (platform == "game-console"_sv)
-					{
-						return Platform::GameConsole_Compile;
-					}
-					if (platform == "phone-32"_sv)
-					{
-						return Platform::Phone32_Compile;
-					}
-					if (platform == "phone-64"_sv)
-					{
-						return Platform::Phone64_Compile;
-					}
-					if (platform == "tv"_sv)
-					{
-						return Platform::TV_Compile;
-					}
-					if (platform == "wp"_sv)
-					{
-						return Platform::WP_XNB;
+					switch (hash_string(platform)) {
+						case hash_string("pc"_sv): 
+							return Platform::PC_Compile;
+						case hash_string("game_console"_sv):
+							return Platform::GameConsole_Compile;
+						case hash_string("phone-32"_sv):
+							return Platform::Phone32_Compile;
+						case hash_string("phone-64"_sv):
+							return Platform::Phone64_Compile;
+						case hash_string("tv"_sv):
+							return Platform::TV_Compile;
+						case hash_string("wp"_sv):
+							return Platform::WP_XNB;
+						default:
+							assert_conditional(false, fmt::format("{}", Kernel::Language::get("popcap.particles.decode.invalid_particles_platform")), "get_platform");
 					}
 				}
 
@@ -9213,7 +9095,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs", [&]() {
@@ -9230,7 +9112,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs", [&]() {
@@ -9247,7 +9129,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "to_xml", [&]() {
@@ -9263,7 +9145,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "from_xml", [&]() {
@@ -9284,7 +9166,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs", [&]() {
@@ -9300,7 +9182,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs", [&]() {
@@ -9321,7 +9203,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decrypt_fs"_sv, [&]() {
@@ -9338,7 +9220,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encrypt_fs"_sv, [&]() {
@@ -9360,7 +9242,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -9376,7 +9258,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -9397,7 +9279,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -9413,7 +9295,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decrypt_fs"_sv, [&]() {
@@ -9431,7 +9313,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decrypt_and_decode_fs"_sv, [&]() {
@@ -9449,7 +9331,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs_as_multiple_threads"_sv, [&]() {
@@ -9468,7 +9350,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs_as_multiple_threads"_sv, [&]() {
@@ -9487,7 +9369,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -9503,7 +9385,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encrypt_fs"_sv, [&]() {
@@ -9521,7 +9403,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_and_encrypt_fs"_sv, [&]() {
@@ -9542,7 +9424,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -9559,7 +9441,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&](){
@@ -9581,7 +9463,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
@@ -9597,7 +9479,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_resource"_sv, [&]() {
@@ -9613,7 +9495,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_resource"_sv, [&]() {
@@ -9629,7 +9511,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_cipher"_sv, [&]() {
@@ -9645,7 +9527,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
@@ -9665,7 +9547,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
@@ -9681,7 +9563,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
@@ -9701,7 +9583,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&](){
@@ -9717,7 +9599,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
@@ -9737,7 +9619,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -9756,7 +9638,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
@@ -9778,7 +9660,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv) -> JSElement::undefined
+						JSValue* argv) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "process"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
@@ -9805,7 +9687,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "resize_fs"_sv, [&]() {
@@ -9821,7 +9703,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "dump_document"_sv, [&]() {
@@ -9846,7 +9728,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv) -> JSElement::undefined
+						JSValue* argv) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "generate_image"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_image");
@@ -9864,7 +9746,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "generate_document"_sv, [&]()  {
@@ -9892,7 +9774,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "generate_sprite"_sv, [&]() {
@@ -9916,7 +9798,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
@@ -9941,7 +9823,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "to_flash"_sv, [&]() {
@@ -9963,7 +9845,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "from_flash"_sv, [&]() {
@@ -9985,7 +9867,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -10007,7 +9889,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "from_resource_custom"_sv, [&]() {
@@ -10031,14 +9913,14 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "to_resource_custom"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_resource_custom");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							auto json = *Sen::Kernel::FileSystem::read_json(source);
+							auto &json = Sen::Kernel::FileSystem::read_json(source).operator*();
 							auto result = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation{};
 							if (JS::Converter::get_bool(context, argv[2])) {
 								Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(json, result);
@@ -10059,7 +9941,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::boolean
 					{
 						return proxy_wrapper(context, "check_scg_composite"_sv, [&]() {
@@ -10074,7 +9956,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -10090,7 +9972,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -10110,7 +9992,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
@@ -10126,7 +10008,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "pack_fs"_sv, [&]() {
@@ -10151,29 +10033,21 @@ namespace Sen::Kernel::Interface::Script
 					std::string_view platform
 				) -> Platform
 				{
-					if (platform == "pc"_sv)
-					{
-						return Platform::PC_Compile;
-					}
-					if (platform == "game-console"_sv)
-					{
-						return Platform::GameConsole_Compile;
-					}
-					if (platform == "phone-32"_sv)
-					{
-						return Platform::Phone32_Compile;
-					}
-					if (platform == "phone-64"_sv)
-					{
-						return Platform::Phone64_Compile;
-					}
-					if (platform == "tv"_sv)
-					{
-						return Platform::TV_Compile;
-					}
-					if (platform == "wp"_sv)
-					{
-						return Platform::WP_XNB;
+					switch (hash_string(platform)) {
+						case hash_string("pc"_sv):
+							return Platform::PC_Compile;
+						case hash_string("game-console"_sv):
+							return Platform::GameConsole_Compile;
+						case hash_string("phone-32"_sv):
+							return Platform::Phone32_Compile;
+						case hash_string("phone-64"_sv):
+							return Platform::Phone64_Compile;
+						case hash_string("tv"_sv):
+							return Platform::TV_Compile;
+						case hash_string("wp"_sv):
+							return Platform::WP_XNB;
+						default:
+							assert_conditional(false, fmt::format("{}", Kernel::Language::get("popcap.reanim.decode.invalid_reanim_platform")), "get_platform");
 					}
 				}
 
@@ -10181,7 +10055,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -10199,7 +10073,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -10217,7 +10091,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "to_xml", [&]() {
@@ -10233,7 +10107,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "from_xml", [&]() {
@@ -10252,7 +10126,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
@@ -10272,7 +10146,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
@@ -10292,7 +10166,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "to_flash"_sv, [&]() {
@@ -10311,7 +10185,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "from_flash"_sv, [&]() {
@@ -10342,7 +10216,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "add_music"_sv, [&]() {
@@ -10359,7 +10233,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue *argv
+						JSValue* argv
 					) -> JSElement::undefined
 					{
 						return proxy_wrapper(context, "create_soundbank"_sv, [&]() {
@@ -10377,7 +10251,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
@@ -10393,7 +10267,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
@@ -10409,7 +10283,7 @@ namespace Sen::Kernel::Interface::Script
 					JSContext *context,
 					JSValue value,
 					int argc,
-					JSValue *argv
+					JSValue* argv
 				) -> JSElement::undefined
 				{
 					using Uinteger32C = Class::Number::Data<std::uint32_t>;
@@ -10450,7 +10324,7 @@ namespace Sen::Kernel::Interface::Script
 					auto lock = std::lock_guard<std::mutex>(mtx);
 					auto it = eventCallbacks.find(event);
 					if (it != eventCallbacks.end()) {
-						auto jsFilename = JS_NewStringLen(context, filename.data(), filename.size());
+						auto jsFilename = JS_NewStringLen(context, filename.c_str(), filename.size());
 						it->second.function(jsFilename);  
 						JS_FreeValue(context, jsFilename);
 					}
@@ -10505,38 +10379,27 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto constructor(
 			JSContext *context,
-			JSValue new_target,
+			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "constructor", [&](){
-				auto s = std::unique_ptr<JSFileWatcher, decltype(Class::make_deleter<JSFileWatcher>())>(nullptr, Class::make_deleter<JSFileWatcher>());
-				auto obj = JS_UNDEFINED;
-				auto proto = JSElement::Prototype{};
-				if (argc == 1) {
-					auto source = JS::Converter::get_string(context, argv[0]);
-					s.reset(new JSFileWatcher(context, source));
-				}
-				else {
-					JS_ThrowInternalError(context, "FileWatcher cannot be initialized because argument does not satisfy constructor");
-					return JS_EXCEPTION;
-				}
-				
-					proto = JS_GetPrototype(context, new_target);
-				if (JS_IsException(proto)) {
-					goto fail;
-				}
-				obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-				JS_FreeValue(context, proto);
-				if (JS_IsException(obj)) {
-					goto fail;
-				}
-				JS_SetOpaque(obj, s.release());
-				return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; 
+				return Class::initialize_constructor<JSFileWatcher>(
+					context,
+					value,
+					argc,
+					argv,
+					[&](int argc, JSValue* argv) -> JSFileWatcher* {
+						if (argc == 1) {
+							auto source = JS::Converter::get_string(context, argv[0]);
+							return new JSFileWatcher(context, source);
+						}
+						return nullptr;
+					},
+					class_id,
+					fmt::format("FileWatcher cannot be initialized because argument does not satisfy constructor, expected: {}, got: {}", 1, argc)
+				);
 			});
 		}
 
@@ -10556,7 +10419,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv,
+			JSValue* argv,
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
@@ -10682,20 +10545,22 @@ namespace Sen::Kernel::Interface::Script
 
 				inline auto get_duration(
 
-				) -> int64_t const 
+				) -> int64_t 
 				{
 					return duration_;
 				}
 
 				inline auto is_started(
 
-				) -> bool const {
+				) -> bool
+				{
 					return running_;
 				}
 
 				inline auto is_stopped(
 
-				) -> bool const {
+				) -> bool
+				{
 					return !running_;
 				}
 
@@ -10709,30 +10574,23 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto constructor(
 			JSContext *context, 
-			JSValue new_target, 
+			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSValue
 		{
 			return proxy_wrapper(context, "constructor", [&](){
-				auto s = std::make_unique<Data>();
-				auto obj = JS_UNDEFINED;
-				auto proto = JSElement::Prototype{};
-				
-				proto = JS_GetPrototype(context, new_target);
-				if (JS_IsException(proto)) {
-					goto fail;
-				}
-				obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-				JS_FreeValue(context, proto);
-				if (JS_IsException(obj)) {
-					goto fail;
-				}
-				JS_SetOpaque(obj, s.release());
-				return obj;
-				fail:
-					JS_FreeValue(context, obj);
-					return JS_EXCEPTION; 
+				return Class::initialize_constructor<Data>(
+					context,
+					value,
+					argc,
+					argv,
+					[&](int argc, JSValue* argv) -> Data* {
+						return new Data();
+					},
+					class_id,
+					"Cannot call constructor for Clock class, unhandled exception found"
+				);
 			});
 		}
 
@@ -10752,7 +10610,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv,
+			JSValue* argv,
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
@@ -10763,7 +10621,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return handle(context, value, argc, argv, "start", [&](Data *s) {
@@ -10781,7 +10639,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined 
 		{
 			return handle(context, value, argc, argv, "start_safe", [&](Data *s) {
@@ -10794,7 +10652,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined 
 		{
 			return handle(context, value, argc, argv, "stop_safe", [&](Data* clock){
@@ -10807,7 +10665,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined 
 		{
 			return handle(context, value, argc, argv, "stop", [&](Data* clock){
@@ -10825,7 +10683,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined  
 		{
 			return handle(context, value, argc, argv, "reset", [&](Data* clock){
@@ -10838,7 +10696,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::number 
 		{
 			return handle(context, value, argc, argv, "get_duration", [&](Data* clock){
@@ -10850,7 +10708,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::number 
 		{
 			return handle(context, value, argc, argv, "get_duration_as_seconds", [&](Data* clock){
@@ -10862,7 +10720,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean  
 		{
 			return handle(context, value, argc, argv, "is_started", [&](Data* clock){
@@ -10874,7 +10732,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context, 
 			JSValue value, 
 			int argc, 
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean  
 		{
 			return handle(context, value, argc, argv, "is_stopped", [&](Data* clock){
@@ -10926,7 +10784,7 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto deep_clone(
 			JSContext *context,
-			JSValue value
+			JSValueConst value
 		) -> JSValue
 		{
 			switch (JS_VALUE_GET_TAG(value))
@@ -11019,7 +10877,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSValue
 		{
 			return proxy_wrapper(context, "make_copy", [&](){
@@ -11032,7 +10890,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "cast_ArrayBuffer_to_JS_String"_sv, [&]() {
@@ -11051,7 +10909,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::ArrayBuffer
 		{
 			return proxy_wrapper(context, "cast_movable_String_to_ArrayBuffer"_sv, [&]() {
@@ -11065,7 +10923,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::ArrayBuffer
 		{
 			return proxy_wrapper(context, "copyArrayBuffer"_sv, [&]() {
@@ -11081,7 +10939,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::boolean
 		{
 			return proxy_wrapper(context, "compareArrayBuffer"_sv, [&]() {
@@ -11110,7 +10968,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "cast_ArrayBuffer_to_JS_WideString"_sv, [&]() {
@@ -11132,7 +10990,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::undefined
 		{
 			return proxy_wrapper(context, "to_apng"_sv, [&]() {
@@ -11224,52 +11082,55 @@ namespace Sen::Kernel::Interface::Script
 			{
 				for (auto &[key, value] : j.items())
 				{
-					if (key == "@attributes")
-					{
-						for (auto &[attribute_key, attribute_value] : value.items())
-						{
-							dynamic_cast<tinyxml2::XMLElement *>(node)->SetAttribute(attribute_key.data(), attribute_value.get<std::string>().data());
+					switch (hash_string(key)) {
+						case hash_string("@attributes"_sv): {
+							for (auto &[attribute_key, attribute_value] : value.items())
+							{
+								dynamic_cast<tinyxml2::XMLElement *>(node)->SetAttribute(attribute_key.data(), attribute_value.get<std::string>().data());
+							}
+							break;
 						}
-					}
-					else if (key == "@text")
-					{
-						if (!value["is_cdata"].is_null() and value["is_cdata"])
-						{
-							auto cdata = doc.NewText(value["value"].get<std::string>().data());
-							cdata->SetCData(true);
-							node->InsertEndChild(cdata);
+						case hash_string("@text"_sv): {
+							if (!value["is_cdata"].is_null() and value["is_cdata"])
+							{
+								auto cdata = doc.NewText(value["value"].get<std::string>().data());
+								cdata->SetCData(true);
+								node->InsertEndChild(cdata);
+							}
+							else
+							{
+								dynamic_cast<tinyxml2::XMLElement *>(node)->SetText(value["value"].get<std::string>().data());
+							}
+							break;
 						}
-						else
-						{
-							dynamic_cast<tinyxml2::XMLElement *>(node)->SetText(value["value"].get<std::string>().data());
-						}
-					}
-					else
-					{
-						if (value.is_object())
-						{
-							auto child = doc.NewElement(key.data());
-							node->InsertEndChild(child);
-							json2xml(value, child, doc);
-						}
-						else if (value.is_array())
-						{
-							for (auto &element : value)
+						default: {
+							if (value.is_object())
 							{
 								auto child = doc.NewElement(key.data());
 								node->InsertEndChild(child);
-								json2xml(element, child, doc);
+								json2xml(value, child, doc);
 							}
+							else if (value.is_array())
+							{
+								for (auto &element : value)
+								{
+									auto child = doc.NewElement(key.data());
+									node->InsertEndChild(child);
+									json2xml(element, child, doc);
+								}
+							}
+							else if (value.is_null()) {
+								auto child = doc.NewElement(key.data());
+								node->InsertEndChild(child);
+							}
+							else
+							{
+								auto child = doc.NewElement(node->Value());
+								node->Parent()->InsertEndChild(child);
+							}
+							break;
 						}
-						else if (value.is_null()) {
-							auto child = doc.NewElement(key.data());
-							node->InsertEndChild(child);
-						}
-						else
-						{
-							auto child = doc.NewElement(node->Value());
-							node->Parent()->InsertEndChild(child);
-						}
+
 					}
 				}
 			}
@@ -11310,7 +11171,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			return proxy_wrapper(context, "deserialize"_sv, [&]() {
@@ -11331,7 +11192,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::Object
 		{
 			return proxy_wrapper(context, "deserialize_fs"_sv, [&]() {
@@ -11353,7 +11214,7 @@ namespace Sen::Kernel::Interface::Script
 			JSContext *context,
 			JSValue value,
 			int argc,
-			JSValue *argv
+			JSValue* argv
 		) -> JSElement::string
 		{
 			return proxy_wrapper(context, "serialize"_sv, [&]() {
@@ -11369,7 +11230,7 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto serialize_fs(
 			JSElement::Context *context,
-			JSElement::any value,
+			JSElement::any valueue,
 			JSElement::ParameterCount argc,
 			JSElement::ParameterList argv
 		) -> JSElement::undefined

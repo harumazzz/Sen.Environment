@@ -741,9 +741,9 @@ namespace Sen.Script.Executor {
 					);
 					const result = input_integer([1n, 2n]);
 					if (result === 1n) {
-						input = Console.path(Kernel.Language.get('input_file'), 'file');
+						input = Shell.callback(['pick_file']);
 					} else {
-						input = Console.path(Kernel.Language.get('input_directory'), 'directory');
+						input = Shell.callback(['pick_directory']);
 					}
 					if (input.length === 0) continue;
 					break;
@@ -764,6 +764,9 @@ namespace Sen.Script.Executor {
 					);
 					execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
 					continue;
+			}
+			if (input.startsWith('"') && input.endsWith('"')) {
+				input = input.slice(1, input.length - 1);
 			}
 			Console.argument(input);
 			argument.source.push(input);

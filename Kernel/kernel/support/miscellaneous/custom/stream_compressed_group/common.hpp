@@ -539,7 +539,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 for (auto &[packet_id, packet_value] : data["packet"].items())
                 {
                     auto &packet = value.texture.packet[packet_id];
-                    assert_conditional(packet_value["type"].get<std::string>() == "Image"_sv, String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
+                    assert_conditional(hash_string(packet_value["type"].get<std::string>()) == hash_string("Image"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
                     packet.path = packet_value["path"].get<std::string>();
                     packet.dimension.width = packet_value["dimension"]["width"].get<int>();
                     packet.dimension.height = packet_value["dimension"]["height"].get<int>();
