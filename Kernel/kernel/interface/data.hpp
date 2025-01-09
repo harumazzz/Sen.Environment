@@ -97,18 +97,13 @@ namespace Sen::Kernel::Interface {
 		std::string_view that
 	) -> StringView
 	{
-		auto temporary = std::unique_ptr<char[], void(*)(char*)>(new char[that.size() + 1], [](char* p) { 
-			if (p != nullptr) {
-				delete[] p;
-			}
-		 });
-		auto destination = StringView {
-			.value = nullptr,
-			.size = that.size(),
-		};
+		auto temporary = std::unique_ptr<char[]>(new char[that.size() + 1]);
 		std::memcpy(temporary.get(), that.data(), that.size());
 		temporary.get()[that.size()] = '\0';
-		destination.value = temporary.release();
+		auto destination = StringView {
+			.value = temporary.release(),
+			.size = that.size(),
+		};
 		return destination;
 	}
 

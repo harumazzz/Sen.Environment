@@ -121,7 +121,10 @@ namespace Sen::Kernel::Interface::Script
 			auto js_element = JS_GetPropertyUint32(context, value, i);
 			auto str_len = size_t{};
 			auto str = JS_ToCStringLen(context, &str_len, js_element);
-			list.value[i].value = str;
+			auto temporary = std::unique_ptr<char[]>(new char[str_len + 1]);
+			temporary.get()[str_len] = '\0';
+			std::memcpy(temporary.get(), str, str_len);
+			list.value[i].value = temporary.release();
 			list.value[i].size = str_len;
 			JS_FreeCString(context, str);
 			JS_FreeValue(context, js_element);

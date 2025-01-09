@@ -148,13 +148,6 @@ export namespace Sen::Shell {
 		return destination;
 	}
 
-	template <typename T>
-	inline void finalizer(T ptr) {
-		if (ptr != nullptr) {
-			delete[] ptr;
-		}
-	}
-
 	inline auto display_argument (
 		std::vector<std::string> & result
 	) -> void
@@ -180,7 +173,7 @@ export namespace Sen::Shell {
 	using Finalizer = void(*)(char*);
 
 	inline auto input_argument(
-		std::unique_ptr<char[], Finalizer> & memory,
+		std::unique_ptr<char[]> & memory,
 		String* destination
 	) -> void
 	{
@@ -200,7 +193,7 @@ export namespace Sen::Shell {
 	}
 
 	inline auto is_gui(
-		std::unique_ptr<char[], Finalizer> & memory,
+		std::unique_ptr<char[]> & memory,
 		String* destination
 	) -> void
 	{
@@ -248,7 +241,7 @@ export namespace Sen::Shell {
 
 	inline auto current_version(
 		String* destination,
-		std::unique_ptr<char[], Finalizer> & memory
+		std::unique_ptr<char[]> & memory
 	) -> void
 	{
 		auto version = std::to_string(Shell::version);
@@ -260,7 +253,7 @@ export namespace Sen::Shell {
 
 	inline auto pick_file (
 		String* destination,
-		std::unique_ptr<char[], Finalizer> & memory
+		std::unique_ptr<char[]> & memory
 	) -> void
 	{
 		#if WINDOWS
@@ -286,7 +279,7 @@ export namespace Sen::Shell {
 
 	inline auto pick_directory (
 		String* destination,
-		std::unique_ptr<char[], Finalizer> & memory
+		std::unique_ptr<char[]> & memory
 	) -> void
 	{
 		#if WINDOWS
@@ -315,9 +308,7 @@ export namespace Sen::Shell {
 	{
 		auto result = to_vector(list);
 		assert_conditional(result.size() >= 1, "argument must be greater than 1");
-		auto memory = std::unique_ptr<char[], Finalizer>(nullptr, [](char* ptr) {
-			finalizer(ptr);
-		});
+		auto memory = std::unique_ptr<char[]>(nullptr);
 		switch (hash_string(result[0].data())) {
 			case hash_string("display"):
 				display_argument(result);
