@@ -1,21 +1,21 @@
 module;
 
-import sen.environment.launcher.library.standard;
-import sen.environment.launcher.library.string;
+#include "library/standard.hpp"
+#include "library/macro.hpp"
 
-export module sen.environment.launcher.library.platform.windows;
-
-#ifdef _WIN32
-import <cwchar>;
-import <filesystem>;
-import <print>; 
-#endif
-
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
+#include <cwchar>
+#include <filesystem>
+#include <print>
 #include <ShlObj_core.h>
 #include <windows.h>
 #include <shlobj.h>
 #endif
+
+
+export module sen.environment.launcher.library.platform.windows;
+
+import sen.environment.launcher.library.string;
 
 export namespace Sen::Launcher {
 

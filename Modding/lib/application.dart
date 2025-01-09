@@ -20,14 +20,27 @@ import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class Application extends StatefulWidget {
+class Application extends StatelessWidget {
   const Application({super.key});
 
   @override
-  State<Application> createState() => _ApplicationState();
+  Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return const _WindowsApplication();
+    } else {
+      return const _MainApplication();
+    }
+  }
 }
 
-class _ApplicationState extends State<Application> {
+class _WindowsApplication extends StatefulWidget {
+  const _WindowsApplication();
+
+  @override
+  State<_WindowsApplication> createState() => _WindowsApplicationState();
+}
+
+class _WindowsApplicationState extends State<_WindowsApplication> {
   late GlobalKey<NavigatorState> _navigatorKey;
 
   @override
@@ -80,48 +93,43 @@ class _ApplicationState extends State<Application> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  Widget build(BuildContext context) {
+    return _MainApplication(
+      navigatorKey: _navigatorKey,
+    );
   }
+}
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+class _MainApplication extends StatelessWidget {
+  const _MainApplication({
+    this.navigatorKey,
+  });
+
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<SettingsCubit>(
-          create: (context) => SettingsCubit(),
-        ),
-        BlocProvider<JavascriptCubit>(
-          create: (context) => JavascriptCubit(),
-        ),
-        BlocProvider<MapEditorCubit>(
-          create: (context) => MapEditorCubit(),
-        ),
-        BlocProvider<LevelMakerCubit>(
-          create: (context) => LevelMakerCubit(),
-        ),
-        BlocProvider<InitialDirectoryCubit>(
-          create: (context) => InitialDirectoryCubit(),
-        ),
+        BlocProvider<SettingsCubit>(create: (context) => SettingsCubit()),
+        BlocProvider<JavascriptCubit>(create: (context) => JavascriptCubit()),
+        if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
+          BlocProvider<MapEditorCubit>(
+            create: (context) => MapEditorCubit(),
+          ),
+        BlocProvider<LevelMakerCubit>(create: (context) => LevelMakerCubit()),
+        BlocProvider<InitialDirectoryCubit>(create: (context) => InitialDirectoryCubit()),
       ],
       child: Builder(builder: (context) {
+        final settings = BlocProvider.of<SettingsCubit>(context, listen: true);
         return DynamicColorBuilder(
           builder: (lightDynamic, darkDynamic) => MaterialApp(
-            navigatorKey: _navigatorKey,
+            navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             title: BuildDistribution.kApplicationName,
-            theme: MaterialDesign.lightTheme.copyWith(
-              colorScheme: lightDynamic,
-            ),
-            darkTheme: MaterialDesign.darkTheme.copyWith(
-              colorScheme: darkDynamic,
-            ),
-            themeMode: BlocProvider.of<SettingsCubit>(context, listen: true).themeData,
+            theme: MaterialDesign.lightTheme.copyWith(colorScheme: lightDynamic),
+            darkTheme: MaterialDesign.darkTheme.copyWith(colorScheme: darkDynamic),
+            themeMode: settings.themeData,
             home: const RootScreen(title: BuildDistribution.kApplicationName),
             localizationsDelegates: const [
               AppLocalizations.delegate,
@@ -135,7 +143,7 @@ class _ApplicationState extends State<Application> {
               Locale('es'),
               Locale('ru'),
             ],
-            locale: Locale(BlocProvider.of<SettingsCubit>(context).state.locale),
+            locale: Locale(settings.state.locale),
           ),
         );
       }),

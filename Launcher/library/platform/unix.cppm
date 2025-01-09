@@ -1,14 +1,17 @@
-#pragma once
+module;
 
-import sen.environment.launcher.library.standard;
-import sen.environment.launcher.library.string;
-
-#ifndef _WIN32
-#include <unistd.h>
-#include <limits.h>
-#endif
+#include "library/standard.hpp"
+#include "library/macro.hpp"
 
 export module sen.environment.launcher.library.platform.unix;
+
+import sen.environment.launcher.library.string;
+
+#if !(defined(_WIN32) || defined(_WIN64))
+#include <unistd.h>
+#include <limits.h>
+
+#endif
 
 export namespace Sen::Launcher {
 	#ifndef _WIN32

@@ -144,6 +144,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 		auto length = get_int32(context, length_value);
 		JS_FreeValue(context, length_value);
 		auto m_list = List<T>{};
+		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
 			auto value = JS_GetPropertyUint32(context, that, i);
 			if constexpr (std::is_same<T, int>::value) {
@@ -177,6 +178,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 		auto length = get_int32(context, length_value);
 		JS_FreeValue(context, length_value);
 		auto m_list = List<T>{};
+		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
 			auto value = JS_GetPropertyUint32(context, that, i);
 			if constexpr (std::is_same<T, int>::value) {
@@ -322,6 +324,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 		{
 			auto size = std::size_t{};
 			auto data = JS_GetArrayBuffer(context, &size, array_buffer);
+			assert_conditional(data != nullptr, "Cannot get ArrayBuffer from value", "to_binary_list");
 			return make_list(data, size);
 		}
 

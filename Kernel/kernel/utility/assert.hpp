@@ -17,14 +17,6 @@ namespace Sen::Kernel {
 	 * property: json property
 	*/
 
-	#define is_not_null_object(object, property) \
-		object.find(property) != object.end()
-
-	/**
-	 * Object: nlohmann object
-	 * property: json property
-	*/
-
 	#define is_null_object(object, property) \
 		object.find(property) == object.end()
 

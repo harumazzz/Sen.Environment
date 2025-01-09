@@ -19,7 +19,7 @@ class OptionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     final isDesktop = Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-    final settings = BlocProvider.of<SettingsCubit>(context);
+    final settings = BlocProvider.of<SettingsCubit>(context, listen: true);
     return isDesktop ? _buildGridView(context, settings, los) : _buildListView(settings, los);
   }
 

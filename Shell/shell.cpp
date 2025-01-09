@@ -1,4 +1,5 @@
 ﻿#include "library/macro.hpp"
+
 import sen.environment.shell.library.loader;
 
 MAIN_FUNCTION

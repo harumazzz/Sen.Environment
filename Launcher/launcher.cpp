@@ -1,11 +1,10 @@
-﻿import sen.environment.launcher.library.string;
+﻿#include "library/macro.hpp"
+#include "library/standard.hpp"
+
+import sen.environment.launcher.library.string;
 import sen.environment.launcher.library.version;
 import sen.environment.launcher.library.platform.windows;
 import sen.environment.launcher.library.platform.unix;
-import sen.environment.launcher.library.standard;
-
-#include "library/macro.hpp"
-
 
 MAIN {
     using namespace Sen::Launcher;

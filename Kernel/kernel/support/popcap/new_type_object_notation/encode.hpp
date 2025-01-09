@@ -71,6 +71,14 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			{
 			}
 
+			inline auto is_not_null_object (
+				nlohmann::ordered_json& json,
+				const std::string& property
+			) -> bool 
+			{
+				return json.find(property) != json.end();
+			}
+
 			/**
 			 * ---------------------
 			 * Process method

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "library/macro.hpp"
 import sen.environment.shell.library.standard;
 import sen.environment.shell.library.callback;

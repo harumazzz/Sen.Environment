@@ -31,7 +31,7 @@ namespace Sen::Kernel::Interface::Script
 
 	using ClassID = JS::ClassID;
 
-	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValueConst, int, JSValueConst *);
+	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValue, int, JSValue *);
 
 	namespace JSElement
 	{
@@ -113,27 +113,17 @@ namespace Sen::Kernel::Interface::Script
 		StringList& list
 	) -> void
 	{
-		if (!JS_IsArray(context, value)) {
-			throw Exception("not an array", std::source_location::current(), "to_string_list");
-		}
 		auto atom = Atom{ context, "length" };
 		auto array_length = get_property_int32(context, value, atom.value);
 		list.size = array_length;
 		list.value = new StringView[array_length];
 		for (auto i : Range<std::int32_t>{ array_length }) {
 			auto js_element = JS_GetPropertyUint32(context, value, i);
-			if (JS_IsString(js_element)) {
-				auto str_len = size_t{};
-				auto str = JS_ToCStringLen(context, &str_len, js_element);
-				list.value[i].value = str;
-				list.value[i].size = str_len;
-				JS_FreeCString(context, str);
-			}
-			else {
-				list.value[i].value = nullptr;
-				list.value[i].size = 0;
-			}
-
+			auto str_len = size_t{};
+			auto str = JS_ToCStringLen(context, &str_len, js_element);
+			list.value[i].value = str;
+			list.value[i].size = str_len;
+			JS_FreeCString(context, str);
 			JS_FreeValue(context, js_element);
 		}
 		return;
@@ -141,18 +131,21 @@ namespace Sen::Kernel::Interface::Script
 
 	inline static auto throw_exception(
 		JSContext *context, 
-		const std::string& error, 
-		const std::string& source, 
+		std::string_view error, 
+		std::string_view source, 
 		std::string_view function_name
 	) -> JSValue
 	{
-		auto evaluate_context = fmt::format("function {}() {{", function_name);
-		evaluate_context += fmt::format("let e = new Error(`{}`);", error);
-		evaluate_context += fmt::format("e.source = `{}`;", source);
-		evaluate_context += "throw e;";
-		evaluate_context += "}";
-		evaluate_context += fmt::format("\n{}();", function_name);
-		JS_Eval(context, evaluate_context.c_str(), evaluate_context.length(), source.c_str(), JS_EVAL_TYPE_GLOBAL);
+		auto evaluate_context = fmt::format(
+			R"(function {0}() {{
+				let e = new Error(`{1}`); 
+				e.source = `{2}`;
+				throw e;
+			}}
+			{0}();)",
+			function_name, error, source
+		);
+		JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_TYPE_GLOBAL);
 		return JS_EXCEPTION;
 	}
 
@@ -189,7 +182,7 @@ namespace Sen::Kernel::Interface::Script
 		JSValue value,
 		int argc,
 		JSValue* argv
-	) -> JSElement::undefined
+	) -> JSValue
 	{
 		return proxy_wrapper(context, "callback", [&]() {
 			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "callback");
@@ -293,99 +286,79 @@ namespace Sen::Kernel::Interface::Script
 
 		inline static auto object_to_json(
 			JSContext *context,
-			JSValueConst value
-		) -> nlohmann::ordered_json
-		{
-			switch (JS_VALUE_GET_TAG(value))
-			{
-			case JS_TAG_UNDEFINED:
-			{
-				return nullptr;
-			}
-			case JS_TAG_NULL:
-			{
-				return nullptr;
-			}
-			case JS_TAG_OBJECT:
-			{
-				if (JS_IsArray(context, value))
-				{
-					auto json = nlohmann::ordered_json::array();
-					auto length = uint32_t{};
-					auto atom = Atom{context, "length"};
-					auto len = JS_GetProperty(context, value, atom.value);
-					JS_ToUint32(context, &length, len);
-					JS_FreeValue(context, len);
-					for (auto i : Range<uint32_t>(length))
-					{
-						auto val = JS_GetPropertyUint32(context, value, i);
-						json.push_back(object_to_json(context, val));
-						JS_FreeValue(context, val);
-					}
-					return json;
-				}
-				else if (JS_IsObject(value))
-				{
-					auto json = nlohmann::ordered_json::object();
-					auto *tab = static_cast<JSPropertyEnum *>(nullptr);
-					auto tab_size = uint32_t{};
-					if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0)
-					{
-						for (auto i : Range<uint32_t>(tab_size))
-						{
-							auto key = JS_AtomToCString(context, tab[i].atom);
-							if (key == nullptr) {
-								JS_FreeAtom(context, tab[i].atom);
-								continue;
-							}
-							auto val = JS_GetProperty(context, value, tab[i].atom);
-							if (JS_VALUE_GET_TAG(val) != JS_TAG_UNDEFINED)
-							{
-								json[key] = object_to_json(context, val);
-							}
-							JS_FreeAtom(context, tab[i].atom);
+			JSValue value
+		) -> nlohmann::ordered_json {
+			switch (JS_VALUE_GET_TAG(value)) {
+				case JS_TAG_UNDEFINED:
+				case JS_TAG_NULL:
+					return nullptr;
+				case JS_TAG_OBJECT: {
+					if (JS_IsArray(context, value)) {
+						auto length = uint32_t{};
+						auto atom = Atom{context, "length"};
+						auto len = JS_GetProperty(context, value, atom.value);
+						JS_ToUint32(context, &length, len);
+						JS_FreeValue(context, len);
+						auto json = nlohmann::ordered_json::array();
+						auto &array = json.get_ref<nlohmann::ordered_json::array_t &>();
+    					array.reserve(length); 
+						for (auto i : Range(length)) {
+							auto val = JS_GetPropertyUint32(context, value, i);
+							json.emplace_back(object_to_json(context, val));
 							JS_FreeValue(context, val);
-							JS_FreeCString(context, key);
 						}
-						js_free(context, tab);
-					}
-					else {
-						if (tab != nullptr) {
+						return json;
+					} else if (JS_IsObject(value)) {
+						auto json = nlohmann::ordered_json::object();
+						auto *tab = static_cast<JSPropertyEnum *>(nullptr);
+						auto tab_size = uint32_t{};
+						if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0) {
+							for (auto i : Range(tab_size)) {
+								auto key = JS_AtomToCString(context, tab[i].atom);
+								if (key == nullptr) {
+									JS_FreeAtom(context, tab[i].atom);
+									continue;
+								}
+								auto val = JS_GetProperty(context, value, tab[i].atom);
+								if (JS_VALUE_GET_TAG(val) != JS_TAG_UNDEFINED) {
+									json.emplace(std::string(key), object_to_json(context, val)); 
+								}
+								JS_FreeAtom(context, tab[i].atom);
+								JS_FreeValue(context, val);
+								JS_FreeCString(context, key);
+							}
 							js_free(context, tab);
+						} else {
+							if (tab != nullptr) {
+								js_free(context, tab);
+							}
+							throw Exception("Failed to get property names", std::source_location::current(), "object_to_json");
 						}
-						throw Exception("Failed to get property names", std::source_location::current(), "object_to_json");
+						return json;
+					} else {
+						throw Exception("Unknown type", std::source_location::current(), "object_to_json");
 					}
+				}
+				case JS_TAG_STRING: {
+					auto size = std::size_t{};
+					auto str = JS_ToCStringLen(context, &size, value);
+					auto json = nlohmann::ordered_json(std::string{str, size});
+					JS_FreeCString(context, str);
 					return json;
 				}
-				else
-				{
-					throw Exception("Unknown type", std::source_location::current(), "object_to_json");
+				case JS_TAG_BOOL:
+					return nlohmann::ordered_json(JS_VALUE_GET_BOOL(value));
+				case JS_TAG_INT:
+					return nlohmann::ordered_json(static_cast<double>(JS_VALUE_GET_INT(value)));
+				case JS_TAG_FLOAT64:
+					return nlohmann::ordered_json(JS_VALUE_GET_FLOAT64(value));
+				case JS_TAG_BIG_INT: {
+					auto val = int64_t{};
+					JS_ToBigInt64(context, &val, value);
+					return nlohmann::ordered_json(val);
 				}
-			}
-			case JS_TAG_STRING:
-			{
-				auto str = JS::Converter::get_string(context, value);
-				auto json = nlohmann::ordered_json(str);
-				return json;
-			}
-			case JS_TAG_BOOL:
-			{
-				return nlohmann::ordered_json(JS_VALUE_GET_BOOL(value) == 0 ? false : true);
-			}
-			case JS_TAG_INT:
-			{
-				return nlohmann::ordered_json(static_cast<double>(JS_VALUE_GET_INT(value)));
-			}
-			case JS_TAG_FLOAT64:
-			{
-				return nlohmann::ordered_json(JS_VALUE_GET_FLOAT64(value));
-			}
-			case JS_TAG_BIG_INT:
-			{
-				auto val = int64_t{};
-				JS_ToBigInt64(context, &val, value);
-				return nlohmann::ordered_json(val);
-			}
+				default:
+					throw Exception("Unsupported type", std::source_location::current(), "object_to_json");
 			}
 		}
 
@@ -469,153 +442,216 @@ namespace Sen::Kernel::Interface::Script
 	namespace Class
 	{
 
-	#define JS_CPPGETSET_MAGIC_DEF(c_name, fgetter, fsetter, _magic)                                                                                                                                      \
-		{                                                                                                                                                                                                 \
-			.name = c_name, .prop_flags = JS_PROP_CONFIGURABLE, .def_type = JS_DEF_CGETSET_MAGIC, .magic = _magic, .u = {.getset = {.get = {.getter_magic = fgetter}, .set = {.setter_magic = fsetter}} } \
+		using JSGetter = JSValue (*)(JSContext *context, JSValue value, int magic);
+
+		using JSSetter = JSValue (*)(JSContext *context, JSValue value, JSValue argv, int magic);
+
+		using JSFunction = JSValue (*)(JSContext *context, JSValue value, int argc, JSValue *argv);
+
+		using CString = const char*;
+
+		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+		inline auto make_finalizer (
+			JSClassID class_id
+		) -> std::function<void (JSRuntime*, JSValue)>
+		{
+			return [class_id](JSRuntime *rt, JSValue value) {
+				auto object_class = static_cast<T*>(JS_GetOpaque(value, class_id));
+				if (object_class != nullptr) {
+					delete object_class;
+				}
+			};
 		}
 
-	#define JS_CPPFUNC_DEF(c_name, length, func1)                                                                                                                                       \
-		{                                                                                                                                                                               \
-			.name = c_name, .prop_flags = JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, .def_type = JS_DEF_CFUNC, .magic = 0, .u = {.func = {length, JS_CFUNC_generic, {.generic = func1}} } \
+		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+		inline auto constexpr make_class_definition (
+			std::string_view class_name,
+			JSClassID class_id
+		) -> JSClassDef
+		{
+			return JSClassDef {
+				.class_name = class_name.data(),
+				.finalizer = make_finalizer<T>(class_id).template target<JSClassFinalizer>(),
+				.gc_mark = nullptr,
+				.call = nullptr,
+				.exotic = nullptr,
+			};
 		}
 
-			using CString = const char*;
-
-			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline auto make_finalizer (
-				JSClassID class_id
-			) -> std::function<void (JSRuntime*, JSValue)>
-			{
-				return [class_id](JSRuntime *rt, JSValue value) {
-					auto object_class = static_cast<T*>(JS_GetOpaque(value, class_id));
-					if (object_class != nullptr) {
-						delete object_class;
-					}
-				};
+		inline static auto make_instance_object (
+			JSContext* context, 
+			JSValue parent, 
+			std::string_view name
+		) -> JSValue
+		{
+			auto atom = Atom{context, name};
+			auto obj = JS_GetProperty(context, parent, atom.value);
+			if (JS_IsUndefined(obj)) {
+				obj = JS_NewObject(context);
+				JS_DefinePropertyValue(context, parent, atom.value, obj, int{JS_PROP_C_W_E});
 			}
+			return obj;
+		}
 
-			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline auto constexpr make_class_definition (
-				std::string_view class_name,
-				JSClassID class_id
-			) -> JSClassDef
-			{
-				return JSClassDef {
-					.class_name = class_name.data(),
-					.finalizer = make_finalizer<T>(class_id).template target<JSClassFinalizer>(),
-					.gc_mark = nullptr,
-					.call = nullptr,
-					.exotic = nullptr,
-				};
+		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+		inline auto constexpr make_deleter() {
+			return [](T* obj) {
+				delete obj;
+			};
+		}
+
+		template <typename T>
+		inline static auto get_opaque_value (
+			JSContext* context, 
+			JSValue value, 
+			JSClassID class_id
+		) -> T* 
+		{
+			auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
+			assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
+			return obj;
+		}
+
+		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+		inline static auto make_handle(
+			JSContext *context,
+			JSValue value,
+			int argc,
+			JSValue* argv,
+			std::string_view method_name,
+			std::function<JSValue(T*)> method,
+			JSClassID class_id
+		) -> JSValue
+		{
+			return proxy_wrapper(context, method_name, [&](){
+				auto class_pointer = get_opaque_value<T>(context, value, class_id);
+				return method(class_pointer);
+			});
+		}
+
+		template <typename T>
+		inline static auto throw_constructor_error(
+			JSContext* context, 
+			std::string_view error_message
+		) -> JSValue
+		{
+			JS_ThrowInternalError(context, error_message.data());
+			return JS_EXCEPTION;
+		}
+
+		template <typename T>
+		inline static auto generate_constructor(
+			JSContext* context, 
+			JSValue value, 
+			std::unique_ptr<T, decltype(make_deleter<T>())> class_ptr,
+			ClassID & class_id
+		) -> JSValue
+		{
+			auto atom = Atom{context, "prototype"};
+			auto proto = JS_GetProperty(context, value, atom.value);
+			if (JS_IsException(proto)) {
+				return throw_constructor_error<T>(context, "Failed to get prototype");
 			}
+			auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+			JS_FreeValue(context, proto);
+			if (JS_IsException(obj)) {
+				return throw_constructor_error<T>(context, "Failed to create JS object");
+			}
+			JS_SetOpaque(obj, class_ptr.release());
+			return obj;
+		}
 
-			inline static auto make_instance_object (
-				JSContext* context, 
-				JSValue parent, 
-				std::string_view name
-			) -> JSValue
-			{
-				auto atom = Atom{context, name};
-				auto obj = JS_GetProperty(context, parent, atom.value);
-				if (JS_IsUndefined(obj)) {
-					obj = JS_NewObject(context);
-					JS_DefinePropertyValue(context, parent, atom.value, obj, int{JS_PROP_C_W_E});
+		template <typename T> requires std::is_class<T>::value
+		inline static auto initialize_constructor(
+			JSContext* context,
+			JSValue value,
+			int argc,
+			JSValue* argv,
+			std::function<T* (int argc, JSValue* argv)> initializer,
+			ClassID & class_id,
+			std::string_view error_message
+		) -> JSValue 
+		{
+			if (initializer) {
+				auto class_pointer = std::unique_ptr<T, decltype(make_deleter<T>())>(initializer(argc, argv), make_deleter<T>());
+				if (class_pointer != nullptr) {
+					return generate_constructor<T>(context, value, std::move(class_pointer), class_id);
 				}
-				return obj;
 			}
+			return throw_constructor_error<T>(context, error_message);
+		}
 
-			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline auto constexpr make_deleter() {
-				return [](T* obj) {
-					delete obj;
-				};
+		template <typename T, int magic>
+		inline auto constexpr generate_getter_setter (
+			std::string_view function_name,
+			JSGetter getter,
+			JSSetter setter
+		) -> JSCFunctionListEntry 
+		{
+			auto entry = JSCFunctionListEntry{};
+			entry.name = function_name.data();
+			entry.prop_flags = JS_PROP_CONFIGURABLE;
+			entry.def_type = JS_DEF_CGETSET_MAGIC;
+			entry.magic = static_cast<int16_t>(magic);
+			entry.u.getset.get.getter_magic = reinterpret_cast<JSValue (*)(JSContext *, JSValue, int)>(getter);
+			entry.u.getset.set.setter_magic = reinterpret_cast<JSValue (*)(JSContext *, JSValue, JSValue, int)>(setter);
+			return entry;
+		}
+
+		template <typename T, int length>
+		inline auto constexpr generate_class_function (
+			std::string_view function_name,
+			JSFunction function
+		) -> JSCFunctionListEntry
+		{
+			auto entry = JSCFunctionListEntry{};
+			entry.name = function_name.data();
+			entry.prop_flags = JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE;
+			entry.def_type = JS_DEF_CFUNC;
+			entry.magic = 0;
+			entry.u.func.length = static_cast<std::uint8_t>(length);
+			entry.u.func.cproto = JS_CFUNC_generic;
+			entry.u.func.cfunc.generic = reinterpret_cast<JSCFunction*>(function);
+			return entry;
+		}
+
+		template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount>
+		inline static auto build_class (
+			JSContext *context,
+			Class &class_id,
+			const Constructor &constructor_func,
+			std::string_view class_name,
+			const std::array<JSCFunctionListEntry, ProtoFunctionCount> &proto_functions,
+			const JSClassDef& class_definition,
+			const std::array<std::string_view, InstanceCount> &instance_names
+		) -> void
+		{
+			class_id.allocate_new(context);
+			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &class_definition) == 0, fmt::format("{} class register failed", class_name), "register_class");
+			auto ctor = JS_NewCFunction2(context, constructor_func, class_name.data(), 0, JS_CFUNC_constructor, 0);
+			auto proto = JS_NewObject(context);
+			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
+			JS_SetConstructor(context, ctor, proto);
+			auto global_obj = JS_GetGlobalObject(context);
+			auto parent_obj = global_obj;
+			auto allocated = Array<JSValue, InstanceCount>{};
+			auto index = std::size_t{0};
+			for (auto &name : instance_names) {
+				auto new_obj = make_instance_object(context, parent_obj, name);
+				allocated[index++] = new_obj;
+				parent_obj = new_obj;
 			}
-
-			template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto make_handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(T*)> method,
-				JSClassID class_id
-			) -> JSValue
-			{
-				return proxy_wrapper(context, method_name, [&](){
-					auto s = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					return method(s);
-				});
+			auto atom = Atom{context, class_name};
+			JS_DefinePropertyValue(context, parent_obj, atom.value, ctor, int{JS_PROP_C_W_E});
+			parent_obj = JS_UNDEFINED;
+			JS_FreeValue(context, parent_obj);
+			for (auto & value : allocated) {
+				JS_FreeValue(context, value);
 			}
-
-			template <typename T>
-			inline static auto throw_constructor_error(
-				JSContext* context, 
-				std::string_view error_message
-			) -> JSValue
-			{
-				JS_ThrowInternalError(context, error_message.data());
-				return JS_EXCEPTION;
-			}
-
-			template <typename T>
-			inline static auto generate_constructor(
-				JSContext* context, 
-				JSValue value, 
-				std::unique_ptr<T, decltype(make_deleter<T>())> class_ptr,
-				ClassID & class_id
-			) -> JSValue
-			{
-				auto atom = Atom{context, "prototype"};
-				auto proto = JS_GetProperty(context, value, atom.value);
-				if (JS_IsException(proto)) {
-					return throw_constructor_error<T>(context, "Failed to get prototype");
-				}
-				auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-				JS_FreeValue(context, proto);
-				if (JS_IsException(obj)) {
-					return throw_constructor_error<T>(context, "Failed to create JS object");
-				}
-				JS_SetOpaque(obj, class_ptr.release());
-				return obj;
-			}
-
-			template <typename T> requires std::is_class<T>::value
-			inline static auto initialize_constructor(
-				JSContext* context,
-				JSValue value,
-				int argc,
-				JSValueConst* argv,
-				std::function<T* (int argc, JSValueConst* argv)> initializer,
-				ClassID & class_id,
-				std::string_view error_message
-			) -> JSValue 
-			{
-				if (initializer) {
-					auto class_pointer = std::unique_ptr<T, decltype(make_deleter<T>())>(initializer(argc, argv), make_deleter<T>());
-					if (class_pointer != nullptr) {
-						return generate_constructor<T>(context, value, std::move(class_pointer), class_id);
-					}
-				}
-				return throw_constructor_error<T>(context, error_message);
-			}
-
-			template <typename T>
-			inline static auto get_opaque_value(
-				JSContext* context, 
-				JSValue value, 
-				JSClassID class_id
-			) -> T* 
-			{
-				auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
-				assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
-				return obj;
-			}
-
-
+			JS_FreeValue(context, global_obj);
+			JS_FreeValue(context, proto);
+			return;
+		}
 
 		namespace DataStreamView
 		{
@@ -718,21 +754,18 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto setter(
 				JSContext *context,
 				JSValue value,
-				JSValueConst val,
+				JSValue argv,
 				int magic
 			) -> JSElement::bigint 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, 0, nullptr, "setter", [&](Data<T>* s) {
-					auto v = std::int64_t{};
-					if (JS_ToBigInt64(context, &v, val)) {
-						return JS_EXCEPTION;
-					}
+					auto result = JS::Converter::get_bigint64(context, argv);
 					if (magic == 0) {
-						s->read_pos = v;
+						s->read_pos = result;
 					} else {
-						s->write_pos = v;
+						s->write_pos = result;
 					}
 					return JS_UNDEFINED;
 				});
@@ -2306,104 +2339,88 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto T>
 				requires BooleanConstraint
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("read_position", getter<T>, setter<T>, 0),
-				JS_CPPGETSET_MAGIC_DEF("write_position", getter<T>, setter<T>, 1),
-				JS_CPPFUNC_DEF("size", 0, size<T>),
-				JS_CPPFUNC_DEF("fromString", 1, fromString<T>),
-				JS_CPPFUNC_DEF("capacity", 0, capacity<T>),
-				JS_CPPFUNC_DEF("reserve", 1, reserve<T>),
-				JS_CPPFUNC_DEF("toArrayBuffer", 0, toArrayBuffer<T>),
-				JS_CPPFUNC_DEF("toUint8Array", 0, toUint8Array<T>),
-				JS_CPPFUNC_DEF("getArrayBuffer", 2, getArrayBuffer<T>),
-				JS_CPPFUNC_DEF("getUint8Array", 2, getUint8Array<T>),
-				JS_CPPFUNC_DEF("toString", 0, toString<T>),
-				JS_CPPFUNC_DEF("out_file", 1, out_file<T>),
-				JS_CPPFUNC_DEF("writeUint8", 2, writeUint8<T>),
-				JS_CPPFUNC_DEF("writeUint16", 2, writeUint16<T>),
-				JS_CPPFUNC_DEF("writeUint24", 2, writeUint24<T>),
-				JS_CPPFUNC_DEF("writeUint32", 2, writeUint32<T>),
-				JS_CPPFUNC_DEF("writeUint64", 2, writeUint64<T>),
-				JS_CPPFUNC_DEF("writeInt8", 2, writeInt8<T>),
-				JS_CPPFUNC_DEF("writeInt16", 2, writeInt16<T>),
-				JS_CPPFUNC_DEF("writeInt24", 2, writeInt24<T>),
-				JS_CPPFUNC_DEF("writeInt32", 2, writeInt32<T>),
-				JS_CPPFUNC_DEF("writeInt64", 2, writeInt64<T>),
-				JS_CPPFUNC_DEF("writeArrayBuffer", 2, writeArrayBuffer<T>),
-				JS_CPPFUNC_DEF("writeUint8Array", 2, writeUint8Array<T>),
-				JS_CPPFUNC_DEF("writeFloat", 2, writeFloat<T>),
-				JS_CPPFUNC_DEF("writeDouble", 2, writeDouble<T>),
-				JS_CPPFUNC_DEF("writeVarInt32", 2, writeVarInt32<T>),
-				JS_CPPFUNC_DEF("writeVarInt64", 2, writeVarInt64<T>),
-				JS_CPPFUNC_DEF("writeZigZag32", 2, writeZigZag32<T>),
-				JS_CPPFUNC_DEF("writeZigZag64", 2, writeZigZag64<T>),
-				JS_CPPFUNC_DEF("writeString", 2, writeString<T>),
-				JS_CPPFUNC_DEF("writeStringFourByte", 2, writeStringFourByte<T>),
-				JS_CPPFUNC_DEF("writeNull", 2, writeNull<T>),
-				JS_CPPFUNC_DEF("writeBoolean", 2, writeBoolean<T>),
-				JS_CPPFUNC_DEF("writeStringByUint8", 2, writeStringByUint8<T>),
-				JS_CPPFUNC_DEF("writeStringByUint16", 2, writeStringByUint16<T>),
-				JS_CPPFUNC_DEF("writeStringByUint32", 2, writeStringByUint32<T>),
-				JS_CPPFUNC_DEF("writeStringByInt8", 2, writeStringByInt8<T>),
-				JS_CPPFUNC_DEF("writeStringByInt16", 2, writeStringByInt16<T>),
-				JS_CPPFUNC_DEF("writeStringByInt32", 2, writeStringByInt32<T>),
-				JS_CPPFUNC_DEF("writeStringByEmpty", 2, writeStringByEmpty<T>),
-				JS_CPPFUNC_DEF("readUint8", 1, readUint8<T>),
-				JS_CPPFUNC_DEF("readUint16", 1, readUint16<T>),
-				JS_CPPFUNC_DEF("readUint24", 1, readUint24<T>),
-				JS_CPPFUNC_DEF("readUint32", 1, readUint32<T>),
-				JS_CPPFUNC_DEF("readUint64", 1, readUint64<T>),
-				JS_CPPFUNC_DEF("readInt8", 1, readInt8<T>),
-				JS_CPPFUNC_DEF("readInt16", 1, readInt16<T>),
-				JS_CPPFUNC_DEF("readInt24", 1, readInt24<T>),
-				JS_CPPFUNC_DEF("readInt32", 1, readInt32<T>),
-				JS_CPPFUNC_DEF("readInt64", 1, readInt64<T>),
-				JS_CPPFUNC_DEF("readString", 2, readString<T>),
-				JS_CPPFUNC_DEF("readStringByUint8", 1, readStringByUint8<T>),
-				JS_CPPFUNC_DEF("readStringByUint16", 1, readStringByUint16<T>),
-				JS_CPPFUNC_DEF("readStringByUint32", 1, readStringByUint32<T>),
-				JS_CPPFUNC_DEF("readStringByInt8", 1, readStringByInt8<T>),
-				JS_CPPFUNC_DEF("readStringByInt16", 1, readStringByInt16<T>),
-				JS_CPPFUNC_DEF("readStringByInt32", 1, readStringByInt32<T>),
-				JS_CPPFUNC_DEF("readStringByVarInt32", 1, readStringByVarInt32<T>),
-				JS_CPPFUNC_DEF("readStringByEmpty", 1, readStringByEmpty<T>),
-				JS_CPPFUNC_DEF("readVarInt32", 1, readVarInt32<T>),
-				JS_CPPFUNC_DEF("readVarInt64", 1, readVarInt64<T>),
-				JS_CPPFUNC_DEF("readVarUint32", 1, readVarUint32<T>),
-				JS_CPPFUNC_DEF("readVarUint64", 1, readVarUint64<T>),
-				JS_CPPFUNC_DEF("readZigZag32", 1, readZigZag32<T>),
-				JS_CPPFUNC_DEF("readZigZag64", 1, readZigZag64<T>),
-				JS_CPPFUNC_DEF("readFloat", 1, readFloat<T>),
-				JS_CPPFUNC_DEF("readDouble", 1, readDouble<T>),
-				JS_CPPFUNC_DEF("close", 0, close<T>),
-				JS_CPPFUNC_DEF("allocate", 1, allocate<T>),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data<T>, 0>("read_position", getter<T>, setter<T>),
+				generate_getter_setter<Data<T>, 1>("write_position", getter<T>, setter<T>),
+				generate_class_function<Data<T>, 0>("size", size<T>),
+				generate_class_function<Data<T>, 1>("fromString", fromString<T>),
+				generate_class_function<Data<T>, 0>("capacity", capacity<T>),
+				generate_class_function<Data<T>, 1>("reserve", reserve<T>),
+				generate_class_function<Data<T>, 0>("toArrayBuffer", toArrayBuffer<T>),
+				generate_class_function<Data<T>, 0>("toUint8Array", toUint8Array<T>),
+				generate_class_function<Data<T>, 2>("getArrayBuffer", getArrayBuffer<T>),
+				generate_class_function<Data<T>, 2>("getUint8Array", getUint8Array<T>),
+				generate_class_function<Data<T>, 0>("toString", toString<T>),
+				generate_class_function<Data<T>, 1>("out_file", out_file<T>),
+				generate_class_function<Data<T>, 2>("writeUint8", writeUint8<T>),
+				generate_class_function<Data<T>, 2>("writeUint16", writeUint16<T>),
+				generate_class_function<Data<T>, 2>("writeUint24", writeUint24<T>),
+				generate_class_function<Data<T>, 2>("writeUint32", writeUint32<T>),
+				generate_class_function<Data<T>, 2>("writeUint64", writeUint64<T>),
+				generate_class_function<Data<T>, 2>("writeInt8", writeInt8<T>),
+				generate_class_function<Data<T>, 2>("writeInt16", writeInt16<T>),
+				generate_class_function<Data<T>, 2>("writeInt24", writeInt24<T>),
+				generate_class_function<Data<T>, 2>("writeInt32", writeInt32<T>),
+				generate_class_function<Data<T>, 2>("writeInt64", writeInt64<T>),
+				generate_class_function<Data<T>, 2>("writeArrayBuffer", writeArrayBuffer<T>),
+				generate_class_function<Data<T>, 2>("writeUint8Array", writeUint8Array<T>),
+				generate_class_function<Data<T>, 2>("writeFloat", writeFloat<T>),
+				generate_class_function<Data<T>, 2>("writeDouble", writeDouble<T>),
+				generate_class_function<Data<T>, 2>("writeVarInt32", writeVarInt32<T>),
+				generate_class_function<Data<T>, 2>("writeVarInt64", writeVarInt64<T>),
+				generate_class_function<Data<T>, 2>("writeZigZag32", writeZigZag32<T>),
+				generate_class_function<Data<T>, 2>("writeZigZag64", writeZigZag64<T>),
+				generate_class_function<Data<T>, 2>("writeString", writeString<T>),
+				generate_class_function<Data<T>, 2>("writeStringFourByte", writeStringFourByte<T>),
+				generate_class_function<Data<T>, 2>("writeNull", writeNull<T>),
+				generate_class_function<Data<T>, 2>("writeBoolean", writeBoolean<T>),
+				generate_class_function<Data<T>, 2>("writeStringByUint8", writeStringByUint8<T>),
+				generate_class_function<Data<T>, 2>("writeStringByUint16", writeStringByUint16<T>),
+				generate_class_function<Data<T>, 2>("writeStringByUint32", writeStringByUint32<T>),
+				generate_class_function<Data<T>, 2>("writeStringByInt8", writeStringByInt8<T>),
+				generate_class_function<Data<T>, 2>("writeStringByInt16", writeStringByInt16<T>),
+				generate_class_function<Data<T>, 2>("writeStringByInt32", writeStringByInt32<T>),
+				generate_class_function<Data<T>, 2>("writeStringByEmpty", writeStringByEmpty<T>),
+				generate_class_function<Data<T>, 1>("readUint8", readUint8<T>),
+				generate_class_function<Data<T>, 1>("readUint16", readUint16<T>),
+				generate_class_function<Data<T>, 1>("readUint24", readUint24<T>),
+				generate_class_function<Data<T>, 1>("readUint32", readUint32<T>),
+				generate_class_function<Data<T>, 1>("readUint64", readUint64<T>),
+				generate_class_function<Data<T>, 1>("readInt8", readInt8<T>),
+				generate_class_function<Data<T>, 1>("readInt16", readInt16<T>),
+				generate_class_function<Data<T>, 1>("readInt24", readInt24<T>),
+				generate_class_function<Data<T>, 1>("readInt32", readInt32<T>),
+				generate_class_function<Data<T>, 1>("readInt64", readInt64<T>),
+				generate_class_function<Data<T>, 2>("readString", readString<T>),
+				generate_class_function<Data<T>, 1>("readStringByUint8", readStringByUint8<T>),
+				generate_class_function<Data<T>, 1>("readStringByUint16", readStringByUint16<T>),
+				generate_class_function<Data<T>, 1>("readStringByUint32", readStringByUint32<T>),
+				generate_class_function<Data<T>, 1>("readStringByInt8", readStringByInt8<T>),
+				generate_class_function<Data<T>, 1>("readStringByInt16", readStringByInt16<T>),
+				generate_class_function<Data<T>, 1>("readStringByInt32", readStringByInt32<T>),
+				generate_class_function<Data<T>, 1>("readStringByVarInt32", readStringByVarInt32<T>),
+				generate_class_function<Data<T>, 1>("readStringByEmpty", readStringByEmpty<T>),
+				generate_class_function<Data<T>, 1>("readVarInt32", readVarInt32<T>),
+				generate_class_function<Data<T>, 1>("readVarInt64", readVarInt64<T>),
+				generate_class_function<Data<T>, 1>("readVarUint32", readVarUint32<T>),
+				generate_class_function<Data<T>, 1>("readVarUint64", readVarUint64<T>),
+				generate_class_function<Data<T>, 1>("readZigZag32", readZigZag32<T>),
+				generate_class_function<Data<T>, 1>("readZigZag64", readZigZag64<T>),
+				generate_class_function<Data<T>, 1>("readFloat", readFloat<T>),
+				generate_class_function<Data<T>, 1>("readDouble", readDouble<T>),
+				generate_class_function<Data<T>, 0>("close", close<T>),
+				generate_class_function<Data<T>, 1>("allocate", allocate<T>),
 			});
 
 			template <auto use_big_endian>
 				requires BooleanConstraint
-			inline static auto register_class(
+			inline static auto register_class (
 				JSContext *context
 			) -> void
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				class_id<use_big_endian>.allocate_new(JS_GetRuntime(context));
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<use_big_endian>.value, &this_class<use_big_endian>) == 0, fmt::format("{} class register failed", _class_name<use_big_endian>()), "register_class");
-				auto class_name = _class_name<use_big_endian>();
-				auto make_constructor = JS_NewCFunction2(context, constructor<use_big_endian>, class_name.data(), 0, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions<use_big_endian>.data(), proto_functions<use_big_endian>.size());
-				JS_SetConstructor(context, make_constructor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen"_sv);
-				auto obj2 = make_instance_object(context, obj1, "Kernel"_sv);
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, make_constructor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id<use_big_endian>, constructor<use_big_endian>, _class_name<use_big_endian>(), proto_functions<use_big_endian>, this_class<use_big_endian>, std::array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -2499,62 +2516,15 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("value", getter, setter),
 			});
 
-			template <auto T>
-			inline static auto make_instance (
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSDefine::Boolean
-			{
-				static_assert(T == true or T == false, "T must be true or false");
-				static_assert(sizeof(T) == sizeof(Data));
-				auto s = std::make_unique<Data>(T);
-				auto atom = Atom{context, "prototype"};
-				auto proto = JS_GetProperty(context, value, atom.value);
-				if (JS_IsException(proto)) {
-					return JS_EXCEPTION;
-				}
-				auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-				JS_FreeValue(context, proto);
-				if (JS_IsException(obj)) {
-					return JS_EXCEPTION;
-				}
-				JS_SetOpaque(obj, s.release());
-				return obj;
-			}
-
-			inline static auto register_class(
+			inline static auto register_class (
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Boolean class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				auto default_true_func_val = JS_NewCFunction2(context, make_instance<true>, "true", 0, JS_CFUNC_generic, 0);
-				auto default_false_func_val = JS_NewCFunction2(context, make_instance<false>, "false", 0, JS_CFUNC_generic, 0);
-				auto trueAtom = Atom{context, "true"};
-				JS_DefinePropertyValue(context, point_ctor, trueAtom.value, default_true_func_val, int{JS_PROP_C_W_E});
-				auto falseAtom = Atom{context, "false"};
-				JS_DefinePropertyValue(context, point_ctor, falseAtom.value, default_false_func_val, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen"_sv);
-				auto obj2 = make_instance_object(context, obj1, "Kernel"_sv);
-				auto atom = Atom(context, class_name);
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, proto);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, obj1);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -2697,41 +2667,17 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("name", getter, setter, static_cast<int>(Value::name)),
-				JS_CPPGETSET_MAGIC_DEF("id", getter, setter, static_cast<int>(Value::id)),
-				JS_CPPGETSET_MAGIC_DEF("transform", getter, setter, static_cast<int>(Value::transform)),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(Value::name)>("name", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Value::id)>("id", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Value::transform)>("transform", getter, setter),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Image class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto obj3 = make_instance_object(context, obj2, "Support");
-				auto obj4 = make_instance_object(context, obj3, "PopCap");
-				auto obj5 = make_instance_object(context, obj4, "Animation");
-				auto obj6 = make_instance_object(context, obj5, "Miscellaneous");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, obj3);
-				JS_FreeValue(context, obj4);
-				JS_FreeValue(context, obj5);
-				JS_FreeValue(context, obj6);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 6>{"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"});
 			}
 
 		}
@@ -2891,42 +2837,18 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("name", getter, setter, static_cast<int>(Value::name)),
-				JS_CPPGETSET_MAGIC_DEF("link", getter, setter, static_cast<int>(Value::link)),
-				JS_CPPGETSET_MAGIC_DEF("transform", getter, setter, static_cast<int>(Value::transform)),
-				JS_CPPGETSET_MAGIC_DEF("color", getter, setter, static_cast<int>(Value::color)),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(Value::name)>("name", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Value::link)>("link", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Value::transform)>("transform", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Value::color)>("color", getter, setter),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Sprite class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto obj3 = make_instance_object(context, obj2, "Support");
-				auto obj4 = make_instance_object(context, obj3, "PopCap");
-				auto obj5 = make_instance_object(context, obj4, "Animation");
-				auto obj6 = make_instance_object(context, obj5, "Miscellaneous");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj6, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, obj3);
-				JS_FreeValue(context, obj4);
-				JS_FreeValue(context, obj5);
-				JS_FreeValue(context, obj6);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 6>{"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"});
 			}
 
 		}
@@ -3061,35 +2983,19 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
-				JS_CPPFUNC_DEF("close", 0, close),
-				JS_CPPFUNC_DEF("size", 0, size),
-				JS_CPPFUNC_DEF("read", 0, read),
-				JS_CPPFUNC_DEF("read_all", 0, read_all),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("position", getter, setter),
+				generate_class_function<Data, 0>("close", close),
+				generate_class_function<Data, 0>("size", size),
+				generate_class_function<Data, 0>("read", read),
+				generate_class_function<Data, 0>("read_all", read_all),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileInputStream class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -3227,35 +3133,19 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
-				JS_CPPFUNC_DEF("close", 0, close),
-				JS_CPPFUNC_DEF("size", 0, size),
-				JS_CPPFUNC_DEF("write", 0, write),
-				JS_CPPFUNC_DEF("write_all", 0, write_all),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("position", getter, setter),
+				generate_class_function<Data, 0>("close", close),
+				generate_class_function<Data, 0>("size", size),
+				generate_class_function<Data, 0>("write", write),
+				generate_class_function<Data, 0>("write_all", write_all),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileOutputStream class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -3418,37 +3308,21 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("position", getter, setter, 0),
-				JS_CPPFUNC_DEF("close", 0, close),
-				JS_CPPFUNC_DEF("size", 0, size),
-				JS_CPPFUNC_DEF("write", 0, write),
-				JS_CPPFUNC_DEF("write_all", 0, write_all),
-				JS_CPPFUNC_DEF("read", 0, read),
-				JS_CPPFUNC_DEF("read_all", 0, read_all),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("position", getter, setter),
+				generate_class_function<Data, 0>("close", close),
+				generate_class_function<Data, 0>("size", size),
+				generate_class_function<Data, 0>("write", write),
+				generate_class_function<Data, 0>("write_all", write_all),
+				generate_class_function<Data, 0>("read", read),
+				generate_class_function<Data, 0>("read_all", read_all),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileStream class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -3684,43 +3558,27 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("write_indent", getter, setter, 0),
-				JS_CPPFUNC_DEF("clear", 0, clear),
-				JS_CPPFUNC_DEF("toString", 0, toString),
-				JS_CPPFUNC_DEF("writeStartArray", 0, writeStartArray),
-				JS_CPPFUNC_DEF("writeEndArray", 0, writeEndArray),
-				JS_CPPFUNC_DEF("writeStartObject", 0, writeStartObject),
-				JS_CPPFUNC_DEF("writeEndObject", 0, writeEndObject),
-				JS_CPPFUNC_DEF("writeBoolean", 1, writeBoolean),
-				JS_CPPFUNC_DEF("writeNull", 0, writeNull),
-				JS_CPPFUNC_DEF("writePropertyName", 1, writePropertyName),
-				JS_CPPFUNC_DEF("writeString", 1, writeValue<std::string>),
-				JS_CPPFUNC_DEF("writeNumber", 1, writeValue<double>),
-				JS_CPPFUNC_DEF("writeBigInt", 1, writeValue<std::int64_t>),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("write_indent", getter, setter),
+				generate_class_function<Data, 0>("clear", clear),
+				generate_class_function<Data, 0>("toString", toString),
+				generate_class_function<Data, 0>("writeStartArray", writeStartArray),
+				generate_class_function<Data, 0>("writeEndArray", writeEndArray),
+				generate_class_function<Data, 0>("writeStartObject", writeStartObject),
+				generate_class_function<Data, 0>("writeEndObject", writeEndObject),
+				generate_class_function<Data, 1>("writeBoolean", writeBoolean),
+				generate_class_function<Data, 0>("writeNull", writeNull),
+				generate_class_function<Data, 1>("writePropertyName", writePropertyName),
+				generate_class_function<Data, 1>("writeString", writeValue<std::string>),
+				generate_class_function<Data, 1>("writeNumber", writeValue<double>),
+				generate_class_function<Data, 1>("writeBigInt", writeValue<std::int64_t>),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "JsonWriter class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -3904,8 +3762,8 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter<T>, setter<T>, 0),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data<T>, 0>("value", getter<T>, setter<T>),
 			});
 
 			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
@@ -3913,23 +3771,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				class_id<T>.allocate_new(context);
-				auto class_name = fmt::format("{}", this_class<T>.class_name);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", class_name), "register_class");
-				auto point_ctor = JS_NewCFunction2(context, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions<T>.data(), proto_functions<T>.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id<T>, constructor<T>, fmt::format("{}", this_class<T>.class_name), proto_functions<T>, this_class<T>, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -4089,35 +3931,19 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("delay_frames_list", getter, setter, GetterSetter::delay_frames_list),
-				JS_CPPGETSET_MAGIC_DEF("loop", getter, setter, GetterSetter::loop),
-				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, GetterSetter::width),
-				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, GetterSetter::height),
-				JS_CPPGETSET_MAGIC_DEF("trim", getter, setter, GetterSetter::trim),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(GetterSetter::delay_frames_list)>("delay_frames_list", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(GetterSetter::loop)>("loop", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(GetterSetter::width)>("width", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(GetterSetter::height)>("height", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(GetterSetter::trim)>("trim", getter, setter),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "APNGMakerSetting class failed register", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -4215,59 +4041,15 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("value", getter, setter),
 			});
-
-			inline static auto instance(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSDefine::Size
-			{
-				return proxy_wrapper(context, "instance", [&](){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data>(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				});
-			}
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Size class failed register", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{context, "instance"};
-				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atomData = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -4390,36 +4172,9 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter<T>, setter<T>, 0),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data<T>, 0>("value", getter<T>, setter<T>),
 			});
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto instance(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSDefine::Character
-			{
-				return proxy_wrapper(context, "instance", [&](){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data<T>>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id<T>.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				});
-			}
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -4427,8 +4182,6 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				class_id<T>.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id<T>.value, &this_class<T>) == 0, fmt::format("{} class register failed", this_class<T>.class_name), "register_class");
 				auto class_name = std::string_view{};
 				if constexpr (std::is_same<T, char>::value)
 				{
@@ -4442,23 +4195,7 @@ namespace Sen::Kernel::Interface::Script
 				{
 					class_name = "UCharacter"_sv;
 				}
-				auto point_ctor = JS_NewCFunction2(context, constructor<T>, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				auto instance_c = JS_NewCFunction2(context, instance<T>, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{context, "instance"};
-				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(context, proto, proto_functions<T>.data(), proto_functions<T>.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atomData = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atomData.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id<T>, constructor<T>, class_name, proto_functions<T>, this_class<T>, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -4595,64 +4332,15 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("value", getter, setter),
 			});
-
-			inline static auto instance(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSDefine::String
-			{
-				return proxy_wrapper(context, "instance", [&](){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-					auto s = std::make_unique<Data>();
-					auto str = JS::Converter::get_string(context, argv[0]);
-					s->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
-					std::memcpy(s->value, str.data(), str.size());
-					s->size = str.size();
-					s->value[str.size()] = '\0';
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				});
-			}
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "String class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom{context, "instance"};
-				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom_data = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -4874,64 +4562,21 @@ namespace Sen::Kernel::Interface::Script
 			}
 
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("value", getter, setter, 0),
-				JS_CPPFUNC_DEF("size", 0, size),
-				JS_CPPFUNC_DEF("capacity", 0, capacity),
-				JS_CPPFUNC_DEF("allocate", 1, allocate),
-				JS_CPPFUNC_DEF("sub", 2, sub),
-				JS_CPPFUNC_DEF("stream_view", 0, stream<false>),
-				JS_CPPFUNC_DEF("big_stream_view", 0, stream<true>),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, 0>("value", getter, setter),
+				generate_class_function<Data, 0>("size", size),
+				generate_class_function<Data, 0>("capacity", capacity),
+				generate_class_function<Data, 1>("allocate", allocate),
+				generate_class_function<Data, 2>("sub", sub),
+				generate_class_function<Data, 0>("stream_view", stream<false>),
+				generate_class_function<Data, 0>("big_stream_view", stream<true>),
 			});
-
-			inline static auto instance(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSDefine::BinaryView
-			{
-				return proxy_wrapper(context, "instance", [&]() {
-					auto s = std::make_unique<Data>();
-					auto atom_proto = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom_proto.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
-					JS_SetOpaque(obj, s.release());
-					return obj;
-				});
-			}
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "BinaryView class register failed", "register_class");
-				auto class_name = "BinaryView"_sv;
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				auto instance_c = JS_NewCFunction2(context, instance, "instance", 0, JS_CFUNC_generic, 0);
-				auto atom = Atom(context, "instance");
-				JS_DefinePropertyValue(context, point_ctor, atom.value, instance_c, int{JS_PROP_C_W_E});
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom_data = Atom(context, class_name);
-				JS_DefinePropertyValue(context, obj2, atom_data.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -5514,67 +5159,51 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPFUNC_DEF("scale", 2, scale),
-				JS_CPPFUNC_DEF("rotate", 1, rotate),
-				JS_CPPFUNC_DEF("translate", 2, translate),
-				JS_CPPFUNC_DEF("transform", 2, transform),
-				JS_CPPFUNC_DEF("set_transform", 2, set_transform),
-				JS_CPPFUNC_DEF("set_global_alpha", 1, set_global_alpha),
-				JS_CPPFUNC_DEF("set_shadow_color", 2, set_shadow_color),
-				JS_CPPFUNC_DEF("set_shadow_blur", 1, set_shadow_blur),
-				JS_CPPFUNC_DEF("set_line_width", 1, set_line_width),
-				JS_CPPFUNC_DEF("set_miter_limit", 1, set_miter_limit),
-				JS_CPPFUNC_DEF("set_linear_gradient", 2, set_linear_gradient),
-				JS_CPPFUNC_DEF("set_color", 2, set_color),
-				JS_CPPFUNC_DEF("set_radial_gradient", 2, set_radial_gradient),
-				JS_CPPFUNC_DEF("add_color_stop", 2, add_color_stop),
-				JS_CPPFUNC_DEF("begin_path", 0, begin_path),
-				JS_CPPFUNC_DEF("close_path", 0, close_path),
-				JS_CPPFUNC_DEF("move_to", 2, move_to),
-				JS_CPPFUNC_DEF("line_to", 2, line_to),
-				JS_CPPFUNC_DEF("quadratic_curve_to", 2, quadratic_curve_to),
-				JS_CPPFUNC_DEF("bezier_curve_to", 2, bezier_curve_to),
-				JS_CPPFUNC_DEF("arc_to", 2, arc_to),
-				JS_CPPFUNC_DEF("arc", 2, arc),
-				JS_CPPFUNC_DEF("rectangle", 2, rectangle),
-				JS_CPPFUNC_DEF("fill", 0, fill),
-				JS_CPPFUNC_DEF("stroke", 0, stroke),
-				JS_CPPFUNC_DEF("clip", 0, clip),
-				JS_CPPFUNC_DEF("is_point_in_path", 1, is_point_in_path),
-				JS_CPPFUNC_DEF("clear_rectangle", 2, clear_rectangle),
-				JS_CPPFUNC_DEF("fill_rectangle", 2, fill_rectangle),
-				JS_CPPFUNC_DEF("stroke_rectangle", 2, stroke_rectangle),
-				JS_CPPFUNC_DEF("set_font", 2, set_font),
-				JS_CPPFUNC_DEF("draw_image", 2, draw_image),
-				JS_CPPFUNC_DEF("get_image_data", 2, get_image_data),
-				JS_CPPFUNC_DEF("put_image_data", 2, put_image_data),
-				JS_CPPFUNC_DEF("save", 0, save),
-				JS_CPPFUNC_DEF("restore", 0, restore),
-				JS_CPPFUNC_DEF("set_image_color", 2, set_image_color),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_class_function<Data, 2>("scale", scale),
+				generate_class_function<Data, 1>("rotate", rotate),
+				generate_class_function<Data, 2>("translate", translate),
+				generate_class_function<Data, 2>("transform", transform),
+				generate_class_function<Data, 2>("set_transform", set_transform),
+				generate_class_function<Data, 1>("set_global_alpha", set_global_alpha),
+				generate_class_function<Data, 2>("set_shadow_color", set_shadow_color),
+				generate_class_function<Data, 1>("set_shadow_blur", set_shadow_blur),
+				generate_class_function<Data, 1>("set_line_width", set_line_width),
+				generate_class_function<Data, 1>("set_miter_limit", set_miter_limit),
+				generate_class_function<Data, 2>("set_linear_gradient", set_linear_gradient),
+				generate_class_function<Data, 2>("set_color", set_color),
+				generate_class_function<Data, 2>("set_radial_gradient", set_radial_gradient),
+				generate_class_function<Data, 2>("add_color_stop", add_color_stop),
+				generate_class_function<Data, 0>("begin_path", begin_path),
+				generate_class_function<Data, 0>("close_path", close_path),
+				generate_class_function<Data, 2>("move_to", move_to),
+				generate_class_function<Data, 2>("line_to", line_to),
+				generate_class_function<Data, 2>("quadratic_curve_to", quadratic_curve_to),
+				generate_class_function<Data, 2>("bezier_curve_to", bezier_curve_to),
+				generate_class_function<Data, 2>("arc_to", arc_to),
+				generate_class_function<Data, 2>("arc", arc),
+				generate_class_function<Data, 2>("rectangle", rectangle),
+				generate_class_function<Data, 0>("fill", fill),
+				generate_class_function<Data, 0>("stroke", stroke),
+				generate_class_function<Data, 0>("clip", clip),
+				generate_class_function<Data, 1>("is_point_in_path", is_point_in_path),
+				generate_class_function<Data, 2>("clear_rectangle", clear_rectangle),
+				generate_class_function<Data, 2>("fill_rectangle", fill_rectangle),
+				generate_class_function<Data, 2>("stroke_rectangle", stroke_rectangle),
+				generate_class_function<Data, 2>("set_font", set_font),
+				generate_class_function<Data, 2>("draw_image", draw_image),
+				generate_class_function<Data, 2>("get_image_data", get_image_data),
+				generate_class_function<Data, 2>("put_image_data", put_image_data),
+				generate_class_function<Data, 0>("save", save),
+				generate_class_function<Data, 0>("restore", restore),
+				generate_class_function<Data, 2>("set_image_color", set_image_color),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Canvas class register failed", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -5698,32 +5327,16 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, DimensionView::Magic::width),
-				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, DimensionView::Magic::height),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(DimensionView::Magic::width)>("width", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(DimensionView::Magic::height)>("height", getter, setter),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "DimensionView class failed register", "register_class");
-				auto class_name = _class_name();
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom(context, class_name);
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -5809,25 +5422,15 @@ namespace Sen::Kernel::Interface::Script
 					switch (static_cast<Rectangle::Magic>(magic))
 					{
 						case Rectangle::Magic::x:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->x));
-						}
 						case Rectangle::Magic::y:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->y));
-						}
 						case Rectangle::Magic::width:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
-						}
 						case Rectangle::Magic::height:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
-						}
 						default:
-						{
 							assert_conditional(false, fmt::format("Cannot call getter method on magic {}", magic), "getter");
-						}
 					}
 				});
 			}
@@ -5843,62 +5446,36 @@ namespace Sen::Kernel::Interface::Script
 					switch (static_cast<Rectangle::Magic>(magic))
 					{
 						case Rectangle::Magic::x:
-					{
-						s->x = static_cast<int>(JS::Converter::get_bigint64(context, val));
-						break;
-					}
-					case Rectangle::Magic::y:
-					{
-						s->y = static_cast<int>(JS::Converter::get_bigint64(context, val));
-						break;
-					}
-					case Rectangle::Magic::width:
-					{
-						s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
-						break;
-					}
-					case Rectangle::Magic::height:
-					{
-						s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
-						break;
-					}
-					default:
-					{
-						assert_conditional(false, fmt::format("Cannot call setter method on magic {}", magic), "setter");
-					}
+							s->x = static_cast<int>(JS::Converter::get_bigint64(context, val));
+							break;
+						case Rectangle::Magic::y:
+							s->y = static_cast<int>(JS::Converter::get_bigint64(context, val));
+							break;
+						case Rectangle::Magic::width:
+							s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
+							break;
+						case Rectangle::Magic::height:
+							s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
+							break;
+						default:
+							assert_conditional(false, fmt::format("Cannot call setter method on magic {}", magic), "setter");
 					}
 					return JS_UNDEFINED;
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("x", getter, setter, Rectangle::Magic::x),
-				JS_CPPGETSET_MAGIC_DEF("y", getter, setter, Rectangle::Magic::y),
-				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, Rectangle::Magic::width),
-				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, Rectangle::Magic::height),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::x)>("x", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::y)>("y", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::width)>("width", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::height)>("height", getter, setter),
 			});
 
 			inline static auto register_class(
 				JSContext *context
 			) -> void
 			{
-				class_id.allocate_new(context);
-				assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Rectangle class register failed", "register_class");
-				auto class_name = "Rectangle"_sv;
-				auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-				auto proto = JS_NewObject(context);
-				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
-				auto obj1 = make_instance_object(context, global_obj, "Sen");
-				auto obj2 = make_instance_object(context, obj1, "Kernel");
-				auto atom = Atom{context, class_name};
-				JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-				JS_FreeValue(context, global_obj);
-				JS_FreeValue(context, obj1);
-				JS_FreeValue(context, obj2);
-				JS_FreeValue(context, proto);
-				return;
+				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 			}
 
 		}
@@ -6001,41 +5578,23 @@ namespace Sen::Kernel::Interface::Script
 					switch (static_cast<ImageView::Magic>(magic))
 					{
 						case ImageView::Magic::bit_depth:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->bit_depth));
-						}
 						case ImageView::Magic::channels:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->channels));
-						}
 						case ImageView::Magic::color_type:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->color_type));
-						}
 						case ImageView::Magic::interlace_type:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->interlace_type));
-						}
 						case ImageView::Magic::rowbytes:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->rowbytes));
-						}
 						case ImageView::Magic::width:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
-						}
 						case ImageView::Magic::height:
-						{
 							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
-						}
 						case ImageView::Magic::data:
-						{
 							return JS_NewArrayBufferCopy(context, s->data().data(), s->data().size());
-						}
 						default:
-						{
 							assert_conditional(false, fmt::format("Cannot call getter method on magic {}", magic), "getter");
-						}
 					}
 				});
 			}
@@ -6051,55 +5610,36 @@ namespace Sen::Kernel::Interface::Script
 					switch (static_cast<ImageView::Magic>(magic))
 					{
 						case ImageView::Magic::bit_depth:
-						{
 							s->bit_depth = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::channels:
-						{
 							s->channels = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::color_type:
-						{
 							s->color_type = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::interlace_type:
-						{
 							s->interlace_type = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::rowbytes:
-						{
 							s->rowbytes = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::width:
-						{
 							s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::height:
-						{
 							s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
 							break;
-						}
 						case ImageView::Magic::data:
 						{
 							auto size = std::size_t{};
 							auto data = JS_GetArrayBuffer(context, &size, val);
-							if (data == nullptr)
-							{
-								throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
-							}
+							assert_conditional(data != nullptr, fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), "random");
 							s->set_data(make_list(data, size));
 							break;
 						}
 						default:
-						{
 							assert_conditional(false, fmt::format("Cannot call setter method on magic {}", magic), "setter");
-						}
 					}
 					return JS_UNDEFINED;
 				});
@@ -6325,17 +5865,17 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-				JS_CPPGETSET_MAGIC_DEF("bit_depth", getter, setter, ImageView::Magic::bit_depth),
-				JS_CPPGETSET_MAGIC_DEF("channels", getter, setter, ImageView::Magic::channels),
-				JS_CPPGETSET_MAGIC_DEF("color_type", getter, setter, ImageView::Magic::color_type),
-				JS_CPPGETSET_MAGIC_DEF("interlace_type", getter, setter, ImageView::Magic::interlace_type),
-				JS_CPPGETSET_MAGIC_DEF("rowbytes", getter, setter, ImageView::Magic::rowbytes),
-				JS_CPPGETSET_MAGIC_DEF("width", getter, setter, ImageView::Magic::width),
-				JS_CPPGETSET_MAGIC_DEF("height", getter, setter, ImageView::Magic::height),
-				JS_CPPGETSET_MAGIC_DEF("data", getter, setter, ImageView::Magic::data),
-				JS_CPPFUNC_DEF("area", 0, area),
-				JS_CPPFUNC_DEF("circumference", 0, circumference),
+			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::bit_depth)>("bit_depth", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::channels)>("channels", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::color_type)>("color_type", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::bit_depth)>("interlace_type", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::rowbytes)>("rowbytes", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::width)>("width", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::height)>("height", getter, setter),
+				generate_getter_setter<Data, static_cast<int>(ImageView::Magic::data)>("data", getter, setter),
+				generate_class_function<Data, 0>("area", area),
+				generate_class_function<Data, 0>("circumference", circumference),
 			});
 
 			inline static auto register_class(
@@ -8856,7 +8396,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
-						Sen::Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
+						Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
 						return JS_UNDEFINED;
 					});
 				}
@@ -10463,32 +10003,16 @@ namespace Sen::Kernel::Interface::Script
 			});
 		}
 
-		inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-			JS_CPPFUNC_DEF("start", 0, start),
-			JS_CPPFUNC_DEF("on", 2, on),
+		inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+			Class::generate_class_function<Data, 0>("start", start),
+			Class::generate_class_function<Data, 2>("on", on),
 		});
 
 		inline static auto register_class(
 			JSContext *context
 		) -> void
 		{
-			class_id.allocate_new(context);
-			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "FileWatcher class register failed", "register_class");
-			auto class_name = _class_name();
-			auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-			auto proto = JS_NewObject(context);
-			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-			JS_SetConstructor(context, point_ctor, proto);
-			auto global_obj = JS_GetGlobalObject(context);
-			auto obj1 = Class::make_instance_object(context, global_obj, "Sen");
-			auto obj2 = Class::make_instance_object(context, obj1, "Kernel");
-			auto atom = Atom(context, class_name);
-			JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-			JS_FreeValue(context, global_obj);
-			JS_FreeValue(context, obj1);
-			JS_FreeValue(context, obj2);
-			JS_FreeValue(context, proto);
-			return;
+			return Class::build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 		}
 
 	}
@@ -10748,39 +10272,23 @@ namespace Sen::Kernel::Interface::Script
 			});
 		}
 
-		inline static auto constexpr proto_functions = std::to_array<JSCFunctionListEntry>({
-			JS_CPPFUNC_DEF("start", 0, start),
-			JS_CPPFUNC_DEF("stop", 0, stop),
-			JS_CPPFUNC_DEF("start_safe", 0, start_safe),
-			JS_CPPFUNC_DEF("stop_safe", 0, stop_safe),
-			JS_CPPFUNC_DEF("reset", 0, reset),
-			JS_CPPFUNC_DEF("duration", 0, get_duration),
-			JS_CPPFUNC_DEF("duration_as_seconds", 0, get_duration_as_seconds),
-			JS_CPPFUNC_DEF("isStarted", 0, is_started),
-			JS_CPPFUNC_DEF("isStopped", 0, is_stopped),
+		inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
+			Class::generate_class_function<Data, 0>("start", start),
+			Class::generate_class_function<Data, 0>("stop", stop),
+			Class::generate_class_function<Data, 0>("start_safe", start_safe),
+			Class::generate_class_function<Data, 0>("stop_safe", stop_safe),
+			Class::generate_class_function<Data, 0>("reset", reset),
+			Class::generate_class_function<Data, 0>("duration", get_duration),
+			Class::generate_class_function<Data, 0>("duration_as_seconds", get_duration_as_seconds),
+			Class::generate_class_function<Data, 0>("isStarted", is_started),
+			Class::generate_class_function<Data, 0>("isStopped", is_stopped),
 		});
 
 		inline static auto register_class(
 			JSContext *context
 		) -> void
 		{
-			class_id.allocate_new(context);
-			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &this_class) == 0, "Clock class register failed", "register_class");
-			auto class_name = _class_name();
-			auto point_ctor = JS_NewCFunction2(context, constructor, class_name.data(), 2, JS_CFUNC_constructor, 0);
-			auto proto = JS_NewObject(context);
-			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-			JS_SetConstructor(context, point_ctor, proto);
-			auto global_obj = JS_GetGlobalObject(context);
-			auto obj1 = Class::make_instance_object(context, global_obj, "Sen");
-			auto obj2 = Class::make_instance_object(context, obj1, "Kernel");
-			auto atom = Atom(context, class_name);
-			JS_DefinePropertyValue(context, obj2, atom.value, point_ctor, int{JS_PROP_C_W_E});
-			JS_FreeValue(context, global_obj);
-			JS_FreeValue(context, obj1);
-			JS_FreeValue(context, obj2);
-			JS_FreeValue(context, proto);
-			return;
+			return Class::build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
 		}
 
 

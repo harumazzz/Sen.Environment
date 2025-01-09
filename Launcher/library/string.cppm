@@ -1,7 +1,7 @@
 module;
 
-import <string>;
-import <codecvt>;
+#include <string>
+#include <codecvt>
 
 export module sen.environment.launcher.library.string;
 

@@ -12,16 +12,16 @@
 
 #define MACINTOSH __MACH__
 
-#if WINDOWS
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
 #include <dlfcn.h>
 #endif
 
-#if WINDOWS
-#define MAIN_FUNCTION int wmain(int size, wchar_t** argc)
+#if defined(_WIN32) || defined(_WIN64)
+#define MAIN_FUNCTION int wmain(int size, wchar_t* argc[])
 #else
-#define MAIN_FUNCTION int main(int size, char** argc)
+#define MAIN_FUNCTION int main(int size, char* argc[])
 #endif
 
 #define assert_conditional(condition, message) \
