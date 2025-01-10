@@ -52,7 +52,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.PackResource {
 				clock.start_safe();
 				Kernel.Support.PopCap.RSB.pack_resource(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.PackResource {
 			filter: ['directory', /(.*)\.bundle$/i],
 			option: 56n,
 		});
-		return;
 	}
 }
 

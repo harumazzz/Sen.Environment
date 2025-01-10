@@ -15,8 +15,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
         */
 
 	export interface Setting {
-		// TODO: add configuration
-		animation_name: string; // argument
+		animation_name: string;
 		atlas_dimension: AnimationDimension;
 		position_additional: PostionAdditional;
 	}
@@ -145,7 +144,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
 		});
 		frame_helper.remove_list.push(frame_helper.layer_index);
 		++frame_helper.layer_index;
-		return;
 	}
 
 	export function process(source: string, destination: string, setting: Setting) {
@@ -171,19 +169,19 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
 		for (const [label_name, label_info] of Object.entries(definition.label)) {
 			assert(
 				label_info.frame_end > label_info.frame_start,
-				'frame_end_must_be_greater_than_frame_start',
-			); // TODO
+				Kernel.Language.get('popcap.animation.frame_end_must_be_greater_than_frame_start'),
+			);
 			for (let i = label_info.frame_start; i <= label_info.frame_end; ++i) {
 				const image_path = `${source}/frames/${definition.frame_name}_${i}.png`;
 				const image = Kernel.Image.open(image_path);
 				assert(
 					image.width === definition.dimension.width,
-					'mismatch_width_at: ' + `${image_path}`,
+					format(Kernel.Language.get('popcap.animation.mismatch_width_at'), image_path),
 				);
 				assert(
 					image.height === definition.dimension.height,
-					'mismatch_height_at: ' + `${image_path}`,
-				); // TODO
+					format(Kernel.Language.get('popcap.animation.mismatch_height_at'), image_path),
+				);
 				const frame: AnimationFrame = {
 					label: i === label_info.frame_start ? label_name : '',
 					stop: i === label_info.frame_end,
@@ -258,13 +256,12 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
 			pot: false,
 			allowRotation: false,
 			square: false,
-		}; // TODO: add configuration
-		Support.PopCap.Atlas.Pack.ResInfo.process_fs(
+		};
+		Atlas.Pack.ResInfo.process_fs(
 			`${destination}/${animation_name}.sprite`,
 			atlas_size,
 			detail,
 			destination,
 		);
-		return;
 	}
 }

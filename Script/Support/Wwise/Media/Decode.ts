@@ -165,7 +165,6 @@ namespace Sen.Script.Support.Wwise.Media.Decode {
 			`${encoding} (${format})`,
 			Definition.Console.Color.GREEN,
 		);
-		return;
 	}
 
 	export function process_fs(source: string, destination: string) {

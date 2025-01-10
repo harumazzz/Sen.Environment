@@ -1,15 +1,16 @@
 import 'package:flutter/services.dart';
 
 class AndroidHelper {
-  static const MethodChannel _methodChannel = MethodChannel(
-    'com.haruma.sen.environment',
-  );
+  static late final MethodChannel _methodChannel;
 
   static List<String>? _arguments;
 
   static List<String>? get arguments => _arguments;
 
   static void initialize() {
+    _methodChannel = const MethodChannel(
+      'com.haruma.sen.environment',
+    );
     _methodChannel.setMethodCallHandler(_handleMethod);
   }
 

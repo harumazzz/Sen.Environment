@@ -112,14 +112,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo {
 					);
 					clock.stop_safe();
 				});
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
 			filter: ['files', /(.+)\.json$/i, /(.+)\.png$/i],
 			option: undefined!,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResInfo.forward();

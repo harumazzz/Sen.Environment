@@ -55,7 +55,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RenderEffects.Encode {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -65,7 +64,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RenderEffects.Encode {
 			filter: ['file', /(.+)\.popfx\.json$/i],
 			option: 45n,
 		});
-		return;
 	}
 }
 

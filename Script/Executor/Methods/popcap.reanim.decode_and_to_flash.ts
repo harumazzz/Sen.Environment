@@ -94,14 +94,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.DecodeAndToFlash {
 					argument.platform!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.reanim|\.reanim\.compiled)$/i],
 			option: 38n,
 		});
-		return;
 	}
 }
 

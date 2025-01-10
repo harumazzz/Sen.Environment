@@ -31,16 +31,8 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 
 	const r0x92_list = [] as Array<string>;
 
-	let pos = 0n;
-
-	let str_length_1 = 0n;
-
-	let str_length_2 = 0n;
-
 	export function write(): void {
-		// when catch error write this json;
 		Kernel.FileSystem.write_file(json_destination, writer.toString());
-		return;
 	}
 
 	export function get_id(stream: DataStreamView): string {
@@ -180,7 +172,6 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 			catch_error(byte_array_end, stream, 'read_array');
 		}
 		writer.writeEndArray();
-		return;
 	}
 
 	export function catch_error(
@@ -388,7 +379,6 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 			bytecode = stream.readUint8();
 		}
 		writer.writeEndObject();
-		return;
 	}
 
 	export function process(stream: DataStreamView, destination: string): void {
@@ -401,14 +391,12 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 		r0x92_list.length = 0;
 		read_object(stream);
 		write();
-		return;
 	}
 
 	export function process_fs(source: string, destination: string): void {
 		if (writer === undefined) {
 			writer = new Kernel.JsonWriter();
 		}
-		process(new Kernel.DataStreamView(source), destination);
-		return;
+		return process(new Kernel.DataStreamView(source), destination);
 	}
 }

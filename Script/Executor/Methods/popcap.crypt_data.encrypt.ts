@@ -66,14 +66,12 @@ namespace Sen.Script.Executor.Methods.PopCap.CryptData.Encrypt {
 					argument.key!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.bin$/i],
 			option: 22n,
 		});
-		return;
 	}
 }
 

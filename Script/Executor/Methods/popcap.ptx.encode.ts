@@ -146,7 +146,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 					Detail.exchange_format(argument.format!),
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				load_bigint(
@@ -162,7 +161,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 			filter: ['file', /(.+)\.png$/i],
 			option: 34n,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.PTX.Encode.forward();

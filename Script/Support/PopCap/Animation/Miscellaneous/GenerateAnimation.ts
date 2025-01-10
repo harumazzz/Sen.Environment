@@ -142,23 +142,17 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					break;
 
 				case 1n:
-					sprite_list.map((e, i) => {
-						setting.sprite_disable.push(BigInt(i));
-					});
+					sprite_list.map((_, i) => setting.sprite_disable.push(BigInt(i)));
 					break;
 
 				case 2n:
 					const rule: Array<bigint> = [0n];
-					sprite_list.map((e, i) => {
-						rule.push(BigInt(i + 1));
-					});
+					sprite_list.map((_, i) => rule.push(BigInt(i + 1)));
 					let sprite_to_disable: string = '';
 					const argument = (rule: Array<bigint>) => {
 						const input: string = Kernel.Console.readline();
 						const check_vaild = (range: Array<bigint>) => {
-							if (range.length > 0) {
-								return;
-							}
+							if (range.length > 0) return;
 							Console.warning(Kernel.Language.get('js.invalid_input_value'));
 						};
 						let range: Array<bigint> = [];
@@ -242,7 +236,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				Kernel.Language.get('popcap.animation.to_apng.animation_has_no_sprite'),
 			);
 		}
-		return;
 	}
 
 	export function variant_to_matrix(transform: number[]): Matrix {
@@ -482,7 +475,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				Kernel.ImageView.instance(width, height, image_data),
 			);
 		}
-		return;
 	}
 
 	export function exchange_area(
@@ -558,7 +550,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 		setting.position_additional.y += -rectangle.top;
 		setting.rendering_size.width = BigInt(Math.ceil(-rectangle.left + rectangle.right));
 		setting.rendering_size.height = BigInt(Math.ceil(-rectangle.top + rectangle.bottom));
-		return;
 	}
 
 	export function exchange_label(sprite: AnimationSprite, data_info: DataInfo) {
@@ -574,7 +565,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				++data_info.label[label_name].frame_end;
 			}
 		}
-		return;
 	}
 
 	//public:
@@ -689,6 +679,5 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				);
 			}
 		}
-		return;
 	}
 }

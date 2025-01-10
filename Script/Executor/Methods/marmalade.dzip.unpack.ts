@@ -50,14 +50,12 @@ namespace Sen.Script.Executor.Methods.Marmalade.DZip.Unpack {
 				clock.start_safe();
 				Kernel.Support.Marmalade.DZip.unpack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.*)\.dz$/i],
 			option: 5n,
 		});
-		return;
 	}
 }
 

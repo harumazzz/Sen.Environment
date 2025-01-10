@@ -71,7 +71,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlash {
 					argument.has_label!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, true);
@@ -81,7 +80,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlash {
 			filter: ['directory', /.*/g],
 			option: 12n,
 		});
-		return;
 	}
 }
 

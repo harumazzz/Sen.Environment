@@ -104,7 +104,6 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 			Definition.Console.Color.GREEN,
 		);
 		stream.writeUint8(version);
-		return;
 	}
 
 	// -----------------------------------------------------------------
@@ -135,7 +134,6 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 			stream.writeArrayBuffer(rsg_section, packet_offset);
 			stream.read_position = start_index + rsb_head_info.rsg_info_each_length;
 		}
-		return;
 	}
 
 	// -----------------------------------------------------------------
@@ -144,6 +142,5 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 		const rsb = new Kernel.DataStreamView(source);
 		process(rsb);
 		rsb.out_file(destination);
-		return;
 	}
 }

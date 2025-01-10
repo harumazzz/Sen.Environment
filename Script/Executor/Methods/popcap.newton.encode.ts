@@ -50,14 +50,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Newton.Encode {
 				clock.start_safe();
 				Kernel.Support.PopCap.Newton.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
 			option: 24n,
 		});
-		return;
 	}
 }
 

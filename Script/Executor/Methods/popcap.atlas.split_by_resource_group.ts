@@ -122,14 +122,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResourceGroup {
 					);
 					clock.stop_safe();
 				});
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
 			filter: ['files', /(.+)\.json$/gi, /(.+)\.png$/gi],
 			option: undefined!,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.Atlas.SplitByResourceGroup.forward();

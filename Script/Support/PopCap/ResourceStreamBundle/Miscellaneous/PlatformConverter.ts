@@ -91,7 +91,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					};
 					const dest = `${destination}/packet/Global_Data.scg.package/resource/streamingwaves/Global_Data`;
 					Kernel.FileSystem.create_directory(dest);
-					for (const [id, value] of Object.entries(
+					for (const [_, value] of Object.entries(
 						scg_data['subgroup'][Object.keys(scg_data['subgroup'])[0]]['resource'],
 					) as any) {
 						const file_name: string = Kernel.Path.base_without_extension(
@@ -156,7 +156,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					};
 					const dest = `${destination}/packet/StreamingWave.scg.package/resource/streamingwaves`;
 					Kernel.FileSystem.create_directory(dest);
-					for (const [id, value] of Object.entries(
+					for (const [_id, value] of Object.entries(
 						scg_data['subgroup'][Object.keys(scg_data['subgroup'])[0]]['resource'],
 					) as any) {
 						const file_name: string = Kernel.Path.base_without_extension(
@@ -198,7 +198,10 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 				}
 			}
 		}
-		assert(streaming_wave_processed, 'cannot_find_streaming_wave'); // TODO: add loc
+		assert(
+			streaming_wave_processed,
+			Kernel.Language.get('popcap.rsb.cannot_find_streaming_wave'),
+		);
 		Kernel.JSON.serialize_fs(`${destination}/data.json`, data_info, 1, true);
 		setting['texture_format_category'] = to_ios ? 1n : 0n;
 		Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(
@@ -207,11 +210,9 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 			setting,
 		);
 		Kernel.FileSystem.Operation.remove_all(destination);
-		return;
 	}
 
 	export function process_fs(source: string, destination: string, to_ios: boolean) {
-		process(source, destination, to_ios);
-		return;
+		return process(source, destination, to_ios);
 	}
 }

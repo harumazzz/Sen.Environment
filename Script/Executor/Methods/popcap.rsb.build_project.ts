@@ -176,7 +176,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 					setting,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
@@ -184,7 +183,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 			filter: ['directory', /(.*)\.bundle$/i],
 			option: 55n,
 		});
-		return;
 	}
 }
 

@@ -93,14 +93,12 @@ namespace Sen.Script.Executor.Methods.PopCap.ReAnimation.Decode {
 					argument.platform!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.reanim|\.reanim\.compiled)$/i],
 			option: 36n,
 		});
-		return;
 	}
 }
 

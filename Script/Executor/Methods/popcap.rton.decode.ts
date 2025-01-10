@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.Decode {
 				clock.start_safe();
 				Kernel.Support.PopCap.RTON.decode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.Decode {
 			filter: ['file', /(.+)(\.rton|pp\.dat)$/i],
 			option: 64n,
 		});
-		return;
 	}
 }
 

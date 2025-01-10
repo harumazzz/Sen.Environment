@@ -128,14 +128,12 @@ namespace Sen.Script.Executor.Methods.PopCap.PvZ2.LawnStrings.Convert {
 					argument.destination_type!,
 				);
 				Executor.clock.stop_safe();
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
 			filter: ['file', /(.+)(\.json|\.txt)$/i],
 			option: 35n,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.PvZ2.LawnStrings.Convert.forward();

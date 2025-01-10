@@ -55,14 +55,12 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.ForceDecode {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.rton|pp\.dat)$/i],
 			option: 70n,
 		});
-		return;
 	}
 }
 

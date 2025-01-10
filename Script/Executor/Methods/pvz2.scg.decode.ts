@@ -107,7 +107,6 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
 					setting,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -117,7 +116,6 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
 			filter: ['file', /(.*)\.scg$/i],
 			option: 73n,
 		});
-		return;
 	}
 }
 

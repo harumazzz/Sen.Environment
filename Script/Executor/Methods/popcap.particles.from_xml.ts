@@ -52,14 +52,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Particles.FromXML {
 				clock.start_safe();
 				Kernel.Support.PopCap.Particles.from_xml(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.xml$/i],
 			option: 30n,
 		});
-		return;
 	}
 }
 

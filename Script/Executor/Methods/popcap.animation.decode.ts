@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.Decode {
 				Executor.clock.start_safe();
 				Kernel.Support.PopCap.Animation.decode_fs(argument.source, argument.destination!);
 				Executor.clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.Decode {
 			filter: ['file', /(.+)\.pam$/i],
 			option: 8n,
 		});
-		return;
 	}
 }
 

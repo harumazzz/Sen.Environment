@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/application.dart';
 import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/notification_helper.dart';
+import 'package:sen/service/windows_helper.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> main(
@@ -22,6 +23,9 @@ Future<void> main(
   await NotificationHelper.initialize();
   if (Platform.isAndroid) {
     AndroidHelper.initialize();
+  }
+  if (Platform.isWindows) {
+    WindowsHelper.initialize();
   }
   runApp(
     const ProviderScope(

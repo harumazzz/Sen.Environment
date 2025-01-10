@@ -52,7 +52,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.UnpackResource {
 				clock.start_safe();
 				Kernel.Support.PopCap.RSB.unpack_resource(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -62,7 +61,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.UnpackResource {
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 59n,
 		});
-		return;
 	}
 }
 

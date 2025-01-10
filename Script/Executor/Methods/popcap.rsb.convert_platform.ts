@@ -96,14 +96,12 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.ToIOS {
 					argument.generic! !== 1n,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 80n,
 		});
-		return;
 	}
 }
 

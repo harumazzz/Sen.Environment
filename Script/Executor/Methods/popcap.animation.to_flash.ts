@@ -95,7 +95,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToFlash {
 					argument.has_label!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				load_bigint(
@@ -114,7 +113,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToFlash {
 			filter: ['file', /.*\.pam\.json$/i],
 			option: 14n,
 		});
-		return;
 	}
 }
 

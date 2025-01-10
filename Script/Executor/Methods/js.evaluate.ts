@@ -61,7 +61,6 @@ namespace Sen.Script.Executor.Methods.JS.Evaluate {
 					Definition.Console.Color.GREEN,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -71,7 +70,6 @@ namespace Sen.Script.Executor.Methods.JS.Evaluate {
 			filter: ['file', /(.+)\.js$/i],
 			option: 1n,
 		});
-		return;
 	}
 }
 

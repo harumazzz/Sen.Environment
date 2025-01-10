@@ -51,7 +51,7 @@ export namespace Sen::Launcher {
 		auto fullCommand = command + L" " + arguments;
 		if (!CreateProcessW(
 			nullptr,                  
-			const_cast<LPWSTR>(fullCommand.c_str()),
+			const_cast<LPWSTR>(fullCommand.data()),
 			nullptr,                  
 			nullptr,                 
 			TRUE,                     

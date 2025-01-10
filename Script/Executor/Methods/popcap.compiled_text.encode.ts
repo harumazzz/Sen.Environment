@@ -86,14 +86,12 @@ namespace Sen.Script.Executor.Methods.PopCap.CompiledText.Encode {
 					argument.use_64_bit_variant!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.(bin|txt)$/i],
 			option: 20n,
 		});
-		return;
 	}
 }
 

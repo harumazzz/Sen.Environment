@@ -55,14 +55,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.FromFlash {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /(.+)(\.reanim\.xfl)$/i],
 			option: 40n,
 		});
-		return;
 	}
 }
 

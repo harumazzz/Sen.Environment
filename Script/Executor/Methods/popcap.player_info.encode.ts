@@ -88,14 +88,12 @@ namespace Sen.Script.Executor.Methods.PopCap.PlayerInfo.Encode {
 				clock.start_safe();
 				Kernel.Support.PopCap.PlayerInfo.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.dat\.json$/i],
 			option: 32n,
 		});
-		return;
 	}
 }
 

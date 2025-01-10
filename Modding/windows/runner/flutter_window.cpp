@@ -1,5 +1,6 @@
 #include "flutter_window.h"
 
+#include "callback.hpp"
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
@@ -25,6 +26,21 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  flutter::MethodChannel<> channel(
+      flutter_controller_->engine()->messenger(), "com.haruma.sen.environment",
+      &flutter::StandardMethodCodec::GetInstance());
+  channel.SetMethodCallHandler(
+      [](const flutter::MethodCall<>& call,
+         std::unique_ptr<flutter::MethodResult<>> result) {
+        switch (hash_string(call.method_name())) {
+          case hash_string("run_launcher"):
+            runLauncher(call, result);
+            break;
+          default:
+            result->NotImplemented();
+        }
+      });
+
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {

@@ -37,7 +37,7 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Decode {
 		>({
 			id: 'data.base64.decode',
 			configuration_file: Home.query('~/Executor/Configuration/data.base64.decode.json'),
-			direct_forward(argument: Argument): void {
+			direct_forward(argument: Argument) {
 				is_valid_source(argument, false);
 				Console.obtained(argument.source);
 				defined_or_default<Argument, string>(
@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Decode {
 				clock.start_safe();
 				Kernel.Encryption.Base64.decode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Decode {
 			filter: ['file', /.*/],
 			option: 3n,
 		});
-		return;
 	}
 }
 

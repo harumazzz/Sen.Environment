@@ -78,7 +78,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AddLibrary {
 			`${source}/DOMDocument.xml`,
 			additional_data,
 		);
-		return;
 	}
 
 	export function process_fs(

@@ -113,7 +113,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.InitProject {
 					setting,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -123,7 +122,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.InitProject {
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 58n,
 		});
-		return;
 	}
 }
 

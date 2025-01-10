@@ -1,10 +1,4 @@
 namespace Sen.Script.Helper.WWise.AddMusic {
-	/**
-	 *
-	 */
-
-	const music_type = 'main_path';
-
 	interface MusicSetting {
 		audio_format: Support.Wwise.Media.Common.Format;
 	}
@@ -76,7 +70,6 @@ namespace Sen.Script.Helper.WWise.AddMusic {
 			global_data_destination,
 			`${Kernel.Path.except_extension(global_data_source)}_new.bnk`,
 		);
-		return;
 	}
 }
 Sen.Script.Helper.WWise.AddMusic.execute();

@@ -125,7 +125,6 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		if (error_log.length !== 0) {
 			Kernel.FileSystem.write_file(`${Kernel.Path.dirname(source)}/error_log.txt`, error_log);
 		}
-		return;
 	}
 
 	export function execute() {
@@ -176,7 +175,6 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		Executor.clock.start_safe();
 		process(setting, input_generic, resolution_list, source);
 		Executor.clock.stop_safe();
-		return;
 	}
 }
 Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB.execute();

@@ -38,6 +38,5 @@ namespace Sen.Script.Setting {
 	export function load(): void {
 		setting = Kernel.JSON.deserialize_fs<Entry>(setting_file);
 		Kernel.Language.load_language(Home.query(`~/Setting/Language/${setting.language}.json`));
-		return;
 	}
 }

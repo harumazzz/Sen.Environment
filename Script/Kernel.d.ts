@@ -51,24 +51,6 @@ declare namespace Sen {
 		 */
 		export function arguments(): Array<string>;
 
-		/**
-		 * Simple test function that accepts optional string arguments and doesn't return a value (void).
-		 *
-		 * @param params An optional array of strings passed as additional arguments.
-		 */
-		export function test(param: Record<string, unknown>): void;
-		declare type Event = 'delete' | 'add' | 'update' | 'rename';
-
-		declare type WatchContent = (source: string) => void;
-
-		declare class FileWatcher {
-			public constructor(source: string);
-
-			public on(event: Event, callback: WatchContent): void;
-
-			public start(): void;
-		}
-
 		declare class Clock {
 			public constructor();
 

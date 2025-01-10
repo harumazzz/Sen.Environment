@@ -266,5 +266,9 @@
 	"disable_all_image": "Disable all images",
 	"enable_all_sprite": "Enable all sprites",
 	"enable_all_image": "Enable all images",
-	"reload_script": "Reload Scripts"
+	"reload_script": "Reload Scripts",
+	"run_as_launcher": "Run as Launcher",
+	"show_confirm_dialog_description": "Confirm to launch Shell",
+	"run_as_launcher_description": "Run script with Console",
+	"spawn_success": "Successfully run the script {script_name} with launcher!"
 }

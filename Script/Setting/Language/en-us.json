@@ -742,5 +742,17 @@
 	"popcap.rsb.invalid_header_size": "Invalid header size",
 	"popcap.rsb.invalid_subgroup_information_size": "Invalid subgroup information size",
 	"popcap.atlas.contains_oversized_image": "Contains oversized image during packing process, should input a larger dimension",
-	"input_file": "Input file"
+	"input_file": "Input file",
+	"failed_to_upscale_image": "Failed to upscale image",
+	"unreachable_error": "Unreachable error caught",
+	"popcap.animation.mismatch_width_at": "Mismatch width at {}",
+	"popcap.animation.mismatch_height_at": "Mismatch height at {}",
+	"popcap.animation.frame_end_must_be_greater_than_frame_start": "Ending frame must be greater than starting frame",
+	"popcap.rsb.cannot_find_streaming_wave": "Cannot find Streaming Wave",
+	"image.upscaler.unsupported_operating_system": "Unsupported operating system, this method is only available for Windows, Macintosh or Linux",
+	"image.upscaler.cannot_find_third": "Cannot find external library: realesrgan",
+	"image.upscaler.cannot_find_real_esrgan_models_folder": "Cannot find real esrgan models directory",
+	"image.upscaler.enter_model": "Enter model",
+	"wwise.helper.hash_id.input_id_to_hash": "Input ID to hash",
+	"js.input_is_not_a_file_or_directory": "{} is not a file or directory"
 }

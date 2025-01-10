@@ -92,12 +92,8 @@ namespace Sen.Script {
 	 */
 
 	export function debug(value: unknown): void {
-		if (is_object(value)) {
-			Console.send(Kernel.JSON.serialize(value, 1, false));
-			return;
-		}
+		if (is_object(value)) return Console.send(Kernel.JSON.serialize(value, 1, false));
 		Console.send(value);
-		return;
 	}
 
 	/**
@@ -111,7 +107,6 @@ namespace Sen.Script {
 		if (!condition) {
 			throw new Error(message);
 		}
-		return;
 	}
 
 	/**

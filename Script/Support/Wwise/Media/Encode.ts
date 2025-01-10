@@ -268,7 +268,7 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
     </WwiseDocument>
     `;
 
-	export function cast_wwise_internal_path(raw: string): string | undefined {
+	export function cast_wwise_internal_path(raw: string): string {
 		const operating_system = Kernel.OperatingSystem.current();
 		if (operating_system === 'Windows') {
 			return raw;
@@ -280,10 +280,7 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
 			);
 			return `Z:${raw}`;
 		}
-		assert(
-			false,
-			Kernel.Language.get('wwise.media.encode.unsupported_operating_system'),
-		) as never;
+		assert(false, Kernel.Language.get('wwise.media.encode.unsupported_operating_system'));
 	}
 
 	export function process(source: string, destination: string, format: Common.Format): void {
@@ -352,11 +349,9 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
 			destination,
 		);
 		Kernel.FileSystem.Operation.remove_all(wwise_project_dir);
-		return;
 	}
 
 	export function process_fs(source: string, destination: string, format: Common.Format): void {
-		process(source, destination, format);
-		return;
+		return process(source, destination, format);
 	}
 }

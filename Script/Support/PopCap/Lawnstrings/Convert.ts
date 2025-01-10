@@ -360,6 +360,5 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 					),
 				);
 		}
-		return;
 	}
 }

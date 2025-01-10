@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PAK.Unpack {
 				clock.start_safe();
 				Kernel.Support.PopCap.PAK.unpack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PAK.Unpack {
 			filter: ['file', /(.*)\.pak$/i],
 			option: 25n,
 		});
-		return;
 	}
 }
 

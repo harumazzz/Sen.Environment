@@ -70,7 +70,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Zlib.Uncompress {
 					argument.use_64_bit_variant!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -80,7 +79,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Zlib.Uncompress {
 			filter: ['file', /(.+)\.(compiled|smf|bin)$/i],
 			option: 72n,
 		});
-		return;
 	}
 }
 

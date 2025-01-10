@@ -95,7 +95,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.DecodeAndToFlash {
 					argument.has_label!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -105,7 +104,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.DecodeAndToFlash {
 			filter: ['file', /(.+)\.pam$/i],
 			option: 10n,
 		});
-		return;
 	}
 }
 

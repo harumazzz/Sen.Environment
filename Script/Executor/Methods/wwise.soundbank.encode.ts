@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.WWise.SoundBank.Encode {
 				clock.start_safe();
 				Kernel.Support.WWise.SoundBank.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, true);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.WWise.SoundBank.Encode {
 			filter: ['directory', /(.+)\.soundbank$/gi],
 			option: 78n,
 		});
-		return;
 	}
 }
 

@@ -121,18 +121,18 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		let layer_index = layer_list.length - 1;
 		let end_layer = 0;
 		for (let i = 0; i < layer_list.length; i++) {
-			if (layer_list[i]['@attributes'].name.startsWith('Layer')) {
+			if (layer_list[i]!['@attributes'].name.startsWith('Layer')) {
 				end_layer = i;
 				break;
 			}
 		}
 		while (layer_index >= end_layer) {
 			let is_contain_layer = false;
-			let resource_item = null;
+			let resource_item: any = null;
 			const e_layer = layer_list[layer_index];
-			e_layer['@attributes'].name = layer_index.toString();
+			e_layer!['@attributes'].name = layer_index.toString();
 			const e_dom_frames = push_to_array(
-				e_layer.frames.DOMFrame as T,
+				e_layer!.frames.DOMFrame as T,
 			) as Support.PopCap.Animation.DOM.SpriteDomFrame[];
 			const split = (index: string, start: number, duration: number) => {
 				const next_frames = e_dom_frames.splice(start, duration);
@@ -158,15 +158,15 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 			};
 			for (let i = 0; i < e_dom_frames.length; i++) {
 				const e_dom_frame = e_dom_frames[i];
-				if (is_contain_layer && e_dom_frame.elements === null) {
-					split(e_dom_frame['@attributes'].index, i, e_dom_frames.length - 1);
+				if (is_contain_layer && e_dom_frame!.elements === null) {
+					split(e_dom_frame!['@attributes'].index, i, e_dom_frames.length - 1);
 					break;
 				} else {
-					is_contain_layer = e_dom_frame.elements !== null;
+					is_contain_layer = e_dom_frame!.elements !== null;
 					if (is_contain_layer) {
 						const current_duration =
-							parseInt(e_dom_frame['@attributes'].index) +
-							parseInt(e_dom_frame['@attributes'].duration ?? '0');
+							parseInt(e_dom_frame!['@attributes'].index) +
+							parseInt(e_dom_frame!['@attributes'].duration ?? '0');
 						container.check_duration(current_duration);
 						const e_dom_symbol = (
 							e_dom_frame.elements as Support.PopCap.Animation.DOM.ElementsDOMSymbolInstance
@@ -182,7 +182,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 							} else {
 								resource_item = item_name;
 							}
-							let library_name = null;
+							let library_name = null as any;
 							if (!container.has_sprite(item_name)) {
 								const symbol: Kernel.XML.XMLDocument = Kernel.XML.deserialize_fs(
 									`${source}/library/${item_name}.xml`,
@@ -472,7 +472,6 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		}
 		push(container.last_frame - current_index - 1);
 		Kernel.FileSystem.write_file(`${dest}/DomDocument.xml`, Kernel.XML.serialize(dom));
-		return;
 	}
 
 	export function exchange_script(
@@ -482,7 +481,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		resolution: number,
 	): void {
 		const scale_ratio = resolution / 1200;
-		let image_list = [];
+		let image_list = [] as Array<string>;
 		let script_count = 1;
 		const script_string = `
             /**
@@ -685,7 +684,6 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
         }
         writedata();`;
 		Kernel.FileSystem.write_file(`${dest}/write_data.jsfl`, script_data);
-		return;
 	}
 
 	export function process(
@@ -704,7 +702,6 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		Kernel.FileSystem.write_file(`${dest}/main.xfl`, 'PROXY-CS5');
 		exchange_script(`${dest}/script`, container.symbol_list.length, animation_name, resolution);
 		container.clear();
-		return;
 	}
 
 	export function execute(): void {
@@ -754,7 +751,6 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 			1,
 			true,
 		);
-		return;
 	}
 }
 

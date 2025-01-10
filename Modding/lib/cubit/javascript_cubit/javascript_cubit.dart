@@ -11,15 +11,25 @@ class JavascriptCubit extends Cubit<JavascriptState> {
 
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final showConfirmDialog = prefs.getBool('js.showConfirmDialog') ?? false;
-    state.copyWith(showConfirmDialog: showConfirmDialog);
+    state.copyWith(
+      showConfirmDialog: prefs.getBool('jsShowConfirmDialog') ?? true,
+      runAsLauncher: prefs.getBool('jsRunAsLauncher') ?? false,
+    );
   }
 
-  Future<void> setshowConfirmDialog(
+  Future<void> setShowConfirmDialog(
     bool showConfirmDialog,
   ) async {
-    emit(state.copyWith(showConfirmDialog: showConfirmDialog));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('js.showConfirmDialog', showConfirmDialog);
+    await prefs.setBool('jsShowConfirmDialog', showConfirmDialog);
+    emit(state.copyWith(showConfirmDialog: showConfirmDialog));
+  }
+
+  Future<void> setRunAsLauncher(
+    bool runAsLauncher,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('jsRunAsLauncher', runAsLauncher);
+    emit(state.copyWith(runAsLauncher: runAsLauncher));
   }
 }

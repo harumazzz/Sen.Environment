@@ -57,7 +57,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSBPatch.Decode {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
@@ -65,7 +64,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSBPatch.Decode {
 			filter: ['file', /(.+)(\.rsbpatch)$/i],
 			option: 52n,
 		});
-		return;
 	}
 }
 

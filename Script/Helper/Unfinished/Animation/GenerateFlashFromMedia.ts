@@ -122,7 +122,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 		const input_generic = load_bigint(Detail.resolution());
 		Console.argument(Kernel.Language.get('popcap.animation.extract_label'));
 		const has_label = load_bigint(Detail.has_label()) == 1n;
-		const image_list = [];
+		const image_list: Array<string> = [];
 		for (let e of Kernel.FileSystem.read_directory_only_file(source)) {
 			if (Kernel.Path.extname(e).toLowerCase() === '.png') {
 				image_list.push(e);
@@ -169,7 +169,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 			input_generic,
 			has_label,
 		);
-		return;
 	}
 }
 

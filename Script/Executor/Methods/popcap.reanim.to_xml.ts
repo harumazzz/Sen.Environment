@@ -50,14 +50,12 @@ namespace Sen.Script.Executor.Methods.PopCap.ReAnimation.ToXML {
 				clock.start_safe();
 				Kernel.Support.PopCap.ReAnimation.to_xml(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.reanim\.json)$/i],
 			option: 43n,
 		});
-		return;
 	}
 }
 

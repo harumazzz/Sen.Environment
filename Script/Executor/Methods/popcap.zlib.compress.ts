@@ -66,7 +66,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Zlib.Compress {
 					argument.use_64_bit_variant!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -76,7 +75,6 @@ namespace Sen.Script.Executor.Methods.PopCap.Zlib.Compress {
 			filter: ['file', /(.+)\.(rsb|obb|bin|xml)$/i],
 			option: 71n,
 		});
-		return;
 	}
 }
 

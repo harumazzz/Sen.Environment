@@ -42,7 +42,6 @@ namespace Sen.Script.Executor.Methods.Data.MD5.Hash {
 				clock.start_safe();
 				Console.output(Kernel.Encryption.MD5.hash_fs(argument.source));
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -52,7 +51,6 @@ namespace Sen.Script.Executor.Methods.Data.MD5.Hash {
 			filter: ['file', /.*/],
 			option: 2n,
 		});
-		return;
 	}
 }
 

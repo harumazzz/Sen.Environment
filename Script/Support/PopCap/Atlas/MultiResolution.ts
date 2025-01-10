@@ -58,7 +58,6 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 		callback: Callback,
 	): void {
 		images.forEach((e) => callback(e, `${destination}/${Kernel.Path.basename(e)}`, percentage));
-		return;
 	}
 
 	/**
@@ -74,8 +73,7 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 		destination: string,
 		percentage: number,
 	): void {
-		make_image(images, destination, percentage, Kernel.Image.resize_fs);
-		return;
+		return make_image(images, destination, percentage, Kernel.Image.resize_fs);
 	}
 
 	/**
@@ -87,8 +85,7 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 	 */
 
 	export function scale_fs(images: Array<string>, destination: string, percentage: number): void {
-		make_image(images, destination, percentage, Kernel.Image.scale_fs);
-		return;
+		return make_image(images, destination, percentage, Kernel.Image.scale_fs);
 	}
 
 	// Z-Callback
@@ -132,7 +129,6 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 			media,
 			Number(after) / Number(before),
 		);
-		return;
 	}
 
 	// Callback
@@ -173,7 +169,6 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 				e.atlas_destination,
 			);
 		}
-		return;
 	}
 	/**
 	 * Process method
@@ -192,7 +187,6 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 		} else {
 			callback = Pack.ResourceGroup.process_fs;
 		}
-		process(category, size, detail, callback);
-		return;
+		return process(category, size, detail, callback);
 	}
 }

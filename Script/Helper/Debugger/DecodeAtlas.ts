@@ -3,11 +3,9 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 		const source: string = Console.path('input_folder', 'directory');
 		const resource_folder = `${source}/resource`;
 		const data_info: any = Kernel.JSON.deserialize_fs(`${source}/data.json`);
-		for (let [group_id, group_value] of Object.entries(data_info.group) as any) {
+		for (let [_, group_value] of Object.entries(data_info.group) as any) {
 			if (group_value.composite) {
-				for (let [subgroup_id, subgroup_value] of Object.entries(
-					group_value.subgroup,
-				) as any) {
+				for (let [_, subgroup_value] of Object.entries(group_value.subgroup) as any) {
 					if (subgroup_value.category.resolution !== 0) {
 						for (let resource of subgroup_value.resource) {
 							if (resource.path.endsWith('.PTX')) {
@@ -45,7 +43,6 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 				}
 			}
 		}
-		return;
 	}
 }
 Sen.Script.Helper.Debugger.DecodeAtlas.execute();

@@ -97,14 +97,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToAPNG {
 					setting,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /.*(\.pam\.json)$/i],
 			option: 13n,
 		});
-		return;
 	}
 }
 

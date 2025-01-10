@@ -112,14 +112,12 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
 					setting,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.package$/i],
 			option: 74n,
 		});
-		return;
 	}
 }
 

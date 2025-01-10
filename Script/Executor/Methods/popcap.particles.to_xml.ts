@@ -50,14 +50,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Particles.ToXML {
 				clock.start_safe();
 				Kernel.Support.PopCap.Particles.to_xml(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.xml)\.json$/i],
 			option: 29n,
 		});
-		return;
 	}
 }
 

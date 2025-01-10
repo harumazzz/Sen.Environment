@@ -88,14 +88,12 @@ namespace Sen.Script.Executor.Methods.WWise.Media.Encode {
 					argument.format! as Support.Wwise.Media.Common.Format,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.wav$/i],
 			option: 76n,
 		});
-		return;
 	}
 }
 

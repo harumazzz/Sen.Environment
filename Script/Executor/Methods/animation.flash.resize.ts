@@ -77,14 +77,12 @@ namespace Sen.Script.Executor.Methods.Animation.Flash.Resize {
 					BigInt(argument.resolution!),
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /.*(\.xfl|\.pam\.xfl)$/i],
 			option: 7n,
 		});
-		return;
 	}
 }
 

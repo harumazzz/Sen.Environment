@@ -88,14 +88,12 @@ namespace Sen.Script.Executor.Methods.PopCap.PlayerInfo.Decode {
 				clock.start_safe();
 				Kernel.Support.PopCap.PlayerInfo.decode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.dat$/i],
 			option: 31n,
 		});
-		return;
 	}
 }
 

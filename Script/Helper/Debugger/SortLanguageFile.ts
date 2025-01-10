@@ -16,7 +16,7 @@ namespace Sen.Script.Helper.Debugger.SortLanguageFile {
 		const destination: LanguageFile = {};
 		const keys = Object.keys(source);
 		keys.sort();
-		keys.forEach((e) => (destination[e] = source[e]));
+		keys.forEach((e) => (destination[e] = source[e]!));
 		return destination;
 	}
 
@@ -35,7 +35,6 @@ namespace Sen.Script.Helper.Debugger.SortLanguageFile {
 			1,
 			false,
 		);
-		return;
 	}
 }
 Sen.Script.Helper.Debugger.SortLanguageFile.execute();

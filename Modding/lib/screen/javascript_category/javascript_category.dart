@@ -39,6 +39,7 @@ class JavaScriptCategory extends StatelessWidget {
       create: (context) {
         final bloc = LoadScriptBloc(
           settingsCubit: BlocProvider.of<SettingsCubit>(context),
+          localizations: los,
         );
         bloc.add(LoadScripts());
         return bloc;

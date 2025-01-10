@@ -92,14 +92,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Particles.Decode {
 					argument.platform!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.xml|\.xml\.compiled)$/i],
 			option: 27n,
 		});
-		return;
 	}
 }
 

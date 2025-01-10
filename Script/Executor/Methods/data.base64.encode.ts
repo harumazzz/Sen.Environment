@@ -50,7 +50,6 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Encode {
 				clock.start_safe();
 				Kernel.Encryption.Base64.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -60,7 +59,6 @@ namespace Sen.Script.Executor.Methods.Data.Base64.Encode {
 			filter: ['file', /.*/],
 			option: 4n,
 		});
-		return;
 	}
 }
 

@@ -53,14 +53,12 @@ namespace Sen.Script.Executor.Methods.PopCap.CFW2.Encode {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /.*\.txt\.json$/i],
 			option: 18n,
 		});
-		return;
 	}
 }
 

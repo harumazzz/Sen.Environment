@@ -126,7 +126,7 @@ namespace Sen.Script {
 
 		export function warning(source: string): void {
 			return Console.display(
-				Kernel.Language.get('execution_warning'),
+				`${Kernel.Language.get('execution_warning')}:`,
 				source,
 				Definition.Console.Color.YELLOW,
 			);
@@ -147,7 +147,7 @@ namespace Sen.Script {
 			Console.argument(source);
 			let destination: string = undefined!;
 			loop: do {
-				destination = Kernel.Console.readline();
+				destination = Kernel.Console.readline().trim();
 				switch (destination) {
 					case ':p':
 						if (type === 'file') destination = Shell.callback(['pick_file']);
@@ -157,27 +157,28 @@ namespace Sen.Script {
 						break loop;
 
 					default:
-						if (destination.startsWith('"') && destination.endsWith('"')) {
-							destination = destination.slice(1, destination.length - 1);
+						if (
+							(destination.startsWith('"') && destination.endsWith('"')) ||
+							(destination.startsWith("'") && destination.endsWith("'"))
+						) {
+							destination = destination.slice(1, -1);
 						}
-						if (type === 'file') {
-							if (Kernel.FileSystem.is_file(destination)) {
+						switch (type) {
+							case 'file':
+								if (Kernel.FileSystem.is_file(destination)) break loop;
+								Console.warning(
+									format(Kernel.Language.get('file_not_found'), destination),
+								);
+								break;
+							case 'directory':
+								if (Kernel.FileSystem.is_directory(destination)) break loop;
+
+								Console.warning(
+									format(Kernel.Language.get('directory_not_found'), destination),
+								);
 								break loop;
-							}
-							Console.warning(
-								format(Kernel.Language.get('file_not_found'), destination),
-							);
-						}
-						if (type === 'directory') {
-							if (Kernel.FileSystem.is_directory(destination)) {
+							default:
 								break loop;
-							}
-							Console.warning(
-								format(Kernel.Language.get('directory_not_found'), destination),
-							);
-						}
-						if (type === 'any') {
-							break loop;
 						}
 				}
 			} while (true);
@@ -210,7 +211,6 @@ namespace Sen.Script {
 
 		export function setup(): void {
 			participant = Kernel.Path.dirname(Kernel.Home.script());
-			return;
 		}
 
 		/**
@@ -305,7 +305,6 @@ namespace Sen.Script {
 		Console.error(result);
 		Console.finished(Kernel.Language.get('method_are_succeeded'));
 		Shell.callback(['finish']);
-		return;
 	}
 
 	/**
@@ -318,13 +317,13 @@ namespace Sen.Script {
 	export function launch(): string {
 		let result: string = undefined!;
 		try {
-			const args = Kernel.arguments();
-			args.splice(0, 3);
 			Home.setup();
 			Module.load();
 			Console.send(
 				`Sen ~ Shell: ${Shell.version()} & Kernel: ${Kernel.version()} & Script: ${version} ~ ${Kernel.OperatingSystem.current()} & ${Kernel.OperatingSystem.architecture()}`,
 			);
+			const args = Kernel.arguments();
+			args.splice(0, 3);
 			Setting.load();
 			Console.finished(
 				Kernel.Language.get('current_status'),
@@ -335,7 +334,6 @@ namespace Sen.Script {
 					Module.script_list.length + 1,
 				),
 			);
-			Console.send(Kernel.JSON.serialize({ test: '11111', ddd: 1n }, 1, false));
 			Executor.forward({ source: args });
 		} catch (e: any) {
 			result = Exception.make_exception(e);
@@ -359,7 +357,6 @@ namespace Sen.Script {
 			for (const script of script_list) {
 				Kernel.JavaScript.evaluate_fs(Home.query(script));
 			}
-			return;
 		}
 
 		/**
@@ -466,7 +463,6 @@ namespace Sen.Script {
 			'~/Executor/Methods/popcap.player_info.encode.js',
 			'~/Executor/Methods/pvz2.scg.encode.js',
 			'~/Executor/Methods/pvz2.scg.decode.js',
-			'~/Executor/Methods/popcap.rsb.trace.js',
 			'~/Executor/Methods/popcap.animation.add_library.js',
 			'~/Executor/Methods/popcap.rsb.convert_platform.js',
 		];

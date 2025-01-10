@@ -53,14 +53,12 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.Obfuscate {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 54n,
 		});
-		return;
 	}
 }
 

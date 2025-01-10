@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/service/windows_helper.dart';
 
 @immutable
 class JavaScriptCard extends StatelessWidget {
@@ -37,18 +41,80 @@ class JavaScriptCard extends StatelessWidget {
     ];
   }
 
-  void _onTap(BuildContext context) async {
+  Future<void> _showDialog(
+    BuildContext context,
+    String title,
+    String message,
+  ) async {
+    final los = AppLocalizations.of(context)!;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(los.okay),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _runAsLauncher(
+    BuildContext context,
+  ) async {
+    if (!Platform.isWindows) {
+      return await _runAsShell(context);
+    }
+    Future<void> showError(Object e) async {
+      final los = AppLocalizations.of(context)!;
+      await _showDialog(context, los.error, e.toString());
+    }
+
+    Future<void> showSuccess() async {
+      final los = AppLocalizations.of(context)!;
+      await _showDialog(context, los.done, los.spawn_success(item.name));
+    }
+
+    String launcher() => '${context.read<SettingsCubit>().state.toolChain}/Launcher.exe';
+    try {
+      await WindowsHelper.runLauncher(
+        argument: '${launcher()} ${_makeArguments().join(' ')}',
+      );
+      await showSuccess();
+    } catch (e) {
+      await showError(e);
+    }
+  }
+
+  Future<void> _runAsShell(
+    BuildContext context,
+  ) async {
+    await Navigator.of(context).push(
+      PageTransition(
+        duration: const Duration(milliseconds: 300),
+        type: PageTransitionType.rightToLeft,
+        child: ShellScreen(
+          arguments: _makeArguments(),
+        ),
+      ),
+    );
+  }
+
+  void _onTap(
+    BuildContext context,
+  ) async {
     if (context.mounted) {
       await _onConfirm(context, () async {
-        await Navigator.of(context).push(
-          PageTransition(
-            duration: const Duration(milliseconds: 300),
-            type: PageTransitionType.rightToLeft,
-            child: ShellScreen(
-              arguments: _makeArguments(),
-            ),
-          ),
-        );
+        if (BlocProvider.of<JavascriptCubit>(context).state.runAsLauncher) {
+          await _runAsLauncher(context);
+        } else {
+          await _runAsShell(context);
+        }
       });
     }
   }

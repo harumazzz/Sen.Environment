@@ -50,14 +50,12 @@ namespace Sen.Script.Executor.Methods.PopCap.PAK.Pack {
 				clock.start_safe();
 				Kernel.Support.PopCap.PAK.pack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.data_package$/i],
 			option: 26n,
 		});
-		return;
 	}
 }
 

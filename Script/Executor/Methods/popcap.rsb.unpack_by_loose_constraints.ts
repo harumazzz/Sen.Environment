@@ -52,7 +52,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.UnpackByLooseConstraints {
 				clock.start_safe();
 				Kernel.Support.PopCap.RSB.unpack_cipher(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -62,7 +61,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.UnpackByLooseConstraints {
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 57n,
 		});
-		return;
 	}
 }
 

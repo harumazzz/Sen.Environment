@@ -177,7 +177,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Decode {
 					Detail.exchange_format(argument.format!),
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -186,7 +185,6 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Decode {
 			filter: ['file', /(.+)\.ptx$/i],
 			option: 33n,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.PTX.Decode.forward();

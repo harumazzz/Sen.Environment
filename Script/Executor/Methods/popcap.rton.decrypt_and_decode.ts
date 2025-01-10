@@ -79,7 +79,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.DecryptAndDecode {
 					argument.iv!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward(argument: BatchArgument): void {
 				return basic_batch(this, argument, false);
@@ -89,7 +88,6 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.DecryptAndDecode {
 			filter: ['file', /(.+)(\.rton|pp\.dat)$/i],
 			option: 65n,
 		});
-		return;
 	}
 }
 

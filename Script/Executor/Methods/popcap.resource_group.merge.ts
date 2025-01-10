@@ -55,14 +55,12 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Merge {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /.*\.info$/i],
 			option: 50n,
 		});
-		return;
 	}
 }
 

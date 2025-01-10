@@ -134,14 +134,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Atlas.PackByResInfo {
 					argument.destination!,
 				);
 				clock.stop_safe();
-				return;
 			},
 			batch_forward: undefined!,
 			is_enabled: true,
 			filter: ['directory', /(.+)\.sprite$/i],
 			option: 15n,
 		});
-		return;
 	}
 }
 Sen.Script.Executor.Methods.PopCap.Atlas.PackByResInfo.forward();

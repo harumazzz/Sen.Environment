@@ -106,9 +106,14 @@ export namespace Sen::Shell {
 		#if WINDOWS
 			SetConsoleTextAttribute(handle, Color::DEFAULT);
 		#endif
-			if (message != "" && state) {
+			if (message != "") {
 				# if WINDOWS
-				print_utf16(handle, message);
+					if (state) {
+						print_utf16(handle, message);
+					}
+					else {
+						std::cout << message << '\n' << std::flush;
+					}
 				#else
 					std::cout << message << '\n' << std::flush;
 				#endif

@@ -17,7 +17,6 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 				path: [...z_path, record.image[path].id].join('/'),
 			};
 		});
-		return;
 	}
 
 	export function get_resolution(): Array<string> {
@@ -71,7 +70,6 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 				false,
 			);
 		});
-		return;
 	}
 }
 Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData.process_fs();

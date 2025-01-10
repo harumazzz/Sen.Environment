@@ -112,14 +112,12 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 					Detail.exchange_layout(argument.layout!),
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
 			option: 49n,
 		});
-		return;
 	}
 }
 

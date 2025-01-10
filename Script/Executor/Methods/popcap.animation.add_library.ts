@@ -72,14 +72,13 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
 					return sprite;
 				};
 				if (Array.isArray(image_source)) {
-					argument.additional = image_source.map(function process_source(e, i) {
+					argument.additional = image_source.map((e, _) => {
 						const media = Kernel.Path.base_without_extension(e);
-						const sprite = input_sprite(media);
 						return {
 							original_path: e,
 							image: media,
-							media: media,
-							sprite: sprite,
+							media: Kernel.Path.base_without_extension(e),
+							sprite: input_sprite(media),
 						};
 					});
 				} else {
@@ -101,14 +100,12 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
 					argument.additional,
 				);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /.*/g],
 			option: 79n,
 		});
-		return;
 	}
 }
 

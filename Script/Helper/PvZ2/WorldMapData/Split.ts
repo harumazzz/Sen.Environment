@@ -150,7 +150,6 @@ namespace Sen.Script.Helper.PvZ2.WorldMapData.Split {
 			definition.objects[map_name] = record_data;
 		}
 		Kernel.JSON.serialize_fs(`${destination}/map_list.json`, definition, 1, false);
-		return;
 	}
 
 	/**
@@ -163,11 +162,10 @@ namespace Sen.Script.Helper.PvZ2.WorldMapData.Split {
 			Kernel.Language.get('script.split_worldmap_data.input_source_file'),
 			'file',
 		);
-		process(
+		return process(
 			Kernel.JSON.deserialize_fs<WorldMapData>(source),
 			`${Kernel.Path.except_extension(source)}.map_list`,
 		);
-		return;
 	}
 }
 Sen.Script.Helper.PvZ2.WorldMapData.Split.execute();

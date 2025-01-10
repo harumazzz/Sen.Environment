@@ -51,14 +51,12 @@ namespace Sen.Script.Executor.Methods.PopCap.ResInfo.Convert {
 				clock.start_safe();
 				Kernel.Support.PopCap.ResInfo.convert_fs(argument.source, argument.destination!);
 				clock.stop_safe();
-				return;
 			},
 			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
 			option: 46n,
 		});
-		return;
 	}
 }
 

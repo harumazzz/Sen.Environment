@@ -211,7 +211,6 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				1,
 				false,
 			);
-			return;
 		}
 	}
 
@@ -400,7 +399,6 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				1,
 				false,
 			);
-			return;
 		}
 	}
 }

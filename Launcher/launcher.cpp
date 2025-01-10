@@ -32,7 +32,7 @@ MAIN {
             for (auto i = 1; i < argc; ++i) {
                 command += " \"" + std::string(argv[i]) + "\"";
             }
-            std::system(command.c_str());
+            std::system(command.data());
         #endif
     }
     catch (const std::runtime_error& e) {

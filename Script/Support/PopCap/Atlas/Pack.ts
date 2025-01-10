@@ -175,7 +175,6 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					),
 				);
 			}
-			return;
 		}
 	}
 
@@ -370,7 +369,6 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			images.forEach((image: Kernel.Dimension.Image) =>
 				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
-			return;
 		}
 	}
 
@@ -565,7 +563,6 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			images.forEach((image: Kernel.Dimension.Image) =>
 				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
-			return;
 		}
 	}
 }

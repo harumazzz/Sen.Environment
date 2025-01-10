@@ -35,10 +35,15 @@ class FileHelper {
 
   static Future<String?> saveFile({
     String? suggestedName,
+    String? initialDirectory,
   }) async {
     var outputFile = null as String?;
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS || Platform.isIOS) {
-      outputFile = (await file_selector.getSaveLocation(suggestedName: suggestedName))?.path;
+      outputFile = (await file_selector.getSaveLocation(
+        suggestedName: suggestedName,
+        initialDirectory: initialDirectory,
+      ))
+          ?.path;
     }
     if (Platform.isAndroid) {
       outputFile = (await AndroidHelper.saveFileFromDocument());
