@@ -39,7 +39,7 @@ namespace Sen::Kernel::JavaScript {
 		) = delete;
 
 		explicit Runtime (
-			Pointer<JSRuntime> value
+			const Pointer<JSRuntime>& value
 		) : value{value}
 		{
 
@@ -50,6 +50,7 @@ namespace Sen::Kernel::JavaScript {
 		) 
 		{
 			if (thiz.value != nullptr) {
+				JS_RunGC(thiz.value);
 				JS_FreeRuntime(this->value);
 				this->value = nullptr;
 			}
@@ -111,13 +112,13 @@ namespace Sen::Kernel::JavaScript {
 	struct Atom {
 
 		explicit Atom(
-			Pointer<JSContext> context, 
-			std::string_view name
+			Pointer<JSContext> &context, 
+			const std::string_view& name
 		): context(context), value(JS_NewAtomLen(context, name.data(), name.size())) {}
 
 		explicit Atom(
-			Pointer<JSContext> context,
-			uint32_t value
+			Pointer<JSContext>& context,
+			const uint32_t& value
 		) : context(context), value(JS_NewAtomUInt32(context, value)) {
 		}
 
@@ -148,7 +149,7 @@ namespace Sen::Kernel::JavaScript {
 
 		JSClassID value{};
 
-		explicit ClassID(
+		explicit constexpr ClassID(
 
 		) = default;
 
@@ -184,14 +185,14 @@ namespace Sen::Kernel::JavaScript {
 			return;
 		}
 
+		inline static auto constexpr temporary (
+
+		) -> ClassID
+		{
+			return ClassID{};
+		}
+
 	};
-
-	inline static auto constexpr temporary_class_id (
-
-	) -> ClassID
-	{
-		return ClassID{};
-	}
 
 
 }

@@ -4,6 +4,10 @@
 
 namespace Sen::Kernel::JavaScript {
 
+	struct Value;
+
+	struct Error;
+
 	struct Value {
 
 		private:
@@ -18,21 +22,56 @@ namespace Sen::Kernel::JavaScript {
 
 			explicit Value(
 
-			) : context(nullptr), value{JS_UNINITIALIZED}
+			) : context{nullptr}, value{JS_UNINITIALIZED}
+			{
+
+			}
+			
+			Value(
+				const Value &other
+			) : context{other.context}, value{other.context == nullptr ? other.value : JS_DupValue(other.context, other.value)} {
+
+			}
+
+			Value(Value &&other) noexcept 
+				: context{std::move(other.context)}, value{thiz.context == nullptr ? other.value : other.release_value()} {
+				other.value = JS_UNINITIALIZED;
+			}
+
+			auto operator=(
+				const Value &other
+			) -> Value &
+			{
+				if (this != &other) {
+					thiz.reset_value();
+					thiz.context = other.context;
+					thiz.value = other.context == nullptr ? other.value : JS_DupValue(other.context, other.value); 
+				}
+				return thiz;
+			}
+
+			auto operator=(
+				Value &&other
+			) -> Value& 
+			{
+				if (this != &other) { 
+					thiz.reset_value();
+					thiz.context = std::move(other.context);
+					thiz.value = thiz.context == nullptr ? other.value : other.release_value();
+				}
+				return thiz;
+			}
+
+			explicit Value(
+				const JSValue & value
+			) : context{nullptr}, value{value}
 			{
 
 			}
 
 			explicit Value(
-				Pointer<JSContext> const& context
-			) : context{context}, value{JS_UNINITIALIZED}
-			{
-
-			}
-
-			explicit Value(
-				Pointer<JSContext> const& context,
-				JSValue const& value
+				const Pointer<JSContext> & context,
+				const JSValue & value
 			) : context{ context }, value{ value }
 			{
 
@@ -49,77 +88,86 @@ namespace Sen::Kernel::JavaScript {
 
 			) -> bool
 			{
-				return JS_IsUninitialized(value);
+				return static_cast<bool>(JS_IsUninitialized(value));
+			}
+
+			auto _context (
+
+			) -> Pointer<JSContext>
+			{
+				return thiz.context;
 			}
 
 			auto is_undefined(
 
 			) -> bool
 			{
-				return JS_IsUndefined(value);
+				return static_cast<bool>(JS_IsUndefined(value));
 			}
 
 			auto is_null(
 
 			) -> bool
 			{
-				return JS_IsNull(value);
+				return static_cast<bool>(JS_IsNull(value));
 			}
 
 			auto is_bigint(
 
 			) -> bool
 			{
-				return JS_IsBigInt(thiz.context, thiz.value);
-			}
-
-			auto is_boolean(
-
-			) -> bool
-			{
-				return JS_IsBool(thiz.value);
-			}
-
-			auto is_number(
-
-			) -> bool
-			{
-				return JS_IsNumber(thiz.value);
-			}
-		
-			auto is_string(
-
-			) -> bool
-			{
-				return JS_IsString(thiz.value);
-			}
-
-			auto is_object(
-
-			) -> bool
-			{
-				return JS_IsObject(thiz.value);
+				return static_cast<bool>(JS_IsBigInt(thiz.context, thiz.value));
 			}
 
 			auto is_exception(
 
 			) -> bool
 			{
-				return JS_IsException(thiz.value);
+				return static_cast<bool>(JS_IsException(thiz.value));
+			}
+
+			auto is_boolean(
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsBool(thiz.value));
+			}
+
+			auto is_number(
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsNumber(thiz.value));
+			}
+		
+			auto is_string(
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsString(thiz.value));
+			}
+
+			auto is_object(
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsObject(thiz.value));
 			}
 
 			auto is_array(
 
 			) -> bool
 			{
-				return JS_IsArray(thiz.context, thiz.value);
+				return static_cast<bool>(JS_IsArray(thiz.context, thiz.value));
 			}
 
 			auto rebind_value(
 				JSValue const& new_value
 			) -> void 
 			{
-				JS_FreeValue(thiz.context, thiz.value);
+				if (thiz.context != nullptr) {
+					JS_FreeValue(thiz.context, thiz.value);
+				}
 				thiz.value = new_value;
 				return;
 			}
@@ -214,6 +262,14 @@ namespace Sen::Kernel::JavaScript {
 				return Value{context, value};
 			}
 
+			inline static auto as_new_reference(
+				Pointer<JSContext> const& context,
+				JSValue const& value
+			) -> Value
+			{
+				return Value{context, JS_DupValue(context, value)};
+			}
+
 			auto get_prototype(
 
 			) -> Value 
@@ -230,7 +286,7 @@ namespace Sen::Kernel::JavaScript {
 			}
 
 			auto define_property(
-				std::string const& name,
+				std::string_view name,
 				Value&& value
 			) -> void
 			{
@@ -249,6 +305,20 @@ namespace Sen::Kernel::JavaScript {
 				return;
 			}
 
+			auto as_reference (
+
+			) -> Value
+			{
+				return Value{thiz._context(), JS_DupValue(thiz._context(), thiz.value)};
+			}
+
+			auto as_instance (
+
+			) -> Value
+			{
+				return Value{thiz._context(), thiz.value};
+			}
+
 			auto define_property(
 				std::string const& name,
 				Value&& getter,
@@ -308,7 +378,7 @@ namespace Sen::Kernel::JavaScript {
 			}
 
 			auto get_property(
-				std::string const& name
+				std::string_view name
 			) -> Value
 			{
 				auto atom = Atom{ thiz.context, name };
@@ -326,12 +396,22 @@ namespace Sen::Kernel::JavaScript {
 			}
 
 			auto set_property(
-				std::string const& name,
+				std::string_view name,
 				Value&& value
 			) -> void
 			{
 				auto atom = Atom{ thiz.context, name };
 				JS_SetProperty(thiz.context, thiz.value, atom.value, value.release_value());
+				return;
+			}
+
+			auto set_property(
+				std::string_view name,
+				JSValue value
+			) -> void
+			{
+				auto atom = Atom{ thiz.context, name };
+				JS_SetProperty(thiz.context, thiz.value, atom.value, value);
 				return;
 			}
 
@@ -342,6 +422,16 @@ namespace Sen::Kernel::JavaScript {
 			{
 				auto atom = Atom{ thiz.context, index };
 				JS_SetProperty(thiz.context, thiz.value, atom.value, value.release_value());
+				return;
+			}
+
+			auto set_property(
+				uint32_t index,
+				JSValue value
+			) -> void
+			{
+				auto atom = Atom{ thiz.context, index };
+				JS_SetProperty(thiz.context, thiz.value, atom.value, value);
 				return;
 			}
 
@@ -399,14 +489,17 @@ namespace Sen::Kernel::JavaScript {
 
 			) -> tsl::ordered_map<std::string, Value>
 			{
-				auto property_enum = Pointer<JSPropertyEnum>{};
+				auto property_enum = std::add_pointer_t<JSPropertyEnum>{nullptr};
 				auto property_count = std::uint32_t{};
 				JS_GetOwnPropertyNames(thiz.context, &property_enum, &property_count, thiz.value, JS_GPN_STRING_MASK);
 				auto map = tsl::ordered_map<std::string, Value>{ property_count };
 				for (auto element = property_enum; element < property_enum + property_count; ++element) {
-					auto name = JS_AtomToCString(thiz.context, element->atom);
-					map.insert({ std::string{ name, std::strlen(name) }, as_new_instance(thiz.context, JS_GetProperty(thiz.context, thiz.value, element->atom)) });
-					JS_FreeCString(thiz.context, name);
+					auto name = JS_AtomToString(thiz.context, element->atom);
+					auto size = std::size_t{};
+					auto key = JS_ToCStringLen(thiz.context, &size, name);
+					map.insert({ std::string{ key, size }, as_new_instance(thiz.context, JS_GetProperty(thiz.context, thiz.value, element->atom)) });
+					JS_FreeValue(thiz.context, name);
+					JS_FreeCString(thiz.context, key);
 				}
 				JS_FreePropertyEnum(thiz.context, property_enum, property_count);
 				return map;
@@ -418,12 +511,40 @@ namespace Sen::Kernel::JavaScript {
 			{
 				auto map = thiz.collect_object_properties();
 				auto length = static_cast<std::size_t>(map["length"].get_number<double>());
-				auto result = List<Value>{ length };
+				auto result = List<Value>{  };
+				result.reserve(length);
 				for (auto index : Range{ length }) {
 					result.push_back(std::move(map.at(std::to_string(index))));
 				}
 				return result;
 			}
+
+			auto release (
+
+			) -> JSValue
+			{
+				auto result = thiz.value;
+				thiz.value = JS_UNINITIALIZED;
+				return result;
+			}
+	};
+
+	struct Error {
+
+		std::string message;
+
+		std::string stack;
+
+		inline auto make_exception (
+			
+		) -> std::string {
+			auto pretty_exception = "Error: " + message;
+			if (!stack.empty()) {
+				pretty_exception += "\nStack Trace:\n" + stack;
+			}
+			return pretty_exception;
+		}
+
 	};
 
 	template <>
@@ -440,14 +561,34 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <>
+	auto Value::get<Error>(
+
+	) -> Error
+	{
+		auto message_size = std::size_t{};
+		auto message = JS_ToCStringLen(context, &message_size, value);
+		auto stack_trace = thiz.get_property("stack");
+		auto stack_size = std::size_t{};
+		auto stack = JS_ToCStringLen(context, &stack_size, stack_trace.value);
+		auto destination = Error{
+			.message = std::string{message, message_size},
+			.stack = std::string{stack, stack_size},
+		};
+		JS_FreeCString(context, message);
+		JS_FreeCString(context, stack);
+		return destination;
+	}
+
+	template <>
 	auto Value::get<bool>(
 
 	) -> bool
 	{
 		assert_conditional(is_boolean(), "Value is not boolean", "get");
 		auto val = JS_ToBool(context, value);
-		auto result = val == 1;
-		return result;
+		return static_cast<bool>(val);
 	}
+
+	inline auto constexpr add_reference = JS_DupValue;
 
 }

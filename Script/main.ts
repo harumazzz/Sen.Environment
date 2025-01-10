@@ -241,7 +241,7 @@ namespace Sen.Script {
 
 		export function make_stack(stack: string): string {
 			let base_stack = stack
-				.replaceAll('at', `${Kernel.Language.get('at')}`)
+				.replaceAll('at', Kernel.Language.get('at'))
 				.replaceAll('\\', '/')
 				.split('\n')
 				.map((e) => e.replace(/(?<=\()(.*)(?=(Kernel|Script))/, ''))
@@ -259,8 +259,7 @@ namespace Sen.Script {
 		 */
 
 		export function make_exception_cli(e: Error): string {
-			let result: string = `${e.message}`;
-			result += `\n● ${Kernel.Language.get('stack')}:\n`;
+			let result: string = `${e.message}\n● ${Kernel.Language.get('stack')}:\n`;
 			result += make_stack(e.stack!);
 			result = result.replace(/\n$/, '');
 			return result;
@@ -276,8 +275,8 @@ namespace Sen.Script {
 			if (Shell.is_gui()) {
 				Console.error(e.message);
 				Console.display(
-					`${Kernel.Language.get('stack')}`,
-					`${make_stack(e.stack!).replace(/\n$/, '')}`,
+					`${Kernel.Language.get('stack')}:`,
+					make_stack(e.stack!).replace(/\n$/, ''),
 					Definition.Console.Color.RED,
 				);
 				return undefined!;
@@ -336,6 +335,7 @@ namespace Sen.Script {
 					Module.script_list.length + 1,
 				),
 			);
+			Console.send(Kernel.JSON.serialize({ test: '11111', ddd: 1n }, 1, false));
 			Executor.forward({ source: args });
 		} catch (e: any) {
 			result = Exception.make_exception(e);
@@ -378,7 +378,7 @@ namespace Sen.Script {
 			'~/Support/PopCap/Atlas/MultiResolution.js',
 			'~/Support/PopCap/Animation/Miscellaneous/GenerateAnimation.js',
 			'~/Support/PopCap/Animation/Miscellaneous/AddLibrary.js',
-			'~/Support/PopCap/LawnStrings/Convert.js',
+			'~/Support/PopCap/Lawnstrings/Convert.js',
 			'~/Support/PopCap/ResourceStreamBundle/Miscellaneous/Obfuscate.js',
 			'~/Support/PopCap/ResourceStreamBundle/Miscellaneous/PlatformConverter.js',
 			'~/Support/PopCap/ReflectionObjectNotation/DecodeByLooseConstraints.js',

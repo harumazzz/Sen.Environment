@@ -25,11 +25,11 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
 
-	inline auto constexpr temporary_class_id = JS::temporary_class_id;
-
 	using Atom = JS::Atom;
 
 	using ClassID = JS::ClassID;
+
+	using Value = JS::Value;
 
 	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValue, int, JSValue *);
 
@@ -200,63 +200,6 @@ namespace Sen::Kernel::Interface::Script
 	namespace JSON
 	{
 
-		inline static auto json_to_js(
-			JSContext *context,
-			const nlohmann::ordered_json &json
-		) -> JSElement::Object
-		{
-			switch (json.type())
-			{
-				case nlohmann::ordered_json::value_t::null:
-				{
-					return JS::Converter::get_null();
-				}
-				case nlohmann::ordered_json::value_t::object:
-				{
-					auto js_obj = JS_NewObject(context);
-					for (auto &[key, value] : json.items())
-					{
-						auto atom = Atom{context, key};
-						JS_DefinePropertyValue(context, js_obj, atom.value, json_to_js(context, value), JS_PROP_C_W_E);
-					}
-					return js_obj;
-				}
-				case nlohmann::ordered_json::value_t::array:
-				{
-					auto js_arr = JS_NewArray(context);
-					for (auto i : Range<size_t>(json.size()))
-					{
-						JS_DefinePropertyValueUint32(context, js_arr, i, json_to_js(context, json[i]), JS_PROP_C_W_E);
-					}
-					return js_arr;
-				}
-				case nlohmann::ordered_json::value_t::string:
-				{
-					return JS_NewStringLen(context, json.get<std::string>().data(), json.get<std::string>().size());
-				}
-				case nlohmann::ordered_json::value_t::boolean:
-				{
-					return JS_NewBool(context, json.get<bool>());
-				}
-				case nlohmann::ordered_json::value_t::number_integer:
-				{
-					return JS_NewBigInt64(context, json.get<int64_t>());
-				}
-				case nlohmann::ordered_json::value_t::number_unsigned:
-				{
-					return JS_NewBigInt64(context, json.get<uint64_t>());
-				}
-				case nlohmann::ordered_json::value_t::number_float:
-				{
-					return JS_NewFloat64(context, json.get<double>());
-				}
-				default:
-				{
-					return JS_UNDEFINED;
-				}
-			}
-		}
-
 		inline static auto deserialize(
 			JSContext *context,
 			JSValue value,
@@ -267,7 +210,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto json = nlohmann::ordered_json::parse(source);
-				auto js_obj = json_to_js(context, json);
+				auto js_obj = JS::to(context, json);
 				return js_obj;
 			});
 		}
@@ -282,87 +225,9 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto json = Sen::Kernel::FileSystem::read_json(source);
-				auto js_obj = json_to_js(context, *json);
+				auto js_obj = JS::to(context, json.operator*());
 				return js_obj;
 			});
-		}
-
-		inline static auto object_to_json(
-			JSContext *context,
-			JSValue value
-		) -> nlohmann::ordered_json {
-			switch (JS_VALUE_GET_TAG(value)) {
-				case JS_TAG_UNDEFINED:
-				case JS_TAG_NULL:
-					return nullptr;
-				case JS_TAG_OBJECT: {
-					if (JS_IsArray(context, value)) {
-						auto length = uint32_t{};
-						auto atom = Atom{context, "length"};
-						auto len = JS_GetProperty(context, value, atom.value);
-						JS_ToUint32(context, &length, len);
-						JS_FreeValue(context, len);
-						auto json = nlohmann::ordered_json::array();
-						auto &array = json.get_ref<nlohmann::ordered_json::array_t &>();
-    					array.reserve(length); 
-						for (auto i : Range(length)) {
-							auto val = JS_GetPropertyUint32(context, value, i);
-							json.emplace_back(object_to_json(context, val));
-							JS_FreeValue(context, val);
-						}
-						return json;
-					} else if (JS_IsObject(value)) {
-						auto json = nlohmann::ordered_json::object();
-						auto *tab = static_cast<JSPropertyEnum *>(nullptr);
-						auto tab_size = uint32_t{};
-						if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0) {
-							for (auto i : Range(tab_size)) {
-								auto key = JS_AtomToCString(context, tab[i].atom);
-								if (key == nullptr) {
-									JS_FreeAtom(context, tab[i].atom);
-									continue;
-								}
-								auto val = JS_GetProperty(context, value, tab[i].atom);
-								if (JS_VALUE_GET_TAG(val) != JS_TAG_UNDEFINED) {
-									json.emplace(std::string(key), object_to_json(context, val)); 
-								}
-								JS_FreeAtom(context, tab[i].atom);
-								JS_FreeValue(context, val);
-								JS_FreeCString(context, key);
-							}
-							js_free(context, tab);
-						} else {
-							if (tab != nullptr) {
-								js_free(context, tab);
-							}
-							throw Exception("Failed to get property names", std::source_location::current(), "object_to_json");
-						}
-						return json;
-					} else {
-						throw Exception("Unknown type", std::source_location::current(), "object_to_json");
-					}
-				}
-				case JS_TAG_STRING: {
-					auto size = std::size_t{};
-					auto str = JS_ToCStringLen(context, &size, value);
-					auto json = nlohmann::ordered_json(std::string{str, size});
-					JS_FreeCString(context, str);
-					return json;
-				}
-				case JS_TAG_BOOL:
-					return nlohmann::ordered_json(JS_VALUE_GET_BOOL(value));
-				case JS_TAG_INT:
-					return nlohmann::ordered_json(static_cast<double>(JS_VALUE_GET_INT(value)));
-				case JS_TAG_FLOAT64:
-					return nlohmann::ordered_json(JS_VALUE_GET_FLOAT64(value));
-				case JS_TAG_BIG_INT: {
-					auto val = int64_t{};
-					JS_ToBigInt64(context, &val, value);
-					return nlohmann::ordered_json(val);
-				}
-				default:
-					throw Exception("Unsupported type", std::source_location::current(), "object_to_json");
-			}
 		}
 
 		inline static auto serialize(
@@ -373,7 +238,8 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSElement::string {
 			return proxy_wrapper(context, "serialize", [&]() {
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
-				auto json = object_to_json(context, argv[0]);
+				auto value = Value::as_new_reference(context, argv[0]);
+				auto json = JS::from(value);
 				auto indent = JS::Converter::get_int32(context, argv[1]);
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[2]);
 				auto source = json.dump(indent, '\t', ensure_ascii);
@@ -391,7 +257,8 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "serialize_fs", [&]() {
 				assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
 				auto destination = JS::Converter::get_string(context, argv[0]);
-				auto json = object_to_json(context, argv[1]);
+				auto value = Value::as_new_reference(context, argv[1]);
+				auto json = JS::from(value);
 				auto indent = JS::Converter::get_int32(context, argv[2]);
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[3]);
 				auto result = json.dump(indent, '\t', ensure_ascii);
@@ -667,7 +534,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <auto use_big_endian>
 				requires BooleanConstraint
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			template <auto T>
 				requires BooleanConstraint
@@ -2445,7 +2312,7 @@ namespace Sen::Kernel::Interface::Script
 				~Data() = default;
 			};
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -2537,7 +2404,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Support::PopCap::Animation::Miscellaneous::Image;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			using Matrix = std::array<double, 6>;
 
@@ -2690,7 +2557,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Support::PopCap::Animation::Miscellaneous::Sprite;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			using Matrix = std::array<double, 6>;
 
@@ -2861,7 +2728,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -3008,7 +2875,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -3158,7 +3025,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::FileSystem::FileHandler;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -3335,7 +3202,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::JsonWriter;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -3608,7 +3475,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			
 
@@ -3786,7 +3653,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::APNGMakerSetting;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			enum GetterSetter
 			{
@@ -3970,7 +3837,7 @@ namespace Sen::Kernel::Interface::Script
 				~Data() = default;
 			};
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -4084,7 +3951,7 @@ namespace Sen::Kernel::Interface::Script
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			template <typename T>
 				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -4247,7 +4114,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = CData;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -4385,7 +4252,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Data;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constexpr _class_name(
 
@@ -4589,7 +4456,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = canvas_ity::canvas;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			inline static auto constructor(
 				JSContext *context,
@@ -5216,7 +5083,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Dimension<int>;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			enum Magic
 			{
@@ -5349,7 +5216,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Rectangle<int>;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			enum Magic
 			{
@@ -5488,7 +5355,7 @@ namespace Sen::Kernel::Interface::Script
 
 			using Data = Kernel::Image<int>;
 
-			inline static auto class_id = temporary_class_id();
+			inline static auto class_id = ClassID::temporary();
 
 			enum Magic
 			{
@@ -7515,44 +7382,6 @@ namespace Sen::Kernel::Interface::Script
 				});
 			}
 
-			inline static auto encode_fs_as_multiple_threads(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSElement::undefined
-			{
-				return proxy_wrapper(context, "encode_fs_as_multiple_threads", [&](){
-					auto paths = List<List<std::string>>{};
-					for (const auto &i : Range<int>(argc))
-					{
-						const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
-						paths.emplace_back(data);
-					}
-					Sen::Kernel::Encryption::Base64::encode_fs_as_multiple_thread(paths);
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto decode_fs_as_multiple_threads(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSElement::undefined
-			{
-				return proxy_wrapper(context, "decode_fs_as_multiple_threads", [&](){
-					auto paths = List<List<std::string>>{};
-					for (const auto &i : Range<int>(argc))
-					{
-						const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
-						paths.emplace_back(data);
-					}
-					Sen::Kernel::Encryption::Base64::encode_fs_as_multiple_thread(paths);
-					return JS_UNDEFINED;
-				});
-			}
-
 			inline static auto decode(
 				JSContext *context,
 				JSValue value,
@@ -8878,44 +8707,6 @@ namespace Sen::Kernel::Interface::Script
 					});
 				}
 
-				inline static auto decode_fs_as_multiple_threads(
-					JSContext *context,
-					JSValue value,
-					int argc,
-					JSValue* argv
-				) -> JSElement::undefined
-				{
-					return proxy_wrapper(context, "decode_fs_as_multiple_threads"_sv, [&]() {
-						auto paths = List<List<std::string>>{};
-						for (const auto &i : Range<int>(argc))
-						{
-							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
-							paths.emplace_back(data);
-						}
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decode_fs_as_multiple_threads(paths);
-						return JS_UNDEFINED; 
-					});
-				}
-
-				inline static auto encode_fs_as_multiple_threads(
-					JSContext *context,
-					JSValue value,
-					int argc,
-					JSValue* argv
-				) -> JSElement::undefined
-				{
-					return proxy_wrapper(context, "encode_fs_as_multiple_threads"_sv, [&]() {
-						auto paths = List<List<std::string>>{};
-						for (const auto &i : Range<int>(argc))
-						{
-							const auto &data = JS::Converter::get_vector<std::string>(context, argv[i]);
-							paths.emplace_back(data);
-						}
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_fs_as_multiple_threads(paths);
-						return JS_UNDEFINED; 
-					});
-				}
-
 				inline static auto encode_fs(
 					JSContext *context,
 					JSValue value,
@@ -9215,7 +9006,8 @@ namespace Sen::Kernel::Interface::Script
 					{
 						return proxy_wrapper(context, "process"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
-							auto animation = JSON::object_to_json(context, argv[0]);
+							auto value = Value::as_new_reference(context, argv[0]);
+							auto animation = JS::from(value);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[2]));
 							auto extra = Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo{.resolution = resolution};
@@ -9514,7 +9306,8 @@ namespace Sen::Kernel::Interface::Script
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
+							auto value = Value::as_new_reference(context, argv[2]);
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, JS::from(value));
 							return JS_UNDEFINED;
 						});
 					}
@@ -9530,7 +9323,8 @@ namespace Sen::Kernel::Interface::Script
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
+							auto value = Value::as_new_reference(context, argv[2]);
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, JS::from(value));
 							return JS_UNDEFINED;
 						});
 					}
@@ -9550,7 +9344,8 @@ namespace Sen::Kernel::Interface::Script
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
+							auto value = Value::as_new_reference(context, argv[2]);
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, JS::from(value));
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9566,7 +9361,8 @@ namespace Sen::Kernel::Interface::Script
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, JSON::object_to_json(context, argv[2]));
+							auto value = Value::as_new_reference(context, argv[2]);
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, JS::from(value));
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9775,7 +9571,8 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto global_data_source = JS::Converter::get_string(context, argv[1]);
 							auto media_source = JS::Converter::get_string(context, argv[2]);
-							Kernel::Support::WWise::SoundBank::Miscellaneous::Support::add_music(source, global_data_source, media_source, JSON::object_to_json(context, argv[3]));
+							auto value = Value::as_new_reference(context, argv[3]);
+							Kernel::Support::WWise::SoundBank::Miscellaneous::Support::add_music(source, global_data_source, media_source, JS::from(value));
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9924,7 +9721,7 @@ namespace Sen::Kernel::Interface::Script
 			};
 
 
-		inline static auto class_id = temporary_class_id();
+		inline static auto class_id = ClassID::temporary();
 
 		using Data = JSFileWatcher;
 
@@ -10105,7 +9902,7 @@ namespace Sen::Kernel::Interface::Script
 				bool running_;
 		};
 
-		inline static auto class_id = temporary_class_id();
+		inline static auto class_id = ClassID::temporary();
 
 		inline static auto constructor(
 			JSContext *context, 
@@ -10701,9 +10498,10 @@ namespace Sen::Kernel::Interface::Script
 				if (eResult != tinyxml2::XML_SUCCESS) {
 					throw Exception(fmt::format("XML cannot be parsed, data: {}", source), std::source_location::current(), "deserialize");
 				}
-				auto j = nlohmann::ordered_json{};
-				j[doc.RootElement()->Value()] = xml2json(doc.RootElement());
-				return JSON::json_to_js(context, j); 
+				auto value = nlohmann::ordered_json{};
+				value[doc.RootElement()->Value()] = xml2json(doc.RootElement());
+				auto destination = JS::to(context, value);
+				return destination; 
 			});
 		}
 
@@ -10723,9 +10521,10 @@ namespace Sen::Kernel::Interface::Script
 				if (eResult != tinyxml2::XML_SUCCESS) {
 					throw Exception(fmt::format("XML cannot be loaded, data: {}", source), std::source_location::current(), "deserialize");
 				}
-				auto j = nlohmann::ordered_json{};
-				j[doc.RootElement()->Value()] = xml2json(doc.RootElement());
-				return JSON::json_to_js(context, j); 
+				auto value = nlohmann::ordered_json{};
+				value[doc.RootElement()->Value()] = xml2json(doc.RootElement());
+				auto destination = JS::to(context, value); 
+				return destination;
 			});
 		}
 
@@ -10739,7 +10538,8 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "serialize"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
 				auto doc = tinyxml2::XMLDocument{};
-				auto j = JSON::object_to_json(context, argv[0]);
+				auto value = Value::as_new_reference(context, argv[0]);
+				auto j = JS::from(value);
 				convert(j, doc);
 				auto printer = tinyxml2::XMLPrinter{};
 				doc.Print(&printer);
@@ -10757,7 +10557,8 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "serialize_fs"_sv, [&]() {
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
 				auto doc = XMLDocument{};
-				auto source = JSON::object_to_json(context, argv[0]);
+				auto value = Value::as_new_reference(context, argv[0]);
+				auto source = JS::from(value);
 				convert(source, doc);
 				auto printer = tinyxml2::XMLPrinter{};
 				doc.Print(&printer);

@@ -1068,32 +1068,6 @@ declare namespace Sen {
 				 * --------------------------------------------------
 				 */
 				export function decode_fs(source: string, destination: string): void;
-
-				// **These methods might not be supported in all environments**
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 encoding method for files (asynchronous with potential multi-threading)
-				 * @param argument - Array of source and destination file paths for multiple encodings (may not be supported in all environments)
-				 * @returns: (void) - This function doesn't return a value, it modifies the destination files
-				 * --------------------------------------------------
-				 */
-				export function encode_fs_as_multiple_threads<
-					source extends string,
-					destination extends string,
-				>(argument: Array<[source, destination]>): void;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 decoding method for files (asynchronous with potential multi-threading)
-				 * @param argument - Array of source and destination file paths for multiple decodings (may not be supported in all environments)
-				 * @returns: (void) - This function doesn't return a value, it modifies the destination files
-				 * --------------------------------------------------
-				 */
-				export function decode_fs_as_multiple_threads<
-					source extends string,
-					destination extends string,
-				>(argument: Array<[source, destination]>): void;
 			}
 		}
 
@@ -1587,16 +1561,6 @@ declare namespace Sen {
 					): void;
 
 					/**
-					 * Decodes multiple RTON source files asynchronously using an array of source-destination file paths.
-					 *
-					 * @param params An array of two-element arrays representing source and destination file paths for multiple RTON files.
-					 *              Example: `[["source1.rton", "destination1.decoded"], ["source2.rton", "destination2.decoded"]]`
-					 */
-					export function decode_fs_as_multiple_threads(
-						...params: Array<[string, string]>
-					): void;
-
-					/**
 					 * Encodes a source file into an RTON file (destination).
 					 *
 					 * This function synchronously encodes the contents of a source file into the PopCap RTON format
@@ -1607,20 +1571,6 @@ declare namespace Sen {
 					 * @throws {Error} If there is an error during encoding.
 					 */
 					export function encode_fs(source: string, destination: string): void;
-
-					/**
-					 * Encodes multiple RTON files asynchronously.
-					 *
-					 * This function takes an array of source-destination file path pairs and attempts to encode
-					 * the source files into RTON format asynchronously (likely using multiple threads or Web Workers).
-					 * The encoded data is written to the corresponding destination files.
-					 *
-					 * @param params An array of two-element arrays representing source and destination file paths for multiple RTON files.
-					 *              Example: `[["source1.txt", "destination1.rton"], ["source2.png", "destination2.rton"]]`
-					 */
-					export function encode_fs_as_multiple_threads(
-						...params: Array<[string, string]>
-					): void;
 				}
 
 				/**

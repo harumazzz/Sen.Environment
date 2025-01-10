@@ -40,6 +40,8 @@
 #include "kernel/utility/javascript/proxy.hpp"
 #include "kernel/utility/javascript/runtime.hpp"
 #include "kernel/utility/javascript/converter.hpp"
+#include "kernel/utility/javascript/converter/json.hpp"
+#include "kernel/utility/javascript/converter/xml.hpp"
 #include "kernel/utility/diff/vcdiff.hpp"
 
 namespace Sen::Kernel {

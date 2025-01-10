@@ -45,6 +45,8 @@ add_library(
 	./utility/javascript/value.hpp
 	./utility/javascript/runtime.hpp
 	./utility/javascript/converter.hpp
+	./utility/javascript/converter/json.hpp
+	./utility/javascript/converter/xml.hpp
 	./utility/javascript/proxy.hpp
 	./utility/diff/vcdiff.hpp
 

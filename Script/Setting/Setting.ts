@@ -6,7 +6,7 @@ namespace Sen.Script.Setting {
 	 * --------------------------------------------------
 	 */
 
-	export const setting_file: string = Home.query(`~/Setting/Setting.json`);
+	export const setting_file: string = Home.query('~/Setting/Setting.json');
 
 	/**
 	 * --------------------------------------------------

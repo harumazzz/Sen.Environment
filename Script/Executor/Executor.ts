@@ -765,6 +765,7 @@ namespace Sen.Script.Executor {
 					execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
 					continue;
 			}
+			input = input.trim();
 			if (input.startsWith('"') && input.endsWith('"')) {
 				input = input.slice(1, input.length - 1);
 			}
@@ -801,10 +802,7 @@ namespace Sen.Script.Executor {
 				`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
 				Definition.Console.Color.CYAN,
 			);
-			(argument.source as Array<string>).forEach((e, i) => {
-				if (Shell.is_gui()) Kernel.Console.print(`${i + 1}. ${e}`);
-				else Kernel.Console.print(`    ${i + 1}. ${e}`);
-			});
+			(argument.source as Array<string>).forEach((e, i) => print_statement(e, BigInt(i + 1)));
 			Console.send(
 				format(
 					`${Kernel.Language.get('js.obtained_argument')}:`,
