@@ -19,6 +19,7 @@ import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class Application extends StatelessWidget {
   const Application({super.key});
@@ -109,44 +110,48 @@ class _MainApplication extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<SettingsCubit>(create: (context) => SettingsCubit()),
-        BlocProvider<JavascriptCubit>(create: (context) => JavascriptCubit()),
-        if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
-          BlocProvider<MapEditorCubit>(
-            create: (context) => MapEditorCubit(),
-          ),
-        BlocProvider<LevelMakerCubit>(create: (context) => LevelMakerCubit()),
-        BlocProvider<InitialDirectoryCubit>(create: (context) => InitialDirectoryCubit()),
-      ],
-      child: Builder(builder: (context) {
-        final settings = BlocProvider.of<SettingsCubit>(context, listen: true);
-        return DynamicColorBuilder(
-          builder: (lightDynamic, darkDynamic) => MaterialApp(
-            navigatorKey: navigatorKey,
-            debugShowCheckedModeBanner: false,
-            title: BuildDistribution.kApplicationName,
-            theme: MaterialDesign.lightTheme.copyWith(colorScheme: lightDynamic),
-            darkTheme: MaterialDesign.darkTheme.copyWith(colorScheme: darkDynamic),
-            themeMode: settings.themeData,
-            home: const RootScreen(title: BuildDistribution.kApplicationName),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('vi'),
-              Locale('es'),
-              Locale('ru'),
-            ],
-            locale: Locale(settings.state.locale),
-          ),
-        );
-      }),
+    return HotkeyBuilder(
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<SettingsCubit>(create: (context) => SettingsCubit()),
+          BlocProvider<JavascriptCubit>(create: (context) => JavascriptCubit()),
+          if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
+            BlocProvider<MapEditorCubit>(
+              create: (context) => MapEditorCubit(),
+            ),
+          BlocProvider<LevelMakerCubit>(create: (context) => LevelMakerCubit()),
+          BlocProvider<InitialDirectoryCubit>(create: (context) => InitialDirectoryCubit()),
+        ],
+        child: Builder(
+          builder: (context) {
+            final settings = BlocProvider.of<SettingsCubit>(context, listen: true);
+            return DynamicColorBuilder(
+              builder: (lightDynamic, darkDynamic) => MaterialApp(
+                navigatorKey: navigatorKey,
+                debugShowCheckedModeBanner: false,
+                title: BuildDistribution.kApplicationName,
+                theme: MaterialDesign.lightTheme.copyWith(colorScheme: lightDynamic),
+                darkTheme: MaterialDesign.darkTheme.copyWith(colorScheme: darkDynamic),
+                themeMode: settings.themeData,
+                home: const RootScreen(title: BuildDistribution.kApplicationName),
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('vi'),
+                  Locale('es'),
+                  Locale('ru'),
+                ],
+                locale: Locale(settings.state.locale),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

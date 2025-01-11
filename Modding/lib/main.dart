@@ -6,14 +6,16 @@ import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/notification_helper.dart';
 import 'package:sen/service/windows_helper.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 
 Future<void> main(
   List<String> arguments,
 ) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await WindowManager.instance.ensureInitialized();
+    await Window.initialize();
+    await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await windowManager.setMinimumSize(const Size(1280, 720));
     await windowManager.center();
     await windowManager.waitUntilReadyToShow();

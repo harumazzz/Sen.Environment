@@ -291,7 +291,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 9 as const;
+	export const version = 10 as const;
 
 	/**
 	 * --------------------------------------------------

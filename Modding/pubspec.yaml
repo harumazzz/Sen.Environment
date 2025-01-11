@@ -57,6 +57,7 @@ dependencies:
     flutter_bloc: ^8.1.6
     bloc: ^8.1.4
     meta: ^1.15.0
+    flutter_acrylic: ^1.1.4
 dev_dependencies:
     flutter_test:
         sdk: flutter

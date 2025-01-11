@@ -78,6 +78,7 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c11")
     target_compile_options(
         ${PROJECT_NAME} PRIVATE
+        /experimental:c11atomics
         /wd4018
         /wd4061
         /wd4100

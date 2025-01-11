@@ -77,7 +77,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
 						return {
 							original_path: e,
 							image: media,
-							media: Kernel.Path.base_without_extension(e),
+							media: media,
 							sprite: input_sprite(media),
 						};
 					});
