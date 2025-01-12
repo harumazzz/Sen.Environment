@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
 import 'package:sen/screen/home/configuration/javascript_category_configuration.dart';
 import 'package:sen/screen/home/configuration/level_maker_configuration.dart';
 import 'package:sen/screen/home/configuration/map_editor_configuration.dart';
+import 'package:sen/screen/home/configuration/shell_configuration.dart';
 import 'package:sen/screen/home/option_list.dart';
 import 'package:sen/screen/javascript_category/javascript_category.dart';
 import 'package:sen/screen/level_maker/level_maker.dart';
@@ -19,49 +22,10 @@ import 'package:sen/widget/animated_floating.dart';
 part 'grid_card.dart';
 part 'list_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  late List<Item> items;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _initWidget() {
-    _initShellWidget();
-    _initJSModule();
-    _initAnimationViewer();
-    _initLevelMaker();
-    _initMapEditor();
-  }
-
-  void _initAnimationViewer() {
-    items[2].onWidget = () {
-      return const AnimationViewer();
-    };
-  }
-
-  void _initShellWidget() {
-    items[0].onWidget = () {
-      return const ShellScreen(arguments: []);
-    };
-  }
-
-  void _initJSModule() {
-    items[1].onWidget = () {
-      return const JavaScriptCategory();
-    };
-    items[1].onSetting = _showJsSettings;
-  }
-
-  void _showJsSettings() async {
+  void _showJsSettings(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
@@ -82,37 +46,47 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _onLoadLevelMakerConfiguration() async {
+  void _onLoadLevelMakerConfiguration(BuildContext context) async {
     await showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) => const LevelMakerConfiguration(),
     );
   }
 
-  void _onLoadMapEditorConfiguration() async {
+  void _onLoadMapEditorConfiguration(BuildContext context) async {
     await showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) => const MapEditorConfiguration(),
     );
   }
 
-  void _initLevelMaker() {
-    items[3].onWidget = () {
-      return const LevelMaker();
-    };
-    items[3].onSetting = _onLoadLevelMakerConfiguration;
-  }
-
-  void _initMapEditor() {
-    items[4].onWidget = () {
-      return const MapEditor();
-    };
-    items[4].onSetting = _onLoadMapEditorConfiguration;
-  }
-
-  void _initItem() {
+  void _onLoadShellConfiguration(
+    BuildContext context,
+  ) async {
     final los = AppLocalizations.of(context)!;
-    items = [
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(los.shell_configuration),
+          content: const ShellConfiguration(),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(los.okay),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final los = AppLocalizations.of(context)!;
+    final items = [
       Item(
         title: los.shell,
         description: los.shell_description,
@@ -122,6 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.blueGrey.shade600,
         ),
         isEnabled: true,
+        onWidget: () => ShellScreen(
+          arguments: const [],
+          launchImmediately: BlocProvider.of<SettingsCubit>(context).state.shellLaunchImmediately,
+        ),
+        onSetting: () => _onLoadShellConfiguration(context),
       ),
       Item(
         title: los.js_execute,
@@ -132,6 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.yellow.shade600,
         ),
         isEnabled: true,
+        onWidget: () => const JavaScriptCategory(),
+        onSetting: () => _showJsSettings(context),
       ),
       Item(
         title: los.animation_viewer,
@@ -142,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.green.shade700,
         ),
         isEnabled: true,
+        onWidget: () => const AnimationViewer(),
       ),
       Item(
         title: los.level_maker,
@@ -152,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.cyan.shade600,
         ),
         isEnabled: true,
+        onWidget: () => const LevelMaker(),
+        onSetting: () => _onLoadLevelMakerConfiguration(context),
       ),
       Item(
         title: los.map_editor,
@@ -162,14 +146,11 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.lightBlue.shade600,
         ),
         isEnabled: !Platform.isAndroid && !Platform.isIOS,
+        onWidget: () => const MapEditor(),
+        onSetting: () => _onLoadMapEditorConfiguration(context),
       ),
     ];
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    _initItem();
-    _initWidget();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: OptionList(

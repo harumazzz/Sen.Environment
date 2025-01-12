@@ -61,7 +61,8 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 				Console.error(format(Kernel.Language.get('already_exists'), e));
 				continue;
 			}
-			Console.send(e);
+			// TODO
+			Console.argument(e);
 			const source_directory = `${international_bundle}/packet/${e}.scg.package`;
 			Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.decode_fs(
 				`${chinese_bundle}/packet/${e}.scg`,

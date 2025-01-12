@@ -173,7 +173,7 @@ export namespace Sen::Shell {
 				for (auto i = std::size_t{0}; i < argc; ++i) {
 					#if WINDOWS
 						auto arg_value = utf16_to_utf8(argv[i]);
-						auto value_copy = std::make_unique<char[]>(arg_value.size() + 1);
+						auto value_copy = std::make_unique<uint8_t[]>(arg_value.size() + 1);
 						std::memcpy(value_copy.get(), arg_value.data(), arg_value.size());
 						value_copy[arg_value.size()] = '\0';
 						this->argument_list->value[i] = String{value_copy.release(), arg_value.size()};

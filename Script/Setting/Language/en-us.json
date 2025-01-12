@@ -756,5 +756,9 @@
 	"wwise.helper.hash_id.input_id_to_hash": "Input ID to hash",
 	"js.input_is_not_a_file_or_directory": "{} is not a file or directory",
 	"popcap.animation.add_library.image_posix_cannot_be_empty": "Image posix cannot be empty string, otherwise will be broken",
-	"js.id_already_existed": "{} is already existed"
+	"js.id_already_existed": "{} is already existed",
+	"js.relaunch_tool": "You can relaunch the tool immediately or exit it",
+	"js.command_line_has_finished": "Command line has been finished!",
+	"js.host": "Host: {}",
+	"script.input_any_path_to_continue_or_provide_an_empty_string_to_exit": "Input any path to continue, or you can provide an empty string to exit immediately"
 }

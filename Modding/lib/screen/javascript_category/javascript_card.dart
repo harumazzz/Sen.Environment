@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
-import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -100,6 +99,7 @@ class JavaScriptCard extends StatelessWidget {
         type: PageTransitionType.rightToLeft,
         child: ShellScreen(
           arguments: _makeArguments(),
+          launchImmediately: true,
         ),
       ),
     );
@@ -110,7 +110,7 @@ class JavaScriptCard extends StatelessWidget {
   ) async {
     if (context.mounted) {
       await _onConfirm(context, () async {
-        if (BlocProvider.of<JavascriptCubit>(context).state.runAsLauncher) {
+        if (BlocProvider.of<SettingsCubit>(context).state.jsRunAsLauncher) {
           await _runAsLauncher(context);
         } else {
           await _runAsShell(context);
@@ -124,7 +124,7 @@ class JavaScriptCard extends StatelessWidget {
     Future<dynamic> Function() function,
   ) async {
     final los = AppLocalizations.of(context)!;
-    if (BlocProvider.of<JavascriptCubit>(context).state.showConfirmDialog) {
+    if (BlocProvider.of<SettingsCubit>(context).state.jsShowConfirmDialog) {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(

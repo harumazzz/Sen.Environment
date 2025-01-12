@@ -12,31 +12,58 @@ class MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasMessage = message.subtitle != null && message.subtitle!.isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: Card(
         elevation: 2.0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(12.0),
         ),
         color: _color(message, context),
-        child: ListTile(
-          leading: const Icon(
-            Symbols.terminal,
-            size: 20.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8.0,
+            vertical: 12.0,
           ),
-          title: Text(
-            message.title,
-            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SizedBox(width: 4.0),
+                  const Icon(
+                    Symbols.terminal,
+                    size: 24.0,
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          message.title,
+                          style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        if (hasMessage && message.subtitle != null) ...[
+                          const SizedBox(height: 4.0),
+                          Text(
+                            message.subtitle!,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          subtitle: message.subtitle != null && message.subtitle!.isNotEmpty
-              ? Text(
-                  message.subtitle!,
-                  style: Theme.of(context).textTheme.labelSmall,
-                )
-              : null,
         ),
       ),
     );

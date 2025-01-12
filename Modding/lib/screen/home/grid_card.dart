@@ -21,7 +21,7 @@ class GridCard extends StatelessWidget {
       PageTransition(
         duration: const Duration(milliseconds: 300),
         type: PageTransitionType.rightToLeft,
-        child: item.onWidget(),
+        child: item.onWidget?.call(),
       ),
     );
   }

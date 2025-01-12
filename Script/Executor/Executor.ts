@@ -487,10 +487,21 @@ namespace Sen.Script.Executor {
 			default:
 				assert(false, format(Kernel.Language.get('js.method_does_not_execute')));
 		}
-		Console.send(
-			`${Kernel.Language.get('execution_time')}: ${clock.duration_as_seconds().toFixed(3)}s`,
-			Color.GREEN,
-		);
+		if (Shell.is_gui()) {
+			Console.finished(
+				Kernel.Language.get('js.command_line_has_finished'),
+				`${Kernel.Language.get('execution_time')}: ${clock
+					.duration_as_seconds()
+					.toFixed(3)}s`,
+			);
+		} else {
+			Console.send(
+				`${Kernel.Language.get('execution_time')}: ${clock
+					.duration_as_seconds()
+					.toFixed(3)}s`,
+				Color.GREEN,
+			);
+		}
 	}
 
 	export function display_argument(argument: string | string[]): void {
@@ -532,7 +543,7 @@ namespace Sen.Script.Executor {
 		return result;
 	}
 
-	export type ExecuteType = 'simple' | 'whole' | 'js';
+	export type ExecuteType = 'simple' | 'whole';
 
 	export function print_statement(name: string, num: bigint): void {
 		return print_argument(`${num}. ${Kernel.Language.get(name)}`);
@@ -691,8 +702,12 @@ namespace Sen.Script.Executor {
 		argument: Argument,
 	): void {
 		let input: string = undefined!;
-		Console.argument(Kernel.Language.get('script.input_any_path_to_continue'));
-		while (true) {
+		Console.argument(
+			Kernel.Language.get(
+				'script.input_any_path_to_continue_or_provide_an_empty_string_to_exit',
+			),
+		);
+		loop: while (true) {
 			input = Kernel.Console.readline().trim();
 			switch (input) {
 				case '':
@@ -722,11 +737,11 @@ namespace Sen.Script.Executor {
 					});
 					modules.forEach((v, k) => print_statement(Kernel.Language.get(v), k));
 					const option = input_integer([0n, ...modules.keys()]);
+					if (option === 0n) break loop;
 					(argument as any).directory = Console.path(
 						Kernel.Language.get('input_directory'),
 						'directory',
 					);
-					if (option === 0n) continue;
 					execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
 					continue;
 			}
@@ -771,14 +786,26 @@ namespace Sen.Script.Executor {
 			Kernel.Path.normalize(e),
 		);
 		if ((argument.source as Array<string>).length > 1) {
-			Console.send(`${Kernel.Language.get('js.make_host.argument_obtained')}:`, Color.CYAN);
-			(argument.source as Array<string>).forEach((e, i) => print_statement(e, BigInt(i + 1)));
-			Console.send(
+			if (Shell.is_gui()) {
+				Console.display(
+					`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
+					(argument.source as Array<string>).map((e, i) => `${i + 1}. ${e}`).join('\n'),
+					Color.CYAN,
+				);
+			} else {
+				Console.send(
+					`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
+					Color.CYAN,
+				);
+				(argument.source as Array<string>).forEach((e, i) =>
+					print_statement(e, BigInt(i + 1)),
+				);
+			}
+			Console.argument(
 				format(
-					`${Kernel.Language.get('js.obtained_argument')}:`,
+					`${Kernel.Language.get('js.obtained_argument')}`,
 					(argument.source as string).length,
 				),
-				Color.CYAN,
 			);
 			(
 				[

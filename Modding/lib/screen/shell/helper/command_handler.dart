@@ -135,19 +135,30 @@ class CommandHandler {
     calloc.free(state);
   }
 
-  void _handleVersionCommand(Pointer<CStringView> destination) {
-    var version = BuildDistribution.version.toString();
+  void _handleVersionCommand(
+    Pointer<CStringView> destination,
+  ) {
+    final version = BuildDistribution.version.toString();
+    final ptr = calloc<Uint8>(version.length + 1);
+    final typedList = ptr.asTypedList(version.length + 1);
+    typedList.setAll(0, version.codeUnits);
+    typedList[version.length] = 0;
     destination.ref
       ..size = version.length
-      ..value = version.toNativeUtf8();
+      ..value = ptr;
+
     sendPort?.send([null]);
   }
 
   void _handleIsGuiCommand(Pointer<CStringView> destination) {
-    var isGui = 1.toString();
+    final isGui = 1.toString();
+    final ptr = calloc<Uint8>(isGui.length + 1);
+    final typedList = ptr.asTypedList(isGui.length + 1);
+    typedList.setAll(0, isGui.codeUnits);
+    typedList[isGui.length] = 0;
     destination.ref
       ..size = isGui.length
-      ..value = isGui.toNativeUtf8();
+      ..value = ptr;
     sendPort?.send([null]);
   }
 }

@@ -270,5 +270,10 @@
 	"run_as_launcher": "Run as Launcher",
 	"show_confirm_dialog_description": "Confirm to launch Shell",
 	"run_as_launcher_description": "Run script with Console",
-	"spawn_success": "Successfully run the script {script_name} with launcher!"
+	"spawn_success": "Successfully run the script {script_name} with launcher!",
+	"run_immediately": "Run immediately",
+	"run_immediately_description": "Run Shell immediately once you enter",
+	"launch": "Launch",
+	"shell_configuration": "Shell Configuration",
+	"waiting_for_user": "Waiting for user"
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/code_preview.dart';
 import 'package:sen/screen/level_maker/level_definition.dart';
@@ -51,7 +51,7 @@ class _LevelMakerState extends State<LevelMaker> with TickerProviderStateMixin {
 
   void _loadResources() async {
     final los = AppLocalizations.of(context)!;
-    final setting = BlocProvider.of<LevelMakerCubit>(context).state.resourceLocation;
+    final setting = BlocProvider.of<SettingsCubit>(context).state.levelMakerResource;
     if (setting.isEmpty) {
       throw Exception(los.please_configure_resource_location);
     }

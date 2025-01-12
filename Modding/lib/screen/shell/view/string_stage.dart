@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/screen/shell/view/animated_button.dart';
 
 class StringStage extends StatelessWidget {
   const StringStage({
@@ -12,9 +13,9 @@ class StringStage extends StatelessWidget {
 
   final TextEditingController? controller;
 
-  final VoidCallback onSelect;
+  final void Function() onSelect;
 
-  final VoidCallback onSend;
+  final void Function() onSend;
 
   @override
   Widget build(BuildContext context) {
@@ -27,19 +28,15 @@ class StringStage extends StatelessWidget {
             onSubmitted: (e) => onSend(),
           ),
         ),
-        Tooltip(
+        AnimatedButton(
           message: los.select_option,
-          child: IconButton(
-            onPressed: onSelect,
-            icon: const Icon(Symbols.add_circle_sharp),
-          ),
+          onClick: onSelect,
+          child: const Icon(Symbols.add_circle_sharp),
         ),
-        Tooltip(
+        AnimatedButton(
           message: los.submit,
-          child: IconButton(
-            onPressed: onSend,
-            icon: const Icon(Symbols.send),
-          ),
+          onClick: onSend,
+          child: const Icon(Symbols.send),
         ),
       ],
     );

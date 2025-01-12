@@ -4,9 +4,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/cubit/javascript_cubit/javascript_cubit.dart';
-import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
-import 'package:sen/cubit/map_editor_cubit/map_editor_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
 import 'package:sen/screen/animation_viewer/main_screen.dart';
@@ -67,7 +64,10 @@ class _WindowsApplicationState extends State<_WindowsApplication> {
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/terminal.ico'),
           'Shell',
-          () => _pushScreen(const ShellScreen(arguments: [])),
+          () => _pushScreen(const ShellScreen(
+            arguments: [],
+            launchImmediately: false,
+          )),
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/js.ico'),
@@ -113,14 +113,13 @@ class _MainApplication extends StatelessWidget {
     return HotkeyBuilder(
       child: MultiBlocProvider(
         providers: [
-          BlocProvider<SettingsCubit>(create: (context) => SettingsCubit()),
-          BlocProvider<JavascriptCubit>(create: (context) => JavascriptCubit()),
-          if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
-            BlocProvider<MapEditorCubit>(
-              create: (context) => MapEditorCubit(),
-            ),
-          BlocProvider<LevelMakerCubit>(create: (context) => LevelMakerCubit()),
-          BlocProvider<InitialDirectoryCubit>(create: (context) => InitialDirectoryCubit()),
+          BlocProvider<SettingsCubit>(
+            create: (context) => SettingsCubit(),
+          ),
+          BlocProvider<InitialDirectoryCubit>(
+            create: (context) => InitialDirectoryCubit(),
+            lazy: true,
+          ),
         ],
         child: Builder(
           builder: (context) {

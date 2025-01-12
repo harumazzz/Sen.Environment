@@ -17,8 +17,8 @@ class KernelHelper {
     Pointer<CStringList> list,
     Pointer<CStringView> destination,
   ) {
-    var result = PointerHelper.toList(list.ref);
-    var command = result.removeAt(0);
+    final result = PointerHelper.toList(list.ref);
+    final command = result.removeAt(0);
     final handler = CommandHandler(_sendPort);
     handler.handle(command, result, destination);
     sleep(const Duration(milliseconds: 10));
@@ -67,9 +67,9 @@ class KernelHelper {
     final arguments = subEvent[2] as List<String>;
     final argument = KernelArgument(currentShell, kernelPath, scriptPath, arguments);
     execute(argument.value, Pointer.fromFunction<ShellCallbackCView>(_callback, 0));
-    argument.cleanup();
     mainSendPort.send(null);
     _release();
+    argument.cleanup();
     dylib.close();
   }
 }

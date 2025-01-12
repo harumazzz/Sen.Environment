@@ -296,7 +296,14 @@ namespace Sen.Script {
 	export function main(): void {
 		const result: string = launch();
 		Console.error(result);
-		Console.finished(Kernel.Language.get('method_are_succeeded'));
+		if (Shell.is_gui()) {
+			Console.finished(
+				Kernel.Language.get('method_are_succeeded'),
+				Kernel.Language.get('js.relaunch_tool'),
+			);
+		} else {
+			Console.finished(Kernel.Language.get('method_are_succeeded'));
+		}
 		Shell.callback(['finish']);
 	}
 
@@ -311,11 +318,12 @@ namespace Sen.Script {
 		let result: string = undefined!;
 		try {
 			Home.setup();
-			Module.load();
-			Console.send(
-				`Sen ~ Shell: ${Shell.version()} & Kernel: ${Kernel.version()} & Script: ${version} ~ ${Kernel.OperatingSystem.current()} & ${Kernel.OperatingSystem.architecture()}`,
-			);
 			const args = Kernel.arguments();
+			Console.display(
+				`Sen ~ Shell: ${Shell.version()} & Kernel: ${Kernel.version()} & Script: ${version}`,
+				args[0],
+			);
+			Module.load();
 			args.splice(0, 3);
 			Setting.load();
 			Console.finished(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/level_maker_cubit/level_maker_cubit.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -21,7 +21,7 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   void initState() {
     super.initState();
     _resourceLocationController = TextEditingController(
-      text: BlocProvider.of<LevelMakerCubit>(context).state.resourceLocation,
+      text: BlocProvider.of<SettingsCubit>(context).state.levelMakerResource,
     );
   }
 
@@ -38,7 +38,7 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
 
   Future<void> _onValueChange() async {
     final value = _resourceLocationController.text;
-    await BlocProvider.of<LevelMakerCubit>(context).setResourceLocation(value);
+    await BlocProvider.of<SettingsCubit>(context).setLevelMakerResource(value);
   }
 
   void _onChangeSetting(String? value) async {

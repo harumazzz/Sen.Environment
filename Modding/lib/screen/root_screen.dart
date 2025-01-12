@@ -156,6 +156,7 @@ class _RootScreenState extends State<RootScreen> {
             PageTransition(
               child: ShellScreen(
                 arguments: AndroidHelper.arguments!,
+                launchImmediately: true,
               ),
               type: PageTransitionType.fade,
               duration: const Duration(

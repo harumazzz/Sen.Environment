@@ -11,7 +11,7 @@ namespace Sen::Kernel::Interface {
 
 	struct StringView {
 
-		const char* value{nullptr};
+		uint8_t* value{nullptr};
 
 		size_t size{0};
 
@@ -97,10 +97,10 @@ namespace Sen::Kernel::Interface {
 		std::string_view that
 	) -> StringView
 	{
-		auto temporary = std::unique_ptr<char[]>(new char[that.size() + 1]);
+		auto temporary = std::unique_ptr<uint8_t[]>(new uint8_t[that.size() + 1]);
 		std::memcpy(temporary.get(), that.data(), that.size());
-		temporary.get()[that.size()] = '\0';
-		auto destination = StringView {
+		temporary.get()[that.size()] = '\0'; 
+		auto destination = StringView{
 			.value = temporary.release(),
 			.size = that.size(),
 		};
@@ -111,8 +111,8 @@ namespace Sen::Kernel::Interface {
 		StringView* that
 	) -> std::string
 	{
-		return std::string{
-			that->value,
+		return std::string {
+			reinterpret_cast<const char*>(that->value),
 			that->size,
 		};
 	}

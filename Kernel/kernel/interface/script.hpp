@@ -102,7 +102,7 @@ namespace Sen::Kernel::Interface::Script
 		for (auto index : Range<std::size_t>(list->size)) {
 			auto atom_index = JS_NewAtomUInt32(context, static_cast<std::uint32_t>(index));
 			auto& str_view = list->value[index];
-			auto js_str = JS_NewStringLen(context, str_view.value, str_view.size);
+			auto js_str = JS_NewStringLen(context, reinterpret_cast<const char*>(str_view.value), str_view.size);
 			JS_SetProperty(context, destination, atom_index, js_str);
 			JS_FreeAtom(context, atom_index);
 		}
@@ -124,7 +124,7 @@ namespace Sen::Kernel::Interface::Script
 			auto js_element = JS_GetProperty(context, value, atom.value);
 			auto str_len = size_t{};
 			auto str = JS_ToCStringLen(context, &str_len, js_element);
-			auto temporary = std::unique_ptr<char[]>(new char[str_len + 1]);
+			auto temporary = std::unique_ptr<uint8_t[]>(new uint8_t[str_len + 1]);
 			temporary.get()[str_len] = '\0';
 			std::memcpy(temporary.get(), str, str_len);
 			list.value[i].value = temporary.release();
@@ -180,7 +180,7 @@ namespace Sen::Kernel::Interface::Script
 		CStringView* value
 	) -> JSValue 
 	{
-		return JS_NewStringLen(context, value->value, value->size);
+		return JS_NewStringLen(context, reinterpret_cast<const char*>(value->value), value->size);
 	}
 
 	inline static auto callback(
@@ -196,7 +196,8 @@ namespace Sen::Kernel::Interface::Script
 			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
 			to_string_list(context, argv[0], parameters.operator*());
 			Shell::callback(parameters.get(), destination.get());
-			return to_string(context, destination.get());
+			auto result = to_string(context, destination.get());
+			return result;
 		});
 	}
 

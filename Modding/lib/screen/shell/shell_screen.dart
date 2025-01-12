@@ -7,6 +7,7 @@ import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/screen/shell/controller/client_interaction_controller.dart';
+import 'package:sen/screen/shell/model/running_state.dart';
 import 'package:sen/screen/shell/view/boolean_stage.dart';
 import 'package:sen/screen/shell/view/client_view.dart';
 import 'package:sen/screen/shell/view/drop_handler.dart';
@@ -22,9 +23,12 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class ShellScreen extends StatefulWidget {
   final List<String> arguments;
 
+  final bool launchImmediately;
+
   const ShellScreen({
     super.key,
     required this.arguments,
+    required this.launchImmediately,
   });
 
   @override
@@ -34,7 +38,7 @@ class ShellScreen extends StatefulWidget {
 class _ShellScreenState extends State<ShellScreen> {
   TextEditingController? _inputController;
   late ScrollController _scrollController;
-  bool _finished = false;
+  RunningState _state = RunningState.idle;
   late List<Message> _messages;
   String _stage = '';
   Completer<String?>? _completer;
@@ -64,7 +68,9 @@ class _ShellScreenState extends State<ShellScreen> {
       inputController: _inputController,
     );
     super.initState();
-    _run(widget.arguments);
+    if (widget.launchImmediately) {
+      _run(widget.arguments);
+    }
   }
 
   @override
@@ -90,14 +96,14 @@ class _ShellScreenState extends State<ShellScreen> {
 
   void _setFinishState() {
     setState(() {
-      _finished = true;
+      _state = RunningState.finished;
     });
     _scrollToBottom();
   }
 
   void _setPendingJob() {
     setState(() {
-      _finished = false;
+      _state = RunningState.running;
     });
     _scrollToBottom();
   }
@@ -174,7 +180,7 @@ class _ShellScreenState extends State<ShellScreen> {
   }
 
   Widget _makeStage() {
-    if (_finished) {
+    if (_state == RunningState.finished) {
       _scrollToBottom();
       return _buildFinishedStage();
     }
@@ -301,7 +307,7 @@ class _ShellScreenState extends State<ShellScreen> {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return ExitHandler(
-      finished: _finished,
+      finished: _state != RunningState.running,
       child: Scaffold(
         appBar: AppBar(
           title: Text(los.shell),
@@ -309,11 +315,12 @@ class _ShellScreenState extends State<ShellScreen> {
         body: DropHandler(
           inputController: _inputController,
           child: ClientView(
-            finished: _finished,
+            state: _state,
             messages: _messages,
             scrollController: _scrollController,
             makeStage: _makeStage,
             stage: _stage,
+            onLaunch: () => _run(widget.arguments),
           ),
         ),
       ),

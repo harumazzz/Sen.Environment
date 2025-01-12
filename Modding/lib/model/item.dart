@@ -6,8 +6,8 @@ class Item {
   final Widget icon;
   final bool isEnabled;
   bool selected;
-  late void Function()? onSetting;
-  late Widget Function() onWidget;
+  final Function()? onSetting;
+  final Function()? onWidget;
 
   Item({
     required this.title,
@@ -15,6 +15,7 @@ class Item {
     required this.icon,
     required this.isEnabled,
     this.onSetting,
+    this.onWidget,
     this.selected = false,
   });
 

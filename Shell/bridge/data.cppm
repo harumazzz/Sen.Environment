@@ -1,7 +1,8 @@
 module;
 
-import <string>;
-import <vector>;
+#include <string>
+#include <vector>
+#include <cstdint>
 
 export module sen.environment.shell.bridge.data;
 
@@ -9,7 +10,7 @@ export namespace Sen::Shell {
 
 	export struct String {
 
-		const char* value{ nullptr };
+		uint8_t* value{ nullptr };
 
 		size_t size{0};
 

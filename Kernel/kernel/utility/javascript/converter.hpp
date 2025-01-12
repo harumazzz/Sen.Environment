@@ -128,18 +128,19 @@ namespace Sen::Kernel::JavaScript::Converter {
 	inline static auto get_vector(JSContext* context, const JSValue& that) -> List<T> {
 		auto atom = Atom{context, "length"};
 		auto length_value = JS_GetProperty(context, that, atom.value);
-		auto length = get_int32(context, length_value);
+		auto length = get_uint32(context, length_value);
 		JS_FreeValue(context, length_value);
 		auto m_list = List<T>{};
 		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
-			auto value = JS_GetPropertyUint32(context, that, i);
+			auto atom = JS_NewAtomUInt32(context, i);
+			auto value = JS_GetProperty(context, that, atom);
 			if constexpr (std::is_same<T, int>::value) {
 				m_list.emplace_back(get_int32(context, value));
 			} else if constexpr (std::is_same<T, bool>::value) {
 				m_list.emplace_back(get_bool(context, value));
 			} else if constexpr (std::is_same<T, long long>::value) {
-				m_list.emplace_back(get_int64(context, value));
+				m_list.emplace_back(get_bigint64(context, value));
 			} else if constexpr (std::is_same<T, uint32_t>::value) {
 				m_list.emplace_back(get_uint32(context, value));
 			} else if constexpr (std::is_same<T, uint64_t>::value) {
@@ -154,6 +155,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 				m_list.emplace_back(value);
 			}
 			JS_FreeValue(context, value);
+			JS_FreeAtom(context, atom);
 		}
 		return m_list;
 	}
@@ -162,12 +164,13 @@ namespace Sen::Kernel::JavaScript::Converter {
 	inline static auto get_array(JSContext* context, const JSValue& that) -> List<T> {
 		auto atom = Atom{context, "length"};
 		auto length_value = JS_GetProperty(context, that, atom.value);
-		auto length = get_int32(context, length_value);
+		auto length = get_uint32(context, length_value);
 		JS_FreeValue(context, length_value);
 		auto m_list = List<T>{};
 		m_list.reserve(static_cast<std::size_t>(length));
 		for (auto i : Range<int>(length)) {
-			auto value = JS_GetPropertyUint32(context, that, i);
+			auto atom = JS_NewAtomUInt32(context, i);
+			auto value = JS_GetProperty(context, that, atom);
 			if constexpr (std::is_same<T, int>::value) {
 				m_list.emplace_back(static_cast<T>(get_bigint64(context, value)));
 			} else if constexpr (std::is_same<T, bool>::value) {
@@ -187,6 +190,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 			}
 
 			JS_FreeValue(context, value);
+			JS_FreeAtom(context, atom);
 		}
 		return m_list;
 	}
@@ -195,14 +199,16 @@ namespace Sen::Kernel::JavaScript::Converter {
 	auto get_vector<std::string>(JSContext* context, const JSValue& that) -> List<std::string> {
 		auto atom = Atom{context, "length"};
 		auto len_val = JS_GetProperty(context, that, atom.value);
-		auto length = get_int32(context, len_val);
+		auto length = get_uint32(context, len_val);
 		JS_FreeValue(context, len_val);
 		auto m_list = List<std::string>{};
 		m_list.reserve(static_cast<std::size_t>(length));
-		for (auto i : Range<int>(length)) {
-			auto val = JS_GetPropertyUint32(context, that, i);
+		for (auto i : Range(length)) {
+			auto atom = JS_NewAtomUInt32(context, i);
+			auto val = JS_GetProperty(context, that, atom);
 			m_list.emplace_back(get_string(context, val));
 			JS_FreeValue(context, val);
+			JS_FreeAtom(context, atom);
 		}
 		return m_list;
 	}

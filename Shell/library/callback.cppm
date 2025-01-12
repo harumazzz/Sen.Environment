@@ -148,7 +148,7 @@ export namespace Sen::Shell {
 		destination.reserve(that->size);
 		for (auto i = std::size_t{0}; i < that->size; ++i)
 		{
-			destination.emplace_back(std::string{ that->value[i].value, that->value[i].size });
+			destination.emplace_back(std::string{ reinterpret_cast<char const*>(that->value[i].value), that->value[i].size });
 		}
 		return destination;
 	}
@@ -175,22 +175,20 @@ export namespace Sen::Shell {
 		return;
 	}
 
-	using Finalizer = void(*)(char*);
-
 	inline auto input_argument(
-		std::unique_ptr<char[]> & memory,
+		std::unique_ptr<uint8_t[]> & memory,
 		String* destination
 	) -> void
 	{
 		auto result = input();
 		if (result.size() > 0) {
-			memory.reset(new char[result.size() + 1]);
+			memory.reset(new uint8_t[result.size() + 1]);
 			std::memcpy(memory.get(), result.data(), result.size());
 			destination->size = result.size();
 			destination->value = memory.release();
 		}
 		else {
-			memory.reset(new char[1]);
+			memory.reset(new uint8_t[1]);
 			memory.get()[0] = '\0';
 			destination->size = 0;
 			destination->value = memory.release();
@@ -198,11 +196,11 @@ export namespace Sen::Shell {
 	}
 
 	inline auto is_gui(
-		std::unique_ptr<char[]> & memory,
+		std::unique_ptr<uint8_t[]> & memory,
 		String* destination
 	) -> void
 	{
-		memory.reset(new char[2]);
+		memory.reset(new uint8_t[2]);
 		memory.get()[0] = '0';
     	memory.get()[1] = '\0';
 		destination->value = memory.release();
@@ -246,11 +244,11 @@ export namespace Sen::Shell {
 
 	inline auto current_version(
 		String* destination,
-		std::unique_ptr<char[]> & memory
+		std::unique_ptr<uint8_t[]> & memory
 	) -> void
 	{
 		auto version = std::to_string(Shell::version);
-		memory.reset(new char[version.size()]);
+		memory.reset(new uint8_t[version.size()]);
 		std::memcpy(memory.get(), version.data(), version.size());
 		destination->size = version.size();
 		destination->value = memory.release();
@@ -258,13 +256,13 @@ export namespace Sen::Shell {
 
 	inline auto pick_file (
 		String* destination,
-		std::unique_ptr<char[]> & memory
+		std::unique_ptr<uint8_t[]> & memory
 	) -> void
 	{
 		#if WINDOWS
 			auto raw_selection = pick_path(false, false);
 			if (!raw_selection.empty()) {
-				memory.reset(new char[static_cast<std::size_t>(raw_selection[0].size() + 1)]);
+				memory.reset(new uint8_t[static_cast<std::size_t>(raw_selection[0].size() + 1)]);
 				std::memcpy(memory.get(), raw_selection[0].data(), raw_selection[0].size());
 				destination->size = raw_selection[0].size();
 				destination->value = memory.release();
@@ -272,7 +270,7 @@ export namespace Sen::Shell {
 		#elif LINUX || MACINTOSH
 			auto raw_selection = tinyfd_openFileDialog("", nullptr, 0, nullptr, nullptr, false);
 			if (raw_selection != nullptr) {
-				memory.reset(new char[static_cast<std::size_t>(std::strlen(raw_selection) + 1)]);
+				memory.reset(new uint8_t[static_cast<std::size_t>(std::strlen(raw_selection) + 1)]);
 				std::memcpy(memory.get(), raw_selection, strlen(raw_selection));
 				destination->size = std::strlen(raw_selection);
 				destination->value = memory.release();
@@ -284,13 +282,13 @@ export namespace Sen::Shell {
 
 	inline auto pick_directory (
 		String* destination,
-		std::unique_ptr<char[]> & memory
+		std::unique_ptr<uint8_t[]> & memory
 	) -> void
 	{
 		#if WINDOWS
 		auto raw_selection = pick_path(true, false);
 		if (!raw_selection.empty()) {
-			memory.reset(new char[static_cast<std::size_t>(raw_selection[0].size() + 1)]);
+			memory.reset(new uint8_t[static_cast<std::size_t>(raw_selection[0].size() + 1)]);
 			std::memcpy(memory.get(), raw_selection[0].data(), raw_selection[0].size());
 			destination->size = raw_selection[0].size();
 			destination->value = memory.release();
@@ -298,7 +296,7 @@ export namespace Sen::Shell {
 		#elif LINUX || MACINTOSH
 		auto raw_selection = tinyfd_selectFolderDialog("", nullptr);
 		if (raw_selection != nullptr) {
-			memory.reset(new char[static_cast<std::size_t>(strlen(raw_selection) + 1)]);
+			memory.reset(new uint8_t[static_cast<std::size_t>(strlen(raw_selection) + 1)]);
 			std::memcpy(memory.get(), raw_selection, strlen(raw_selection));
 			destination->size = std::strlen(raw_selection);
 			destination->value = memory.release();
@@ -313,7 +311,7 @@ export namespace Sen::Shell {
 	{
 		auto result = to_vector(list);
 		assert_conditional(result.size() >= 1, "argument must be greater than 1");
-		auto memory = std::unique_ptr<char[]>(nullptr);
+		auto memory = std::unique_ptr<uint8_t[]>(nullptr);
 		switch (hash_string(result[0].data())) {
 			case hash_string("display"):
 				display_argument(result);

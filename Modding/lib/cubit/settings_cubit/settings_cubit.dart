@@ -28,6 +28,11 @@ class SettingsCubit extends Cubit<SettingsState> {
       toolChain: prefs.getString('toolchain') ?? '',
       isValid: prefs.getBool('isValid') ?? false,
       requestedPermission: prefs.getBool('requestedPermission') ?? false,
+      jsRunAsLauncher: prefs.getBool('jsRunAsLauncher') ?? false,
+      jsShowConfirmDialog: prefs.getBool('jsShowConfirmDialog') ?? true,
+      levelMakerResource: prefs.getString('levelMakerResource') ?? '',
+      mapEditorResource: prefs.getString('mapEditorResource') ?? '',
+      shellLaunchImmediately: prefs.getBool('shellLaunchImmediately') ?? true,
     ));
   }
 
@@ -65,5 +70,35 @@ class SettingsCubit extends Cubit<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('requestedPermission', requestedPermission);
     emit(state.copyWith(requestedPermission: requestedPermission));
+  }
+
+  Future<void> setRunAsLauncher(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('jsRunAsLauncher', value);
+    emit(state.copyWith(jsRunAsLauncher: value));
+  }
+
+  Future<void> setLevelMakerResource(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('levelMakerResource', value);
+    emit(state.copyWith(levelMakerResource: value));
+  }
+
+  Future<void> setShowConfirmDialog(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('jsShowConfirmDialog', value);
+    emit(state.copyWith(jsShowConfirmDialog: value));
+  }
+
+  Future<void> setShellLaunchImmediately(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('shellLaunchImmediately', value);
+    emit(state.copyWith(shellLaunchImmediately: value));
+  }
+
+  Future<void> setMapEditorResource(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('mapEditorResource', value);
+    emit(state.copyWith(mapEditorResource: value));
   }
 }

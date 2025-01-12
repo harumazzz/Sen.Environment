@@ -7,6 +7,11 @@ class SettingsState extends Equatable {
   final String toolChain;
   final bool isValid;
   final bool requestedPermission;
+  final String mapEditorResource;
+  final String levelMakerResource;
+  final bool shellLaunchImmediately;
+  final bool jsShowConfirmDialog;
+  final bool jsRunAsLauncher;
 
   const SettingsState({
     required this.theme,
@@ -15,6 +20,11 @@ class SettingsState extends Equatable {
     required this.toolChain,
     required this.isValid,
     required this.requestedPermission,
+    required this.mapEditorResource,
+    required this.levelMakerResource,
+    required this.shellLaunchImmediately,
+    required this.jsShowConfirmDialog,
+    required this.jsRunAsLauncher,
   });
 
   factory SettingsState.initialize() {
@@ -25,6 +35,11 @@ class SettingsState extends Equatable {
       toolChain: '',
       isValid: false,
       requestedPermission: false,
+      mapEditorResource: '',
+      levelMakerResource: '',
+      shellLaunchImmediately: false,
+      jsRunAsLauncher: false,
+      jsShowConfirmDialog: true,
     );
   }
 
@@ -35,6 +50,11 @@ class SettingsState extends Equatable {
     String? toolChain,
     bool? isValid,
     bool? requestedPermission,
+    String? mapEditorResource,
+    String? levelMakerResource,
+    bool? shellLaunchImmediately,
+    bool? jsRunAsLauncher,
+    bool? jsShowConfirmDialog,
   }) {
     return SettingsState(
       theme: theme ?? this.theme,
@@ -43,14 +63,26 @@ class SettingsState extends Equatable {
       toolChain: toolChain ?? this.toolChain,
       isValid: isValid ?? this.isValid,
       requestedPermission: requestedPermission ?? this.requestedPermission,
+      mapEditorResource: mapEditorResource ?? this.mapEditorResource,
+      levelMakerResource: levelMakerResource ?? this.levelMakerResource,
+      shellLaunchImmediately: shellLaunchImmediately ?? this.shellLaunchImmediately,
+      jsRunAsLauncher: jsRunAsLauncher ?? this.jsRunAsLauncher,
+      jsShowConfirmDialog: jsShowConfirmDialog ?? this.jsShowConfirmDialog,
     );
   }
 
   @override
-  List<Object?> get props => [theme, locale, sendNotification, toolChain, isValid, requestedPermission];
-
-  @override
-  String toString() {
-    return 'SettingsState(theme: $theme, locale: $locale, sendNotification: $sendNotification, toolChain: $toolChain, isValid: $isValid, requestedPermission: $requestedPermission)';
-  }
+  List<Object?> get props => [
+        theme,
+        locale,
+        sendNotification,
+        toolChain,
+        isValid,
+        requestedPermission,
+        mapEditorResource,
+        levelMakerResource,
+        shellLaunchImmediately,
+        jsRunAsLauncher,
+        jsShowConfirmDialog,
+      ];
 }
