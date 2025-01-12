@@ -33,62 +33,49 @@ namespace Sen::Kernel::JavaScript::Converter {
     }
 
     inline static auto get_int32(JSContext* context, const JSValue& value) -> int32_t {
-        auto result = int32_t{};
-        if (JS_ToInt32(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "int32");
-		}
-        return result;
-    }
+		assert_conditional(static_cast<bool>(JS_IsNumber(value)), "Value must be number, but it isn't", "get_int32");
+		auto result = int32_t{};
+		JS_ToInt32(context, &result, value);
+		return result;
+	}
 
-    inline static auto get_float64(JSContext* context, const JSValue& value) -> double {
-        auto result = double{};
-        if (JS_ToFloat64(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "double");
-		}
-        return result;
-    }
+	inline static auto get_float64(JSContext* context, const JSValue& value) -> double {
+		assert_conditional(static_cast<bool>(JS_IsNumber(value)), "Value must be number, but it isn't", "get_float64");
+		auto result = double{};
+		JS_ToFloat64(context, &result, value);
+		return result;
+	}
 
 	inline static auto get_float32(JSContext* context, const JSValue& value) -> float {
-        auto result = double{};
-        if (JS_ToFloat64(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "float");
-		}
-        return static_cast<float>(result);
-    }
+		assert_conditional(static_cast<bool>(JS_IsNumber(value)), "Value must be number, but it isn't", "get_float64");
+		auto result = double{};
+		JS_ToFloat64(context, &result, value);
+		return static_cast<float>(result);
+	}
 
-    inline static auto get_int64(JSContext* context, const JSValue& value) -> int64_t {
-        auto result = int64_t{};
-        if (JS_ToInt64(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "int64");
-		}
-        return result;
-    }
+	inline static auto get_bigint64(JSContext* context, const JSValue& value) -> int64_t {
+		assert_conditional(static_cast<bool>(JS_IsBigInt(context, value)), "Value must be bigint, but it isn't", "get_bigint64");
+		auto result = int64_t{};
+		JS_ToBigInt64(context, &result, value);
+		return result;
+	}
 
-    inline static auto get_bigint64(JSContext* context, const JSValue& value) -> int64_t {
-        auto result = int64_t{};
-        if (JS_ToBigInt64(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "int64");
-		}
-        return result;
-    }
-
-    inline static auto get_uint32(JSContext* context, const JSValue& value) -> uint32_t {
-        auto result = uint32_t{};
-        if (JS_ToUint32(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "uint32");
-		}
-        return result;
-    }
+	inline static auto get_uint32(JSContext* context, const JSValue& value) -> uint32_t {
+		assert_conditional(static_cast<bool>(JS_IsNumber(value)), "Value must be number, but it isn't", "get_uint32");
+		auto result = uint32_t{};
+		JS_ToUint32(context, &result, value);
+		return result;
+	}
 
 	inline static auto get_uint64(JSContext* context, const JSValue& value) -> uint64_t {
-        auto result = uint64_t{};
-        if (JS_ToIndex(context, &result, value) < 0) {
-			Detail::throw_exception(context, value, "uint64");
-		}
-        return result;
-    }
+		assert_conditional(static_cast<bool>(JS_IsBigInt(context, value)), "Value must be number, but it isn't", "get_uint64");
+		auto result = uint64_t{};
+		JS_ToBigUint64(context, &result, value);
+		return result;
+	}
 
     inline static auto get_bool(JSContext* context, const JSValue& value) -> bool {
+		assert_conditional(static_cast<bool>(JS_IsBool(value)), "Value must be boolean, but it isn't", "get_bool");
         return static_cast<bool>(JS_ToBool(context, value));
     }
 
@@ -224,23 +211,25 @@ namespace Sen::Kernel::JavaScript::Converter {
 	auto to_array(JSContext* context, const List<T>& vec) -> JSValue {
 		auto js_array = JS_NewArray(context);
 		for (auto i : Range<std::size_t>(vec.size())) {
+			auto atom = JS_NewAtomUInt32(context, i);
 			if constexpr (std::is_same<T, int>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewInt32(context, vec[i]));
+				JS_SetProperty(context, js_array, atom, JS_NewInt32(context, vec[i]));
 			} else if constexpr (std::is_same<T, uint32_t>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewBigInt64(context, static_cast<int64_t>(vec[i])));
+				JS_SetProperty(context, js_array, atom, JS_NewBigInt64(context, static_cast<int64_t>(vec[i])));
 			} else if constexpr (std::is_same<T, float>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewFloat64(context, static_cast<double>(vec[i])));
+				JS_SetProperty(context, js_array, atom, JS_NewFloat64(context, static_cast<double>(vec[i])));
 			} else if constexpr (std::is_same<T, double>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewFloat64(context, vec[i]));
+				JS_SetProperty(context, js_array, atom, JS_NewFloat64(context, vec[i]));
 			} else if constexpr (std::is_same<T, uint64_t>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewBigUint64(context, vec[i]));
+				JS_SetProperty(context, js_array, atom, JS_NewBigUint64(context, vec[i]));
 			} else if constexpr (std::is_same<T, bool>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewBool(context, vec[i]));
+				JS_SetProperty(context, js_array, atom, JS_NewBool(context, vec[i]));
 			} else if constexpr (std::is_same<T, long long>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewBigInt64(context, vec[i]));
+				JS_SetProperty(context, js_array, atom, JS_NewBigInt64(context, vec[i]));
 			} else if constexpr (std::is_same<T, std::string>::value) {
-				JS_SetPropertyUint32(context, js_array, i, JS_NewString(context, vec[i].data()));
+				JS_SetProperty(context, js_array, atom, JS_NewStringLen(context, vec[i].data(), vec[i].size()));
 			}
+			JS_FreeAtom(context, atom);
 		}
 		return js_array;
 	}
@@ -369,10 +358,6 @@ namespace Sen::Kernel::JavaScript::Converter {
 
 		inline static auto get_property_float32(JSContext* context, JSValueConst obj, JSAtom atom) -> float {
 			return get_property(context, obj, atom, "float", get_float32);
-		}
-
-		inline static auto get_property_int64(JSContext* context, JSValueConst obj, JSAtom atom) -> int64_t {
-			return get_property(context, obj, atom, "int64", get_int64);
 		}
 
 		inline static auto get_property_bigint64(JSContext* context, JSValueConst obj, JSAtom atom) -> int64_t {

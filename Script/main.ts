@@ -1,5 +1,17 @@
 namespace Sen.Script {
 	/**
+	 * Color provided in Sen
+	 */
+
+	export enum Color {
+		GREEN = 10,
+		CYAN = 11,
+		RED = 12,
+		YELLOW = 14,
+		DEFAULT = 7,
+	}
+
+	/**
 	 * Console namespace of Script
 	 */
 
@@ -14,11 +26,7 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function display(
-			title: string,
-			message: any,
-			color: Definition.Console.Color = Definition.Console.Color.DEFAULT,
-		): void {
+		export function display(title: string, message: any, color: Color = Color.DEFAULT): void {
 			const is_gui = Shell.is_gui();
 			const prefix = is_gui ? '' : '● ';
 			const new_tille = `${prefix}${title}`;
@@ -27,10 +35,7 @@ namespace Sen.Script {
 			return Kernel.Console.print(new_tille, msg, color);
 		}
 
-		export function send(
-			message: any,
-			color: Definition.Console.Color = Definition.Console.Color.DEFAULT,
-		): void {
+		export function send(message: any, color: Color = Color.DEFAULT): void {
 			return display(message, '', color);
 		}
 
@@ -44,11 +49,7 @@ namespace Sen.Script {
 
 		export function error(str: string | undefined): void {
 			if (str === undefined) return;
-			return Console.display(
-				`${Kernel.Language.get('runtime_error')}:`,
-				str,
-				Definition.Console.Color.RED,
-			);
+			return Console.display(`${Kernel.Language.get('runtime_error')}:`, str, Color.RED);
 		}
 
 		/**
@@ -64,7 +65,7 @@ namespace Sen.Script {
 				? `${Kernel.Language.get('execution_argument')}:`
 				: `${Kernel.Language.get('execution_argument')}: ${str}`;
 			const message = Shell.is_gui() ? str : '';
-			return display(title, message, Definition.Console.Color.CYAN);
+			return display(title, message, Color.CYAN);
 		}
 
 		/**
@@ -80,7 +81,7 @@ namespace Sen.Script {
 			return display(
 				`${Kernel.Language.get('execution_finished')}: ${subtitle}`,
 				message,
-				Definition.Console.Color.GREEN,
+				Color.GREEN,
 			);
 		}
 
@@ -93,11 +94,7 @@ namespace Sen.Script {
 		 */
 
 		export function obtained(source: string): void {
-			return display(
-				`${Kernel.Language.get('input_argument')}:`,
-				source,
-				Definition.Console.Color.CYAN,
-			);
+			return display(`${Kernel.Language.get('input_argument')}:`, source, Color.CYAN);
 		}
 
 		/**
@@ -109,11 +106,7 @@ namespace Sen.Script {
 		 */
 
 		export function output(source: string): void {
-			return display(
-				`${Kernel.Language.get('output_argument')}:`,
-				source,
-				Definition.Console.Color.GREEN,
-			);
+			return display(`${Kernel.Language.get('output_argument')}:`, source, Color.GREEN);
 		}
 
 		/**
@@ -128,7 +121,7 @@ namespace Sen.Script {
 			return Console.display(
 				`${Kernel.Language.get('execution_warning')}:`,
 				source,
-				Definition.Console.Color.YELLOW,
+				Color.YELLOW,
 			);
 		}
 
@@ -277,7 +270,7 @@ namespace Sen.Script {
 				Console.display(
 					`${Kernel.Language.get('stack')}:`,
 					make_stack(e.stack!).replace(/\n$/, ''),
-					Definition.Console.Color.RED,
+					Color.RED,
 				);
 				return undefined!;
 			}
@@ -367,7 +360,6 @@ namespace Sen.Script {
 			'~/Third/maxrects-packer/maxrects-packer.js',
 			'~/utility/Miscellaneous.js',
 			'~/Setting/Setting.js',
-			'~/utility/Definition.js',
 			'~/Support/Texture/Format.js',
 			'~/Support/PopCap/ResourceGroup/Convert.js',
 			'~/Support/PopCap/Atlas/Split.js',
@@ -384,9 +376,6 @@ namespace Sen.Script {
 			'~/Support/Wwise/Media/Encode.js',
 			'~/Executor/Executor.js',
 			'~/Executor/Methods/js.evaluate.js',
-			'~/Executor/Methods/data.md5.hash.js',
-			'~/Executor/Methods/data.base64.encode.js',
-			'~/Executor/Methods/data.base64.decode.js',
 			'~/Executor/Methods/popcap.rton.decode.js',
 			'~/Executor/Methods/popcap.rton.force_decode.js',
 			'~/Executor/Methods/popcap.rton.encode.js',

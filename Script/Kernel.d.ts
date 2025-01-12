@@ -420,7 +420,7 @@ declare namespace Sen {
 			 */
 			export function join_extend(
 				dimension: Kernel.Dimension.Structure,
-				data: Array<Sen.Kernel.Dimension.Image>,
+				data: Array<Kernel.Dimension.Image>,
 			): Kernel.Dimension.Image;
 		}
 
@@ -562,11 +562,7 @@ declare namespace Sen {
 			 * @param message - The content of the message (optional)
 			 * @param color - The color of the message (optional)
 			 */
-			export function print(
-				title: string,
-				message?: string,
-				color?: Script.Definition.Console.Color,
-			): void;
+			export function print(title: string, message?: string, color?: Script.Color): void;
 
 			/**
 			 * Print a message to the debug console without any additional options.
@@ -1159,6 +1155,11 @@ declare namespace Sen {
 
 			declare namespace Zlib {
 				/**
+				 * Zlib compression level. Higher levels result in better compression ratios
+				 * but take longer to compress.
+				 */
+				export type Level = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+				/**
 				 * --------------------------------------------------
 				 * JavaScript Zlib compression method for file
 				 *
@@ -1172,7 +1173,7 @@ declare namespace Sen {
 				export function compress_fs(
 					source: string,
 					destination: string,
-					level: Script.Zlib.Level,
+					level: Zlib.Level,
 				): void;
 
 				/**
@@ -1239,7 +1240,7 @@ declare namespace Sen {
 				export function compress_fs(
 					source: string,
 					destination: string,
-					level: Script.Zlib.Level,
+					level: Zlib.Level,
 				): void;
 
 				/**

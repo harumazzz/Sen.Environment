@@ -101,7 +101,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 			`${Kernel.Language.get('popcap.rsb.obfuscate.version_number')}: 0x${version.toString(
 				16,
 			)}`,
-			Definition.Console.Color.GREEN,
+			Color.GREEN,
 		);
 		stream.writeUint8(version);
 	}
@@ -122,7 +122,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 			`${Kernel.Language.get('popcap.rsb.obfuscate.modify_count')}: ${
 				rsb_head_info.rsg_number
 			}`,
-			Definition.Console.Color.GREEN,
+			Color.GREEN,
 		);
 		for (let i = 0n; i < rsb_head_info.rsg_number; ++i) {
 			const start_index = stream.read_position;

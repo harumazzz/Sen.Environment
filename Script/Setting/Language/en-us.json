@@ -754,5 +754,7 @@
 	"image.upscaler.cannot_find_real_esrgan_models_folder": "Cannot find real esrgan models directory",
 	"image.upscaler.enter_model": "Enter model",
 	"wwise.helper.hash_id.input_id_to_hash": "Input ID to hash",
-	"js.input_is_not_a_file_or_directory": "{} is not a file or directory"
+	"js.input_is_not_a_file_or_directory": "{} is not a file or directory",
+	"popcap.animation.add_library.image_posix_cannot_be_empty": "Image posix cannot be empty string, otherwise will be broken",
+	"js.id_already_existed": "{} is already existed"
 }

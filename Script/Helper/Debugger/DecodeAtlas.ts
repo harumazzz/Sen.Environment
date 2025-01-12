@@ -11,7 +11,7 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 							if (resource.path.endsWith('.PTX')) {
 								Console.send(resource.path);
 								const texture_info = resource.texture_info;
-								if (texture_info.format == 0) {
+								if (texture_info.format === 0) {
 									Console.send('RGBA_8888');
 									Kernel.Support.Texture.decode_fs(
 										`${resource_folder}/${resource.path}`,
@@ -24,7 +24,7 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 										Support.Texture.Format.RGBA_8888,
 									);
 								}
-								if (texture_info.format == 147) {
+								if (texture_info.format === 147) {
 									Console.send('RGB_ETC1_A_8');
 									Kernel.Support.Texture.decode_fs(
 										`${resource_folder}/${resource.path}`,

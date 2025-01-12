@@ -19,12 +19,8 @@ namespace Sen.Script.Support.Texture.Upscaler {
 
 	export function load_string_by_int(rule: any): string {
 		const new_rule: Array<bigint> = [];
-		rule.forEach(function make_rule(e: [bigint, string] & any): void {
-			if (Shell.is_gui()) {
-				Kernel.Console.print(`${e[0]}. ${e[1]}`);
-			} else {
-				Kernel.Console.print(`    ${e[0]}. ${e[1]}`);
-			}
+		rule.forEach((e: [bigint, string] & any) => {
+			Executor.print_statement(e[1], e[0]);
 			new_rule.push(e[0]);
 		});
 		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
@@ -52,7 +48,7 @@ namespace Sen.Script.Support.Texture.Upscaler {
 		);
 		const model_list: Array<string> = Kernel.FileSystem.read_directory_only_file(
 			`${real_esrgan_program_third_path}/models`,
-		).filter((e) => Kernel.Path.extname(e).toLowerCase() === '.param');
+		).filter((e) => /(\.param)?$/i.test(e));
 		assert(model_list.length > 0, 'real_esrgan_model_folder_is_empty');
 		const model_rule: Array<[bigint, string]> = model_list.map((e, i) => [
 			BigInt(i + 1),

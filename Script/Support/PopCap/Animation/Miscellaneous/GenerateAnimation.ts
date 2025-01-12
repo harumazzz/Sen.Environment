@@ -111,12 +111,8 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 
 	export function load_bigint(rule: any): bigint {
 		const new_rule: Array<bigint> = [];
-		rule.forEach(function make_rule(e: [bigint, string] & any): void {
-			if (Shell.is_gui()) {
-				Kernel.Console.print(`${e[0]}. ${e[2]}`);
-			} else {
-				Kernel.Console.print(`    ${e[0]}. ${e[2]}`);
-			}
+		rule.forEach((e: [bigint, string] & any) => {
+			Executor.print_statement(e[1], e[0]);
 			new_rule.push(e[0]);
 		});
 		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
@@ -150,7 +146,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					sprite_list.map((_, i) => rule.push(BigInt(i + 1)));
 					let sprite_to_disable: string = '';
 					const argument = (rule: Array<bigint>) => {
-						const input: string = Kernel.Console.readline();
+						const input: string = Kernel.Console.readline().trim();
 						const check_vaild = (range: Array<bigint>) => {
 							if (range.length > 0) return;
 							Console.warning(Kernel.Language.get('js.invalid_input_value'));
@@ -167,7 +163,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 								.split('-')
 								.filter((e) => !Number.isNaN(Number(e)) && rule.includes(BigInt(e)))
 								.map((e) => BigInt(e));
-							if (range_selected.length == 2) {
+							if (range_selected.length === 2) {
 								for (let i = range_selected[0]; i <= range_selected[1]; ++i) {
 									range.push(i);
 								}

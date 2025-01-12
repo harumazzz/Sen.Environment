@@ -54,7 +54,19 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
 				Console.argument(
 					Kernel.Language.get('popcap.animation.add_library.image_posix_for_id'),
 				);
-				argument.image_posix = Kernel.Console.readline();
+				while (argument.image_posix === undefined) {
+					let value = Kernel.Console.readline().trim();
+					if (value.length === 0) {
+						Console.warning(
+							Kernel.Language.get(
+								'popcap.animation.add_library.image_posix_cannot_be_empty',
+							),
+						);
+						continue;
+					}
+					argument.image_posix = value;
+					break;
+				}
 				Console.argument(
 					Kernel.Language.get('popcap.animation.add_library.generate_sprite'),
 				);
@@ -67,7 +79,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.AddLibrary {
 								'popcap.animation.add_library.sprite_name',
 							)} ${media}`,
 						);
-						sprite = has_sprite ? Kernel.Console.readline() : undefined;
+						sprite = has_sprite ? Kernel.Console.readline().trim() : undefined;
 					}
 					return sprite;
 				};

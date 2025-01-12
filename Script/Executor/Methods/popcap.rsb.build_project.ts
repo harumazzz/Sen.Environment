@@ -70,25 +70,25 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 		if (packages_info !== null) {
 			const packages_list = Kernel.FileSystem.read_directory(`${source}/packages`);
 			if (packages_info.encode) {
-				const json_file_list = new Set<string>();
+				const unique_list = new Set<string>();
 				for (let element of packages_list) {
 					const currentElement = element.slice(0, element.length - 5);
-					if (Kernel.Path.extname(element).toLowerCase() === '.json') {
-						json_file_list.add(currentElement);
+					if (/(\.json)?$/i.test(element)) {
+						unique_list.add(currentElement);
 						++packages_setting.json_count;
 					}
-					if (Kernel.Path.extname(element).toLowerCase() === '.rton') {
-						const hasValue: boolean = json_file_list.has(currentElement);
+					if (/(\.rton)?$/i.test(element)) {
+						const hasValue: boolean = unique_list.has(currentElement);
 						if (hasValue) {
-							json_file_list.delete(currentElement);
+							unique_list.delete(currentElement);
 						}
 						++packages_setting.rton_count;
 					}
 				}
-				packages_setting.rton_count += BigInt(json_file_list.size);
+				packages_setting.rton_count += BigInt(unique_list.size);
 			} else {
 				for (let element of packages_list) {
-					if (Kernel.Path.extname(element).toLowerCase() === '.rton') {
+					if (/(\.rton)?$/i.test(element)) {
 						++packages_setting.rton_count;
 					}
 				}

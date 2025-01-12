@@ -4,7 +4,7 @@ namespace Sen.Script.Helper.WWise.HashID {
 		const destination = new Kernel.UInteger32();
 		while (input !== '') {
 			Console.argument(Kernel.Language.get('wwise.helper.hash_id.input_id_to_hash'));
-			input = Kernel.Console.readline();
+			input = Kernel.Console.readline().trim();
 			Kernel.Support.WWise.SoundBank.hash(input!, destination);
 			Console.obtained(`${input}`);
 			Console.finished(`${destination.value}`);

@@ -15,7 +15,7 @@ final class CStringList extends Struct {
   external int size;
 }
 
-typedef ShellCallbackCView = Void Function(
+typedef ShellCallbackCView = Int32 Function(
   Pointer<CStringList> list,
   Pointer<CStringView> destination,
 );

@@ -13,11 +13,11 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr get_property_int32 = JS::Converter::get_property_int32;
 
+	inline auto constexpr get_property_uint32 = JS::Converter::get_property_uint32;
+
 	inline auto constexpr get_property_float64 = JS::Converter::get_property_float64;
 
 	inline auto constexpr get_property_float32 = JS::Converter::get_property_float32;
-
-	inline auto constexpr get_property_int64 = JS::Converter::get_property_int64;
 
 	inline auto constexpr get_property_bigint64 = JS::Converter::get_property_bigint64;
 
@@ -99,10 +99,12 @@ namespace Sen::Kernel::Interface::Script
 	) -> JSValue
 	{
 		auto destination = JS_NewArray(context);
-		for (auto i : Range<std::size_t>(list->size)) {
-			auto& str_view = list->value[i];
+		for (auto index : Range<std::size_t>(list->size)) {
+			auto atom_index = JS_NewAtomUInt32(context, static_cast<std::uint32_t>(index));
+			auto& str_view = list->value[index];
 			auto js_str = JS_NewStringLen(context, str_view.value, str_view.size);
-			JS_SetPropertyUint32(context, destination, static_cast<uint32_t>(i), js_str);
+			JS_SetProperty(context, destination, atom_index, js_str);
+			JS_FreeAtom(context, atom_index);
 		}
 		return destination;
 	}
@@ -114,11 +116,12 @@ namespace Sen::Kernel::Interface::Script
 	) -> void
 	{
 		auto atom = Atom{ context, "length" };
-		auto array_length = get_property_int32(context, value, atom.value);
+		auto array_length = get_property_uint32(context, value, atom.value);
 		list.size = array_length;
 		list.value = new StringView[array_length];
-		for (auto i : Range<std::int32_t>{ array_length }) {
-			auto js_element = JS_GetPropertyUint32(context, value, i);
+		for (auto i : Range{ array_length }) {
+			auto atom = Atom{context, i};
+			auto js_element = JS_GetProperty(context, value, atom.value);
 			auto str_len = size_t{};
 			auto str = JS_ToCStringLen(context, &str_len, js_element);
 			auto temporary = std::unique_ptr<char[]>(new char[str_len + 1]);
@@ -6872,14 +6875,15 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_length = Atom{context, "length"};
 				auto width = get_property_bigint64(context, argv[1], atom_width.value);
 				auto height = get_property_bigint64(context, argv[1], atom_height.value);
-				auto length = get_property_int32(context, argv[2], atom_length.value);
+				auto length = get_property_uint32(context, argv[2], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
 				auto x_y = List<Coordinate>{};
-				for (auto i : Range<int>(length)) {
-					auto current_object = JS_GetPropertyUint32(context, argv[2], i);
+				for (auto i : Range(static_cast<uint32_t>(length))) {
+					auto index_atom = Atom{context, i};
+					auto current_object = JS_GetProperty(context, argv[2], index_atom.value);
 					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
@@ -6915,16 +6919,17 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_width = Atom{context, "width"};
 				auto atom_height = Atom{context, "height"};
 				auto atom_length = Atom{context, "length"};
-				auto width = get_property_bigint64(context, argv[1], atom_width.value);
-				auto height = get_property_bigint64(context, argv[1], atom_height.value);
-				auto length = get_property_int32(context, argv[2], atom_length.value);
+				auto width = get_property_bigint64(context, argv[0], atom_width.value);
+				auto height = get_property_bigint64(context, argv[0], atom_height.value);
+				auto length = get_property_int32(context, argv[0], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
 				auto x_y = List<Coordinate>{};
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
-				for (auto i : Range<int>(length)) {
-					auto current_object = JS_GetPropertyUint32(context, argv[2], i);
+				for (auto i : Range<std::uint32_t>(length)) {
+					auto index_atom = Atom{context, i};
+					auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
 					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
@@ -6982,15 +6987,17 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_width = Atom{context, "width"};
 				auto atom_height = Atom{context, "height"};
 				auto atom_length = Atom{context, "length"};
-				auto atlas_width = get_property_bigint64(context, argv[1], atom_width.value);
-				auto atlas_height = get_property_bigint64(context, argv[1], atom_height.value);
-				auto length = get_property_int32(context, argv[2], atom_length.value);
+				auto atlas_width = JS::Converter::get_property_bigint64(context, argv[0], atom_width.value);
+				auto atlas_height = JS::Converter::get_property_bigint64(context, argv[0], atom_height.value);
+				auto length = get_property_uint32(context, argv[2], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
-				auto x_y = List<Coordinate>{};auto x_atom = Atom{context, "x"};
+				auto x_y = List<Coordinate>{};
+				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
-				for (auto i : Range<int>(length)) {
-					auto current_object = JS_GetPropertyUint32(context, argv[2], i);
+				for (auto i : Range(static_cast<uint32_t>(length))) {
+					auto index_atom = Atom{context, i};
+					auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
 					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
@@ -7101,14 +7108,15 @@ namespace Sen::Kernel::Interface::Script
 				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
-					auto length = get_property_int32(context, argv[1], length_atom.value);
+					auto length = get_property_uint32(context, argv[1], length_atom.value);
 					auto width_atom = Atom{context, "width"};
 					auto height_atom = Atom{context, "height"};
 					auto x_atom = Atom{context, "x"};
 					auto y_atom = Atom{context, "y"};
 					auto destination_atom = Atom{context, "destination"};
 					for (auto i : Range<uint32_t>(length)) {
-						auto current_object = JS_GetPropertyUint32(context, argv[1], i);
+						auto index_atom = Atom{context, i};
+						auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
 						auto rectangle_width = get_property_int32(context, current_object, width_atom.value);
 						auto rectangle_height = get_property_int32(context, current_object, height_atom.value);
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
@@ -7148,14 +7156,15 @@ namespace Sen::Kernel::Interface::Script
 				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
-					auto length = get_property_int32(context, argv[1], length_atom.value);
+					auto length = get_property_uint32(context, argv[1], length_atom.value);
 					auto width_atom = Atom{context, "width"};
 					auto height_atom = Atom{context, "height"};
 					auto x_atom = Atom{context, "x"};
 					auto y_atom = Atom{context, "y"};
 					auto destination_atom = Atom{context, "destination"};
 					for (auto i : Range<uint32_t>(length)) {
-						auto current_object = JS_GetPropertyUint32(context, argv[1], i);
+						auto index_atom = Atom{context, i};
+						auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
 						auto rectangle_width = get_property_int32(context, current_object, width_atom.value);
 						auto rectangle_height = get_property_int32(context, current_object, height_atom.value);
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
@@ -9928,6 +9937,8 @@ namespace Sen::Kernel::Interface::Script
 	namespace Miscellaneous
 	{
 
+		// TODO : Rewrite this
+
 		inline static auto deep_clone(
 			JSContext *context,
 			JSValueConst value
@@ -9948,14 +9959,13 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsArray(context, value))
 					{
 						auto js_array = JS_NewArray(context);
-						auto length = uint32_t{};
 						auto atom = Atom{context, "length"};
-						auto c_length = JS_GetPropertyUint32(context, value, atom.value);
-						JS_ToUint32(context, &length, c_length);
-						for (auto i : Range(length))
+						auto length = get_property_uint32(context, value, atom.value);
+						for (auto index : Range(length))
 						{
-							auto js_value = JS_GetPropertyUint32(context, value, i);
-							JS_SetPropertyUint32(context, js_array, i, deep_clone(context, js_value));
+							auto index_atom = Atom{context, "length"};
+							auto js_value = JS_GetProperty(context, value, index_atom.value);
+							JS_SetProperty(context, js_array, index_atom.value, deep_clone(context, js_value));
 							JS_FreeValue(context, js_value);
 						}
 						return js_array;
@@ -9963,25 +9973,21 @@ namespace Sen::Kernel::Interface::Script
 					if (JS_IsObject(value))
 					{
 						auto json = JS_NewObject(context);
-						auto *tab = static_cast<JSPropertyEnum *>(nullptr);
-						auto tab_size = uint32_t{};
-						if (JS_GetOwnPropertyNames(context, &tab, &tab_size, value, JS_GPN_STRING_MASK) == 0)
+						auto property_enum = std::add_pointer_t<JSPropertyEnum>{nullptr};
+						auto property_count = uint32_t{};
+						JS_GetOwnPropertyNames(context, &property_enum, &property_count, value, JS_GPN_STRING_MASK);
+						for (auto i : Range<uint32_t>(property_count))
 						{
-							for (auto i : Range<uint32_t>(tab_size))
-							{
-								auto key = JS_AtomToCString(context, tab[i].atom);
-								if (key == nullptr) {
-									JS_FreeAtom(context, tab[i].atom);
-									continue;
-								}
-								auto object_value = JS_GetProperty(context, value, tab[i].atom);
-								JS_DefinePropertyValue(context, json, tab[i].atom, deep_clone(context, object_value), int{JS_PROP_C_W_E});
-								JS_FreeAtom(context, tab[i].atom);
-								JS_FreeValue(context, object_value);
-								JS_FreeCString(context, key);
-							}
-							js_free(context, tab);
+							auto keystring = JS_AtomToString(context, property_enum[i].atom);
+							auto size = std::size_t{};
+							auto key = JS_ToCStringLen(context, &size, keystring);
+							auto object_value = JS_GetProperty(context, value, property_enum[i].atom);
+							JS_DefinePropertyValue(context, json, property_enum[i].atom, deep_clone(context, object_value), int{JS_PROP_C_W_E});
+							JS_FreeValue(context, keystring);
+							JS_FreeValue(context, object_value);
+							JS_FreeCString(context, key);
 						}
+						JS_FreePropertyEnum(context, property_enum, property_count);
 						return json;
 					}
 					throw Exception("Unknown type", std::source_location::current(), "deep_clone");
@@ -9996,7 +10002,7 @@ namespace Sen::Kernel::Interface::Script
 				}
 				case JS_TAG_BOOL:
 				{
-					return JS_NewBool(context, JS_VALUE_GET_BOOL(value) != 0);
+					return JS_NewBool(context, JS_ToBool(context, value));
 				}
 				case JS_TAG_BIG_INT:
 				{

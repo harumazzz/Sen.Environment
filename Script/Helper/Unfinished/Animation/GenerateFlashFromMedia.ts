@@ -36,19 +36,15 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 
 	export function load_bigint(rule: any): bigint {
 		const new_rule: Array<bigint> = [];
-		rule.forEach(function make_rule(e: [bigint, string] & any): void {
-			if (Shell.is_gui()) {
-				Kernel.Console.print(`${e[0]}. ${e[2]}`);
-			} else {
-				Kernel.Console.print(`    ${e[0]}. ${e[2]}`);
-			}
+		rule.forEach((e: [bigint, string] & any) => {
+			Executor.print_statement(e[1], e[0]);
 			new_rule.push(e[0]);
 		});
 		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
 	}
 
 	export function read_animation_name(): string {
-		let animation_name = Kernel.Console.readline();
+		let animation_name = Kernel.Console.readline().trim();
 		let index = 0;
 		while (index < animation_name.length) {
 			if (animation_name[index] === ' ') {
@@ -57,7 +53,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 						'script.helper.pvz2.animation.generate_flash_from_media.animation_name_must_not_cotain_space_char',
 					),
 				);
-				animation_name = Kernel.Console.readline();
+				animation_name = Kernel.Console.readline().trim();
 				index = 0;
 			} else if (animation_name.charCodeAt(index) > 127) {
 				Console.warning(
@@ -65,7 +61,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 						'script.helper.pvz2.animation.generate_flash_from_media.animation_name_must_be_ascii',
 					),
 				);
-				animation_name = Kernel.Console.readline();
+				animation_name = Kernel.Console.readline().trim();
 				index = 0;
 			} else {
 				++index;
@@ -121,10 +117,10 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateFlashFromMed
 		Console.argument(Kernel.Language.get('popcap.animation.to_flash.resolution'));
 		const input_generic = load_bigint(Detail.resolution());
 		Console.argument(Kernel.Language.get('popcap.animation.extract_label'));
-		const has_label = load_bigint(Detail.has_label()) == 1n;
+		const has_label = load_bigint(Detail.has_label()) === 1n;
 		const image_list: Array<string> = [];
 		for (let e of Kernel.FileSystem.read_directory_only_file(source)) {
-			if (Kernel.Path.extname(e).toLowerCase() === '.png') {
+			if (/(\.png)?$/i.test(e)) {
 				image_list.push(e);
 			}
 		}

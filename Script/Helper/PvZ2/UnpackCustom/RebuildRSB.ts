@@ -3,12 +3,8 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 
 	export function load_bigint(rule: any): bigint {
 		const new_rule: Array<bigint> = [];
-		rule.forEach(function make_rule(e: [bigint, string] & any): void {
-			if (Shell.is_gui()) {
-				Kernel.Console.print(`${e[0]}. ${e[2]}`);
-			} else {
-				Kernel.Console.print(`    ${e[0]}. ${e[2]}`);
-			}
+		rule.forEach((e: [bigint, string] & any) => {
+			Executor.print_statement(e[1], e[0]);
 			new_rule.push(e[0]);
 		});
 		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
@@ -150,12 +146,12 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			while (resolution.length > 1) {
 				Console.argument(Kernel.Language.get('script.rsb.unpack_custom.resolution'));
 				const input_resolution = load_bigint(resolution);
-				if (input_resolution == 0n) {
+				if (input_resolution === 0n) {
 					break;
 				}
 				resolution_list.push(input_resolution);
 				for (let i = 1; i < resolution.length; i++) {
-					if (resolution[i][1] == input_resolution) {
+					if (resolution[i][1] === input_resolution) {
 						resolution.splice(i, 1);
 					}
 					if (i < resolution.length) {

@@ -66,7 +66,7 @@ class KernelHelper {
     final currentShell = subEvent[1] as String;
     final arguments = subEvent[2] as List<String>;
     final argument = KernelArgument(currentShell, kernelPath, scriptPath, arguments);
-    execute(argument.value, Pointer.fromFunction(_callback));
+    execute(argument.value, Pointer.fromFunction<ShellCallbackCView>(_callback, 0));
     argument.cleanup();
     mainSendPort.send(null);
     _release();

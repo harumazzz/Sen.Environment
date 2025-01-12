@@ -61,7 +61,8 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 				);
 				Kernel.FileSystem.Operation.remove_all(`${destination}/packet/${e}.scg.package`);
 			} else {
-				if (e.toLowerCase() === 'streamingwave' && to_ios) {
+				const element = e.toLowerCase();
+				if (element === 'streamingwave' && to_ios) {
 					Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.decode_fs(
 						`${destination}/packet/${e}.scg`,
 						`${destination}/packet/${e}.scg.package`,
@@ -126,7 +127,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					);
 					packet_list[i] = 'Global_Data';
 					streaming_wave_processed = true;
-				} else if (e.toLowerCase() === 'global_data' && !to_ios) {
+				} else if (element === 'global_data' && !to_ios) {
 					Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.decode_fs(
 						`${destination}/packet/${e}.scg`,
 						`${destination}/packet/${e}.scg.package`,

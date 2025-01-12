@@ -77,10 +77,13 @@ namespace Sen.Script.Executor {
 		BatchArgument extends Executor.Base,
 		Configuration extends Executor.Configuration,
 	>(worker: MethodExecutor<Argument, BatchArgument, Configuration>): void {
-		const primary_id: string = worker.id!;
+		const id: string = worker.id!;
 		delete (worker as any).id;
-		assert(methods.get(primary_id) === undefined, `${primary_id} is already existed`);
-		methods.set(primary_id, worker as MethodExecutor<Base, Base, Configuration>);
+		assert(
+			methods.get(id) === undefined,
+			format(Kernel.Language.get('js.id_already_existed'), id),
+		);
+		methods.set(id, worker as MethodExecutor<Base, Base, Configuration>);
 	}
 
 	/**
@@ -202,7 +205,7 @@ namespace Sen.Script.Executor {
 		} else if ((configuration as any)[key] === '?') {
 			let input: string = undefined!;
 			while (true) {
-				input = Kernel.Console.readline();
+				input = Kernel.Console.readline().trim();
 				if (/\d+/.test(input) && rule[0] <= BigInt(input) && rule[1] >= BigInt(input)) {
 					break;
 				}
@@ -256,7 +259,7 @@ namespace Sen.Script.Executor {
 			}
 			return print_argument(argument[key] as string);
 		} else if ((configuration as any)[key] === '?') {
-			(argument as any)[key] = Kernel.Console.readline();
+			(argument as any)[key] = Kernel.Console.readline().trim();
 		} else {
 			if (rule === undefined) {
 				print_argument(configuration[key] as string);
@@ -321,8 +324,12 @@ namespace Sen.Script.Executor {
 			const result = Shell.callback(['input_boolean']);
 			return result === '1';
 		} else {
-			print_statement(Kernel.Language.get('input.set_argument_to_true'), 1n);
-			print_statement(Kernel.Language.get('input.set_argument_to_false'), 2n);
+			(
+				[
+					[Kernel.Language.get('input.set_argument_to_true'), 1n],
+					[Kernel.Language.get('input.set_argument_to_false'), 2n],
+				] as Array<[string, bigint]>
+			).forEach((e) => print_statement(e[0], e[1]));
 			const result = input_integer([1n, 2n]);
 			return result === 1n;
 		}
@@ -340,7 +347,7 @@ namespace Sen.Script.Executor {
 			input = Shell.callback(['input_enumeration', ...rule.map((e) => e.toString())]);
 		} else {
 			while (true) {
-				input = Kernel.Console.readline();
+				input = Kernel.Console.readline().trim();
 				if (/^\d+$/.test(input) && (rule as Array<bigint>).includes(BigInt(input))) {
 					break;
 				}
@@ -348,10 +355,6 @@ namespace Sen.Script.Executor {
 			}
 		}
 		return BigInt(input);
-	}
-
-	export function input_option(rule: Array<bigint>): bigint {
-		return input_integer([0n, ...rule]);
 	}
 
 	/**
@@ -373,7 +376,7 @@ namespace Sen.Script.Executor {
 			switch (typeof rule[0]) {
 				case 'object':
 					const new_rule: Array<bigint> = [];
-					rule.forEach(function make_rule(e: [bigint, string] & any): void {
+					rule.forEach((e: [bigint, string] & any) => {
 						print_statement(e[2], e[0]);
 						new_rule.push(e[0]);
 					});
@@ -382,7 +385,7 @@ namespace Sen.Script.Executor {
 					]![1];
 					break;
 				case 'string':
-					(argument as any)[key] = Kernel.Console.readline();
+					(argument as any)[key] = Kernel.Console.readline().trim();
 					break;
 				case 'bigint':
 					(argument as any)[key] = input_integer(rule as Array<bigint>);
@@ -466,7 +469,7 @@ namespace Sen.Script.Executor {
 		Console.display(
 			`${Kernel.Language.get('method_loaded')}:`,
 			`${Kernel.Language.get(id)} | ${id}`,
-			Definition.Console.Color.GREEN,
+			Color.GREEN,
 		);
 		switch (forward_type) {
 			case Forward.BATCH:
@@ -484,18 +487,17 @@ namespace Sen.Script.Executor {
 			default:
 				assert(false, format(Kernel.Language.get('js.method_does_not_execute')));
 		}
-		clock.stop_safe();
 		Console.send(
 			`${Kernel.Language.get('execution_time')}: ${clock.duration_as_seconds().toFixed(3)}s`,
-			Definition.Console.Color.GREEN,
+			Color.GREEN,
 		);
 	}
 
 	export function display_argument(argument: string | string[]): void {
 		const title = `${Kernel.Language.get('execution_argument')}:`;
-		const color = Definition.Console.Color.CYAN;
-		if (is_string(argument)) {
-			Console.display(title, argument, Definition.Console.Color.CYAN);
+		const color = Color.CYAN;
+		if (typeof argument === 'string') {
+			Console.display(title, argument, color);
 		} else {
 			Console.send(title, color);
 			argument.forEach(print_argument);
@@ -519,9 +521,9 @@ namespace Sen.Script.Executor {
 						Array.isArray(argument.source),
 						Kernel.Language.get('argument_must_be_list_of_string'),
 					);
-					(argument.source as Array<string>).forEach((e) => {
-						run_as_module<Argument>(id, { ...argument, source: e }, forward);
-					});
+					(argument.source as Array<string>).forEach((e) =>
+						run_as_module<Argument>(id, { ...argument, source: e }, forward),
+					);
 			}
 		} catch (e: any) {
 			result = Exception.make_exception(e);
@@ -564,15 +566,15 @@ namespace Sen.Script.Executor {
 				modules.set(option_number, method_name);
 			}
 		};
-		methods.forEach(function process_module(worker, method_name): void {
+		methods.forEach((worker, method_name) => {
 			if (!worker.is_enabled) return;
-			if (is_string(argument.source)) {
+			if (typeof argument.source === 'string') {
 				query(test, worker.filter as [MethodType, RegExp], argument.source as string, [
 					method_name,
 					worker.option,
 				]);
 			}
-			if (is_array(argument.source)) {
+			if (Array.isArray(argument.source)) {
 				query(
 					test_array,
 					worker.filter as [MethodType, RegExp],
@@ -595,7 +597,7 @@ namespace Sen.Script.Executor {
 				execute<Argument>(argument, modules.get(view[0] as bigint)!, Forward.DIRECT, load);
 				break;
 			default:
-				const input_value: bigint = input_option(view);
+				const input_value: bigint = input_integer([0n, ...view]);
 				if (input_value === 0n) return;
 				execute<Argument>(argument, modules.get(input_value)!, Forward.DIRECT, load);
 		}
@@ -765,24 +767,26 @@ namespace Sen.Script.Executor {
 		if ((argument.source as Array<string>).length === 0) {
 			input_path(argument as any);
 		}
-		argument.source = (argument.source as Array<string>).map((e: string) => normalize(e));
+		argument.source = (argument.source as Array<string>).map((e: string) =>
+			Kernel.Path.normalize(e),
+		);
 		if ((argument.source as Array<string>).length > 1) {
-			Console.send(
-				`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
-				Definition.Console.Color.CYAN,
-			);
+			Console.send(`${Kernel.Language.get('js.make_host.argument_obtained')}:`, Color.CYAN);
 			(argument.source as Array<string>).forEach((e, i) => print_statement(e, BigInt(i + 1)));
 			Console.send(
 				format(
 					`${Kernel.Language.get('js.obtained_argument')}:`,
 					(argument.source as string).length,
 				),
-				Definition.Console.Color.CYAN,
+				Color.CYAN,
 			);
-			print_statement(Kernel.Language.get('js.process_whole'), 1n);
-			print_statement(Kernel.Language.get('js.process_in_queue'), 2n);
-			print_statement(Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n);
-			print_statement(Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n);
+			[
+				[Kernel.Language.get('js.process_whole'), 1n],
+				[Kernel.Language.get('js.process_in_queue'), 2n],
+				[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
+				Kernel.Language.get('popcap.atlas.split_by_res_info'),
+				4n,
+			].forEach((e) => print_statement(e[0], e[1]));
 			const input: bigint = input_integer([1n, 2n, 3n, 4n]);
 			switch (input) {
 				case 1n:
@@ -820,9 +824,9 @@ namespace Sen.Script.Executor {
 					break;
 			}
 		} else {
-			(argument.source as Array<string>).forEach(function process_package(e: string) {
-				load_module({ source: e }, 'simple');
-			});
+			(argument.source as Array<string>).forEach((e: string) =>
+				load_module({ source: e }, 'simple'),
+			);
 		}
 	}
 

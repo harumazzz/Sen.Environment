@@ -515,8 +515,8 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 				i + 1
 			}"); document.selectAll(); convert("image_${i + 1}");`;
 			image_list.push(image);
-			if (image_list.length == 30) {
-				if (script_count == 1) {
+			if (image_list.length === 30) {
+				if (script_count === 1) {
 					Kernel.FileSystem.write_file(
 						`${dest}/script_${script_count}.jsfl`,
 						script_string
@@ -534,7 +534,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 			}
 		}
 		if (image_list.length > 0) {
-			if (script_count == 1) {
+			if (script_count === 1) {
 				Kernel.FileSystem.write_file(
 					`${dest}/script_${script_count}.jsfl`,
 					script_string
@@ -705,11 +705,12 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 	}
 
 	export function execute(): void {
+		// TODO : Add loc
 		const source = Console.path('Enter Fla path', 'file');
 		Console.argument('Enter animation name');
-		const animation_name = Kernel.Console.readline();
+		const animation_name = Kernel.Console.readline().trim();
 		Console.argument('Enter animation type');
-		const type = Kernel.Console.readline();
+		const type = Kernel.Console.readline().trim();
 		const dest = Kernel.Path.dirname(source);
 		const resolution = 1536;
 		Kernel.Compression.Zip.Uncompress.process(`${source}`, `${source}_unpack`);
