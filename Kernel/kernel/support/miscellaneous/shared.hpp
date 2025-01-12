@@ -381,6 +381,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
             };
             auto resource_information_section_offset = stream.write_pos;
             auto string_list = List<std::string>{};
+            string_list.reserve(value.size());
             for (auto &element : value)
             {
                 string_list.emplace_back(element.first);

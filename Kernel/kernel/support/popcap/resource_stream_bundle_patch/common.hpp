@@ -50,6 +50,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
         inline static auto hex_string_to_bytes(const std::string &data) -> List<uint8_t>
         {
             auto result = List<uint8_t>{};
+            result.reserve(static_cast<size_t>(data.length() / 2));
             for (auto i = 0; i < data.length(); i += 2)
             {
                 auto byte_string = data.substr(i, 2);

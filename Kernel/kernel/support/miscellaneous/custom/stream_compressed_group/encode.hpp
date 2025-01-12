@@ -86,6 +86,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     image_info.data.copy_data(resized_image.data());
                 }
             }
+            rectangle_list.reserve(texture_sprite_view_stored.size());
             for (auto &[data_id, image_info] : texture_sprite_view_stored)
             {
                 check(image_info.data.width, image_width);

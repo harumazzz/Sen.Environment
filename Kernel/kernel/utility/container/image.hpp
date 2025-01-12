@@ -26,9 +26,9 @@ namespace Sen::Kernel {
 
 			// width and height
 
-			T width;
+			T width{};
 
-			T height;
+			T height{};
 
 			// constructor
 
@@ -41,7 +41,7 @@ namespace Sen::Kernel {
 			Dimension(
 				T width,
 				T height
-			) : width(width), height(height)
+			) : width{width}, height{height}
 			{
 
 			}
@@ -83,8 +83,9 @@ namespace Sen::Kernel {
 
 			// position in image
 
-			T x;
-			T y;
+			T x{};
+
+			T y{};
 
 			/**
 			 * constructor
@@ -111,7 +112,7 @@ namespace Sen::Kernel {
 				T y,
 				T width,
 				T height
-			) : x(x), y(y), Dimension<T>(width, height)
+			) : x{x}, y{y}, Dimension<T>{width, height}
 			{
 
 			}
@@ -162,19 +163,19 @@ namespace Sen::Kernel {
 
 			// red (i = 0)
 
-			List<unsigned char> red;
+			List<unsigned char> red{};
 
 			// green (i = 1)
 
-			List<unsigned char> green;
+			List<unsigned char> green{};
 
 			// blue (i = 2)
 
-			List<unsigned char> blue;
+			List<unsigned char> blue{};
 
 			// alpha (i = 3)
 
-			List<unsigned char> alpha;
+			List<unsigned char> alpha{};
 			
 			// destructor
 
@@ -200,22 +201,24 @@ namespace Sen::Kernel {
 
 			// pixel data should not be accessible
 			
-			List<unsigned char> mutable _data;
+			List<unsigned char> mutable _data{};
 
 		public:
 
 			// easy accessible data
-			T bit_depth;
-			T color_type;
-			T interlace_type;
-			T channels;
-			T rowbytes;
+			T bit_depth{};
+			T color_type{};
+			T interlace_type{};
+			T channels{};
+			T rowbytes{};
 
 			/**
 			 * constructor
 			*/
 
 			explicit constexpr Image(
+				T x,
+				T y,
 				T width, 
 				T height, 
 				T bit_depth, 
@@ -225,12 +228,12 @@ namespace Sen::Kernel {
 				T rowbytes, 
 				List<unsigned char> && data
 			) : 
-			Rectangle<T>(0, 0, width, height), 
-			bit_depth(bit_depth),
-			color_type(color_type), 
-			interlace_type(interlace_type), 
-			channels(channels), 
-			rowbytes(rowbytes), 
+			Rectangle<T>{x, y, width, height}, 
+			bit_depth{bit_depth},
+			color_type{color_type}, 
+			interlace_type{interlace_type}, 
+			channels{channels}, 
+			rowbytes{rowbytes}, 
 			_data(std::move(data))
 			{
 
@@ -279,7 +282,7 @@ namespace Sen::Kernel {
 
 			explicit constexpr Image(
 				const Image &that
-			) : Image<T>(0, 0, that.width, that.height, that.bit_depth, that.color_type, that.interlace_type, that.channels, that.rowbytes, that.data())
+			) : Image<T>{that.x, that.y, that.width, that.height, that.bit_depth, that.color_type, that.interlace_type, that.channels, that.rowbytes, that.data()}
 			{
 
 			}
@@ -346,6 +349,11 @@ namespace Sen::Kernel {
 			) const -> Color
 			{
 				auto c = Color{};
+				auto size = thiz._data.size() / 4;
+				c.red.reserve(size);
+				c.alpha.reserve(size);
+				c.blue.reserve(size);
+				c.green.reserve(size);
 				for (auto i = static_cast<size_t>(0); i < thiz._data.size(); i += 4)
 				{
 					c.red.push_back(thiz._data.at(i));
@@ -373,7 +381,7 @@ namespace Sen::Kernel {
 				T width,
 				T height,
 				const List<unsigned char>& data
-			) : Rectangle<T>(x, y, width, height), _data(std::move(data))
+			) : Rectangle<T>{x, y, width, height}, _data(std::move(data))
 			{
 			}
 
@@ -856,6 +864,8 @@ namespace Sen::Kernel {
 				auto rowbytes = static_cast<int>(png_get_rowbytes(png_ptr, info_ptr));
 				png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 				auto image = Image<int>{
+					0,
+					0,
 					width, 
 					height, 
 					bit_depth,

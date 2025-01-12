@@ -128,7 +128,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					{"content_version", 1},
 					{"slot_count", 0}
 				};
-				auto groups = nlohmann::ordered_json::array_t();
+				auto groups = nlohmann::ordered_json::array_t{};
+				groups.reserve(content.size());
 				for(auto & [parent, parent_value] : content.items()){
 					if(content[parent]["is_composite"]){
 						auto composite_object = nlohmann::ordered_json{

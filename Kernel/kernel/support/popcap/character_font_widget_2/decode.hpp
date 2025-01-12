@@ -45,6 +45,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 				(*cfw2_json).default_point_size = view->readInt32();
 				auto characterCount = view->readUint32();
 				(*cfw2_json).character = List<CharacterItem>();
+				(*cfw2_json).character.reserve(static_cast<size_t>(characterCount));
 				for (auto i : Range<uint32_t>(characterCount)) {
 					(*cfw2_json).character.emplace_back(CharacterItem{
 						view->readCharByInt16(),
@@ -53,20 +54,24 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 				}
 				auto layer_count = view->readUint32();
             	(*cfw2_json).layer = List<FontLayer>{};
+				(*cfw2_json).layer.reserve(static_cast<size_t>(layer_count));
 				for (auto i : Range<uint32_t>(layer_count)) {
 					auto name = view->readStringByInt32();
 					auto tag_require_count = view->readUint32();
 					auto tag_require =  List<std::string>{};
+					tag_require.reserve(static_cast<size_t>(tag_require_count));
 					for (auto k : Range<uint32_t>(tag_require_count)) {
 						tag_require.emplace_back(view->readStringByInt32());
 					}
 					auto tag_exclude_count = view->readUint32();
 					auto tag_exclude = List<std::string>{};
+					tag_exclude.reserve(static_cast<size_t>(tag_exclude_count));
 					for (auto k : Range<uint32_t>(tag_exclude_count)) {
 						tag_exclude.emplace_back(view->readStringByInt32());
 					}
 					auto kerning_count = view->readUint32();
 					auto kerning = List<FontKerning>{};
+					kerning.reserve(static_cast<size_t>(kerning_count));
 					for (auto k : Range<uint32_t>(kerning_count)) {
 						kerning.emplace_back(FontKerning {
 							view->readCharByInt16(),
@@ -75,6 +80,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 					}
 					auto character_count = view->readUint32();
 					auto character = List<FontCharacter>{};
+					character.reserve(static_cast<size_t>(character_count));
 					for (auto k : Range<uint32_t>(character_count)) {
 						character.emplace_back(FontCharacter {
 							view->readCharByInt16(),
@@ -124,6 +130,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 				(*cfw2_json).error_header = view->readStringByInt32();
 				(*cfw2_json).point_size = view->readInt32();
 				auto tagCount = view->readUint32();
+				(*cfw2_json).tag.reserve(static_cast<size_t>(tagCount));
 				for (auto i : Range<uint32_t>(static_cast<uint32_t>(tagCount))) {
 					(*cfw2_json).tag.emplace_back(view->readStringByInt32());
 				}

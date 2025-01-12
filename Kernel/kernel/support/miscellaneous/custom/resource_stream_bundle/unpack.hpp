@@ -113,6 +113,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                     packages_info.compression = unpack_rsg_without_definition(packet_data, resource_data_section_view_stored);
                     FileSystem::create_directory(tolower_back(fmt::format("{}/{}", destination, packages_string)));
                     auto async_work_process = List<std::future<void>>{};
+                    async_work_process.reserve(resource_data_section_view_stored.size());
                     for (auto &[id, data] : resource_data_section_view_stored)
                     {
                         check_rton_is_encrypted(data) ? ++rton_encrypted_count : --rton_encrypted_count;
@@ -176,6 +177,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             Setting const &setting) -> void
         {
             auto async_work_process = List<std::future<void>>{};
+            async_work_process.reserve(resource_info.group.size());
             for (auto &[group_id, group_value] : resource_info.group)
             {
                 auto packet_original_information = PacketOriginalInformation{

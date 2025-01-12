@@ -170,6 +170,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             definition.texture_information_section_size = texture_resource_information_section_block_size;
             #if WINDOWS 
             auto async_work_process = List<std::future<void>>{};
+            async_work_process.reserve(information_structure.group_id.size());
             #endif
             for (auto &[group_id, group_index] : information_structure.group_id)
             {

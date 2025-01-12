@@ -37,6 +37,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 				};
 				auto groups = nlohmann::ordered_json::array_t{};
 				auto group_size = sen->readUint32();
+				groups.reserve(group_size);
 				for(auto i : Range(group_size)){
 					auto group = nlohmann::ordered_json{};
 					auto group_type = sen->readUint8();
@@ -69,6 +70,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 					if (group_type == 0x01) {
 						assert_conditional(resources_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.resource_must_be_null_with_composite"), group["id"].get<std::string>()), "process");
 						auto subgroups = nlohmann::ordered_json::array_t{};
+						subgroups.reserve(subgroups_count);
 						for (auto subgroups_index : Range<int>(subgroups_count)) {
 							auto subgroup = nlohmann::ordered_json{};
 							auto sub_res = sen->readUint32();
@@ -84,6 +86,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 					if(group_type == 0x02){
 						assert_conditional(subgroups_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.subgroup_must_be_null_with_simple"), group["id"].get<std::string>()), "process");
 						auto resources = nlohmann::ordered_json::array_t{};
+						resources.reserve(resources_count);
 						for (auto resources_index : Range<int>(resources_count)){
           					auto sub_resources = nlohmann::ordered_json{};
 							auto resource_type = sen->readUint8();

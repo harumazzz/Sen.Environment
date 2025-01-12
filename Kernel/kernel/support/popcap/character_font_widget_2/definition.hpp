@@ -381,22 +381,22 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 
 		public:
 
-			std::array<uint8_t, 16> unknown;
-			int ascent;
-			int ascent_padding;
-			int height;
-			int line_sepacing_offset;
-			bool initialized;
-			int default_point_size;
-			List<CharacterItem> character;
-			List<FontLayer> layer;
-			std::string source_file;
-			std::string error_header;
-			int point_size;
-			List<std::string> tag;
-			double scale;
-			bool force_scaled_image_white;
-			bool activate_all_layer;
+			std::array<uint8_t, 16> unknown{};
+			int ascent{};
+			int ascent_padding{};
+			int height{};
+			int line_sepacing_offset{};
+			bool initialized{};
+			int default_point_size{};
+			List<CharacterItem> character{};
+			List<FontLayer> layer{};
+			std::string source_file{};
+			std::string error_header{};
+			int point_size{};
+			List<std::string> tag{};
+			double scale{};
+			bool force_scaled_image_white{};
+			bool activate_all_layer{};
 
 			CharacterFontWidget2(
 

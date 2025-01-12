@@ -21,7 +21,7 @@ namespace Sen::Kernel
         static_assert(use_big_endian == true or use_big_endian == false);
 
     private:
-        List<std::uint8_t> mutable data;
+        List<std::uint8_t> mutable data{};
 
         std::string_view mutable file_path = ""_sv;
 
@@ -46,6 +46,7 @@ namespace Sen::Kernel
 
         Stream() : read_pos(0), write_pos(0), length(0)
         {
+            thiz.data.reserve(buffer_size);
         }
 
         Stream(

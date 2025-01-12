@@ -780,14 +780,16 @@ namespace Sen.Script.Executor {
 				),
 				Color.CYAN,
 			);
-			[
-				[Kernel.Language.get('js.process_whole'), 1n],
-				[Kernel.Language.get('js.process_in_queue'), 2n],
-				[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
-				Kernel.Language.get('popcap.atlas.split_by_res_info'),
-				4n,
-			].forEach((e) => print_statement(e[0], e[1]));
-			const input: bigint = input_integer([1n, 2n, 3n, 4n]);
+			(
+				[
+					[Kernel.Language.get('js.skip_argument_input'), 0n],
+					[Kernel.Language.get('js.process_whole'), 1n],
+					[Kernel.Language.get('js.process_in_queue'), 2n],
+					[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
+					[Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n],
+				] as Array<[string, bigint]>
+			).forEach((e) => print_statement(e[0], e[1]));
+			const input: bigint = input_integer([0n, 1n, 2n, 3n, 4n]);
 			switch (input) {
 				case 1n:
 					load_module({ source: argument.source }, 'whole');

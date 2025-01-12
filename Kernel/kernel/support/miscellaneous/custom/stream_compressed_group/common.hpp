@@ -1058,6 +1058,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             auto resource_packet_view_stored = DataStreamView{};
             auto subgroup_information_list = List<SubgroupInformation>{};
+            subgroup_information_list.reserve(packet_information.subgroup.size());
             for (auto &[subgroup_id, subgroup_value] : packet_information.subgroup)
             {
                 auto subgroup_information = SubgroupInformation{

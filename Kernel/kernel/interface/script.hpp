@@ -5408,7 +5408,7 @@ namespace Sen::Kernel::Interface::Script
 								auto data = JS_GetArrayBuffer(context, &size, data_val);
 								JS_FreeValue(context, data_val);
 								assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object", "constructor");
-								return new Data(static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size)));
+								return new Data(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size)));
 							}
 							return nullptr;
 						},
@@ -6241,6 +6241,7 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "join", [&](){
 				auto value = List<std::string>{};
+				value.reserve(static_cast<size_t>(argc));
 				for(auto i : Range<int>(argc))
 				{
 					auto source = JS::Converter::get_string(context, argv[i]);
@@ -6808,7 +6809,7 @@ namespace Sen::Kernel::Interface::Script
 				auto data = JS_GetArrayBuffer(context, &data_len, data_val);
 				assert_conditional(data != nullptr, "Cannot get ArrayBuffer from the current object", "write");
 				JS_FreeValue(context, data_val);
-				auto image = Image(static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
+				auto image = Image(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
 				Sen::Kernel::ImageIO::write_png(source_file, image);
 				return JS_UNDEFINED;
 			});
@@ -6877,10 +6878,10 @@ namespace Sen::Kernel::Interface::Script
 				auto height = get_property_bigint64(context, argv[1], atom_height.value);
 				auto length = get_property_uint32(context, argv[2], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
+				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
-				auto x_y = List<Coordinate>{};
 				for (auto i : Range(static_cast<uint32_t>(length))) {
 					auto index_atom = Atom{context, i};
 					auto current_object = JS_GetProperty(context, argv[2], index_atom.value);
@@ -6892,14 +6893,9 @@ namespace Sen::Kernel::Interface::Script
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
 					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
 					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
-					x_y.emplace_back(Coordinate{.x = image_x, .y = image_y});
-					m_data.emplace_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
+					m_data.push_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
-				}
-				for (auto i : Range<size_t>(x_y.size())) {
-					m_data[i].x = x_y[i].x;
-					m_data[i].y = x_y[i].y;
 				}
 				Sen::Kernel::ImageIO::join_png(destination, Sen::Kernel::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
 				return JS_UNDEFINED;
@@ -6921,9 +6917,9 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_length = Atom{context, "length"};
 				auto width = get_property_bigint64(context, argv[0], atom_width.value);
 				auto height = get_property_bigint64(context, argv[0], atom_height.value);
-				auto length = get_property_int32(context, argv[0], atom_length.value);
+				auto length = get_property_uint32(context, argv[1], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
-				auto x_y = List<Coordinate>{};
+				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
@@ -6938,14 +6934,9 @@ namespace Sen::Kernel::Interface::Script
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
 					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
 					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
-					x_y.emplace_back(Coordinate{.x = image_x, .y = image_y});
-					m_data.emplace_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
+					m_data.push_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
-				}
-				for (auto i : Range<size_t>(x_y.size())) {
-					m_data[i].x = x_y[i].x;
-					m_data[i].y = x_y[i].y;
 				}
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(static_cast<int>(width), static_cast<int>(height)));
 				Sen::Kernel::ImageIO::join(destination, m_data);
@@ -6989,9 +6980,9 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_length = Atom{context, "length"};
 				auto atlas_width = JS::Converter::get_property_bigint64(context, argv[0], atom_width.value);
 				auto atlas_height = JS::Converter::get_property_bigint64(context, argv[0], atom_height.value);
-				auto length = get_property_uint32(context, argv[2], atom_length.value);
+				auto length = get_property_uint32(context, argv[1], atom_length.value);
 				auto m_data = List<Sen::Kernel::Image<int>>{};
-				auto x_y = List<Coordinate>{};
+				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
 				auto data_atom = Atom{context, "data"};
@@ -7006,14 +6997,9 @@ namespace Sen::Kernel::Interface::Script
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
 					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
 					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
-					x_y.emplace_back(Coordinate{.x = image_x, .y = image_y});
 					m_data.emplace_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
-				}
-				for (auto i : Range<size_t>(x_y.size())) {
-					m_data[i].x = x_y[i].x;
-					m_data[i].y = x_y[i].y;
 				}
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(atlas_width, atlas_height));
 				Sen::Kernel::ImageIO::join_extend(destination,m_data);
@@ -7109,6 +7095,7 @@ namespace Sen::Kernel::Interface::Script
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_uint32(context, argv[1], length_atom.value);
+					data.reserve(static_cast<size_t>(length));
 					auto width_atom = Atom{context, "width"};
 					auto height_atom = Atom{context, "height"};
 					auto x_atom = Atom{context, "x"};
@@ -7122,7 +7109,7 @@ namespace Sen::Kernel::Interface::Script
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
 						auto rectangle_y = get_property_int32(context, current_object, y_atom.value);
 						auto destination = get_property_string(context, current_object, destination_atom.value);
-						data.emplace_back(Sen::Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
+						data.emplace_back(Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
 						JS_FreeValue(context, current_object);
 					}
 				} else {
@@ -7157,6 +7144,7 @@ namespace Sen::Kernel::Interface::Script
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_uint32(context, argv[1], length_atom.value);
+					data.reserve(static_cast<size_t>(length));
 					auto width_atom = Atom{context, "width"};
 					auto height_atom = Atom{context, "height"};
 					auto x_atom = Atom{context, "x"};
