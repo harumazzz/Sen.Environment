@@ -38,17 +38,22 @@ add_library(
 	./utility/encryption/xor.hpp
 	./utility/encryption/crc.hpp
 	./utility/encryption/fnv.hpp
+
 	./utility/compression/zlib.hpp
 	./utility/compression/lzma.hpp
 	./utility/compression/bzip2.hpp
+
+	./utility/diff/vcdiff.hpp
+
 	./utility/javascript/common.hpp
 	./utility/javascript/value.hpp
 	./utility/javascript/runtime.hpp
+	./utility/javascript/generalization.hpp
+	./utility/javascript/builder.hpp
 	./utility/javascript/converter.hpp
 	./utility/javascript/converter/json.hpp
 	./utility/javascript/converter/xml.hpp
 	./utility/javascript/proxy.hpp
-	./utility/diff/vcdiff.hpp
 
 	./dependencies/fmt.hpp
 	./dependencies/json.hpp

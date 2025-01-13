@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 project(
 	lzma
-	VERSION 1.5.5
+	VERSION 24.09
 	HOMEPAGE_URL https://www.7-zip.org/sdk.html
 	LANGUAGES C
 )
@@ -12,23 +12,23 @@ add_library(
 	./7zTypes.h
 	./7zWindows.h
 	./Alloc.h
+	./Alloc.c
 	./Compiler.h
 	./CpuArch.h
+	./CpuArch.c
 	./LzFind.h
+	./LzFind.c
 	./LzFindMt.h
+	./LzFindMt.c
 	./LzHash.h
 	./LzmaDec.h
+	./LzmaDec.c
 	./LzmaEnc.h
+	./LzmaEnc.c
 	./LzmaLib.h
 	./Precomp.h
 	./Threads.h
-	./Alloc.c
-	./CpuArch.c
-	./LzFind.c
-	./LzFindMt.c
 	./LzFindOpt.c
-	./LzmaDec.c
-	./LzmaEnc.c
 	./LzmaLib.c
 	./Threads.c
 )

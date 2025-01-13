@@ -22,11 +22,9 @@ namespace Sen::Kernel::JavaScript::Converter {
 		JSContext* context, 
 		const JSValue& value
 	) -> std::string {
+		assert_conditional(static_cast<bool>(JS_IsString(value)), "Value must be string, but it isn't", "get_string");
         auto size = std::size_t{};
         auto c_str = JS_ToCStringLen(context, &size, value);
-        if (c_str == nullptr) {
-			Detail::throw_exception(context, value, "string");
-		}
         auto str = std::string { c_str, size };
         JS_FreeCString(context, c_str);
         return str;

@@ -73,11 +73,11 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 				const unique_list = new Set<string>();
 				for (let element of packages_list) {
 					const currentElement = element.slice(0, element.length - 5);
-					if (/(\.json)?$/i.test(element)) {
+					if (/(\.json)$/i.test(element)) {
 						unique_list.add(currentElement);
 						++packages_setting.json_count;
 					}
-					if (/(\.rton)?$/i.test(element)) {
+					if (/(\.rton)$/i.test(element)) {
 						const hasValue: boolean = unique_list.has(currentElement);
 						if (hasValue) {
 							unique_list.delete(currentElement);
@@ -88,7 +88,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 				packages_setting.rton_count += BigInt(unique_list.size);
 			} else {
 				for (let element of packages_list) {
-					if (/(\.rton)?$/i.test(element)) {
+					if (/(\.rton)$/i.test(element)) {
 						++packages_setting.rton_count;
 					}
 				}

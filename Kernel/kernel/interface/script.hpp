@@ -1,13 +1,14 @@
 #pragma once
 
 #include "kernel/interface/shell.hpp"
+#include "kernel/utility/javascript/builder.hpp"
 
 namespace Sen::Kernel::Interface::Script
 {
 
-	namespace Localization = Sen::Kernel::Language;
+	namespace Localization = Kernel::Language;
 
-	namespace JS = Sen::Kernel::JavaScript;
+	namespace JS = Kernel::JavaScript;
 
 	inline auto constexpr get_property_string = JS::Converter::get_property_string;
 
@@ -25,76 +26,58 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
 
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline auto constexpr make_handle = JS::make_handle<T>;
+
+	template <typename T> requires std::is_class<T>::value
+	inline auto constexpr initialize_constructor = JS::initialize_constructor<T>;
+
+	template <typename T, int magic> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline auto constexpr generate_getter_setter = JS::generate_getter_setter<T, magic>;
+
+	template <typename T, int length> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline auto constexpr generate_class_function = JS::generate_class_function<T, length>;
+
+	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires std::is_class<Class>::value && std::is_function<Constructor>::value
+	inline auto constexpr build_class = JS::build_class<Class, Constructor, InstanceCount, ProtoFunctionCount>;
+
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline auto constexpr make_class_definition = JS::make_class_definition<T>;
+
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline static auto get_opaque_value = JS::get_opaque_value<T>;
+
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline auto constexpr make_deleter = JS::make_deleter<T>;
+
+	inline auto constexpr make_instance_object = JS::make_instance_object;
+
+	inline auto constexpr proxy_wrapper = JS::proxy_wrapper;
+
+	template <typename T> requires std::is_same<T, uint32_t>::value || std::is_same<T, std::string_view>::value
+	inline auto constexpr get_value_from_object = JS::get_value_from_object<T>;
+
+	inline auto constexpr get_prototype_from_object = JS::get_prototype_from_object;
+
+	inline auto constexpr make_instance_of_class = JS::make_instance_of_class;
+
+	inline auto constexpr get_array_buffer = JS::get_array_buffer;
+
+	inline auto constexpr get_global_object = JS_GetGlobalObject;
+
 	using Atom = JS::Atom;
 
 	using ClassID = JS::ClassID;
 
 	using Value = JS::Value;
 
-	typedef JSValue (*JavaScriptNativeMethod)(JSContext *, JSValue, int, JSValue *);
+	using JavaScriptNativeMethod = JSValue(*)(JSContext *, JSValue, int, JSValue *);
 
-	namespace JSElement
-	{
+	template <typename T>
+	using Generalization = JS::Generalization<T>;
 
-		using undefined = JSValue;
-
-		using null = JSValue;
-
-		using bigint = JSValue;
-
-		using number = JSValue;
-
-		using string = JSValue;
-
-		using boolean = JSValue;
-
-		template <typename T>
-		using Array = JSValue;
-
-		using Object = JSValue;
-
-		using ArrayBuffer = JSValue;
-
-		using Uint8Array = JSValue;
-
-		using Prototype = JSValue;
-
-		using any = JSValue;
-
-		using ParameterList = JSValue *;
-
-		using ParameterCount = int;
-
-		using Context = JSContext;
-
-	};
-
-	namespace JSDefine
-	{
-
-		using DataStreamView = JSValue;
-
-		using Boolean = JSValue;
-
-		using Character = JSValue;
-
-		using String = JSValue;
-
-		using Size = JSValue;
-
-		using BinaryView = JSValue;
-
-		using ImageView = JSValue;
-
-		using Canvas = JSValue;
-
-		using JsonWriter = JSValue;
-
-		using APNGMakerSetting = JSValue;
-	}
-
-	inline static auto to_array_of_string (
-		JSContext* context, 
+	inline static auto to_array_of_string(
+		JSContext* context,
 		const StringList* list
 	) -> JSValue
 	{
@@ -120,7 +103,7 @@ namespace Sen::Kernel::Interface::Script
 		list.size = array_length;
 		list.value = new StringView[array_length];
 		for (auto i : Range{ array_length }) {
-			auto atom = Atom{context, i};
+			auto atom = Atom{ context, i };
 			auto js_element = JS_GetProperty(context, value, atom.value);
 			auto str_len = size_t{};
 			auto str = JS_ToCStringLen(context, &str_len, js_element);
@@ -134,46 +117,6 @@ namespace Sen::Kernel::Interface::Script
 		}
 		return;
 	}
-
-	inline static auto throw_exception(
-		JSContext *context, 
-		std::string_view error, 
-		std::string_view source, 
-		std::string_view function_name
-	) -> JSValue
-	{
-		auto evaluate_context = fmt::format(
-			R"(function {0}() {{
-				let e = new Error(`{1}`); 
-				e.source = `{2}`;
-				throw e;
-			}}
-			{0}();)",
-			function_name, error, source
-		);
-		JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_TYPE_GLOBAL);
-		return JS_EXCEPTION;
-	}
-
-	inline static auto proxy_wrapper(
-		JSContext *context, 
-		std::string_view func_name, 
-		std::function<JSValue ()> code
-	) -> JSValue 
-	{
-		auto result = JS_UNDEFINED;
-		try {
-			result = code();
-		} catch (...) {
-			auto exception = parse_exception();
-			if (exception.function_name.empty()) {
-				exception.function_name = func_name;
-			}
-			result = throw_exception(context, exception.message(), exception.source, exception.function_name);
-		}
-		return result;  
-	}
-
 
 	inline static auto to_string (
 		JSContext* context,
@@ -190,7 +133,7 @@ namespace Sen::Kernel::Interface::Script
 		JSValue* argv
 	) -> JSValue
 	{
-		return proxy_wrapper(context, "callback", [&]() {
+		return proxy_wrapper(context, "callback"_sv, [&]() {
 			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "callback");
 			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
 			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
@@ -209,7 +152,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object {
+		) -> JSValue {
 			return proxy_wrapper(context, "deserialize", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
 				auto source = JS::Converter::get_string(context, argv[0]);
@@ -224,11 +167,11 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object {
+		) -> JSValue {
 			return proxy_wrapper(context, "deserialize_fs", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto json = Sen::Kernel::FileSystem::read_json(source);
+				auto json = Kernel::FileSystem::read_json(source);
 				auto js_obj = JS::to(context, json.operator*());
 				return js_obj;
 			});
@@ -239,7 +182,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string {
+		) -> JSValue {
 			return proxy_wrapper(context, "serialize", [&]() {
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
 				auto value = Value::as_new_reference(context, argv[0]);
@@ -256,7 +199,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "serialize_fs", [&]() {
 				assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
@@ -266,7 +209,7 @@ namespace Sen::Kernel::Interface::Script
 				auto indent = JS::Converter::get_int32(context, argv[2]);
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[3]);
 				auto result = json.dump(indent, '\t', ensure_ascii);
-				Sen::Kernel::FileSystem::write_file(destination, result);
+				Kernel::FileSystem::write_file(destination, result);
 				return JS_UNDEFINED;
 			});
 		}
@@ -284,12 +227,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "load_language", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "load_language");
 				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "load_language");
-				Sen::Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
+				Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
 				return JS_UNDEFINED;
 			});
 		}
@@ -300,12 +243,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "get", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get");
 				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "get");
-				auto result = Sen::Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
+				auto result = Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
 				return JS::Converter::to_string(context, result.data());
 			});
 		}
@@ -315,217 +258,6 @@ namespace Sen::Kernel::Interface::Script
 
 	namespace Class
 	{
-
-		using JSGetter = JSValue (*)(JSContext *context, JSValue value, int magic);
-
-		using JSSetter = JSValue (*)(JSContext *context, JSValue value, JSValue argv, int magic);
-
-		using JSFunction = JSValue (*)(JSContext *context, JSValue value, int argc, JSValue *argv);
-
-		using CString = const char*;
-
-		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-		inline auto make_finalizer (
-			JSClassID class_id
-		) -> std::function<void (JSRuntime*, JSValue)>
-		{
-			return [class_id](JSRuntime *rt, JSValue value) {
-				auto object_class = static_cast<T*>(JS_GetOpaque(value, class_id));
-				if (object_class != nullptr) {
-					delete object_class;
-				}
-			};
-		}
-
-		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-		inline auto constexpr make_class_definition (
-			std::string_view class_name,
-			JSClassID class_id
-		) -> JSClassDef
-		{
-			return JSClassDef {
-				.class_name = class_name.data(),
-				.finalizer = make_finalizer<T>(class_id).template target<JSClassFinalizer>(),
-				.gc_mark = nullptr,
-				.call = nullptr,
-				.exotic = nullptr,
-			};
-		}
-
-		inline static auto make_instance_object (
-			JSContext* context, 
-			JSValue parent, 
-			std::string_view name
-		) -> JSValue
-		{
-			auto atom = Atom{context, name};
-			auto obj = JS_GetProperty(context, parent, atom.value);
-			if (JS_IsUndefined(obj)) {
-				obj = JS_NewObject(context);
-				JS_DefinePropertyValue(context, parent, atom.value, obj, int{JS_PROP_C_W_E});
-			}
-			return obj;
-		}
-
-		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-		inline auto constexpr make_deleter() {
-			return [](T* obj) {
-				delete obj;
-			};
-		}
-
-		template <typename T>
-		inline static auto get_opaque_value (
-			JSContext* context, 
-			JSValue value, 
-			JSClassID class_id
-		) -> T* 
-		{
-			auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
-			assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
-			return obj;
-		}
-
-		template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-		inline static auto make_handle(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv,
-			std::string_view method_name,
-			std::function<JSValue(T*)> method,
-			JSClassID class_id
-		) -> JSValue
-		{
-			return proxy_wrapper(context, method_name, [&](){
-				auto class_pointer = get_opaque_value<T>(context, value, class_id);
-				return method(class_pointer);
-			});
-		}
-
-		template <typename T>
-		inline static auto throw_constructor_error(
-			JSContext* context, 
-			std::string_view error_message
-		) -> JSValue
-		{
-			JS_ThrowInternalError(context, error_message.data());
-			return JS_EXCEPTION;
-		}
-
-		template <typename T>
-		inline static auto generate_constructor(
-			JSContext* context, 
-			JSValue value, 
-			std::unique_ptr<T, decltype(make_deleter<T>())> class_ptr,
-			ClassID & class_id
-		) -> JSValue
-		{
-			auto atom = Atom{context, "prototype"};
-			auto proto = JS_GetProperty(context, value, atom.value);
-			if (JS_IsException(proto)) {
-				return throw_constructor_error<T>(context, "Failed to get prototype");
-			}
-			auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
-			JS_FreeValue(context, proto);
-			if (JS_IsException(obj)) {
-				return throw_constructor_error<T>(context, "Failed to create JS object");
-			}
-			JS_SetOpaque(obj, class_ptr.release());
-			return obj;
-		}
-
-		template <typename T> requires std::is_class<T>::value
-		inline static auto initialize_constructor(
-			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv,
-			std::function<T* (int argc, JSValue* argv)> initializer,
-			ClassID & class_id,
-			std::string_view error_message
-		) -> JSValue 
-		{
-			if (initializer) {
-				auto class_pointer = std::unique_ptr<T, decltype(make_deleter<T>())>(initializer(argc, argv), make_deleter<T>());
-				if (class_pointer != nullptr) {
-					return generate_constructor<T>(context, value, std::move(class_pointer), class_id);
-				}
-			}
-			return throw_constructor_error<T>(context, error_message);
-		}
-
-		template <typename T, int magic>
-		inline auto constexpr generate_getter_setter (
-			std::string_view function_name,
-			JSGetter getter,
-			JSSetter setter
-		) -> JSCFunctionListEntry 
-		{
-			auto entry = JSCFunctionListEntry{};
-			entry.name = function_name.data();
-			entry.prop_flags = JS_PROP_CONFIGURABLE;
-			entry.def_type = JS_DEF_CGETSET_MAGIC;
-			entry.magic = static_cast<int16_t>(magic);
-			entry.u.getset.get.getter_magic = reinterpret_cast<JSValue (*)(JSContext *, JSValue, int)>(getter);
-			entry.u.getset.set.setter_magic = reinterpret_cast<JSValue (*)(JSContext *, JSValue, JSValue, int)>(setter);
-			return entry;
-		}
-
-		template <typename T, int length>
-		inline auto constexpr generate_class_function (
-			std::string_view function_name,
-			JSFunction function
-		) -> JSCFunctionListEntry
-		{
-			auto entry = JSCFunctionListEntry{};
-			entry.name = function_name.data();
-			entry.prop_flags = JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE;
-			entry.def_type = JS_DEF_CFUNC;
-			entry.magic = 0;
-			entry.u.func.length = static_cast<std::uint8_t>(length);
-			entry.u.func.cproto = JS_CFUNC_generic;
-			entry.u.func.cfunc.generic = reinterpret_cast<JSCFunction*>(function);
-			return entry;
-		}
-
-		template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount>
-		inline static auto build_class (
-			JSContext *context,
-			Class &class_id,
-			const Constructor &constructor_func,
-			std::string_view class_name,
-			const std::array<JSCFunctionListEntry, ProtoFunctionCount> &proto_functions,
-			const JSClassDef& class_definition,
-			const std::array<std::string_view, InstanceCount> &instance_names
-		) -> void
-		{
-			class_id.allocate_new(context);
-			assert_conditional(JS_NewClass(JS_GetRuntime(context), class_id.value, &class_definition) == 0, fmt::format("{} class register failed", class_name), "register_class");
-			auto ctor = JS_NewCFunction2(context, constructor_func, class_name.data(), 0, JS_CFUNC_constructor, 0);
-			auto proto = JS_NewObject(context);
-			JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
-			JS_SetConstructor(context, ctor, proto);
-			auto global_obj = JS_GetGlobalObject(context);
-			auto parent_obj = global_obj;
-			auto allocated = Array<JSValue, InstanceCount>{};
-			auto index = std::size_t{0};
-			for (auto &name : instance_names) {
-				auto new_obj = make_instance_object(context, parent_obj, name);
-				allocated[index++] = new_obj;
-				parent_obj = new_obj;
-			}
-			auto atom = Atom{context, class_name};
-			JS_DefinePropertyValue(context, parent_obj, atom.value, ctor, int{JS_PROP_C_W_E});
-			parent_obj = JS_UNDEFINED;
-			JS_FreeValue(context, parent_obj);
-			for (auto & value : allocated) {
-				JS_FreeValue(context, value);
-			}
-			JS_FreeValue(context, global_obj);
-			JS_FreeValue(context, proto);
-			return;
-		}
 
 		namespace DataStreamView
 		{
@@ -547,7 +279,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -610,7 +342,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint 
+			) -> JSValue 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -630,7 +362,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValue argv,
 				int magic
-			) -> JSElement::bigint 
+			) -> JSValue 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -652,7 +384,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "size", [&](Data<T>* s) {
@@ -667,7 +399,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "capacity", [&](Data<T>* s) {
@@ -682,7 +414,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "fromString", [&](Data<T>* s) {
@@ -699,7 +431,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "reserve", [&](Data<T>* s) {
@@ -714,18 +446,17 @@ namespace Sen::Kernel::Interface::Script
 			inline static auto to_arraybuffer(
 				JSContext *context,
 				const List<uint8_t>& vec
-			) -> JSElement::ArrayBuffer {
+			) -> JSValue {
 				return JS_NewArrayBufferCopy(context, vec.data(), vec.size());
 			}
 
 			inline static auto to_uint8array(
 				JSContext *context,
 				const List<uint8_t>& vec
-			) -> JSElement::Uint8Array {
+			) -> JSValue {
 				auto array_buffer = JS_NewArrayBufferCopy(context, vec.data(), vec.size());
-				auto global_obj = JS_GetGlobalObject(context);
-				auto atom = Atom{context, "Uint8Array"};
-				auto uint8array_ctor = JS_GetProperty(context, global_obj, atom.value);
+				auto global_obj = get_global_object(context);
+				auto uint8array_ctor = get_value_from_object<std::string_view>(context, global_obj, "Uint8Array"_sv);
 				auto args = std::array<JSValue, 1_size>{array_buffer};
 				auto uint8array = JS_CallConstructor(context, uint8array_ctor, args.size(), args.data());
 				JS_FreeValue(context, global_obj);
@@ -742,7 +473,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::Uint8Array {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "toUint8Array", [&](Data<T>* s) {
@@ -757,7 +488,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "toArrayBuffer", [&](Data<T>* s) {
@@ -772,7 +503,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "getArrayBuffer", [&](Data<T>* s) {
@@ -790,7 +521,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::Uint8Array 
+			) -> JSValue 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -809,7 +540,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string 
+			) -> JSValue 
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -825,7 +556,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "out_file", [&](Data<T>* s) {
@@ -842,7 +573,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined {
+			) -> JSValue {
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
 				return handle<T>(context, value, argc, argv, "allocate", [&](Data<T>* s) {
@@ -859,7 +590,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -882,7 +613,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -905,7 +636,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -928,7 +659,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -951,7 +682,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -974,7 +705,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -997,7 +728,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1020,7 +751,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1043,7 +774,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1066,7 +797,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1090,8 +821,7 @@ namespace Sen::Kernel::Interface::Script
 			) -> List<uint8_t>
 			{
 				auto size = size_t{};
-				auto data = JS_GetArrayBuffer(context, &size, array_buffer);
-				assert_conditional(size != 0 && data != nullptr, fmt::format("{}", Kernel::Language::get("js.array_buffer_is_empty")), "from_arraybuffer");
+				auto data = get_array_buffer(context, &size, array_buffer);
 				return make_list(data, size);
 			}
 
@@ -1100,8 +830,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue uint8array
 			) -> List<uint8_t>
 			{
-				auto atom = Atom{context, "buffer"};
-				auto array_buffer = JS_GetProperty(context, uint8array, atom.value);
+				auto array_buffer = get_value_from_object<std::string_view>(context, uint8array, "buffer");
 				auto vec = from_arraybuffer(context, array_buffer);
 				JS_FreeValue(context, array_buffer);
 				return vec;
@@ -1116,7 +845,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1139,7 +868,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1162,7 +891,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1185,7 +914,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1208,7 +937,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1231,7 +960,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1254,7 +983,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1277,7 +1006,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1300,7 +1029,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1323,7 +1052,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1346,7 +1075,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1369,7 +1098,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1392,7 +1121,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1415,7 +1144,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1438,7 +1167,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1461,7 +1190,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1484,7 +1213,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1507,7 +1236,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1530,7 +1259,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool));
@@ -1553,7 +1282,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1577,7 +1306,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1601,7 +1330,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1625,7 +1354,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1649,7 +1378,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1673,7 +1402,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1697,7 +1426,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1721,7 +1450,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1745,7 +1474,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1769,7 +1498,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1793,7 +1522,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1817,7 +1546,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1841,7 +1570,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1865,7 +1594,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1889,7 +1618,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1913,7 +1642,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1937,7 +1666,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1961,7 +1690,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -1985,7 +1714,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2009,7 +1738,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2033,7 +1762,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2057,7 +1786,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2081,7 +1810,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2105,7 +1834,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2129,7 +1858,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2153,7 +1882,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::number
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2177,7 +1906,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::number
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2201,7 +1930,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				static_assert(T == true or T == false, "T must be true or false");
 				static_assert(sizeof(T) == sizeof(bool), "T must be bool");
@@ -2294,7 +2023,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				static_assert(sizeof(use_big_endian) == sizeof(bool));
-				return build_class(context, class_id<use_big_endian>, constructor<use_big_endian>, _class_name<use_big_endian>(), proto_functions<use_big_endian>, this_class<use_big_endian>, std::array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id<use_big_endian>), decltype(constructor<use_big_endian>), 2, 70>(context, class_id<use_big_endian>, constructor<use_big_endian>, _class_name<use_big_endian>(), proto_functions<use_big_endian>, this_class<use_big_endian>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -2323,7 +2052,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -2370,7 +2099,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::boolean
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					return JS::Converter::to_bool(context, s->value);
@@ -2382,7 +2111,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					s->value = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
@@ -2398,7 +2127,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -2422,7 +2151,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -2481,7 +2210,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
@@ -2511,7 +2240,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
@@ -2551,7 +2280,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 6>{"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"});
+				return build_class<decltype(class_id), decltype(constructor), 6, 3>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"}));
 			}
 
 		}
@@ -2582,7 +2311,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -2645,7 +2374,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
@@ -2679,7 +2408,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
 					switch (static_cast<Value>(magic))
@@ -2722,7 +2451,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 6>{"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"});
+				return build_class<decltype(class_id), decltype(constructor), 6, 4>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"}));
 			}
 
 		}
@@ -2739,7 +2468,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -2788,7 +2517,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s) {
 					s->close();
@@ -2801,7 +2530,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s) {
 					return JS::Converter::to_bigint<std::uint64_t>(context, s->size());
@@ -2813,7 +2542,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "read", [&](Data* s) {
 					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
@@ -2825,7 +2554,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "read_all", [&](Data* s) {
 					auto data = s->read_all();
@@ -2837,7 +2566,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					return JS::Converter::to_bigint(context, s->position());
@@ -2849,7 +2578,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
 					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
@@ -2869,7 +2598,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -2886,7 +2615,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -2935,7 +2664,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s) {
 					s->close();
@@ -2948,7 +2677,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s) {
 					return JS::Converter::to_bigint(context, s->size());
@@ -2960,7 +2689,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "write", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
@@ -2974,7 +2703,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "write_all", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
@@ -2987,7 +2716,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					return JS::Converter::to_bigint(context, s->position());
@@ -2999,7 +2728,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
@@ -3019,7 +2748,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3036,7 +2765,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -3085,7 +2814,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "close", [&](Data* s){
 					s->close();
@@ -3098,7 +2827,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s){
 					return JS::Converter::to_bigint(context, s->size());
@@ -3110,7 +2839,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "write", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
@@ -3124,7 +2853,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "write_all", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
@@ -3138,7 +2867,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "read", [&](Data* s){
 					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
@@ -3150,7 +2879,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "read_all", [&](Data* s){
 					auto data = s->read_all();
@@ -3162,7 +2891,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
 					return JS::Converter::to_bigint(context, s->position());
@@ -3174,7 +2903,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
 					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
@@ -3196,7 +2925,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 7>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3213,7 +2942,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -3258,7 +2987,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "clear", [&](Data* s) {
 					s->Clear();
@@ -3271,7 +3000,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "toString", [&](Data* s) {
 					return JS::Converter::to_string(context, s->ToString());
@@ -3283,7 +3012,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeStartArray", [&](Data* s) {
 					s->WriteStartArray();
@@ -3296,7 +3025,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeEndArray", [&](Data* s) {
 					s->WriteEndArray();
@@ -3309,7 +3038,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeStartObject", [&](Data* s) {
 					s->WriteStartObject();
@@ -3322,7 +3051,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeEndObject", [&](Data* s) {
 					s->WriteEndObject();
@@ -3335,7 +3064,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeBoolean", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writeBoolean");
@@ -3349,7 +3078,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writeNull", [&](Data* s) {
 					s->WriteNull();
@@ -3362,7 +3091,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "writePropertyName", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "writePropertyName");
@@ -3378,7 +3107,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				auto function_name = std::string{};
 				if constexpr (std::is_same<T, std::string>::value)
@@ -3412,7 +3141,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::boolean
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					return JS::Converter::to_bool(context, s->WriteIndent);
@@ -3424,7 +3153,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
 					s->WriteIndent = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
@@ -3452,7 +3181,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 13>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3556,7 +3285,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data<T>>(
@@ -3600,7 +3329,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s){
 					if constexpr (std::is_integral<T>::value)
@@ -3620,7 +3349,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle<T>(context, value, 0, nullptr, "setter", [&](Data<T>* s){
 					if constexpr (std::is_integral<T>::value)
@@ -3645,7 +3374,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id<T>, constructor<T>, fmt::format("{}", this_class<T>.class_name), proto_functions<T>, this_class<T>, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id<T>), decltype(constructor<T>), 2, 1>(context, class_id<T>, constructor<T>, fmt::format("{}", this_class<T>.class_name), proto_functions<T>, this_class<T>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3673,7 +3402,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					using Uinteger32C = Number::Data<std::uint32_t>;
@@ -3726,7 +3455,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<GetterSetter>(magic))
@@ -3764,7 +3493,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<GetterSetter>(magic))
@@ -3817,7 +3546,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3848,7 +3577,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -3895,7 +3624,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
 					return JS::Converter::to_bigint(context, s->value);
@@ -3907,7 +3636,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
 					s->value = JS::Converter::get_bigint64(context, val);
@@ -3923,7 +3652,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -3964,7 +3693,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data<T>>(
@@ -4022,7 +3751,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s) {
 					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->value));
@@ -4036,7 +3765,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s) {
 					s->value = static_cast<T>(JS::Converter::get_bigint64(context, val));
@@ -4069,7 +3798,7 @@ namespace Sen::Kernel::Interface::Script
 				{
 					class_name = "UCharacter"_sv;
 				}
-				return build_class(context, class_id<T>, constructor<T>, class_name, proto_functions<T>, this_class<T>, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id<T>), decltype(constructor<T>), 2, 1>(context, class_id<T>, constructor<T>, class_name, proto_functions<T>, this_class<T>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -4179,7 +3908,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					return JS::Converter::to_string(context, s->view());
@@ -4191,7 +3920,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
 					auto str = JS::Converter::get_string(context, val);
@@ -4214,7 +3943,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -4286,7 +4015,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "size", [&](Data* s){
 					return JS::Converter::to_bigint<uint64_t>(context, s->value.size());
@@ -4298,7 +4027,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "capacity", [&](Data* s){
 					return JS::Converter::to_bigint<uint64_t>(context, s->value.capacity());
@@ -4310,7 +4039,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "allocate", [&](Data* s){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "allocate");
@@ -4324,7 +4053,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "sub", [&](Data* s){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sub");
@@ -4343,31 +4072,24 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::DataStreamView
+			) -> JSValue
 			{
 				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
 				auto m_function_name = std::string{DataStreamView::_class_name<use_big_endian>().data(), DataStreamView::_class_name<use_big_endian>().size()};
 				return handle(context, value, argc, argv, m_function_name, [&](Data* s) {
 					auto sub = std::make_unique<Stream<use_big_endian>>(s->value);
-					auto global_obj = JS_GetGlobalObject(context);
-					auto atom_1 = Atom{context, "Sen"};
-					auto sen_obj = JS_GetProperty(context, global_obj, atom_1.value);
-					auto atom_2 = Atom{context, "Kernel"};
-					auto kernel_obj = JS_GetProperty(context, sen_obj, atom_2.value);
+					auto global_obj = get_global_object(context);
+					auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
+					auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
 					auto constructor_name = DataStreamView::_class_name<use_big_endian>();
-					auto stream_atom = Atom{context, constructor_name};
-					auto stream_ctor = JS_GetProperty(context, kernel_obj, stream_atom.value);
-					auto prototype_atom = Atom{context, "prototype"};
+					auto stream_ctor = get_value_from_object<std::string_view>(context, kernel_obj, constructor_name);
+					auto proto = get_prototype_from_object(context, stream_ctor);
+					auto obj = make_instance_of_class(context, proto, DataStreamView::class_id<use_big_endian>.value);
+					JS_FreeValue(context, proto);
 					JS_FreeValue(context, global_obj);
 					JS_FreeValue(context, sen_obj);
 					JS_FreeValue(context, kernel_obj);
 					JS_FreeValue(context, stream_ctor);
-					auto proto = JS_GetProperty(context, stream_ctor, prototype_atom.value);
-					if (JS_IsException(proto)) {
-						throw Exception("not a constructor", std::source_location::current(), m_function_name);
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, DataStreamView::class_id<use_big_endian>.value);
-					JS_FreeValue(context, proto);
 					if (JS_IsException(obj)) {
 						throw Exception("can't define class", std::source_location::current(), m_function_name);
 					}
@@ -4381,7 +4103,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -4392,8 +4114,7 @@ namespace Sen::Kernel::Interface::Script
 						[&](int argc, JSValue* argv) -> Data* {
 							if (argc == 1) {
 								auto size = std::size_t{};
-								auto data = JS_GetArrayBuffer(context, &size, argv[0]);
-								assert_conditional(data != nullptr, "Cannot get instance of ArrayBuffer", "lambda");
+								auto data = get_array_buffer(context, &size, argv[0]);
 								return new Data(make_list(data, size));
 							}
 							return nullptr;
@@ -4424,11 +4145,7 @@ namespace Sen::Kernel::Interface::Script
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
 					auto byteLength = std::size_t{};
-					auto data = JS_GetArrayBuffer(context, &byteLength, val);
-					if (data == nullptr)
-					{
-						return JS_EXCEPTION;
-					}
+					auto data = get_array_buffer(context, &byteLength, val);
 					s->value.clear();
 					s->value.assign(data, data + byteLength);
 					return JS_UNDEFINED;
@@ -4450,7 +4167,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 7>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -4467,7 +4184,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -4515,7 +4232,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "scale", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
@@ -4530,7 +4247,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "rotate", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
@@ -4544,7 +4261,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "translate", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "translate");
@@ -4558,7 +4275,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "transform", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "transform");
@@ -4572,7 +4289,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_transform", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_transform");
@@ -4586,7 +4303,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_global_alpha", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_global_alpha");
@@ -4600,7 +4317,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_shadow_color", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_color");
@@ -4614,7 +4331,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_line_width", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_line_width");
@@ -4628,7 +4345,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_shadow_blur", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_shadow_blur");
@@ -4642,7 +4359,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_miter_limit", [&](Data* s) {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_miter_limit");
@@ -4658,7 +4375,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_color", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_color");
@@ -4672,7 +4389,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_linear_gradient", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_linear_gradient");
@@ -4686,7 +4403,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_radial_gradient", [&](Data* s) {
 					assert_conditional(argc == 7, fmt::format("{} 7, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_radial_gradient");
@@ -4700,7 +4417,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "add_color_stop", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "add_color_stop");
@@ -4714,7 +4431,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "begin_path", [&](Data* s) {
 					s->begin_path();
@@ -4727,7 +4444,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "move_to", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "move_to");
@@ -4741,7 +4458,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "close_path", [&](Data* s) {
 					s->close_path();
@@ -4754,7 +4471,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "line_to", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "line_to");
@@ -4768,7 +4485,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "quadratic_curve_to", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "quadratic_curve_to");
@@ -4782,7 +4499,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "bezier_curve_to", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "bezier_curve_to");
@@ -4796,7 +4513,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "arc_to", [&](Data* s) {
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc_to");
@@ -4810,7 +4527,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_image_color", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_image_color");
@@ -4824,7 +4541,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "arc", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "arc");
@@ -4838,7 +4555,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rectangle");
@@ -4852,7 +4569,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "fill", [&](Data* s) {
 					s->fill();
@@ -4865,7 +4582,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "stroke", [&](Data* s) {
 					s->stroke();
@@ -4878,7 +4595,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "clip", [&](Data* s) {
 					s->clip();
@@ -4891,7 +4608,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::boolean
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "is_point_in_path", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_point_in_path");
@@ -4904,7 +4621,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "clear_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "clear_rectangle");
@@ -4918,7 +4635,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "fill_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill_rectangle");
@@ -4932,7 +4649,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "stroke_rectangle", [&](Data* s) {
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "stroke_rectangle");
@@ -4946,12 +4663,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::boolean
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "set_font", [&](Data* s) {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "set_font");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					auto data = get_array_buffer(context, &size, argv[0]);
 					return JS::Converter::to_bool(context, s->set_font(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), size));
 				});
 			}
@@ -4961,12 +4678,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "draw_image", [&](Data* s) {
 					assert_conditional(argc == 8, fmt::format("{} 8, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "draw_image");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					auto data = get_array_buffer(context, &size, argv[0]);
 					s->draw_image(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<float>(JS::Converter::get_float32(context, argv[4])), static_cast<float>(JS::Converter::get_float32(context, argv[5])), static_cast<float>(JS::Converter::get_float32(context, argv[6])), static_cast<float>(JS::Converter::get_float32(context, argv[7])));
 					return JS_UNDEFINED;
 				});
@@ -4977,15 +4694,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "get_image_data", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_image_data");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
-					if (data == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto data = get_array_buffer(context, &size, argv[0]);
 					s->get_image_data(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<int>(JS::Converter::get_bigint64(context, argv[4])), static_cast<int>(JS::Converter::get_bigint64(context, argv[5])));
 					return JS_UNDEFINED;
 				});
@@ -4996,12 +4710,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "put_image_data", [&](Data* s) {
 					assert_conditional(argc == 6, fmt::format("{} 6, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "put_image_data");
 					auto size = std::size_t{};
-					auto data = JS_GetArrayBuffer(context, &size, argv[0]);
+					auto data = get_array_buffer(context, &size, argv[0]);
 					s->put_image_data(data, static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), static_cast<int>(JS::Converter::get_bigint64(context, argv[2])), static_cast<int>(JS::Converter::get_bigint64(context, argv[3])), static_cast<int>(JS::Converter::get_bigint64(context, argv[4])), static_cast<int>(JS::Converter::get_bigint64(context, argv[5])));
 					return JS_UNDEFINED;
 				});
@@ -5012,7 +4726,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "save", [&](Data* s) {
 					s->save();
@@ -5025,7 +4739,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "restore", [&](Data* s) {
 					s->restore();
@@ -5077,7 +4791,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 37>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -5100,7 +4814,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -5151,7 +4865,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
 					switch (static_cast<DimensionView::Magic>(magic))
@@ -5177,7 +4891,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
 					switch (static_cast<DimensionView::Magic>(magic))
@@ -5210,7 +4924,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 2>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -5235,7 +4949,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
 					return initialize_constructor<Data>(
@@ -5290,7 +5004,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Rectangle::Magic>(magic))
@@ -5314,7 +5028,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
 					switch (static_cast<Rectangle::Magic>(magic))
@@ -5349,7 +5063,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context
 			) -> void
 			{
-				return build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+				return build_class<decltype(class_id), decltype(constructor), 2, 4>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -5378,7 +5092,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&](){
 					return initialize_constructor<Data>(
@@ -5403,12 +5117,10 @@ namespace Sen::Kernel::Interface::Script
 								auto interlace_type = get_property_bigint64(context, argv[0], interlace_type_atom.value);
 								auto channels = get_property_bigint64(context, argv[0], channels_atom.value);
 								auto rowbytes = get_property_bigint64(context, argv[0], rowbytes_atom.value);
-								auto data_val = JS_GetProperty(context, argv[0], data_atom.value);
-								assert_conditional(!JS_IsException(data_val), fmt::format("\"data\" property inside current object is undefined"), "constructor");
+								auto data_val = get_value_from_object<std::string_view>(context, argv[0], "data");
 								auto size = std::size_t{};
-								auto data = JS_GetArrayBuffer(context, &size, data_val);
+								auto data = get_array_buffer(context, &size, data_val);
 								JS_FreeValue(context, data_val);
-								assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object", "constructor");
 								return new Data(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size)));
 							}
 							return nullptr;
@@ -5446,7 +5158,7 @@ namespace Sen::Kernel::Interface::Script
 				JSContext *context,
 				JSValue value,
 				int magic
-			) -> JSElement::any
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data *s) {
 					switch (static_cast<ImageView::Magic>(magic))
@@ -5478,7 +5190,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				JSValueConst val,
 				int magic
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data *s) {
 					switch (static_cast<ImageView::Magic>(magic))
@@ -5507,8 +5219,7 @@ namespace Sen::Kernel::Interface::Script
 						case ImageView::Magic::data:
 						{
 							auto size = std::size_t{};
-							auto data = JS_GetArrayBuffer(context, &size, val);
-							assert_conditional(data != nullptr, fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), "random");
+							auto data = get_array_buffer(context, &size, val);
 							s->set_data(make_list(data, size));
 							break;
 						}
@@ -5524,7 +5235,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "area", [&](Data* s) {
 					return JS::Converter::to_bigint<uint64_t>(context, s->area());
@@ -5536,7 +5247,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return handle(context, value, argc, argv, "circumference", [&](Data* s) {
 					return JS::Converter::to_bigint<uint64_t>(context, s->circumference());
@@ -5552,14 +5263,11 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "cut", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto s = get_opaque_value<Data>(context, argv[0], class_id.value);
 					auto x_atom = Atom{context, "x"};
 					auto y_atom = Atom{context, "y"};
 					auto width_atom = Atom{context, "width"};
@@ -5569,16 +5277,9 @@ namespace Sen::Kernel::Interface::Script
 					auto width = get_property_bigint64(context, argv[1], width_atom.value);
 					auto height = get_property_bigint64(context, argv[1], height_atom.value);
 					auto data = std::make_unique<Data>(std::move(Data::cut(*s, Rectangle<int>(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)))));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, data.release());
 					return obj;
 				});
@@ -5589,25 +5290,15 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "resize", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resize");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto s = get_opaque_value<Data>(context, argv[0], class_id.value);
 					auto data = std::unique_ptr<Data, decltype(make_deleter<Data>())>(new Data(std::move(Data::resize(*s, JS::Converter::get_float32(context, argv[1])))), make_deleter<Data>());
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, data.release());
 					return obj;
 				});
@@ -5618,25 +5309,15 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "scale", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto s = get_opaque_value<Data>(context, argv[0], class_id.value);
 					auto data = std::make_unique<Data>(std::move(Data::scale(*s, JS::Converter::get_float64(context, argv[1]))));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, data.release());
 					return obj;
 				});
@@ -5647,25 +5328,15 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "rotate", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto s = get_opaque_value<Data>(context, argv[0], class_id.value);
 					auto data = std::make_unique<Data>(std::move(Data::rotate(*s, JS::Converter::get_float64(context, argv[1]))));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, data.release());
 					return obj;
 				});
@@ -5676,14 +5347,11 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "write_fs", [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_fs");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[1], class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
+					auto s = get_opaque_value<Data>(context, argv[1], class_id.value);
 					Kernel::ImageIO::write_png(JS::Converter::get_string(context, argv[0]), *s);
 					return JS_UNDEFINED;
 				});
@@ -5694,21 +5362,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "read_fs", [&]() {
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_fs");
 					auto data = std::make_unique<Data>(std::move(Kernel::ImageIO::read_png(JS::Converter::get_string(context, argv[0]))));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, data.release());
 					return obj;
 				});
@@ -5719,21 +5380,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::ImageView
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "instance", [&]() {
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
 					auto s = std::make_unique<Data>(0, 0, static_cast<int>(JS::Converter::get_bigint64(context, argv[0])), static_cast<int>(JS::Converter::get_bigint64(context, argv[1])), JS::Converter::to_binary_list(context, argv[2]));
-					auto atom = Atom{context, "prototype"};
-					auto proto = JS_GetProperty(context, value, atom.value);
-					if (JS_IsException(proto)) {
-						return JS_EXCEPTION;
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, class_id.value);
+					auto proto = get_prototype_from_object(context, value);
+					auto obj = make_instance_of_class(context, proto, class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						return JS_EXCEPTION;
-					}
 					JS_SetOpaque(obj, s.release());
 					return obj;
 				});
@@ -5784,7 +5438,7 @@ namespace Sen::Kernel::Interface::Script
 				JS_DefinePropertyValue(context, point_ctor, atom_write_fs.value, default_write_fs, int{JS_PROP_C_W_E});
 				JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
 				JS_SetConstructor(context, point_ctor, proto);
-				auto global_obj = JS_GetGlobalObject(context);
+				auto global_obj = get_global_object(context);
 				auto obj1 = make_instance_object(context, global_obj, "Sen");
 				auto obj2 = make_instance_object(context, obj1, "Kernel");
 				auto atom = Atom{context, class_name};
@@ -5816,7 +5470,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "sleep", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sleep");
@@ -5831,7 +5485,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::number
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "now", [&](){
 				auto current = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -5852,7 +5506,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
 					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -5860,7 +5514,7 @@ namespace Sen::Kernel::Interface::Script
 					auto after_file = JS::Converter::get_string(context, argv[1]);
 					auto patch_file = JS::Converter::get_string(context, argv[2]);
 					auto flag = JS::Converter::get_int32(context, argv[3]);
-					Sen::Kernel::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Sen::Kernel::Diff::VCDiff::Flag>(flag));
+					Kernel::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Kernel::Diff::VCDiff::Flag>(flag));
 					return JS_UNDEFINED; 
 				});
 			}
@@ -5870,14 +5524,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 					auto before_file = JS::Converter::get_string(context, argv[0]);
 					auto patch_file = JS::Converter::get_string(context, argv[1]);
 					auto after_file = JS::Converter::get_string(context, argv[2]);
-					Sen::Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
+					Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
 					return JS_UNDEFINED;
 				});
 			}
@@ -5894,7 +5548,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "current", [&](){
 				#if WINDOWS
@@ -5947,7 +5601,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "architecture", [&](){
 				#if WINDOWS
@@ -6015,7 +5669,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "open", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
@@ -6030,7 +5684,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "out", [&]() {
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "out");
@@ -6046,16 +5700,13 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "random", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "random");
 				auto arrayBuffer = argv[0];
 				auto byteLength = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &byteLength, arrayBuffer);
-				if (data == nullptr) {
-					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "random");
-				}
+				auto data = get_array_buffer(context, &byteLength, arrayBuffer);
 				for (auto i : Range<std::size_t>(byteLength)) {
 					data[i] = rand() % 256;
 				}
@@ -6068,17 +5719,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "fill", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill");
 				auto arrayBuffer = argv[0];
 				auto byte_c = static_cast<std::uint8_t>(JS::Converter::get_bigint64(context, argv[0]));
 				auto byteLength = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &byteLength, arrayBuffer);
-				if (data == nullptr) {
-					throw Exception(fmt::format("{}", Kernel::Language::get("js.converter.failed_to_get_js_array_buffer")), std::source_location::current(), "fill");
-				}
+				auto data = get_array_buffer(context, &byteLength, arrayBuffer);
 				for (auto i : Range<std::size_t>(byteLength)) {
 					data[i] = byte_c;
 				}
@@ -6096,12 +5744,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "run", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "run");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::Process::run(source);
+				Kernel::Process::run(source);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6111,12 +5759,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::boolean
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "is_exists_in_path_environment", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_exists_in_path_environment");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Process::is_exists_in_path_environment(source);
+				auto result = Kernel::Process::is_exists_in_path_environment(source);
 				return JS::Converter::to_bool(context, result);
 			});
 		}
@@ -6126,12 +5774,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "get_path_environment", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_path_environment");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Process::get_path_environment(source);
+				auto result = Kernel::Process::get_path_environment(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6141,12 +5789,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "execute", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "execute");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Process::execute(source);
+				auto result = Kernel::Process::execute(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6157,10 +5805,10 @@ namespace Sen::Kernel::Interface::Script
 	{
 
 		inline static auto exchange_color(
-			Sen::Kernel::Interface::Color color
+			Kernel::Interface::Color color
 		) -> std::string
 		{
-			using Color = Sen::Kernel::Interface::Color;
+			using Color = Kernel::Interface::Color;
 			switch (color) {
 				case Color::RED:
 					return "red";
@@ -6180,7 +5828,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "print", [&](){
 				assert_conditional(argc >= 1, fmt::format("argument expected greater than {} but received {}", "1", argc), "print");
@@ -6201,7 +5849,7 @@ namespace Sen::Kernel::Interface::Script
 					}
 					default:
 					{
-						construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Sen::Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}, parameters.operator*());
+						construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}, parameters.operator*());
 						Shell::callback(parameters.get(), nullptr);
 						break;
 					}
@@ -6215,7 +5863,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "readline", [&](){
 				auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
@@ -6238,7 +5886,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "join", [&](){
 				auto value = List<std::string>{};
@@ -6248,7 +5896,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[i]);
 					value.emplace_back(source);
 				}
-				return JS::Converter::to_string(context, Sen::Kernel::Path::Script::join(value));
+				return JS::Converter::to_string(context, Kernel::Path::Script::join(value));
 			});
 		}
 
@@ -6257,12 +5905,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "basename", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "basename");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::basename(source);
+				auto result = Kernel::Path::Script::basename(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6272,10 +5920,10 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "delimiter", [&](){
-				auto result = Sen::Kernel::Path::Script::delimiter();
+				auto result = Kernel::Path::Script::delimiter();
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6285,12 +5933,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "dirname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "dirname");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::dirname(source);
+				auto result = Kernel::Path::Script::dirname(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6300,7 +5948,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "format", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "format");
@@ -6318,12 +5966,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "normalize", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "normalize");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::normalize(source);
+				auto result = Kernel::Path::Script::normalize(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6333,12 +5981,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "base_without_extension", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "base_without_extension");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::base_without_extension(source);
+				auto result = Kernel::Path::Script::base_without_extension(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6348,12 +5996,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "except_extension", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "except_extension");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::except_extension(source);
+				auto result = Kernel::Path::Script::except_extension(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6363,12 +6011,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "resolve", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resolve");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::resolve(source);
+				auto result = Kernel::Path::Script::resolve(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6378,12 +6026,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "extname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "extname");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::extname(source);
+				auto result = Kernel::Path::Script::extname(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6393,12 +6041,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::boolean
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "extname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_absolute");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::Path::Script::is_absolute(source);
+				auto result = Kernel::Path::Script::is_absolute(source);
 				return JS::Converter::to_bool(context, result);
 			});
 		}
@@ -6408,13 +6056,13 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "relative", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "relative");
 				auto from = JS::Converter::get_string(context, argv[0]);
 				auto to = JS::Converter::get_string(context, argv[1]);
-				auto result = Sen::Kernel::Path::Script::relative(from, to);
+				auto result = Kernel::Path::Script::relative(from, to);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6429,12 +6077,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_file", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_file");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_file(source);
+				auto result = Kernel::FileSystem::read_file(source);
 				return JS::Converter::to_string(context, result);
 			});
 		}
@@ -6444,12 +6092,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_file_encode_with_utf16le", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_file_encode_with_utf16le");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_file_by_utf16(source);
+				auto result = Kernel::FileSystem::read_file_by_utf16(source);
 				auto converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
 				auto utf8_string = std::string{converter.to_bytes(result)};
 				return JS::Converter::to_string(context, utf8_string);
@@ -6461,13 +6109,13 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "write_file", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_file");
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto data = JS::Converter::get_string(context, argv[1]);
-				Sen::Kernel::FileSystem::write_file(destination, data);
+				Kernel::FileSystem::write_file(destination, data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6477,7 +6125,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "write_file_encode_with_utf16le", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_file_encode_with_utf16le");
@@ -6485,7 +6133,7 @@ namespace Sen::Kernel::Interface::Script
 				auto data = JS::Converter::get_string(context, argv[1]);
 				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
 				auto result = std::wstring{ converter.from_bytes(data) };
-				Sen::Kernel::FileSystem::write_file_by_utf16le(destination, result);
+				Kernel::FileSystem::write_file_by_utf16le(destination, result);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6495,12 +6143,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Array<JSElement::string>
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_current_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_current_directory");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_directory(source);
+				auto result = Kernel::FileSystem::read_directory(source);
 				return JS::Converter::to_array(context, result);
 			});
 		}
@@ -6510,12 +6158,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Array<JSElement::string>
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_directory_only_file", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory_only_file");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_directory_only_file(source);
+				auto result = Kernel::FileSystem::read_directory_only_file(source);
 				return JS::Converter::to_array(context, result);
 			});
 		}
@@ -6525,12 +6173,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Array<JSElement::string>
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_directory_only_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory_only_directory");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_directory_only_directory(source);
+				auto result = Kernel::FileSystem::read_directory_only_directory(source);
 				return JS::Converter::to_array(context, result);
 			});
 		}
@@ -6540,12 +6188,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Array<JSElement::string>
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "read_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Sen::Kernel::FileSystem::read_whole_directory(source);
+				auto result = Kernel::FileSystem::read_whole_directory(source);
 				return JS::Converter::to_array(context, result);
 			});
 		}
@@ -6555,12 +6203,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "create_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "create_directory");
 				auto destination = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::FileSystem::create_directory(destination);
+				Kernel::FileSystem::create_directory(destination);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6570,7 +6218,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::boolean
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "is_file", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_file");
@@ -6584,7 +6232,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::boolean
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "is_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_directory");
@@ -6601,7 +6249,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "rename", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rename");
@@ -6617,7 +6265,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "copy", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "copy");
@@ -6633,7 +6281,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "copy_directory", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "copy_directory");
@@ -6649,7 +6297,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "remove", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "remove");
@@ -6664,7 +6312,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "remove_all", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "remove_all");
@@ -6685,7 +6333,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::bigint
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "area", [&](){
 				auto width_atom = Atom{context, "width"};
@@ -6702,7 +6350,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::bigint
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "circumference", [&](){
 				auto width_atom = Atom{context, "width"};
@@ -6719,7 +6367,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "instance", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
@@ -6744,12 +6392,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "open", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto image = Sen::Kernel::ImageIO::read_png(source);
+				auto image = Kernel::ImageIO::read_png(source);
 				auto image_obj = JSValue{};
 				auto area_func = JS_NewCFunction2(context, area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -6783,9 +6431,9 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
-			using Image = Sen::Kernel::Image<int>;
+			using Image = Kernel::Image<int>;
 			return proxy_wrapper(context, "write", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
 				auto source_file = JS::Converter::get_string(context, argv[0]);
@@ -6797,7 +6445,6 @@ namespace Sen::Kernel::Interface::Script
 				auto atom_interlace_type = Atom{context, "interlace_type"};
 				auto atom_channels = Atom{context, "channels"};
 				auto atom_rowbytes = Atom{context, "rowbytes"};
-				auto atom_data = Atom{context, "data"};
 				auto width = get_property_bigint64(context, obj, atom_width.value);
 				auto height = get_property_bigint64(context, obj, atom_height.value);
 				auto bit_depth = get_property_bigint64(context, obj, atom_bit_depth.value);
@@ -6805,13 +6452,12 @@ namespace Sen::Kernel::Interface::Script
 				auto interlace_type = get_property_bigint64(context, obj, atom_interlace_type.value);
 				auto channels = get_property_bigint64(context, obj, atom_channels.value);
 				auto rowbytes = get_property_bigint64(context, obj, atom_rowbytes.value);
-				auto data_val = JS_GetProperty(context, obj, atom_data.value);
+				auto data_val = get_value_from_object<std::string_view>(context, obj, "data");
 				auto data_len = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &data_len, data_val);
-				assert_conditional(data != nullptr, "Cannot get ArrayBuffer from the current object", "write");
+				auto data = get_array_buffer(context, &data_len, data_val);
 				JS_FreeValue(context, data_val);
 				auto image = Image(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
-				Sen::Kernel::ImageIO::write_png(source_file, image);
+				Kernel::ImageIO::write_png(source_file, image);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6826,14 +6472,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "scale_fs", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "scale_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
-				Sen::Kernel::ImageIO::scale_png(source, destination, percentage);
+				Kernel::ImageIO::scale_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6843,14 +6489,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "transparent_fs", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "transparent_fs");
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto width = JS::Converter::get_int32(context, argv[1]);
 				auto height = JS::Converter::get_int32(context, argv[2]);
-				Sen::Kernel::ImageIO::transparent_png(destination, width, height);
+				Kernel::ImageIO::transparent_png(destination, width, height);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6866,9 +6512,9 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
-			using Image = Sen::Kernel::Image<int>;
+			using Image = Kernel::Image<int>;
 			return proxy_wrapper(context, "join_png", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join_png");
 				auto destination = JS::Converter::get_string(context, argv[0]);
@@ -6878,27 +6524,24 @@ namespace Sen::Kernel::Interface::Script
 				auto width = get_property_bigint64(context, argv[1], atom_width.value);
 				auto height = get_property_bigint64(context, argv[1], atom_height.value);
 				auto length = get_property_uint32(context, argv[2], atom_length.value);
-				auto m_data = List<Sen::Kernel::Image<int>>{};
+				auto m_data = List<Kernel::Image<int>>{};
 				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
-				auto data_atom = Atom{context, "data"};
 				for (auto i : Range(static_cast<uint32_t>(length))) {
-					auto index_atom = Atom{context, i};
-					auto current_object = JS_GetProperty(context, argv[2], index_atom.value);
-					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
+					auto current_object = get_value_from_object<uint32_t>(context, argv[2], i);
+					auto data_val = get_value_from_object<std::string_view>(context, current_object, "data");
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
 					auto image_y = static_cast<int>(get_property_bigint64(context, current_object, y_atom.value));
 					auto image_width = static_cast<int>(get_property_bigint64(context, current_object, atom_width.value));
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
-					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
-					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
+					auto data = get_array_buffer(context, &data_len, data_val);
 					m_data.push_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
 				}
-				Sen::Kernel::ImageIO::join_png(destination, Sen::Kernel::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
+				Kernel::ImageIO::join_png(destination, Kernel::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -6908,9 +6551,9 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
-			using Image = Sen::Kernel::Image<int>;
+			using Image = Kernel::Image<int>;
 			return proxy_wrapper(context, "join", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join");
 				auto atom_width = Atom{context, "width"};
@@ -6919,28 +6562,25 @@ namespace Sen::Kernel::Interface::Script
 				auto width = get_property_bigint64(context, argv[0], atom_width.value);
 				auto height = get_property_bigint64(context, argv[0], atom_height.value);
 				auto length = get_property_uint32(context, argv[1], atom_length.value);
-				auto m_data = List<Sen::Kernel::Image<int>>{};
+				auto m_data = List<Kernel::Image<int>>{};
 				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
-				auto data_atom = Atom{context, "data"};
 				for (auto i : Range<std::uint32_t>(length)) {
-					auto index_atom = Atom{context, i};
-					auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
-					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
+					auto current_object = get_value_from_object<uint32_t>(context, argv[1], i);
+					auto data_val = get_value_from_object<std::string_view>(context, current_object, "data");
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
 					auto image_y = static_cast<int>(get_property_bigint64(context, current_object, y_atom.value));
 					auto image_width = static_cast<int>(get_property_bigint64(context, current_object, atom_width.value));
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
-					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
-					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
+					auto data = get_array_buffer(context, &data_len, data_val);
 					m_data.push_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
 				}
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(static_cast<int>(width), static_cast<int>(height)));
-				Sen::Kernel::ImageIO::join(destination, m_data);
+				Kernel::ImageIO::join(destination, m_data);
 				auto image_obj = JS_NewObject(context);
 				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -6971,9 +6611,9 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
-			using Image = Sen::Kernel::Image<int>;
+			using Image = Kernel::Image<int>;
 			return proxy_wrapper(context, "join_extend", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "join_extend");
 				auto atom_width = Atom{context, "width"};
@@ -6982,28 +6622,25 @@ namespace Sen::Kernel::Interface::Script
 				auto atlas_width = JS::Converter::get_property_bigint64(context, argv[0], atom_width.value);
 				auto atlas_height = JS::Converter::get_property_bigint64(context, argv[0], atom_height.value);
 				auto length = get_property_uint32(context, argv[1], atom_length.value);
-				auto m_data = List<Sen::Kernel::Image<int>>{};
+				auto m_data = List<Kernel::Image<int>>{};
 				m_data.reserve(static_cast<size_t>(length));
 				auto x_atom = Atom{context, "x"};
 				auto y_atom = Atom{context, "y"};
-				auto data_atom = Atom{context, "data"};
 				for (auto i : Range(static_cast<uint32_t>(length))) {
-					auto index_atom = Atom{context, i};
-					auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
-					auto data_val = JS_GetProperty(context, current_object, data_atom.value);
+					auto current_object = get_value_from_object<uint32_t>(context, argv[1], i);
+					auto data_val = get_value_from_object<std::string_view>(context, current_object, "data");
 					auto data_len = std::size_t{};
 					auto image_x = static_cast<int>(get_property_bigint64(context, current_object, x_atom.value));
 					auto image_y = static_cast<int>(get_property_bigint64(context, current_object, y_atom.value));
 					auto image_width = static_cast<int>(get_property_bigint64(context, current_object, atom_width.value));
 					auto image_height = static_cast<int>(get_property_bigint64(context, current_object, atom_height.value));
-					auto data = JS_GetArrayBuffer(context, &data_len, data_val);
-					assert_conditional(data != nullptr, "Cannot get ArrayBuffer from current object, its property is missing", "join_png");
+					auto data = get_array_buffer(context, &data_len, data_val);
 					m_data.emplace_back(Image{image_x, image_y, image_width, image_height, std::move(make_list(data, data_len))});
 					JS_FreeValue(context, data_val);
 					JS_FreeValue(context, current_object);
 				}
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(atlas_width, atlas_height));
-				Sen::Kernel::ImageIO::join_extend(destination,m_data);
+				Kernel::ImageIO::join_extend(destination,m_data);
 				auto image_obj = JS_NewObject(context);
 				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
 				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
@@ -7030,14 +6667,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "resize_fs", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resize_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
-				Sen::Kernel::ImageIO::resize_png(source, destination, percentage);
+				Kernel::ImageIO::resize_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7047,14 +6684,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "rotate_fs", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "rotate_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float64(context, argv[2]);
-				Sen::Kernel::ImageIO::rotate_png(source, destination, percentage);
+				Kernel::ImageIO::rotate_png(source, destination, percentage);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7064,7 +6701,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cut_fs", [&](){
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut_fs");
@@ -7078,7 +6715,7 @@ namespace Sen::Kernel::Interface::Script
 				auto rectangle_height = get_property_int32(context, argv[2], height_atom.value);
 				auto rectangle_x = get_property_int32(context, argv[2], x_atom.value);
 				auto rectangle_y = get_property_int32(context, argv[2], y_atom.value);
-				Sen::Kernel::ImageIO::cut_fs(source, destination, Sen::Kernel::Rectangle<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height));
+				Kernel::ImageIO::cut_fs(source, destination, Kernel::Rectangle<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height));
 				return JS_UNDEFINED;
 			});
 		}
@@ -7088,11 +6725,11 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cut_multiple_fs", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut_multiple_fs");
-				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
+				auto data = List<Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_uint32(context, argv[1], length_atom.value);
@@ -7103,21 +6740,20 @@ namespace Sen::Kernel::Interface::Script
 					auto y_atom = Atom{context, "y"};
 					auto destination_atom = Atom{context, "destination"};
 					for (auto i : Range<uint32_t>(length)) {
-						auto index_atom = Atom{context, i};
-						auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
+						auto current_object = get_value_from_object<uint32_t>(context, argv[1], i);
 						auto rectangle_width = get_property_int32(context, current_object, width_atom.value);
 						auto rectangle_height = get_property_int32(context, current_object, height_atom.value);
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
 						auto rectangle_y = get_property_int32(context, current_object, y_atom.value);
 						auto destination = get_property_string(context, current_object, destination_atom.value);
-						data.emplace_back(Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
+						data.push_back(Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
 						JS_FreeValue(context, current_object);
 					}
 				} else {
 					throw Exception("Cannot read property \"length\" of undefined", std::source_location::current(), "cut_multiple_fs");
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::ImageIO::cut_pngs(source, data);
+				Kernel::ImageIO::cut_pngs(source, data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7137,11 +6773,11 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cut_multiple_fs_asynchronous", [&](){
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cut_multiple_fs");
-				auto data = List<Sen::Kernel::RectangleFileIO<int>>{};
+				auto data = List<Kernel::RectangleFileIO<int>>{};
 				if (JS_IsArray(context, argv[1])) {
 					auto length_atom = Atom{context, "length"};
 					auto length = get_property_uint32(context, argv[1], length_atom.value);
@@ -7152,21 +6788,20 @@ namespace Sen::Kernel::Interface::Script
 					auto y_atom = Atom{context, "y"};
 					auto destination_atom = Atom{context, "destination"};
 					for (auto i : Range<uint32_t>(length)) {
-						auto index_atom = Atom{context, i};
-						auto current_object = JS_GetProperty(context, argv[1], index_atom.value);
+						auto current_object = get_value_from_object<uint32_t>(context, argv[1], i);
 						auto rectangle_width = get_property_int32(context, current_object, width_atom.value);
 						auto rectangle_height = get_property_int32(context, current_object, height_atom.value);
 						auto rectangle_x = get_property_int32(context, current_object, x_atom.value);
 						auto rectangle_y = get_property_int32(context, current_object, y_atom.value);
 						auto destination = get_property_string(context, current_object, destination_atom.value);
-						data.emplace_back(Sen::Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
+						data.push_back(Kernel::RectangleFileIO<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height, destination));
 						JS_FreeValue(context, current_object);
 					}
 				} else {
 					throw Exception("Cannot read property \"length\" of undefined", std::source_location::current(), "cut_multiple_fs_asynchronous");
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
-				Sen::Kernel::ImageIO::cut_pngs_asynchronous(source, data);
+				Kernel::ImageIO::cut_pngs_asynchronous(source, data);
 				return JS_UNDEFINED;
 			});
 		}
@@ -7181,7 +6816,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::any
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "evaluate", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "evaluate");
@@ -7196,11 +6831,11 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::any
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "evaluate", [&](){
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto js_source = Sen::Kernel::FileSystem::read_file(source);
+				auto js_source = Kernel::FileSystem::read_file(source);
 				auto m_value = JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_TYPE_GLOBAL);
 				return m_value;
 			});
@@ -7218,7 +6853,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				using Mode = Kernel::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
@@ -7257,7 +6892,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				using Mode = Kernel::Encryption::Rijndael::Mode;
 				static constexpr auto callback = []<auto mode>(
@@ -7301,7 +6936,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
@@ -7316,12 +6951,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::bigint
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
+					auto result = Kernel::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
 					return JS::Converter::to_bigint(context, result);
 				});
 			}
@@ -7336,7 +6971,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
@@ -7351,12 +6986,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::MD5::hash_fs(source);
+					auto result = Kernel::Encryption::MD5::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7370,12 +7005,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::Base64::encode(source);
+					auto result = Kernel::Encryption::Base64::encode(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7385,12 +7020,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "decode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::Base64::decode(source);
+					auto result = Kernel::Encryption::Base64::decode(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7400,13 +7035,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Encryption::Base64::encode_fs(source, destination);
+					Kernel::Encryption::Base64::encode_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7416,13 +7051,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Encryption::Base64::decode_fs(source, destination);
+					Kernel::Encryption::Base64::decode_fs(source, destination);
 					return JS_UNDEFINED; 
 				});
 			}
@@ -7436,12 +7071,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::Sha224::hash(source);
+					auto result = Kernel::Encryption::Sha224::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7451,12 +7086,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::Sha224::hash_fs(source);
+					auto result = Kernel::Encryption::Sha224::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7471,12 +7106,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA256::hash(source);
+					auto result = Kernel::Encryption::SHA256::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7486,12 +7121,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA256::hash_fs(source);
+					auto result = Kernel::Encryption::SHA256::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7505,12 +7140,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA384::hash(source);
+					auto result = Kernel::Encryption::SHA384::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7520,12 +7155,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA384::hash_fs(source);
+					auto result = Kernel::Encryption::SHA384::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7539,12 +7174,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA512::hash(source);
+					auto result = Kernel::Encryption::SHA512::hash(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7554,12 +7189,12 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::string
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Sen::Kernel::Encryption::SHA512::hash_fs(source);
+					auto result = Kernel::Encryption::SHA512::hash_fs(source);
 					return JS::Converter::to_string(context, result);
 				});
 			}
@@ -7573,13 +7208,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::ArrayBuffer
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encrypt", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt");
 					auto plain = JS::Converter::to_binary_list(context, argv[0]);
 					auto key = JS::Converter::to_binary_list(context, argv[1]);
-					auto result = Sen::Kernel::Encryption::XOR::encrypt(plain, key);
+					auto result = Kernel::Encryption::XOR::encrypt(plain, key);
 					return JS::Converter::toArrayBuffer(context, result);
 				});
 			}
@@ -7589,14 +7224,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encrypt_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto key = JS::Converter::to_binary_list(context, argv[2]);
-					Sen::Kernel::Encryption::XOR::encrypt_fs(source, destination, key);
+					Kernel::Encryption::XOR::encrypt_fs(source, destination, key);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7618,13 +7253,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "directory", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "directory");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Compression::Zip::Compress::directory(source, destination);
+						Kernel::Compression::Zip::Compress::directory(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -7634,7 +7269,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "file", [&](){
 						assert_conditional(argc == 3 || argc == 2, fmt::format("argument expected {} but received {}", "2 or 3", argc), "file");
@@ -7642,10 +7277,10 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						if (argc == 3) {
 							auto root = JS::Converter::get_string(context, argv[2]);
-							Sen::Kernel::Compression::Zip::Compress::file(source, destination, root);
+							Kernel::Compression::Zip::Compress::file(source, destination, root);
 						}
 						else {
-							Sen::Kernel::Compression::Zip::Compress::file(source, destination);
+							Kernel::Compression::Zip::Compress::file(source, destination);
 						}
 						return JS_UNDEFINED;
 					});
@@ -7661,13 +7296,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "process", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Compression::Zip::Uncompress::process(source, destination);
+						Kernel::Compression::Zip::Uncompress::process(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -7684,18 +7319,18 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_int32(context, argv[2]);
-					if (!(static_cast<int>(Sen::Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Compression::Zlib::Level::LEVEL_9)))
+					if (!(static_cast<int>(Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Kernel::Compression::Zlib::Level::LEVEL_9)))
 					{
 						throw Exception(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level), std::source_location::current(), "compress_fs");
 					}
-					Sen::Kernel::Compression::Zlib::compress_fs(source, destination, static_cast<Sen::Kernel::Compression::Zlib::Level>(level));
+					Kernel::Compression::Zlib::compress_fs(source, destination, static_cast<Kernel::Compression::Zlib::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -7705,13 +7340,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Compression::Zlib::uncompress_fs(source, destination);
+					Kernel::Compression::Zlib::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7721,37 +7356,24 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::BinaryView
+			) -> JSValue
 			{
 				using Data = Class::BinaryView::Data;
 				return proxy_wrapper(context, "uncompress", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					auto sub = std::make_unique<Data>(Sen::Kernel::Compression::Zlib::uncompress(s->value));
-					auto global_obj = JS_GetGlobalObject(context);
-					auto sen_atom = Atom{context, "Sen"};
-					auto kernel_atom = Atom{context, "Kernel"};
-					auto binary_view_atom = Atom{context, "BinaryView"};
-					auto proto_atom = Atom{context, "prototype"};
-					auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
+					auto s = get_opaque_value<Data>(context, argv[0], Class::BinaryView::class_id.value);
+					auto sub = std::make_unique<Data>(Kernel::Compression::Zlib::uncompress(s->value));
+					auto global_obj = get_global_object(context);
+					auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
 					JS_FreeValue(context, global_obj);
-					auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
+					auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
 					JS_FreeValue(context, sen_obj);
-					auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
+					auto binary_ctor = get_value_from_object<std::string_view>(context, kernel_obj, "BinaryView");
 					JS_FreeValue(context, kernel_obj);
-					auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
+					auto proto = get_prototype_from_object(context, binary_ctor);
 					JS_FreeValue(context, binary_ctor);
-					if (JS_IsException(proto)) {
-						throw Exception("not a constructor", std::source_location::current(), "uncompress");
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
+					auto obj = make_instance_of_class(context, proto, Class::BinaryView::class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						throw Exception("Cannot get BinaryView class from its prototype", std::source_location::current(), "uncompress");
-					}
 					JS_SetOpaque(obj, sub.release());
 					return obj;
 				});
@@ -7762,18 +7384,15 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSDefine::BinaryView
+			) -> JSValue
 			{
 				using Data = Class::BinaryView::Data;
 				using Level = Kernel::Compression::Zlib::Level;
 				using Zlib = Kernel::Compression::Zlib;
 				return proxy_wrapper(context, "compress", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress");
-					auto s = static_cast<Data*>(JS_GetOpaque2(context, argv[0], Class::BinaryView::class_id.value));
-					if (s == nullptr) {
-						return JS_EXCEPTION;
-					}
-					auto sub = std::unique_ptr<Data, decltype(Class::make_deleter<Data>())>{nullptr, Class::make_deleter<Data>()};
+					auto s = get_opaque_value<Data>(context, argv[0], Class::BinaryView::class_id.value);
+					auto sub = std::unique_ptr<Data, decltype(make_deleter<Data>())>{nullptr, make_deleter<Data>()};
 					switch (static_cast<Level>(JS::Converter::get_int32(context, argv[1]))) {
 						case Level::DEFAULT:{
 							sub.reset(new Data(Zlib::compress_deflate<Level::LEVEL_6>(s->value)));
@@ -7823,27 +7442,16 @@ namespace Sen::Kernel::Interface::Script
 							throw Exception(fmt::format("{}", Kernel::Language::get("zlib.compress.invalid_level")), std::source_location::current(), "compress");
 						}
 					}
-					auto global_obj = JS_GetGlobalObject(context);
-					auto sen_atom = Atom{context, "Sen"};
-					auto kernel_atom = Atom{context, "Kernel"};
-					auto binary_view_atom = Atom{context, "BinaryView"};
-					auto proto_atom = Atom{context, "prototype"};
-					auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
+					auto global_obj = get_global_object(context);
+					auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
 					JS_FreeValue(context, global_obj);
-					auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
+					auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
 					JS_FreeValue(context, sen_obj);
-					auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
+					auto binary_ctor = get_value_from_object<std::string_view>(context, kernel_obj, "BinaryView");
 					JS_FreeValue(context, kernel_obj);
-					auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
-					JS_FreeValue(context, binary_ctor);
-					if (JS_IsException(proto)) {
-						throw Exception("not a constructor", std::source_location::current(), "compress");
-					}
-					auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
+					auto proto = get_prototype_from_object(context, binary_ctor);
+					auto obj = make_instance_of_class(context, proto, Class::BinaryView::class_id.value);
 					JS_FreeValue(context, proto);
-					if (JS_IsException(obj)) {
-						throw Exception("Cannot get BinaryView class from its prototype", std::source_location::current(), "compress");
-					}
 					JS_SetOpaque(obj, sub.release());
 					return obj;
 				});
@@ -7859,13 +7467,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Compression::Bzip2::compress_fs(source, destination);
+					Kernel::Compression::Bzip2::compress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7875,13 +7483,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Compression::Bzip2::uncompress_fs(source, destination);
+					Kernel::Compression::Bzip2::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7896,14 +7504,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_bigint64(context, argv[2]);
-					Sen::Kernel::Compression::Lzma::compress_fs(source, destination, static_cast<Sen::Kernel::Compression::Lzma::Level>(level));
+					Kernel::Compression::Lzma::compress_fs(source, destination, static_cast<Kernel::Compression::Lzma::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -7913,13 +7521,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Compression::Lzma::uncompress_fs(source, destination);
+					Kernel::Compression::Lzma::uncompress_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7934,18 +7542,18 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "compress_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_int32(context, argv[2]);
-					if (!(static_cast<int>(Sen::Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Sen::Kernel::Compression::Zlib::Level::LEVEL_9)))
+					if (!(static_cast<int>(Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Kernel::Compression::Zlib::Level::LEVEL_9)))
 					{
 						throw std::invalid_argument(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level));
 					}
-					Sen::Kernel::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Sen::Kernel::Compression::Zlib::Level>(level));
+					Kernel::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Kernel::Compression::Zlib::Level>(level));
 					return JS_UNDEFINED;
 				});
 			}
@@ -7955,13 +7563,13 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "uncompress_fs", [&](){
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
-					Sen::Kernel::Compression::Zlib::uncompress_gzip_fs(source, destination);
+					Kernel::Compression::Zlib::uncompress_gzip_fs(source, destination);
 					return JS_UNDEFINED;
 				});
 			}
@@ -7979,7 +7587,7 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "decode_fs", [&](){
 					assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -7988,7 +7596,7 @@ namespace Sen::Kernel::Interface::Script
 					auto width = JS::Converter::get_bigint64(context, argv[2]);
 					auto height = JS::Converter::get_bigint64(context, argv[3]);
 					auto format = JS::Converter::get_int32(context, argv[4]);
-					Sen::Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Sen::Kernel::Support::Texture::Format>(format));
+					Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Kernel::Support::Texture::Format>(format));
 					return JS_UNDEFINED;
 				});
 			}
@@ -7998,14 +7606,14 @@ namespace Sen::Kernel::Interface::Script
 				JSValue value,
 				int argc,
 				JSValue* argv
-			) -> JSElement::undefined
+			) -> JSValue
 			{
 				return proxy_wrapper(context, "encode_fs", [&](){
 					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto format = JS::Converter::get_int32(context, argv[2]);
-					Sen::Kernel::Support::Texture::InvokeMethod::encode_fs(source, destination, static_cast<Sen::Kernel::Support::Texture::Format>(format));
+					Kernel::Support::Texture::InvokeMethod::encode_fs(source, destination, static_cast<Kernel::Support::Texture::Format>(format));
 					return JS_UNDEFINED;
 				});
 			}
@@ -8022,7 +7630,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_fs", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
@@ -8038,7 +7646,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_fs", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
@@ -8063,7 +7671,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_fs", [&](){
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress_fs");
@@ -8071,10 +7679,10 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[2]);
 						if (use_64_bit_variant) {
-							Sen::Kernel::Support::PopCap::Zlib::Compress<true>::compress_fs(source, destination);
+							Kernel::Support::PopCap::Zlib::Compress<true>::compress_fs(source, destination);
 						}
 						else {
-							Sen::Kernel::Support::PopCap::Zlib::Compress<false>::compress_fs(source, destination);
+							Kernel::Support::PopCap::Zlib::Compress<false>::compress_fs(source, destination);
 						}
 						return JS_UNDEFINED;
 					});
@@ -8085,7 +7693,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					using Data = Class::BinaryView::Data;
 					return proxy_wrapper(context, "pack_fs", [&](){
@@ -8095,40 +7703,30 @@ namespace Sen::Kernel::Interface::Script
 						Kernel::Support::Marmalade::DZip::Pack::process_fs(source, destination);
 						return JS_UNDEFINED;
 					});
-					using CompressPointer = std::unique_ptr<Sen::Kernel::Support::PopCap::Zlib::VirtualC, decltype(Class::make_deleter<Sen::Kernel::Support::PopCap::Zlib::VirtualC>())>;
+					using CompressPointer = std::unique_ptr<Kernel::Support::PopCap::Zlib::VirtualC, decltype(make_deleter<Kernel::Support::PopCap::Zlib::VirtualC>())>;
 					return proxy_wrapper(context, "compress", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compress");
 						auto source = JS::Converter::to_binary_list(context, argv[0]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[1]);
-						auto compressor = CompressPointer(nullptr, Class::make_deleter<Sen::Kernel::Support::PopCap::Zlib::VirtualC>());
+						auto compressor = CompressPointer(nullptr, make_deleter<Kernel::Support::PopCap::Zlib::VirtualC>());
 						if (use_64_bit_variant) {
-							compressor.reset(new Sen::Kernel::Support::PopCap::Zlib::Compress<true>());
+							compressor.reset(new Kernel::Support::PopCap::Zlib::Compress<true>());
 						}
 						else {
-							compressor.reset(new Sen::Kernel::Support::PopCap::Zlib::Compress<false>());
+							compressor.reset(new Kernel::Support::PopCap::Zlib::Compress<false>());
 						}
 						auto sub = std::make_unique<Data>(compressor->compress(source));
-						auto global_obj = JS_GetGlobalObject(context);
-						auto sen_atom = Atom{context, "Sen"};
-						auto kernel_atom = Atom{context, "Kernel"};
-						auto binary_view_atom = Atom{context, "BinaryView"};
-						auto proto_atom = Atom{context, "prototype"};
-						auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
+						auto global_obj = get_global_object(context);
+						auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
 						JS_FreeValue(context, global_obj);
-						auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
+						auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
 						JS_FreeValue(context, sen_obj);
-						auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
+						auto binary_ctor = get_value_from_object<std::string_view>(context, kernel_obj, "BinaryView");
 						JS_FreeValue(context, kernel_obj);
-						auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
+						auto proto = get_prototype_from_object(context, binary_ctor);
 						JS_FreeValue(context, binary_ctor);
-						if (JS_IsException(proto)) {
-							assert_conditional(false, "not a constructor", "compress");
-						}
-						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
+						auto obj = make_instance_of_class(context, proto, Class::BinaryView::class_id.value);
 						JS_FreeValue(context, proto);
-						if (JS_IsException(obj)) {
-							assert_conditional(false, "Cannot call constructor of BinaryView class", "compress");
-						}
 						JS_SetOpaque(obj, sub.release());
 						return obj;
 					});
@@ -8139,7 +7737,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "uncompress_fs", [&](){
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress_fs");
@@ -8147,10 +7745,10 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[2]);
 						if (use_64_bit_variant) {
-							Sen::Kernel::Support::PopCap::Zlib::Uncompress<true>::uncompress_fs(source, destination);
+							Kernel::Support::PopCap::Zlib::Uncompress<true>::uncompress_fs(source, destination);
 						}
 						else {
-							Sen::Kernel::Support::PopCap::Zlib::Uncompress<false>::uncompress_fs(source, destination);
+							Kernel::Support::PopCap::Zlib::Uncompress<false>::uncompress_fs(source, destination);
 						}
 						return JS_UNDEFINED;
 					});
@@ -8161,43 +7759,33 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSDefine::BinaryView
+				) -> JSValue
 				{
 					using Data = Class::BinaryView::Data;
-					using UncompressPointer = std::unique_ptr<Sen::Kernel::Support::PopCap::Zlib::Virtual, decltype(Class::make_deleter<Sen::Kernel::Support::PopCap::Zlib::Virtual>())>;
+					using UncompressPointer = std::unique_ptr<Kernel::Support::PopCap::Zlib::Virtual, decltype(make_deleter<Kernel::Support::PopCap::Zlib::Virtual>())>;
 					return proxy_wrapper(context, "uncompress", [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress");
 						auto source = JS::Converter::to_binary_list(context, argv[0]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[1]);
-						auto compressor = UncompressPointer(nullptr, Class::make_deleter<Sen::Kernel::Support::PopCap::Zlib::Virtual>());
+						auto compressor = UncompressPointer(nullptr, make_deleter<Kernel::Support::PopCap::Zlib::Virtual>());
 						if (use_64_bit_variant) {
-							compressor.reset(new Sen::Kernel::Support::PopCap::Zlib::Uncompress<true>());
+							compressor.reset(new Kernel::Support::PopCap::Zlib::Uncompress<true>());
 						}
 						else {
-							compressor.reset(new Sen::Kernel::Support::PopCap::Zlib::Uncompress<false>());
+							compressor.reset(new Kernel::Support::PopCap::Zlib::Uncompress<false>());
 						}
 						auto sub = std::make_unique<Data>(compressor->uncompress(source));
-						auto global_obj = JS_GetGlobalObject(context);
-						auto sen_atom = Atom{context, "Sen"};
-						auto kernel_atom = Atom{context, "Kernel"};
-						auto binary_view_atom = Atom{context, "BinaryView"};
-						auto proto_atom = Atom{context, "prototype"};
-						auto sen_obj = JS_GetProperty(context, global_obj, sen_atom.value);
+						auto global_obj = get_global_object(context);
+						auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
 						JS_FreeValue(context, global_obj);
-						auto kernel_obj = JS_GetProperty(context, sen_obj, kernel_atom.value);
+						auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
 						JS_FreeValue(context, sen_obj);
-						auto binary_ctor = JS_GetProperty(context, kernel_obj, binary_view_atom.value);
+						auto binary_ctor = get_value_from_object<std::string_view>(context, kernel_obj, "BinaryView");
 						JS_FreeValue(context, kernel_obj);
-						auto proto = JS_GetProperty(context, binary_ctor, proto_atom.value);
+						auto proto = get_prototype_from_object(context, binary_ctor);
 						JS_FreeValue(context, binary_ctor);
-						if (JS_IsException(proto)) {
-							assert_conditional(false, "not a constructor", "uncompress");
-						}
-						auto obj = JS_NewObjectProtoClass(context, proto, Class::BinaryView::class_id.value);
+						auto obj = make_instance_of_class(context, proto, Class::BinaryView::class_id.value);
 						JS_FreeValue(context, proto);
-						if (JS_IsException(obj)) {
-							assert_conditional(false, "Cannot call constructor of BinaryView class", "uncompress");
-						}
 						JS_SetOpaque(obj, sub.release());
 						JS_FreeValue(context, global_obj);
 						JS_FreeValue(context, sen_obj);
@@ -8217,7 +7805,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs", [&](){
 						assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -8236,7 +7824,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs", [&](){
 						assert_conditional(argc == 5, fmt::format("{} 5, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -8245,7 +7833,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
-						Sen::Kernel::Support::PopCap::CompiledText::Encode::process_fs(source, destination, key, iv, use_64_bit_variant);
+						Kernel::Support::PopCap::CompiledText::Encode::process_fs(source, destination, key, iv, use_64_bit_variant);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8260,13 +7848,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "split_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "split_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ResourceGroup::BasicConversion::split(source, destination);
+						Kernel::Support::PopCap::ResourceGroup::BasicConversion::split(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8276,13 +7864,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "merge_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "merge_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ResourceGroup::BasicConversion::merge(source, destination);
+						Kernel::Support::PopCap::ResourceGroup::BasicConversion::merge(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8292,9 +7880,9 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
-					using PathStyle = Sen::Kernel::Support::PopCap::ResourceGroup::PathStyle;
+					using PathStyle = Kernel::Support::PopCap::ResourceGroup::PathStyle;
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
@@ -8302,11 +7890,11 @@ namespace Sen::Kernel::Interface::Script
 						auto path_style = JS::Converter::get_int32(context, argv[2]);
 						switch (static_cast<PathStyle>(path_style)) {
 							case PathStyle::ArrayStyle:{
-								Sen::Kernel::Support::PopCap::ResourceGroup::Convert<false>::convert_fs(source, destination);
+								Kernel::Support::PopCap::ResourceGroup::Convert<false>::convert_fs(source, destination);
 								break;
 							}
 							case PathStyle::WindowStyle:{
-								Sen::Kernel::Support::PopCap::ResourceGroup::Convert<true>::convert_fs(source, destination);
+								Kernel::Support::PopCap::ResourceGroup::Convert<true>::convert_fs(source, destination);
 								break;
 							}
 						}
@@ -8324,13 +7912,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "split_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "split_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ResInfo::BasicConversion::split_fs(source, destination);
+						Kernel::Support::PopCap::ResInfo::BasicConversion::split_fs(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8340,13 +7928,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "merge_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "merge_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ResInfo::BasicConversion::merge_fs(source, destination);
+						Kernel::Support::PopCap::ResInfo::BasicConversion::merge_fs(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8356,13 +7944,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ResInfo::Convert::convert_fs(source, destination);
+						Kernel::Support::PopCap::ResInfo::Convert::convert_fs(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8377,13 +7965,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8393,13 +7981,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "convert_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::RenderEffects::Encode::process_fs(source, destination);
+						Kernel::Support::PopCap::RenderEffects::Encode::process_fs(source, destination);
 						return JS_UNDEFINED;
 					});
 				}
@@ -8414,13 +8002,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8430,13 +8018,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::CharacterFontWidget2::Encode::process_fs(source, destination);
+						Kernel::Support::PopCap::CharacterFontWidget2::Encode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8445,7 +8033,7 @@ namespace Sen::Kernel::Interface::Script
 
 			namespace Particles
 			{
-				using Platform = Sen::Kernel::Support::PopCap::Particles::ParticlesPlatform;
+				using Platform = Kernel::Support::PopCap::Particles::ParticlesPlatform;
 
 				inline static auto constexpr get_platform(
 					std::string_view platform
@@ -8474,14 +8062,14 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs", [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
-						Sen::Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, platform);
+						Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, platform);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8491,14 +8079,14 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs", [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
-						Sen::Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, platform);
+						Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, platform);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8508,13 +8096,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "to_xml", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_xml");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
+						Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8524,13 +8112,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "from_xml", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_xml");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::Particles::FromXML::process_fs(source, destination);
+						Kernel::Support::PopCap::Particles::FromXML::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8545,13 +8133,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8561,13 +8149,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::PlayerInfo::Encode::process_fs(source, destination);
+						Kernel::Support::PopCap::PlayerInfo::Encode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8582,14 +8170,14 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decrypt_fs"_sv, [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decrypt_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
-						Sen::Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
+						Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8599,14 +8187,14 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encrypt_fs"_sv, [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
-						Sen::Kernel::Support::PopCap::CryptData::Encrypt::process_fs(source, destination, key);
+						Kernel::Support::PopCap::CryptData::Encrypt::process_fs(source, destination, key);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8621,13 +8209,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8637,13 +8225,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Encode::process_fs(source, destination);
+						Kernel::Support::PopCap::NewTypeObjectNotation::Encode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8658,13 +8246,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8674,7 +8262,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decrypt_fs"_sv, [&]() {
 						assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decrypt_fs");
@@ -8682,7 +8270,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_fs(source, destination, key, iv);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_fs(source, destination, key, iv);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8692,7 +8280,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decrypt_and_decode_fs"_sv, [&]() {
 						assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decrypt_and_decode_fs");
@@ -8700,7 +8288,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_and_decode_fs(source, destination, key, iv);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_and_decode_fs(source, destination, key, iv);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8710,13 +8298,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8726,7 +8314,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encrypt_fs"_sv, [&]() {
 						assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encrypt_fs");
@@ -8734,7 +8322,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt_fs(source, destination, key, iv);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt_fs(source, destination, key, iv);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8744,7 +8332,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_and_encrypt_fs"_sv, [&]() {
 						assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_and_encrypt_fs");
@@ -8752,7 +8340,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
-						Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_and_encrypt_fs(source, destination, key, iv);
+						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_and_encrypt_fs(source, destination, key, iv);
 						return JS_UNDEFINED; });
 				}
 			}
@@ -8765,7 +8353,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -8782,7 +8370,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&](){
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -8804,7 +8392,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
@@ -8820,7 +8408,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_resource"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_resource");
@@ -8836,7 +8424,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_resource"_sv, [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_resource");
@@ -8852,7 +8440,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_cipher"_sv, [&]() {
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_cipher");
@@ -8868,7 +8456,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
@@ -8888,7 +8476,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
@@ -8904,7 +8492,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
@@ -8924,7 +8512,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "unpack_fs"_sv, [&](){
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
@@ -8940,7 +8528,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "pack_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
@@ -8960,13 +8548,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
+						Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -8979,7 +8567,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
@@ -8987,10 +8575,10 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[2]));
 							if (JS::Converter::get_bool(context, argv[3])) {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_fs(source, destination, resolution);
+								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_fs(source, destination, resolution);
 							}
 							else {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, resolution);
+								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, resolution);
 							}
 							return JS_UNDEFINED; 
 						});
@@ -9000,7 +8588,7 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue* argv) -> JSElement::undefined
+						JSValue* argv) -> JSValue
 					{
 						return proxy_wrapper(context, "process"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
@@ -9008,14 +8596,14 @@ namespace Sen::Kernel::Interface::Script
 							auto animation = JS::from(value);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[2]));
-							auto extra = Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo{.resolution = resolution};
+							auto extra = Kernel::Support::PopCap::Animation::Convert::ExtraInfo{.resolution = resolution};
 							if (JS::Converter::get_bool(context, argv[3])) {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_whole(animation, extra, destination);
+								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_whole(animation, extra, destination);
 							}
 							else {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_whole(animation, extra, destination);
+								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_whole(animation, extra, destination);
 							}
-							Sen::Kernel::FileSystem::write_json(fmt::format("{}/data.json", destination), extra);
+							Kernel::FileSystem::write_json(fmt::format("{}/data.json", destination), extra);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9029,13 +8617,13 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "resize_fs"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resize_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[1]));
-							Sen::Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, resolution);
+							Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, resolution);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9045,14 +8633,14 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "dump_document"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "dump_document");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = argv[1];
-							auto doc = Sen::Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument{};
-							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Dump::process_fs(source, doc);
+							auto doc = Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument{};
+							Kernel::Support::PopCap::Animation::Miscellaneous::Dump::process_fs(source, doc);
 							auto atom_sprite = Atom(context, "sprite");  
 							JS_DefinePropertyValue(context, destination, atom_sprite.value, JS::Converter::to_array(context, doc.sprite), int{JS_PROP_C_W_E});
 							auto atom_image = Atom(context, "image");  
@@ -9069,16 +8657,13 @@ namespace Sen::Kernel::Interface::Script
 						JSContext *context,
 						JSValue value,
 						int argc,
-						JSValue* argv) -> JSElement::undefined
+						JSValue* argv) -> JSValue
 					{
 						return proxy_wrapper(context, "generate_image"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_image");
 							auto destination = JS::Converter::get_string(context, argv[0]);
-							auto source = static_cast<Class::Image::Data*>(JS_GetOpaque2(context, argv[1], Class::Image::class_id.value));
-							if (source == nullptr) {
-								return JS_EXCEPTION;
-							}
-							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
+							auto source = get_opaque_value<Class::Image::Data>(context, argv[1], Class::Image::class_id.value);
+							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9088,25 +8673,22 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "generate_document"_sv, [&]()  {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_document");
 							auto destination = JS::Converter::get_string(context, argv[0]);
 							auto source = Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument{};
-							auto media_atom = Atom{context, "media"};
-							auto sprite_atom = Atom{context, "sprite"};
-							auto image_atom = Atom{context, "image"};
-							auto media = JS_GetProperty(context, argv[1], media_atom.value);
-							auto sprite = JS_GetProperty(context, argv[1], sprite_atom.value);
-							auto image = JS_GetProperty(context, argv[1], image_atom.value);
+							auto media = get_value_from_object<std::string_view>(context, argv[1], "media");
+							auto sprite = get_value_from_object<std::string_view>(context, argv[1], "sprite");
+							auto image = get_value_from_object<std::string_view>(context, argv[1], "image");
 							source.media = JS::Converter::get_vector<std::string>(context, media);
 							source.sprite = JS::Converter::get_vector<std::string>(context, sprite);
 							source.image = JS::Converter::get_vector<std::string>(context, image);
 							JS_FreeValue(context, media);
 							JS_FreeValue(context, sprite);
 							JS_FreeValue(context, image);
-							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, &source);
+							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, &source);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9116,16 +8698,13 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "generate_sprite"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "generate_sprite");
 							auto destination = JS::Converter::get_string(context, argv[0]);
-							auto source = static_cast<Class::Sprite::Data*>(JS_GetOpaque2(context, argv[1], Class::Sprite::class_id.value));
-							if (source == nullptr) {
-								return JS_EXCEPTION;
-							}
-							Sen::Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
+							auto source = get_opaque_value<Class::Sprite::Data>(context, argv[1], Class::Sprite::class_id.value);
+							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9140,17 +8719,17 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							if (JS::Converter::get_bool(context, argv[2])) {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithLabel::process_fs(source, destination);
+								Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithLabel::process_fs(source, destination);
 							}
 							else {
-								Sen::Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
+								Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
 							}
 							return JS_UNDEFINED; 
 						});
@@ -9165,7 +8744,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "to_flash"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_flash");
@@ -9173,10 +8752,10 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[2]));
 							if (JS::Converter::get_bool(context, argv[3])) {
-								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<true>(source, destination, resolution);
+								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<true>(source, destination, resolution);
 							}
 							else {
-								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, resolution);
+								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, resolution);
 							}
 							return JS_UNDEFINED; 
 						});
@@ -9187,17 +8766,17 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "from_flash"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_flash");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							if (JS::Converter::get_bool(context, argv[2])) {
-								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<true>(source, destination);
+								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<true>(source, destination);
 							}
 							else {
-								Sen::Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
+								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
 							}
 							return JS_UNDEFINED; 
 						});
@@ -9209,13 +8788,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
+						Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -9231,21 +8810,21 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "from_resource_custom"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_resource_custom");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation json = *Sen::Kernel::FileSystem::read_json(source);
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation json = *Kernel::FileSystem::read_json(source);
 							auto result = nlohmann::ordered_json{};
 							if (JS::Converter::get_bool(context, argv[2])) {
-								Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(json, result);
+								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(json, result);
 							}
 							else {
-								Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
+								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 							}
-							Sen::Kernel::FileSystem::write_json(destination, result);
+							Kernel::FileSystem::write_json(destination, result);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9255,21 +8834,21 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "to_resource_custom"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_resource_custom");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							auto &json = Sen::Kernel::FileSystem::read_json(source).operator*();
-							auto result = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation{};
+							auto &json = Kernel::FileSystem::read_json(source).operator*();
+							auto result = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation{};
 							if (JS::Converter::get_bool(context, argv[2])) {
-								Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(json, result);
+								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(json, result);
 							}
 							else {
-								Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
+								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 							}
-							Sen::Kernel::FileSystem::write_json(destination, result);
+							Kernel::FileSystem::write_json(destination, result);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9283,12 +8862,12 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::boolean
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "check_scg_composite"_sv, [&]() {
 							assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "check_scg_composite");
 							auto source = JS::Converter::get_string(context, argv[0]);
-							auto result = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::check_scg_composite(source);
+							auto result = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::check_scg_composite(source);
 							return JS::Converter::to_bool(context, result); 
 						});
 					}
@@ -9298,7 +8877,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -9315,7 +8894,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -9336,7 +8915,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
@@ -9353,7 +8932,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "pack_fs"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "pack_fs");
@@ -9371,7 +8950,7 @@ namespace Sen::Kernel::Interface::Script
 			namespace ReAnimation
 			{
 
-				using Platform = Sen::Kernel::Support::PopCap::ReAnimation::ReanimPlatform;
+				using Platform = Kernel::Support::PopCap::ReAnimation::ReanimPlatform;
 
 
 				inline static auto constexpr get_platform(
@@ -9401,7 +8980,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -9409,7 +8988,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
-						Sen::Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, platform);
+						Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, platform);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -9419,7 +8998,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -9427,7 +9006,7 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
-						Sen::Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, platform);
+						Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, platform);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -9437,13 +9016,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "to_xml", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_xml");
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
-						Sen::Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
+						Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
 						return JS_UNDEFINED; 
 					});
 				}
@@ -9453,13 +9032,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "from_xml", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_xml");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
+							Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
 							return JS_UNDEFINED; 
 					});
 				}
@@ -9472,13 +9051,13 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
+							Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9492,13 +9071,13 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "convert_fs"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "convert_fs");
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
-							Sen::Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
+							Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9512,7 +9091,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "to_flash"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_flash");
@@ -9520,7 +9099,7 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
-							Sen::Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, platform);
+							Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, platform);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9531,7 +9110,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "from_flash"_sv, [&]() {
 							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_flash");
@@ -9539,7 +9118,7 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
-							Sen::Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, platform);
+							Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, platform);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9562,7 +9141,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "add_music"_sv, [&]() {
 							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "add_music");
@@ -9580,7 +9159,7 @@ namespace Sen::Kernel::Interface::Script
 						JSValue value,
 						int argc,
 						JSValue* argv
-					) -> JSElement::undefined
+					) -> JSValue
 					{
 						return proxy_wrapper(context, "create_soundbank"_sv, [&]() {
 							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "create_soundbank");
@@ -9598,7 +9177,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "decode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
@@ -9614,7 +9193,7 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					return proxy_wrapper(context, "encode_fs"_sv, [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
@@ -9630,13 +9209,13 @@ namespace Sen::Kernel::Interface::Script
 					JSValue value,
 					int argc,
 					JSValue* argv
-				) -> JSElement::undefined
+				) -> JSValue
 				{
 					using Uinteger32C = Class::Number::Data<std::uint32_t>;
 					return proxy_wrapper(context, "decode_fs"_sv, [&] {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 						auto source = JS::Converter::get_string(context, argv[0]);
-						auto destination = static_cast<Uinteger32C*>(JS_GetOpaque2(context, argv[1], Class::Number::class_id<std::uint32_t>.value));
+						auto destination = get_opaque_value<Uinteger32C>(context, argv[1], Class::Number::class_id<std::uint32_t>.value);
 						destination->value = Kernel::Support::WWise::SoundBank::Decode::fnv_hash(source);
 						return JS_UNDEFINED; 
 					});
@@ -9740,7 +9319,7 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue
 		{
 			return proxy_wrapper(context, "constructor", [&](){
-				return Class::initialize_constructor<Data>(
+				return initialize_constructor<Data>(
 					context,
 					value,
 					argc,
@@ -9761,7 +9340,7 @@ namespace Sen::Kernel::Interface::Script
 			return "Clock";
 		}
 
-		inline static auto this_class = Class::make_class_definition<Data>(
+		inline static auto this_class = make_class_definition<Data>(
 			_class_name(),
 			class_id.value
 		);
@@ -9774,7 +9353,7 @@ namespace Sen::Kernel::Interface::Script
 			std::string_view method_name,
 			std::function<JSValue(Data*)> method
 		) -> JSValue {
-			return Class::make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
+			return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
 		}
 
 		inline static auto start(
@@ -9782,7 +9361,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return handle(context, value, argc, argv, "start", [&](Data *s) {
 				try {
@@ -9800,7 +9379,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::undefined 
+		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "start_safe", [&](Data *s) {
 				s->start_safe();
@@ -9813,7 +9392,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::undefined 
+		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "stop_safe", [&](Data* clock){
 				clock->stop_safe();
@@ -9826,7 +9405,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::undefined 
+		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "stop", [&](Data* clock){
 				try {
@@ -9844,7 +9423,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::undefined  
+		) -> JSValue  
 		{
 			return handle(context, value, argc, argv, "reset", [&](Data* clock){
 				clock->reset();
@@ -9857,7 +9436,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::number 
+		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "get_duration", [&](Data* clock){
 				return JS_NewInt64(context, clock->get_duration());
@@ -9869,7 +9448,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::number 
+		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "get_duration_as_seconds", [&](Data* clock){
 				return JS_NewFloat64(context, static_cast<double>(static_cast<double>(clock->get_duration()) / 1000.0));
@@ -9881,7 +9460,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::boolean  
+		) -> JSValue  
 		{
 			return handle(context, value, argc, argv, "is_started", [&](Data* clock){
 				return JS_NewBool(context, clock->is_started());
@@ -9893,7 +9472,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value, 
 			int argc, 
 			JSValue* argv
-		) -> JSElement::boolean  
+		) -> JSValue  
 		{
 			return handle(context, value, argc, argv, "is_stopped", [&](Data* clock){
 				return JS_NewBool(context, clock->is_stopped());
@@ -9901,22 +9480,22 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-			Class::generate_class_function<Data, 0>("start", start),
-			Class::generate_class_function<Data, 0>("stop", stop),
-			Class::generate_class_function<Data, 0>("start_safe", start_safe),
-			Class::generate_class_function<Data, 0>("stop_safe", stop_safe),
-			Class::generate_class_function<Data, 0>("reset", reset),
-			Class::generate_class_function<Data, 0>("duration", get_duration),
-			Class::generate_class_function<Data, 0>("duration_as_seconds", get_duration_as_seconds),
-			Class::generate_class_function<Data, 0>("isStarted", is_started),
-			Class::generate_class_function<Data, 0>("isStopped", is_stopped),
+			generate_class_function<Data, 0>("start", start),
+			generate_class_function<Data, 0>("stop", stop),
+			generate_class_function<Data, 0>("start_safe", start_safe),
+			generate_class_function<Data, 0>("stop_safe", stop_safe),
+			generate_class_function<Data, 0>("reset", reset),
+			generate_class_function<Data, 0>("duration", get_duration),
+			generate_class_function<Data, 0>("duration_as_seconds", get_duration_as_seconds),
+			generate_class_function<Data, 0>("isStarted", is_started),
+			generate_class_function<Data, 0>("isStopped", is_stopped),
 		});
 
 		inline static auto register_class(
 			JSContext *context
 		) -> void
 		{
-			return Class::build_class(context, class_id, constructor, _class_name(), proto_functions, this_class, Array<std::string_view, 2>{"Sen", "Kernel"});
+			return build_class<decltype(class_id), decltype(constructor), 2, 9>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 		}
 
 
@@ -9952,7 +9531,7 @@ namespace Sen::Kernel::Interface::Script
 						auto length = get_property_uint32(context, value, atom.value);
 						for (auto index : Range(length))
 						{
-							auto index_atom = Atom{context, "length"};
+							auto index_atom = Atom{context, index};
 							auto js_value = JS_GetProperty(context, value, index_atom.value);
 							JS_SetProperty(context, js_array, index_atom.value, deep_clone(context, js_value));
 							JS_FreeValue(context, js_value);
@@ -10032,15 +9611,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cast_ArrayBuffer_to_JS_String"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cast_ArrayBuffer_to_JS_String");
 				auto len = size_t{};
-				auto buf = JS_GetArrayBuffer(context, &len, argv[0]);
-				if (buf == nullptr) {
-					throw Exception(fmt::format("{}", Kernel::Language::get("kernel.cast_ArrayBuffer_to_JS_String.failed_to_get_array_buffer")));
-				}
+				auto buf = get_array_buffer(context, &len, argv[0]);
 				auto str = JS_NewStringLen(context, reinterpret_cast<const char*>(buf), len);
 				return str; 
 			});
@@ -10051,7 +9627,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::ArrayBuffer
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cast_movable_String_to_ArrayBuffer"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cast_movable_String_to_ArrayBuffer");
@@ -10065,13 +9641,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::ArrayBuffer
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "copyArrayBuffer"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "copyArrayBuffer");
 				auto byte_len = std::size_t{};
-				auto data = JS_GetArrayBuffer(context, &byte_len, argv[0]);
-				assert_conditional(data != nullptr, "Cannot get ArrayBuffer from the first argument, it might not be an ArrayBuffer", "copyArrayBuffer");
+				auto data = get_array_buffer(context, &byte_len, argv[0]);
 				return JS_NewArrayBufferCopy(context, reinterpret_cast<uint8_t*>(data), byte_len); 
 			});
 		}
@@ -10081,16 +9656,14 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::boolean
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "compareArrayBuffer"_sv, [&]() {
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "compareArrayBuffer");
 				auto size_1 = std::size_t{};
-				auto data_1 = JS_GetArrayBuffer(context, &size_1, argv[0]);
-				assert_conditional(data_1 != nullptr, "Cannot get ArrayBuffer from the first argument, it might not be an ArrayBuffer", "compareArrayBuffer");
+				auto data_1 = get_array_buffer(context, &size_1, argv[0]);
 				auto size_2 = std::size_t{};
-				auto data_2 = JS_GetArrayBuffer(context, &size_2, argv[1]);
-				assert_conditional(data_2 != nullptr, "Cannot get ArrayBuffer from the second argument, it might not be an ArrayBuffer", "compareArrayBuffer");
+				auto data_2 = get_array_buffer(context, &size_2, argv[1]);
 				if (size_1 != size_2) {
 					return JS::Converter::to_bool(context, false);
 				}
@@ -10110,15 +9683,12 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "cast_ArrayBuffer_to_JS_WideString"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cast_ArrayBuffer_to_JS_WideString");
 				auto len = size_t{};
-				auto buf = JS_GetArrayBuffer(context, &len, argv[0]);
-				if (buf == nullptr) {
-					throw Exception(fmt::format("{}", Kernel::Language::get("kernel.cast_ArrayBuffer_to_JS_String.failed_to_get_array_buffer")));
-				}
+				auto buf = get_array_buffer(context, &len, argv[0]);
 				auto utf16 = std::wstring(reinterpret_cast<wchar_t*>(buf), len / sizeof(wchar_t));
 				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
 				auto utf8 = converter.to_bytes(utf16);
@@ -10132,16 +9702,13 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::undefined
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "to_apng"_sv, [&]() {
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_apng");
 				auto a = JS::Converter::get_vector<std::string>(context, argv[0]);
 				auto b = JS::Converter::get_string(context, argv[1]);
-				auto s = static_cast<Class::APNGMakerSetting::Data*>(JS_GetOpaque2(context, argv[2], Class::APNGMakerSetting::class_id.value));
-				if (s == nullptr) {
-					return JS_EXCEPTION;
-				}
+				auto s = get_opaque_value<Class::APNGMakerSetting::Data>(context, argv[2], Class::APNGMakerSetting::class_id.value);
 				Kernel::APNGMaker::process_fs(a, b, s);
 				return JS_UNDEFINED; 
 			});
@@ -10313,7 +9880,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "deserialize"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
@@ -10335,7 +9902,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::Object
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "deserialize_fs"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
@@ -10358,7 +9925,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue value,
 			int argc,
 			JSValue* argv
-		) -> JSElement::string
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "serialize"_sv, [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
@@ -10373,11 +9940,11 @@ namespace Sen::Kernel::Interface::Script
 		}
 
 		inline static auto serialize_fs(
-			JSElement::Context *context,
-			JSElement::any valueue,
-			JSElement::ParameterCount argc,
-			JSElement::ParameterList argv
-		) -> JSElement::undefined
+			JSContext *context,
+			JSValue valueue,
+			int argc,
+			JSValue* argv
+		) -> JSValue
 		{
 			return proxy_wrapper(context, "serialize_fs"_sv, [&]() {
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");

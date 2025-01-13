@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 project(
 	libpng
-	VERSION 1.6.44
+	VERSION 1.6.45
 	HOMEPAGE_URL http://www.libpng.org/
 	LANGUAGES C
 )
@@ -11,7 +11,6 @@ add_library(
 	${PROJECT_NAME} STATIC
 	./png.h
 	./pngconf.h
-	./pnglibconf.h
 	./pngpriv.h
 	./pngdebug.h
 	./pnginfo.h
