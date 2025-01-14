@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/api.dart';
 import 'package:sen/model/message.dart';
@@ -46,11 +49,13 @@ class _ShellScreenState extends State<ShellScreen> {
   late List<String> _enumeration;
   late String _value;
   late ShellController _shellController;
+  late ScreenshotController _screenshotController;
 
   @override
   void initState() {
     _inputController = TextEditingController();
     _scrollController = ScrollController();
+    _screenshotController = ScreenshotController();
     _messages = [];
     _shellController = ShellController(
       setState: (function) {
@@ -284,7 +289,11 @@ class _ShellScreenState extends State<ShellScreen> {
   }
 
   void _sendCompletedValue(String? value) {
+    final los = AppLocalizations.of(context)!;
     _completer!.complete(value);
+    if (value != null) {
+      _messages.add(Message(title: '${los.argument_got}: ', subtitle: value, color: 'green'));
+    }
     _resetStage();
   }
 
@@ -303,24 +312,83 @@ class _ShellScreenState extends State<ShellScreen> {
     return _sendCompletedValue(value == los.yes ? '1' : '2');
   }
 
+  Future<void> _showDialog(
+    Uint8List image,
+  ) async {
+    final los = AppLocalizations.of(context)!;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(los.screenshot_taken),
+          content: Image.memory(
+            image,
+          ),
+          actions: [
+            TextButton(
+              child: Text(los.save),
+              onPressed: () async {
+                void closeDialog() => Navigator.of(context).pop();
+                final file = await FileHelper.saveFile(
+                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+                  suggestedName: 'screenshot.png',
+                );
+                if (file != null) {
+                  FileHelper.writeBuffer(source: file, data: image);
+                  closeDialog();
+                }
+              },
+            ),
+            TextButton(
+              child: Text(los.okay),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _takeScreenshot() async {
+    final imageBytes = await _screenshotController.capture();
+
+    if (imageBytes != null) {
+      await _showDialog(imageBytes);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return ExitHandler(
-      finished: _state != RunningState.running,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(los.shell),
-        ),
-        body: DropHandler(
-          inputController: _inputController,
-          child: ClientView(
-            state: _state,
-            messages: _messages,
-            scrollController: _scrollController,
-            makeStage: _makeStage,
-            stage: _stage,
-            onLaunch: () => _run(widget.arguments),
+    return Screenshot(
+      controller: _screenshotController,
+      child: ExitHandler(
+        finished: _state != RunningState.running,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(los.shell),
+            actions: [
+              Tooltip(
+                message: los.take_screenshot,
+                child: ElevatedButton(
+                  onPressed: _takeScreenshot,
+                  child: const Icon(Symbols.camera),
+                ),
+              ),
+            ],
+          ),
+          body: DropHandler(
+            inputController: _inputController,
+            child: ClientView(
+              state: _state,
+              messages: _messages,
+              scrollController: _scrollController,
+              makeStage: _makeStage,
+              stage: _stage,
+              onLaunch: () => _run(widget.arguments),
+            ),
           ),
         ),
       ),

@@ -86,6 +86,9 @@ namespace Sen::Kernel::JavaScript::XML {
 						JS_FreeAtom(context, index_atom);
 					}
 					JS_SetProperty(context, children_object, atom, array);
+				} 
+				else {
+					JS_SetProperty(context, children_object, atom, child_value);
 				}
 				JS_FreeAtom(context, atom);
 				JS_FreeValue(context, existing_value);

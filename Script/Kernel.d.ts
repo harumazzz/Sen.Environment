@@ -1934,21 +1934,6 @@ declare namespace Sen {
 							resolution: bigint,
 							has_label: boolean,
 						): void;
-
-						/**
-						 * Converts a PopCap Animation (PAM) file to Flash XFL format.
-						 *
-						 * @param animation {Sen.Script.Support.PopCap.Animation.SexyAnimation} animation struct to be converted.
-						 * @param destination {string} Path to the destination directory where the converted XFL files will be written.
-						 * @param resolution {bigint} The resolution to use for the generated XFL file (specific interpretation may depend on the implementation).
-						 * @returns {void} No return value, function writes converted XFL files to the destination directory.
-						 */
-						export function process(
-							animation: Sen.Script.Support.PopCap.Animation.SexyAnimation,
-							destination: string,
-							resolution: bigint,
-							has_label: boolean,
-						): void;
 					}
 
 					declare namespace FromFlash {
@@ -3038,22 +3023,13 @@ declare namespace Sen {
 					 * @returns {void} - Doesn't return any data, creates a WWise sound bank file at the specified destination.
 					 */
 					export function encode_fs(source: string, destination: string): void;
-					export function hash(source: string, destination: UInteger32): void;
 
 					/**
-					 * WWise Miscellaneous Support
+					 * Hash WWise ID
+					 * @param source - Source string
+					 * @param destination - Destination UInteger32 Wrapper
 					 */
-
-					declare namespace Miscellaneous {
-						export function add_music(
-							source: string,
-							global_data_source: string,
-							media_path: string,
-							media_list: bigint[],
-						): void;
-
-						export function create_soundbank(source: string, destination: string): void;
-					}
+					export function hash(source: string, destination: UInteger32): void;
 				}
 			}
 		}

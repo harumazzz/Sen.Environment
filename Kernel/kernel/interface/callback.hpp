@@ -528,8 +528,6 @@ namespace Sen::Kernel::Interface {
 					javascript.add_proxy(Script::Support::PopCap::Animation::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv}), "encode_fs"_sv);
 					// convert_fs
 					javascript.add_proxy(Script::Support::PopCap::Animation::ToFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "ToFlash"_sv}), "convert_fs"_sv);
-					// process
-					javascript.add_proxy(Script::Support::PopCap::Animation::ToFlash::process, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "ToFlash"_sv}), "process"_sv);
 					// convert_fs
 					javascript.add_proxy(Script::Support::PopCap::Animation::FromFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "FromFlash"_sv}), "convert_fs"_sv);
 					// to_flash
@@ -574,10 +572,6 @@ namespace Sen::Kernel::Interface {
 					javascript.add_proxy(Script::Support::WWise::SoundBank::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "encode_fs"_sv);
 					// hash
 					javascript.add_proxy(Script::Support::WWise::SoundBank::hash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "hash"_sv);
-					// add music
-					javascript.add_proxy(Script::Support::WWise::SoundBank::Miscellaneous::add_music, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv, "Miscellaneous"_sv}), "add_music"_sv);
-					// create soundbank
-					javascript.add_proxy(Script::Support::WWise::SoundBank::Miscellaneous::create_soundbank, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv, "Miscellaneous"_sv}), "create_soundbank"_sv);
 				}
 				// resource group
 				{

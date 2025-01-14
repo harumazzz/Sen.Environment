@@ -1,11 +1,12 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-class Message {
+class Message extends Equatable {
   final String title;
   final String? subtitle;
   final String? color;
 
-  Message({
+  const Message({
     required this.title,
     this.subtitle,
     this.color,
@@ -24,5 +25,24 @@ class Message {
 
   Color _getColorBasedOnTheme(BuildContext context) {
     return Theme.of(context).colorScheme.secondaryContainer;
+  }
+
+  @override
+  List<Object?> get props => [title, subtitle, color];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'color': color,
+    };
+  }
+
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      title: json['title'] as String,
+      subtitle: json['subtitle'] as String?,
+      color: json['color'] as String?,
+    );
   }
 }

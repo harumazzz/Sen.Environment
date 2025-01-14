@@ -760,5 +760,6 @@
 	"js.relaunch_tool": "You can relaunch the tool immediately or exit it",
 	"js.command_line_has_finished": "Command line has been finished!",
 	"js.host": "Host: {}",
-	"script.input_any_path_to_continue_or_provide_an_empty_string_to_exit": "Input any path to continue, or you can provide an empty string to exit immediately"
+	"script.input_any_path_to_continue_or_provide_an_empty_string_to_exit": "Input any path to continue, or you can provide an empty string to exit immediately",
+	"script.input_phase_stopped": "User has stopped provide argument, now begin processing phase"
 }

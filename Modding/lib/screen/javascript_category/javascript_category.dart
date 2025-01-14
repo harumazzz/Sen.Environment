@@ -40,7 +40,9 @@ class JavaScriptCategory extends StatelessWidget {
         final bloc = LoadScriptBloc(
           settingsCubit: BlocProvider.of<SettingsCubit>(context),
         );
-        bloc.add(LoadScripts(localizations: AppLocalizations.of(context)!));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          bloc.add(LoadScripts(localizations: los));
+        });
         return bloc;
       },
       child: Scaffold(

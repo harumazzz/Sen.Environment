@@ -11,10 +11,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
 
     struct PackagesSetting
     {
-        int rton_count;
-        int json_count;
-        std::string key;
-        std::string iv;
+        int rton_count{};
+        int json_count{};
+        std::string key{};
+        std::string iv{};
     };
 
     inline auto to_json(
@@ -41,11 +41,47 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
 
     struct Setting
     {
-        TextureFormatCategory texture_format_category;
-        bool only_high_resolution;
+        TextureFormatCategory texture_format_category{};
+        bool only_high_resolution{};
         bool unpack_packages{true};
-        PackagesSetting packages_setting;
+        PackagesSetting packages_setting{};
     };
+
+    template <typename Value> requires requires(Value v, std::string_view x) {
+        {v.template get<std::string>()} -> std::same_as<std::string>;
+        {v.template get_bigint<int64_t>()} -> std::same_as<int64_t>;
+        {v.get_property(x) } -> std::same_as<Value>;
+    }
+    inline static auto from_object (
+        Value& value,
+        PackagesSetting& setting
+    ) -> void
+    {
+        setting.iv = value.get_property("iv").get<std::string>();
+        setting.key = value.get_property("key").get<std::string>();
+        setting.rton_count = static_cast<int>(value.get_property("rton_count").get_bigint<int64_t>());
+        setting.json_count = static_cast<int>(value.get_property("json_count").get_bigint<int64_t>());
+        return;
+    }
+
+    template <typename Value> requires requires(Value v, std::string_view x) {
+        {v.template get<std::string>()} -> std::same_as<std::string>;
+        {v.template get_bigint<int64_t>()} -> std::same_as<int64_t>;
+        {v.get_property(x) } -> std::same_as<Value>;
+        {v.template get<bool>() } -> std::same_as<bool>;
+    }
+    inline static auto from_object (
+        Value& value,
+        Setting& setting
+    ) -> void
+    {
+        setting.texture_format_category = static_cast<TextureFormatCategory>(value.get_property("texture_format_category").get_bigint<int64_t>());
+        setting.only_high_resolution = value.get_property("only_high_resolution").get<bool>();
+        setting.unpack_packages = value.get_property("unpack_packages").get<bool>();
+        auto packages_setting = value.get_property("packages_setting");
+        from_object<Value>(packages_setting, setting.packages_setting);
+        return;
+    }
 
     inline auto to_json(
         nlohmann::ordered_json &nlohmann_json_j,

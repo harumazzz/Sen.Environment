@@ -275,5 +275,8 @@
 	"run_immediately_description": "Run Shell immediately once you enter",
 	"launch": "Launch",
 	"shell_configuration": "Shell Configuration",
-	"waiting_for_user": "Waiting for user"
+	"waiting_for_user": "Waiting for user",
+	"argument_got": "Argument got",
+	"screenshot_taken": "Screenshot taken",
+	"take_screenshot": "Take screenshot"
 }

@@ -28,49 +28,46 @@ class JavaScriptCategoryConfiguration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return Builder(builder: (context) {
-      final state = context.watch<SettingsCubit>().state;
-      return SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Symbols.warning),
-              title: Text(
-                los.show_confirm_dialog,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              subtitle: Text(
-                los.show_confirm_dialog_description,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              trailing: Checkbox(
-                value: state.jsShowConfirmDialog,
-                onChanged: (value) => _onChangeDialog(value, context),
-              ),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Symbols.warning),
+            title: Text(
+              los.show_confirm_dialog,
+              style: Theme.of(context).textTheme.labelLarge,
             ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Symbols.terminal),
-              title: Text(
-                los.run_as_launcher,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              subtitle: Text(
-                los.run_as_launcher_description,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              trailing: Checkbox(
-                value: state.jsRunAsLauncher,
-                onChanged: (value) => _onChangeLauncher(value, context),
-              ),
+            subtitle: Text(
+              los.show_confirm_dialog_description,
+              style: Theme.of(context).textTheme.labelMedium,
             ),
-          ],
-        ),
-      );
-    });
+            trailing: Checkbox(
+              value: context.watch<SettingsCubit>().state.jsShowConfirmDialog,
+              onChanged: (value) => _onChangeDialog(value, context),
+            ),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Symbols.terminal),
+            title: Text(
+              los.run_as_launcher,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            subtitle: Text(
+              los.run_as_launcher_description,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            trailing: Checkbox(
+              value: context.watch<SettingsCubit>().state.jsRunAsLauncher,
+              onChanged: (value) => _onChangeLauncher(value, context),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

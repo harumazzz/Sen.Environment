@@ -154,28 +154,28 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 auto packet_original_information = PacketOriginalInformation{};
                 try
                 {
-                    Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, group_stream);
+                    Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, group_stream);
                 }
                 catch (Exception &ex)
                 {
                     assert_conditional(false, fmt::format("{} at {}", ex.message(), group_id), "exchange_packet");
                 }
-                Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.version, definition.version, group_id, "popcap.rsb.custom.mismatch_scg_version");
-                Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.texture_format_category, setting.texture_format_category, group_id, "popcap.rsb.custom.mismatch_texture_format_category");
+                Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.version, definition.version, group_id, "popcap.rsb.custom.mismatch_scg_version");
+                Support::PopCap::ResourceStreamBundle::Common::compare_conditional(static_cast<int>(packet_original_information.texture_format_category), static_cast<int>(setting.texture_format_category), group_id, "popcap.rsb.custom.mismatch_texture_format_category");
                 auto &group_information = bundle.group[group_id];
                 group_information.composite = packet_original_information.composite;
                 resource_info.group[group_id].composite = packet_original_information.composite;
                 assert_conditional(packet_original_information.subgroup.size() != k_none_size, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.group_must_contain_at_least_one")), group_id), "exchange_packet");
                 for (auto &[subgroup_id, subgroup_value] : packet_original_information.subgroup)
                 {
-                    auto &subgroup_information = group_information.subgroup[subgroup_id] = Sen::Kernel::Support::PopCap::ResourceStreamBundle::SubgroupInformation{
-                        .category = Sen::Kernel::Support::PopCap::ResourceStreamBundle::SimpleCategoryInformation{
+                    auto &subgroup_information = group_information.subgroup[subgroup_id] = Support::PopCap::ResourceStreamBundle::SubgroupInformation{
+                        .category = Support::PopCap::ResourceStreamBundle::SimpleCategoryInformation{
                             .resolution = subgroup_value.info.texture.resolution}};
                     auto packet_stream = DataStreamView{subgroup_value.packet_data};
                     auto packet_structure = PacketStructure{};
                     auto get_packet_structure_only = true;
-                    Sen::Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_whole(packet_stream, packet_structure, get_packet_structure_only);
-                    Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(subgroup_information.compression, packet_structure.compression);
+                    Support::PopCap::ResourceStreamGroup::Unpack::process_whole(packet_stream, packet_structure, get_packet_structure_only);
+                    Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(subgroup_information.compression, packet_structure.compression);
                     // subgroup_information.compression = subgroup_value.compression_flag;
                     resource_info.group[group_id].subgroup[subgroup_id] = subgroup_value.info;
                     packet_data_section_view_stored[subgroup_id] = subgroup_value.packet_data;
@@ -188,7 +188,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                             {
                                 for (auto &[packet_id, packet_value] : subgroup_value.info.texture.packet)
                                 {
-                                    if (!Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::is_program_path(packet_value.path))
+                                    if (!Support::Miscellaneous::Custom::StreamCompressedGroup::Common::is_program_path(packet_value.path))
                                     {
                                         if (compare_string(resource.path, fmt::format("{}.ptx", packet_value.path)))
                                         {
@@ -232,22 +232,22 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         {
             auto packet_definition = PacketStructure{
                 .version = bundle.version};
-            Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(manifest_info.compression, packet_definition.compression);
+            Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(manifest_info.compression, packet_definition.compression);
             auto result = nlohmann::ordered_json{};
             if (manifest_info.allow_new_type_resource)
             {
 
-                Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(resource_info, result);
+                Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(resource_info, result);
             }
             else
             {
-                Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(resource_info, result);
+                Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(resource_info, result);
             }
             auto resources_name = toupper_back(fmt::format("resources{}", manifest_info.resource_additional_name));
             auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             if (manifest_info.allow_new_type_resource)
             {
-                auto encode = Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Encode(result);
+                auto encode = Support::PopCap::NewTypeObjectNotation::Encode(result);
                 encode.process();
                 auto newton_path = fmt::format("PROPERTIES\\{}.NEWTON", resources_name);
                 resource_data_section_view_stored[newton_path] = std::move(encode.sen->toBytes());
@@ -257,17 +257,17 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             else
             {
                 auto data_stream = DataStreamView{};
-                Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(data_stream, result.dump());
+                Support::PopCap::ReflectionObjectNotation::Encode::process_whole(data_stream, result.dump());
                 auto rton_path = fmt::format("PROPERTIES\\{}.RTON", resources_name);
                 resource_data_section_view_stored[rton_path] = std::move(data_stream.toBytes());
                 packet_definition.resource.emplace_back(Resource{
                     .path = String::to_posix_style(rton_path)});
             }
             auto packet_stream = DataStreamView{};
-            Sen::Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_whole(packet_stream, packet_definition, resource_data_section_view_stored);
+            Support::PopCap::ResourceStreamGroup::Pack::process_whole(packet_stream, packet_definition, resource_data_section_view_stored);
             auto manifest_name = toupper_back(fmt::format("__MANIFESTGROUP__{}", manifest_info.resource_additional_name));
             packet_data_section_view_stored[manifest_name] = std::move(packet_stream.toBytes());
-            bundle.group[manifest_name].subgroup[manifest_name] = Sen::Kernel::Support::PopCap::ResourceStreamBundle::SubgroupInformation{
+            bundle.group[manifest_name].subgroup[manifest_name] = Support::PopCap::ResourceStreamBundle::SubgroupInformation{
                 .compression = k_highest_compression_method,
                 .resource = packet_definition.resource};
             return;
@@ -282,7 +282,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             assert_conditional(definition.version == 4_ui, fmt::format("{}", Language::get("popcap.rsb.custom.version_is_not_support")), "exchange_bundle");
             auto bundle = BundleStructure{
                 .version = definition.version,
-                .texture_information_section_size = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(definition.texture_information_version)};
+                .texture_information_section_size = Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(definition.texture_information_version)};
             auto manifest = ManifestStructure{};
             auto packet_data_section_view_stored = DataSectionViewStored{};
             auto resource_info = CustomResourceInformation{};
@@ -292,7 +292,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             }
             exchange_packet(resource_info, bundle, packet_data_section_view_stored, definition, fmt::format("{}/packet", source), setting);
             exchange_manifest_group(bundle, packet_data_section_view_stored, resource_info, definition.manifest_info, setting);
-            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Pack::process_whole(stream, bundle, manifest, packet_data_section_view_stored);
+            Support::PopCap::ResourceStreamBundle::Pack::process_whole(stream, bundle, manifest, packet_data_section_view_stored);
             return;
         }
 

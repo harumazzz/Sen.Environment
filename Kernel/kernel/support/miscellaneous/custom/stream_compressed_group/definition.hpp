@@ -8,18 +8,18 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
 
-    enum DecodeMethod
+    enum class DecodeMethod : uint8_t
     {
         Simple = 0,
         Advanced,
-        Debug
+        Debug,
     };
 
-    enum TextureFormatCategory
+    enum class TextureFormatCategory : uint8_t
     {
         Android,
         IOS,
-        Chinese
+        Chinese,
     };
 
     struct Setting
@@ -27,6 +27,21 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         DecodeMethod decode_method;
         bool animation_split_label;
     };
+
+    template <typename Value> requires requires(Value v, std::string_view x) {
+        { v.get_property(x) } -> std::same_as<Value>;
+        { v.template get_bigint<int64_t>() } -> std::same_as<int64_t>;
+        { v.template get<bool>() } -> std::same_as<bool>;
+    } 
+    inline static auto from_object (
+        Value& value,
+        Setting& setting
+    ) -> void
+    {
+        setting.decode_method = static_cast<DecodeMethod>(value.get_property("decode_method").get_bigint<int64_t>());
+        setting.animation_split_label = value.get_property("animation_split_label").get<bool>();
+        return;
+    }
 
     inline auto to_json(
         nlohmann::ordered_json &nlohmann_json_j,

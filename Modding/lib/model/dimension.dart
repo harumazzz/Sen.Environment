@@ -1,15 +1,9 @@
 class Dimension {
-  int width;
-  int height;
-  Dimension({
+  final int width;
+  final int height;
+
+  const Dimension({
     required this.width,
     required this.height,
   });
-
-  factory Dimension.empty({
-    width = 0,
-    height = 0,
-  }) {
-    throw UnimplementedError();
-  }
 }

@@ -4,6 +4,6 @@
 
 namespace Sen::Kernel {
 
-	inline auto constexpr version = 9;
+	inline auto constexpr version = 10;
 
 }

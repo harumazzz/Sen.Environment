@@ -8593,30 +8593,6 @@ namespace Sen::Kernel::Interface::Script
 							return JS_UNDEFINED; 
 						});
 					}
-
-					inline static auto process(
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue* argv) -> JSValue
-					{
-						return proxy_wrapper(context, "process"_sv, [&]() {
-							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "process");
-							auto value = Value::as_new_reference(context, argv[0]);
-							auto animation = JS::from(value);
-							auto destination = JS::Converter::get_string(context, argv[1]);
-							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[2]));
-							auto extra = Kernel::Support::PopCap::Animation::Convert::ExtraInfo{.resolution = resolution};
-							if (JS::Converter::get_bool(context, argv[3])) {
-								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_whole(animation, extra, destination);
-							}
-							else {
-								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_whole(animation, extra, destination);
-							}
-							Kernel::FileSystem::write_json(fmt::format("{}/data.json", destination), extra);
-							return JS_UNDEFINED; 
-						});
-					}
 				}
 
 				namespace Miscellaneous
@@ -8651,14 +8627,22 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = argv[1];
 							auto doc = Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument{};
 							Kernel::Support::PopCap::Animation::Miscellaneous::Dump::process_fs(source, doc);
-							auto atom_sprite = Atom(context, "sprite");  
-							JS_DefinePropertyValue(context, destination, atom_sprite.value, JS::Converter::to_array(context, doc.sprite), int{JS_PROP_C_W_E});
-							auto atom_image = Atom(context, "image");  
-							JS_DefinePropertyValue(context, destination, atom_image.value, JS::Converter::to_array(context, doc.image), int{JS_PROP_C_W_E});
-							auto atom_media = Atom(context, "media"); 
-							JS_DefinePropertyValue(context, destination, atom_media.value, JS::Converter::to_array(context, doc.media), int{JS_PROP_C_W_E});
-							auto atom_action = Atom(context, "action");  
-							JS_DefinePropertyValue(context, destination, atom_action.value, JS::Converter::to_array(context, doc.action), int{JS_PROP_C_W_E});
+							{
+								auto atom_sprite = Atom{context, "sprite"};  
+								JS_DefinePropertyValue(context, destination, atom_sprite.value, JS::Converter::to_array(context, doc.sprite), int{JS_PROP_C_W_E});
+							}
+							{
+								auto atom_image = Atom{context, "image"};  
+								JS_DefinePropertyValue(context, destination, atom_image.value, JS::Converter::to_array(context, doc.image), int{JS_PROP_C_W_E});
+							}
+							{
+								auto atom_media = Atom{context, "media"}; 
+								JS_DefinePropertyValue(context, destination, atom_media.value, JS::Converter::to_array(context, doc.media), int{JS_PROP_C_W_E});
+							}
+							{
+								auto atom_action = Atom{context, "action"};  
+								JS_DefinePropertyValue(context, destination, atom_action.value, JS::Converter::to_array(context, doc.action), int{JS_PROP_C_W_E});
+							}
 							return JS_UNDEFINED; 
 						});
 					}
@@ -8894,7 +8878,9 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto value = Value::as_new_reference(context, argv[2]);
-							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, JS::from(value));
+							auto setting = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Setting{};
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::from_object(value, setting);
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, setting);
 							return JS_UNDEFINED;
 						});
 					}
@@ -8911,7 +8897,9 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto value = Value::as_new_reference(context, argv[2]);
-							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, JS::from(value));
+							auto setting = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Setting{};
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::from_object(value, setting);
+							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, setting);
 							return JS_UNDEFINED;
 						});
 					}
@@ -8932,7 +8920,9 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto value = Value::as_new_reference(context, argv[2]);
-							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, JS::from(value));
+							auto setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting{};
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::from_object(value, setting);
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, setting);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -8949,7 +8939,9 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							auto value = Value::as_new_reference(context, argv[2]);
-							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, JS::from(value));
+							auto setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting{};
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::from_object(value, setting);
+							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, setting);
 							return JS_UNDEFINED; 
 						});
 					}
@@ -9142,45 +9134,6 @@ namespace Sen::Kernel::Interface::Script
 
 			namespace SoundBank
 			{
-
-				namespace Miscellaneous
-				{
-
-					inline static auto add_music(
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue* argv
-					) -> JSValue
-					{
-						return proxy_wrapper(context, "add_music"_sv, [&]() {
-							assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "add_music");
-							auto source = JS::Converter::get_string(context, argv[0]);
-							auto global_data_source = JS::Converter::get_string(context, argv[1]);
-							auto media_source = JS::Converter::get_string(context, argv[2]);
-							auto value = Value::as_new_reference(context, argv[3]);
-							Kernel::Support::WWise::SoundBank::Miscellaneous::Support::add_music(source, global_data_source, media_source, JS::from(value));
-							return JS_UNDEFINED; 
-						});
-					}
-
-					inline static auto create_soundbank(
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue* argv
-					) -> JSValue
-					{
-						return proxy_wrapper(context, "create_soundbank"_sv, [&]() {
-							assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "create_soundbank");
-							auto source = JS::Converter::get_string(context, argv[0]);
-							auto destination = JS::Converter::get_string(context, argv[1]);
-							Kernel::Support::WWise::SoundBank::Miscellaneous::Support::create_soundbank(source, destination);
-							return JS_UNDEFINED; 
-						});
-					}
-
-				}
 
 				inline static auto decode_fs(
 					JSContext *context,

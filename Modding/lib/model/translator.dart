@@ -4,7 +4,7 @@ class Translator {
   final String imageCover;
   final List<List<String>> contacts;
 
-  Translator({
+  const Translator({
     required this.name,
     required this.discord,
     required this.imageCover,

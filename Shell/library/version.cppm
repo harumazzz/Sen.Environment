@@ -4,6 +4,6 @@ export module sen.environment.shell.library.version;
 
 export namespace Sen::Shell {
 
-	inline auto constexpr version = 6;
+	inline auto constexpr version = 7;
 
 }

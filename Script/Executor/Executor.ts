@@ -711,7 +711,7 @@ namespace Sen.Script.Executor {
 			input = Kernel.Console.readline().trim();
 			switch (input) {
 				case '':
-					return;
+					break loop;
 				case ':p':
 					Console.argument(Kernel.Language.get('input_type'));
 					[Kernel.Language.get('file'), Kernel.Language.get('directory')].forEach(
@@ -760,6 +760,7 @@ namespace Sen.Script.Executor {
 				format(Kernel.Language.get('js.input_is_not_a_file_or_directory'), input),
 			);
 		}
+		Console.warning(Kernel.Language.get('script.input_phase_stopped'));
 	}
 
 	export function forward<Argument extends Base>(argument: Argument): void {
