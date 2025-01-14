@@ -11,6 +11,7 @@ add_library(
 	${PROJECT_NAME} STATIC
 	./png.h
 	./pngconf.h
+	./pnglibconf.h
 	./pngpriv.h
 	./pngdebug.h
 	./pnginfo.h

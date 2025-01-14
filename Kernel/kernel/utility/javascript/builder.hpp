@@ -64,6 +64,18 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline static auto get_opaque_value(
+		JSContext* context,
+		JSValue value,
+		JSClassID class_id
+	) -> T*
+	{
+		auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
+		assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
+		return obj;
+	}
+
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline static auto make_handle(
 		JSContext* context,
 		JSValue value,
@@ -116,18 +128,6 @@ namespace Sen::Kernel::JavaScript {
 		return [](T* obj) {
 			delete obj;
 		};
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline static auto get_opaque_value(
-		JSContext* context,
-		JSValue value,
-		JSClassID class_id
-	) -> T*
-	{
-		auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
-		assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
-		return obj;
 	}
 
 	template <typename T>
@@ -245,7 +245,7 @@ namespace Sen::Kernel::JavaScript {
 		}
 		auto atom = Atom{ context, class_name };
 		JS_DefinePropertyValue(context, parent_obj, atom.value, ctor, int{ JS_PROP_C_W_E });
-		parent_obj = JS_UNDEFINED;
+		parent_obj = JS_UNINITIALIZED;
 		JS_FreeValue(context, parent_obj);
 		for (auto& value : allocated) {
 			JS_FreeValue(context, value);
@@ -264,7 +264,7 @@ namespace Sen::Kernel::JavaScript {
 	{
 		auto atom = Atom{context, name};
 		auto value = JS_GetProperty(context, source, atom.value);
-		assert_conditional(static_cast<bool>(JS_IsException(value)), fmt::format("Cannot get property \"{}\" in object", name), "get_value_from_object");
+		assert_conditional(!(static_cast<bool>(JS_IsException(value))), fmt::format("Cannot get property \"{}\" in object", name), "get_value_from_object");
 		return value;
 	}
 
@@ -283,7 +283,7 @@ namespace Sen::Kernel::JavaScript {
 	) -> JSValue
 	{
 		auto destination = JS_NewObjectProtoClass(context, proto, class_id);
-		assert_conditional(static_cast<bool>(JS_IsException(destination)), fmt::format("Cannot initialize an object, class id: \"{}\"", class_id), "get_prototype_from_object");
+		assert_conditional(!(static_cast<bool>(JS_IsException(destination))), fmt::format("Cannot initialize an object, class id: \"{}\"", class_id), "get_prototype_from_object");
 		return destination;
 	}
 
@@ -298,4 +298,85 @@ namespace Sen::Kernel::JavaScript {
 		return data;
 	}
 
+	struct Builder {
+
+	private:
+
+		template <typename T>
+		struct is_container : std::false_type {};
+
+		template <typename T, typename Alloc>
+		struct is_container<std::vector<T, Alloc>> : std::true_type {};
+
+		template <typename T, std::size_t N>
+		struct is_container<std::array<T, N>> : std::true_type {};
+
+		template <typename T>
+		struct is_map : std::false_type {};
+
+		template <typename Key, typename Value, typename Compare, typename Alloc>
+		struct is_map<std::map<Key, Value, Compare, Alloc>> : std::false_type {
+			static_assert(false, "Do not use std::map");
+		};
+
+		template <typename Key, typename Value, typename Hash, typename KeyEqual, typename Alloc>
+		struct is_map<std::unordered_map<Key, Value, Hash, KeyEqual, Alloc>> : std::false_type {
+			static_assert(false, "Do not use std::unordered_map");
+		};
+
+		template <typename Key, typename Value>
+		struct is_map<tsl::ordered_map<Key, Value>> : std::true_type {};
+
+		template <typename T> requires is_container<T>::value
+		static auto make_array(
+			JSContext* context,
+			T& value
+		) -> JSValue
+		{
+			return JS_UNDEFINED;
+		}
+
+		template <typename T> requires is_map<T>::value
+		static auto make_object(
+			JSContext* context,
+			T& value
+		) -> JSValue
+		{
+			return JS_UNDEFINED;
+		}
+
+	public:
+
+		template <typename Callable> requires std::is_function<std::remove_pointer_t<std::decay_t<Callable>>>::value
+		static auto make_function_declaration(
+			JSContext* context,
+			Callable&& function
+		) -> JSValue
+		{
+			if constexpr (std::is_same<std::invoke_result_t<Callable>, void>::value) {
+				function();
+				return JS_UNDEFINED;
+			}
+			auto result = function();
+			if constexpr (std::is_integral<std::invoke_result_t<Callable>>::value && !std::is_floating_point< std::invoke_result_t<Callable>>::value && !std::is_pointer<std::invoke_result_t<Callable>>::value) {
+				static_assert(sizeof(std::invoke_result_t<Callable>) != sizeof(bool), "value cannot be bool");
+				return Converter::to_bigint<std::invoke_result_t<Callable>>(context, result);
+			}
+			else if constexpr (std::is_floating_point<std::invoke_result_t<Callable>>::value && !std::is_integral<std::invoke_result_t<Callable>>::value) {
+				return Converter::to_number(context, result);
+			}
+			else if constexpr (std::is_same<std::invoke_result_t<Callable>, bool>::value) {
+				return Converter::to_bool(context, result);
+			}
+			else if constexpr (is_map<std::invoke_result_t<Callable>>::value) {
+				return make_object<std::invoke_result_t<Callable>>(context, result);
+			}
+			else if constexpr (is_container<std::invoke_result_t<Callable>>::value) {
+				return make_array<std::invoke_result_t<Callable>>(context, result);
+			}
+			else {
+				static_assert(false, "case not implemented");
+			}
+		}
+	};
 }

@@ -1,28 +1,40 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
+import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
 import 'package:sen/screen/animation_viewer/control_button.dart';
+import 'package:sen/screen/animation_viewer/label_info.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class AnimationViewer extends ConsumerStatefulWidget {
-  const AnimationViewer({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({
+    super.key,
+    required this.initialDirectoryCubit,
+    required this.selectedImageBloc,
+    required this.selectedSpriteBloc,
+    required this.selectedLabelBloc,
+  });
+
+  final InitialDirectoryCubit initialDirectoryCubit;
+
+  final SelectedImageBloc selectedImageBloc;
+
+  final SelectedSpriteBloc selectedSpriteBloc;
+  final SelectedLabelBloc selectedLabelBloc;
 
   @override
-  ConsumerState<AnimationViewer> createState() => _AnimationViewerState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
   late List<String> _sprite;
@@ -33,6 +45,31 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
   late AnimationController _animationController;
   String? _animationFile;
   String? _mediaDirectory;
+
+  late VisualHelper _visualHelper;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(vsync: this);
+    _controller = TextEditingController();
+    _visualHelper = VisualHelper(
+      context: context,
+    );
+    super.initState();
+    _sprite = [];
+    _image = [];
+    _media = [];
+    _label = [];
+    _updateScreens();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _controller.dispose();
+    _visualHelper.dispose();
+    super.dispose();
+  }
 
   Future<void> _onUploadMedia() async {
     final los = AppLocalizations.of(context)!;
@@ -50,17 +87,13 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
             ),
             IconButton(
               onPressed: () async {
-                void setWorkingDirectory(String source) {
-                  BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfDirectory(source: source);
-                }
-
                 final directory = await FileHelper.uploadDirectory(
-                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+                  initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
                 );
                 if (directory != null) {
                   _controller.text = directory;
                   _mediaDirectory = directory;
-                  setWorkingDirectory(directory);
+                  widget.initialDirectoryCubit.setDirectoryOfDirectory(source: directory);
                 }
               },
               icon: const Icon(Symbols.drive_folder_upload),
@@ -70,8 +103,8 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
         actions: [
           TextButton(
             onPressed: () {
-              VisualHelper.loadImageSource(_controller.text);
-              VisualHelper.hasMedia = true;
+              _visualHelper.loadImageSource(_controller.text);
+              _visualHelper.hasMedia = true;
               Navigator.of(context).pop();
             },
             child: Text(los.okay),
@@ -90,27 +123,37 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
 
   void _loadMedia() {
     _cleanUp();
-    for (final image in VisualHelper.animation.image) {
+    for (final image in _visualHelper.animation.image) {
       _image.add(image.path);
       _media.add('${image.path}.png');
     }
-    ref.read(selectedImageListProvider.notifier).allocate(VisualHelper.animation.image.length);
-    for (final sprite in VisualHelper.animation.sprite) {
+    widget.selectedImageBloc.add(
+      SelectedImageAllocateEvent(
+        size: _visualHelper.animation.image.length,
+      ),
+    );
+    for (final sprite in _visualHelper.animation.sprite) {
       _sprite.add(sprite.name);
     }
-    ref.read(selectedSpriteListNotifier.notifier).allocate(VisualHelper.animation.sprite.length);
+    widget.selectedSpriteBloc.add(SelectedSpriteAllocateEvent(
+      size: _visualHelper.animation.sprite.length,
+    ));
     var labelName = 'main';
-    _label.add('main');
-    VisualHelper.labelInfo[labelName] =
-        LabelInfo(startIndex: 0, endIndex: VisualHelper.animation.mainSprite.frame.length - 1);
-    for (var frameIndex = 0; frameIndex < VisualHelper.animation.mainSprite.frame.length; ++frameIndex) {
-      final frameLabelName = VisualHelper.animation.mainSprite.frame[frameIndex].label;
+    _label.add(labelName);
+    _visualHelper.labelInfo[labelName] = LabelInfo(
+      startIndex: 0,
+      endIndex: _visualHelper.animation.mainSprite.frame.length - 1,
+    );
+    for (var frameIndex = 0; frameIndex < _visualHelper.animation.mainSprite.frame.length; ++frameIndex) {
+      final frameLabelName = _visualHelper.animation.mainSprite.frame[frameIndex].label;
       if (frameLabelName != '' && frameLabelName != labelName) {
         labelName = frameLabelName;
-        VisualHelper.labelInfo[labelName] = LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
+        _visualHelper.labelInfo[labelName] = LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
         _label.add(labelName);
       }
-      ++VisualHelper.labelInfo[labelName]!.endIndex;
+      _visualHelper.labelInfo[labelName] = _visualHelper.labelInfo[labelName]!.copyWith(
+        endIndex: _visualHelper.labelInfo[labelName]!.endIndex + 1,
+      );
     }
   }
 
@@ -160,25 +203,23 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
     }
   }
 
-  void _setWorkingDirectory(String source) {
-    BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfFile(source: source);
-  }
-
   void _onUploadFile() async {
+    void resetImageEvent() => widget.selectedImageBloc.add(const SelectedImageResetEvent());
+    void resetSpriteEvent() => widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
+    void resetLabelEvent() => widget.selectedLabelBloc.add(const ResetLabelEvent());
     final file = await FileHelper.uploadFile(
-      initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+      initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
     );
     if (file != null) {
       try {
-        _setWorkingDirectory(file);
+        widget.initialDirectoryCubit.setDirectoryOfFile(source: file);
         _animationFile = file;
-        ref.read(selectedLabel.notifier).resetLabel();
-        ref.read(selectedImageListProvider.notifier).reset();
-        ref.read(selectedSpriteListNotifier.notifier).reset();
+        resetLabelEvent();
+        resetSpriteEvent();
+        resetImageEvent();
         _resetAnimation();
-        VisualHelper.dispose();
-        await VisualHelper.loadAnimation(file);
-        VisualHelper.hasAnimation = true;
+        await _visualHelper.loadAnimation(file);
+        _visualHelper.hasAnimation = true;
         await _onUploadMedia();
         _loadMedia();
         setState(() {
@@ -193,8 +234,8 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
   void _onDragFile(
     String file,
   ) async {
-    await VisualHelper.loadAnimation(file);
-    VisualHelper.hasAnimation = true;
+    await _visualHelper.loadAnimation(file);
+    _visualHelper.hasAnimation = true;
     await _onUploadMedia();
     _resetAnimation();
     _loadMedia();
@@ -230,7 +271,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
                     tooltip: los.enable_all_image,
                     icon: Symbols.select_all,
                     onPressed: () {
-                      ref.read(selectedImageListProvider.notifier).enableAll();
+                      widget.selectedImageBloc.add(const SelectedImageEnableAllEvent());
                     },
                   ),
                   const SizedBox(width: 10.0),
@@ -238,7 +279,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
                     tooltip: los.disable_all_image,
                     icon: Symbols.deselect,
                     onPressed: () {
-                      ref.read(selectedImageListProvider.notifier).disableAll();
+                      widget.selectedImageBloc.add(const SelectedImageDisableAllEvent());
                     },
                   )
                 ],
@@ -254,7 +295,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
                     tooltip: los.enable_all_sprite,
                     icon: Symbols.select_all,
                     onPressed: () {
-                      ref.read(selectedSpriteListNotifier.notifier).enableAll();
+                      widget.selectedSpriteBloc.add(const SelectedSpriteEnableAllEvent());
                     },
                   ),
                   const SizedBox(width: 10.0),
@@ -262,7 +303,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
                     tooltip: los.disable_all_sprite,
                     icon: Symbols.deselect,
                     onPressed: () {
-                      ref.read(selectedSpriteListNotifier.notifier).disableAll();
+                      widget.selectedSpriteBloc.add(const SelectedSpriteDisableAllEvent());
                     },
                   ),
                 ],
@@ -282,6 +323,7 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
 
   void _updateScreens() {
     final mediaScreen = MediaScreen(
+      visualHelper: _visualHelper,
       sprite: _sprite,
       image: _image,
       media: _media,
@@ -289,7 +331,9 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
     final labelScreen = LabelScreen(label: _label);
     _screen = <Widget>[
       AnimationScreen(
-        key: ValueKey(VisualHelper.hasAnimation),
+        key: ValueKey(_visualHelper.hasAnimation),
+        visualHelper: _visualHelper,
+        selectedLabelBloc: widget.selectedLabelBloc,
         onUploadFile: _onUploadFile,
         onDragFile: _onDragFile,
         hasFile: false,
@@ -300,26 +344,6 @@ class _AnimationViewerState extends ConsumerState<AnimationViewer> with SingleTi
       labelScreen,
       mediaScreen,
     ];
-  }
-
-  @override
-  void initState() {
-    _animationController = AnimationController(vsync: this);
-    _controller = TextEditingController();
-    super.initState();
-    _sprite = [];
-    _image = [];
-    _media = [];
-    _label = [];
-    _updateScreens();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _controller.dispose();
-    VisualHelper.dispose();
-    super.dispose();
   }
 
   late List<Widget> _screen;

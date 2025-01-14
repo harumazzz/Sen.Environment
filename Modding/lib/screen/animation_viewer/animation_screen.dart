@@ -2,15 +2,17 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
+import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/screen/animation_viewer/control_panel.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class AnimationScreen extends ConsumerStatefulWidget {
+class AnimationScreen extends StatefulWidget {
   const AnimationScreen({
     super.key,
     required this.hasFile,
@@ -19,6 +21,8 @@ class AnimationScreen extends ConsumerStatefulWidget {
     required this.mediaScreen,
     required this.labelScreen,
     required this.animationController,
+    required this.visualHelper,
+    required this.selectedLabelBloc,
   });
 
   final bool hasFile;
@@ -33,11 +37,15 @@ class AnimationScreen extends ConsumerStatefulWidget {
 
   final AnimationController animationController;
 
+  final VisualHelper visualHelper;
+
+  final SelectedLabelBloc selectedLabelBloc;
+
   @override
-  ConsumerState<AnimationScreen> createState() => _AnimationScreenState();
+  State<AnimationScreen> createState() => _AnimationScreenState();
 }
 
-class _AnimationScreenState extends ConsumerState<AnimationScreen> {
+class _AnimationScreenState extends State<AnimationScreen> {
   late ValueNotifier<double> _xOffsetNotifier;
   late ValueNotifier<double> _yOffsetNotifier;
   bool _dragging = false;
@@ -91,8 +99,8 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
         if (details.files.isNotEmpty) {
           final file = details.files.first;
           widget.onDragFile(file.path);
-          if (VisualHelper.hasAnimation) {
-            VisualHelper.workingFrameRate = VisualHelper.animation.frameRate.toDouble();
+          if (widget.visualHelper.hasAnimation) {
+            widget.visualHelper.workingFrameRate = widget.visualHelper.animation.frameRate.toDouble();
           }
         }
       },
@@ -101,25 +109,24 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
   }
 
   void _loadWorkingSprite(int index) {
-    setState(() {
-      final labelInfo = VisualHelper.labelInfo[ref.read<String>(selectedLabel)]!;
-      final duration = ((labelInfo.endIndex - labelInfo.startIndex) / VisualHelper.workingFrameRate * 1000).toInt();
-      widget.animationController.duration = Duration(milliseconds: duration);
-      _animationVisual = VisualHelper.visualizeSprite(index, widget.animationController, ref);
-      _animationVisual = SizedBox.fromSize(
-        size: Size(VisualHelper.animation.size.width, VisualHelper.animation.size.height),
-        child: UnconstrainedBox(
-          child: SizedOverflowBox(
-            alignment: AlignmentDirectional.topStart,
-            size: Size(VisualHelper.animation.size.width, VisualHelper.animation.size.height),
-            child: _animationVisual,
-          ),
+    final labelInfo = widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
+    final duration =
+        ((labelInfo.endIndex - labelInfo.startIndex) / widget.visualHelper.workingFrameRate * 1000).toInt();
+    widget.animationController.duration = Duration(milliseconds: duration);
+    _animationVisual = widget.visualHelper.visualizeSprite(index, widget.animationController);
+    _animationVisual = SizedBox.fromSize(
+      size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+      child: UnconstrainedBox(
+        child: SizedOverflowBox(
+          alignment: AlignmentDirectional.topStart,
+          size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+          child: _animationVisual,
         ),
-      );
-      if (!_isPause) {
-        widget.animationController.repeat();
-      }
-    });
+      ),
+    );
+    if (!_isPause) {
+      widget.animationController.repeat();
+    }
   }
 
   Widget _buildMainContainer({
@@ -127,28 +134,30 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
     required double xOffset,
     required double yOffset,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Transform(
-        transform: VisualHelper.transformMatrixFromVariant([
-          xOffset,
-          yOffset,
-        ]),
-        child: Transform.scale(
-          scale: scale,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.6,
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
-            ),
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: _animationVisual,
+    return Builder(builder: (context) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Transform(
+          transform: widget.visualHelper.transformMatrixFromVariant([
+            xOffset,
+            yOffset,
+          ]),
+          child: Transform.scale(
+            scale: scale,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.6,
+                maxHeight: MediaQuery.of(context).size.height * 0.6,
+              ),
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: _animationVisual,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildAnimationVisual() {
@@ -169,8 +178,8 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
   }
 
   Widget _painterOrUpload() {
-    if (VisualHelper.hasAnimation && VisualHelper.hasMedia) {
-      _loadWorkingSprite(VisualHelper.animation.sprite.length);
+    if (widget.visualHelper.hasAnimation && widget.visualHelper.hasMedia) {
+      _loadWorkingSprite(widget.visualHelper.animation.sprite.length);
       return _buildAnimationVisual();
     } else {
       return ClipRRect(
@@ -239,6 +248,9 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SelectedLabelBloc>();
+    context.watch<SelectedImageBloc>();
+    context.watch<SelectedSpriteBloc>();
     final los = AppLocalizations.of(context)!;
     return Column(
       children: [
@@ -267,6 +279,7 @@ class _AnimationScreenState extends ConsumerState<AnimationScreen> {
           ),
         ),
         ControlPanel(
+          visualHelper: widget.visualHelper,
           animationController: widget.animationController,
           isPause: _isPause,
           toggleEvent: () {

@@ -39,9 +39,8 @@ class JavaScriptCategory extends StatelessWidget {
       create: (context) {
         final bloc = LoadScriptBloc(
           settingsCubit: BlocProvider.of<SettingsCubit>(context),
-          localizations: los,
         );
-        bloc.add(LoadScripts());
+        bloc.add(LoadScripts(localizations: AppLocalizations.of(context)!));
         return bloc;
       },
       child: Scaffold(
@@ -80,7 +79,11 @@ class JavaScriptCategory extends StatelessWidget {
                       child: Text(los.reload_script),
                     ),
                     onPressed: () {
-                      BlocProvider.of<LoadScriptBloc>(context).add(ReloadScripts());
+                      BlocProvider.of<LoadScriptBloc>(context).add(
+                        ReloadScripts(
+                          localizations: AppLocalizations.of(context)!,
+                        ),
+                      );
                     },
                   ),
                 );

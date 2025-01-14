@@ -1,43 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
+import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/model/animation.dart' as model;
-import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
+import 'package:sen/screen/animation_viewer/label_info.dart';
 import 'package:sen/service/file_helper.dart';
 import 'dart:collection';
 import 'dart:math' as math;
 
-final Matrix4 initialMatrix = Matrix4.identity();
-
-final model.Color initialColor = [1.0, 1.0, 1.0, 1.0];
-
-class LabelInfo {
-  int startIndex;
-  int endIndex;
-
-  LabelInfo({
-    required this.startIndex,
-    required this.endIndex,
-  });
-}
-
 class VisualHelper {
-  static late model.SexyAnimation animation;
+  Matrix4 initialMatrix;
+  model.Color initialColor;
+  late model.SexyAnimation animation;
+  List<ImageProvider?> imageSource;
+  bool hasAnimation;
+  bool hasMedia;
+  int workingSpriteIndex;
+  double workingFrameRate;
+  Map<String, LabelInfo> labelInfo;
+  final BuildContext context;
 
-  static List<ImageProvider?> imageSource = [];
+  VisualHelper({
+    Matrix4? initialMatrix,
+    model.Color? initialColor,
+    model.SexyAnimation? animation,
+    List<ImageProvider?>? imageSource,
+    bool? hasAnimation,
+    bool? hasMedia,
+    int? workingSpriteIndex,
+    double? workingFrameRate,
+    required this.context,
+    Map<String, LabelInfo>? labelInfo,
+  })  : initialMatrix = initialMatrix ?? Matrix4.identity(),
+        initialColor = initialColor ?? [1.0, 1.0, 1.0, 1.0],
+        imageSource = imageSource ?? [],
+        hasAnimation = hasAnimation ?? false,
+        hasMedia = hasMedia ?? false,
+        workingSpriteIndex = workingSpriteIndex ?? 0,
+        workingFrameRate = workingFrameRate ?? 30,
+        labelInfo = labelInfo ?? {};
 
-  static bool hasAnimation = false;
-
-  static bool hasMedia = false;
-
-  static int workingSpriteIndex = 0;
-
-  static double workingFrameRate = 30;
-
-  static Map<String, LabelInfo> labelInfo = {};
-
-  static Future<void> loadAnimation(String path) async {
+  Future<void> loadAnimation(String path) async {
     dispose();
     animation = model.SexyAnimation.fromJson(
       await FileHelper.readJson(source: path),
@@ -45,11 +49,11 @@ class VisualHelper {
     return;
   }
 
-  static void loadImageSource(
+  void loadImageSource(
     String directory,
   ) {
-    for (var image in animation.image) {
-      var file = '$directory/${image.path}.png';
+    for (final image in animation.image) {
+      final file = '$directory/${image.path}.png';
       var source = null as MemoryImage?;
       if (FileHelper.isFile(file)) {
         source = MemoryImage(FileHelper.readBuffer(source: file));
@@ -59,7 +63,7 @@ class VisualHelper {
     return;
   }
 
-  static Matrix4 transformMatrixFromVariant(model.Transform transform) {
+  Matrix4 transformMatrixFromVariant(model.Transform transform) {
     final matrix = Matrix4.identity();
     switch (transform.length) {
       case 2:
@@ -96,35 +100,37 @@ class VisualHelper {
     return matrix;
   }
 
-  static ColorFilter makeColor(
+  ColorFilter makeColor(
     model.Color value,
   ) {
-    var result = ColorFilter.mode(
-        Color.fromARGB(
-          (255.0 * value[3]).toInt(),
-          (255.0 * value[0]).toInt(),
-          (255.0 * value[1]).toInt(),
-          (255.0 * value[2]).toInt(),
-        ),
-        BlendMode.modulate);
+    final result = ColorFilter.mode(
+      Color.fromARGB(
+        (255.0 * value[3]).toInt(),
+        (255.0 * value[0]).toInt(),
+        (255.0 * value[1]).toInt(),
+        (255.0 * value[2]).toInt(),
+      ),
+      BlendMode.modulate,
+    );
     return result;
   }
 
-  static Color colorFromVariant(model.Color color) {
+  Color colorFromVariant(model.Color color) {
     return Color.fromRGBO((color[0] * 255).round(), (color[1] * 255).round(), (color[2] * 255).round(), color[3]);
   }
 
-  static model.AnimationImage selectImage(int index) {
+  model.AnimationImage selectImage(int index) {
     var result = null as model.AnimationImage?;
     if (0 <= index && index < animation.image.length) {
       result = animation.image[index];
     } else {
+      // TODO
       throw Exception();
     }
     return result;
   }
 
-  static model.AnimationSprite selectSprite(
+  model.AnimationSprite selectSprite(
     int index,
   ) {
     var result = null as model.AnimationSprite?;
@@ -138,12 +144,12 @@ class VisualHelper {
     return result;
   }
 
-  //-----------------------
-
-  static Widget visualizeImage(int index, WidgetRef ref) {
+  Widget visualizeImage(
+    int index,
+  ) {
     final image = selectImage(index);
     return Visibility(
-      visible: ref.watch(selectedImageListProvider)[index],
+      visible: context.read<SelectedImageBloc>().state.value[index],
       child: Transform(
         transform: transformMatrixFromVariant(image.transform),
         child: imageSource[index] == null
@@ -158,10 +164,9 @@ class VisualHelper {
     );
   }
 
-  static Widget visualizeSprite(
+  Widget visualizeSprite(
     int index,
     AnimationController animationController,
-    WidgetRef ref,
   ) {
     final sprite = selectSprite(index);
     final isMainSprite = index == animation.sprite.length;
@@ -169,16 +174,17 @@ class VisualHelper {
     var frameIndex = 0;
     for (final frame in sprite.frame) {
       for (final removeIndex in frame.remove) {
-        var layer = layerList[removeIndex]!;
+        final layer = layerList[removeIndex]!;
         layer.isRemoved = true;
       }
-      for (var action in frame.append) {
+      for (final action in frame.append) {
         if (layerList.containsKey(action.index)) {
+          // TODO
           throw Exception();
         }
-        final currentLabel = ref.watch(selectedLabel);
-        var layer = layerList[action.index] = _VisualLayer();
-        var subController = isMainSprite
+        final currentLabel = context.read<SelectedLabelBloc>().state.label;
+        final layer = layerList[action.index] = _VisualLayer();
+        final subController = isMainSprite
             ? animationController
                 .drive(IntTween(begin: labelInfo[currentLabel]!.startIndex, end: labelInfo[currentLabel]!.endIndex - 1))
             : animationController.drive(
@@ -186,9 +192,8 @@ class VisualHelper {
               );
         layer.view = AnimatedBuilder(
           animation: subController,
-          child: !action.sprite
-              ? visualizeImage(action.resource, ref)
-              : visualizeSprite(action.resource, animationController, ref),
+          child:
+              !action.sprite ? visualizeImage(action.resource) : visualizeSprite(action.resource, animationController),
           builder: (context, child) {
             var index = subController.value;
             var property = layer.property[index];
@@ -209,8 +214,8 @@ class VisualHelper {
         layer.isRemoved = false;
         layer.isChanged = true;
       }
-      for (var action in frame.change) {
-        var layer = layerList[action.index]!;
+      for (final action in frame.change) {
+        final layer = layerList[action.index]!;
         if (layer.isChanged) {
           layer.property[frameIndex] = (
             transformMatrixFromVariant(action.transform),
@@ -224,7 +229,7 @@ class VisualHelper {
         }
         layer.isChanged = true;
       }
-      for (var layer in layerList.values) {
+      for (final layer in layerList.values) {
         if (layer.isRemoved) {
           continue;
         }
@@ -234,7 +239,7 @@ class VisualHelper {
         }
         layer.property[frameIndex] = layer.property[frameIndex - 1]!;
       }
-      frameIndex++;
+      ++frameIndex;
     }
 
     if (isMainSprite) {
@@ -244,7 +249,7 @@ class VisualHelper {
       );
     } else {
       return Visibility(
-        visible: ref.watch(selectedSpriteListNotifier)[index],
+        visible: context.read<SelectedSpriteBloc>().state.value[index],
         child: Stack(
           fit: StackFit.passthrough,
           children: layerList.values.map((value) => value.view).toList(),
@@ -253,7 +258,7 @@ class VisualHelper {
     }
   }
 
-  static void dispose() {
+  void dispose() {
     hasAnimation = false;
     hasMedia = false;
     workingFrameRate = 30;

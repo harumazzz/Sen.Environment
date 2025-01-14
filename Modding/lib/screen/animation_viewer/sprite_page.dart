@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_sprite.dart';
+import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 
-class SpritePage extends ConsumerWidget {
+class SpritePage extends StatelessWidget {
   const SpritePage({
     super.key,
     required this.sprite,
@@ -12,7 +12,7 @@ class SpritePage extends ConsumerWidget {
   final List<String> sprite;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: sprite.length,
       itemBuilder: (context, index) => Card(
@@ -26,9 +26,9 @@ class SpritePage extends ConsumerWidget {
           leading: const Icon(Symbols.image, size: 40),
           title: Text(sprite[index], style: Theme.of(context).textTheme.titleSmall),
           trailing: Checkbox(
-            value: ref.watch(selectedSpriteListNotifier)[index],
+            value: context.watch<SelectedSpriteBloc>().state.value[index],
             onChanged: (_) {
-              ref.read(selectedSpriteListNotifier.notifier).toggle(index);
+              context.read<SelectedSpriteBloc>().add(SelectedSpriteToggleEvent(index: index));
             },
           ),
         ),

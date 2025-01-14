@@ -296,12 +296,32 @@ namespace Sen::Kernel::JavaScript {
 			}
 
 			auto define_property(
+				std::string_view name,
+				JSValue value
+			) -> void
+			{
+				auto atom = Atom{thiz.context, name};
+				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value, JS_PROP_C_W_E);
+				return;
+			}
+
+			auto define_property(
 				uint32_t index,
 				Value&& value
 			) -> void
 			{
 				auto atom = Atom{ thiz.context, index };
 				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value.release_value(), JS_PROP_C_W_E);
+				return;
+			}
+
+			auto define_property(
+				uint32_t index,
+				JSValue value
+			) -> void
+			{
+				auto atom = Atom{ thiz.context, index };
+				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value, JS_PROP_C_W_E);
 				return;
 			}
 

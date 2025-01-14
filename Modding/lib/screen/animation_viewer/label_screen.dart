@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_label.dart';
+import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 
-class LabelScreen extends ConsumerWidget {
+class LabelScreen extends StatelessWidget {
   const LabelScreen({
     super.key,
     required this.label,
@@ -12,7 +12,7 @@ class LabelScreen extends ConsumerWidget {
   final List<String> label;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: label.length,
       itemBuilder: (context, index) => Tooltip(
@@ -24,7 +24,7 @@ class LabelScreen extends ConsumerWidget {
             trailing: IconButton(
               icon: const Icon(Symbols.play_arrow),
               onPressed: () {
-                ref.read(selectedLabel.notifier).setLabel(label[index]);
+                context.read<SelectedLabelBloc>().add(SetLabelEvent(newLabel: label[index]));
               },
             ),
             title: Text(label[index]),

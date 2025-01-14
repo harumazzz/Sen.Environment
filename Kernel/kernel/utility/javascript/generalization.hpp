@@ -17,7 +17,7 @@ namespace Sen::Kernel::JavaScript {
 		) -> JSValue
 		{
 			static_assert(false, "<% this case is not implemented %>");
-			JS_ThrowInternalError(context, fmt::format("{} is not implemented", typeid(T).name()));
+			JS_ThrowInternalError(context, fmt::format("{} is not implemented", typeid(T).name()).data());
 			return JS_EXCEPTION;
 		}
 

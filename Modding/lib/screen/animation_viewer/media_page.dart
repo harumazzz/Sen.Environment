@@ -6,9 +6,12 @@ class MediaPage extends StatelessWidget {
   const MediaPage({
     super.key,
     required this.media,
+    required this.visualHelper,
   });
 
   final List<String> media;
+
+  final VisualHelper visualHelper;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +25,12 @@ class MediaPage extends StatelessWidget {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(12),
-          leading: VisualHelper.imageSource[index] == null
+          leading: visualHelper.imageSource[index] == null
               ? const Icon(Symbols.broken_image, size: 40)
               : ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image(
-                    image: VisualHelper.imageSource[index]!,
+                    image: visualHelper.imageSource[index]!,
                     width: 40,
                     height: 40,
                     fit: BoxFit.cover,

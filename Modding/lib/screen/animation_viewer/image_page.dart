@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/screen/animation_viewer/provider/selected_image.dart';
+import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 
-class ImagePage extends ConsumerWidget {
+class ImagePage extends StatelessWidget {
   const ImagePage({
     super.key,
     required this.image,
@@ -12,7 +12,7 @@ class ImagePage extends ConsumerWidget {
   final List<String> image;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: image.length,
       itemBuilder: (context, index) => Card(
@@ -26,9 +26,9 @@ class ImagePage extends ConsumerWidget {
           leading: const Icon(Symbols.image, size: 40),
           title: Text(image[index], style: Theme.of(context).textTheme.titleSmall),
           trailing: Checkbox(
-            value: ref.watch(selectedImageListProvider)[index],
+            value: context.watch<SelectedImageBloc>().state.value[index],
             onChanged: (_) {
-              ref.read(selectedImageListProvider.notifier).toggle(index);
+              context.read<SelectedImageBloc>().add(SelectedImageToggleEvent(index: index));
             },
           ),
         ),

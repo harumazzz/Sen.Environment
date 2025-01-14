@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/item.dart';
-import 'package:sen/screen/animation_viewer/main_screen.dart';
+import 'package:sen/screen/animation_viewer/animation_viewer.dart';
 import 'package:sen/screen/home/configuration/javascript_category_configuration.dart';
 import 'package:sen/screen/home/configuration/level_maker_configuration.dart';
 import 'package:sen/screen/home/configuration/map_editor_configuration.dart';

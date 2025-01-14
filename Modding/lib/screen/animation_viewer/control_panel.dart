@@ -14,9 +14,12 @@ class ControlPanel extends StatelessWidget {
     required this.setState,
     required this.scaleNotifier,
     required this.forcePlay,
+    required this.visualHelper,
   });
 
   final bool Function() toggleEvent;
+
+  final VisualHelper visualHelper;
 
   final void Function(VoidCallback callback) setState;
 
@@ -65,9 +68,9 @@ class ControlPanel extends StatelessWidget {
               icon: Symbols.arrow_back,
               tooltip: los.backward,
               onPressed: () {
-                VisualHelper.workingFrameRate /= 2;
-                if (VisualHelper.workingFrameRate <= 0) {
-                  VisualHelper.workingFrameRate = 1;
+                visualHelper.workingFrameRate /= 2;
+                if (visualHelper.workingFrameRate <= 0) {
+                  visualHelper.workingFrameRate = 1;
                 }
                 setState(() {});
               },
@@ -92,9 +95,9 @@ class ControlPanel extends StatelessWidget {
               icon: Symbols.arrow_forward,
               tooltip: los.forward,
               onPressed: () {
-                VisualHelper.workingFrameRate *= 2;
-                if (VisualHelper.workingFrameRate > 240) {
-                  VisualHelper.workingFrameRate = 240;
+                visualHelper.workingFrameRate *= 2;
+                if (visualHelper.workingFrameRate > 240) {
+                  visualHelper.workingFrameRate = 240;
                 }
                 setState(() {});
               },

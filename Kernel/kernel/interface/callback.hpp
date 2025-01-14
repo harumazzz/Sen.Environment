@@ -100,6 +100,8 @@ namespace Sen::Kernel::Interface {
 						return Script::to_array_of_string(context, Executor::arguments);
 					}, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "arguments"_sv);
 				}
+					// deserialize
+					javascript.add_proxy(Script::test, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "test"_sv);
 				// xml
 				{
 					// deserialize

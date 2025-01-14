@@ -10,11 +10,9 @@ part 'load_script_state.dart';
 
 class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
   final SettingsCubit settingsCubit;
-  final AppLocalizations localizations;
 
   LoadScriptBloc({
     required this.settingsCubit,
-    required this.localizations,
   }) : super(LoadScriptInitial()) {
     on<LoadScripts>(_loadScript);
     on<ReloadScripts>(_reloadScript);
@@ -24,10 +22,11 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
     LoadScripts event,
     Emitter<LoadScriptState> emit,
   ) async {
-    return await _loadScriptFile(emit);
+    return await _loadScriptFile(event, emit);
   }
 
   Future<void> _loadScriptFile(
+    LoadScriptEvent event,
     Emitter<LoadScriptState> emit,
   ) async {
     emit(LoadScriptLoading());
@@ -37,7 +36,7 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
         final json = await FileHelper.readJsonAsync(source: scriptPath);
         emit(LoadScriptLoaded.fromJson(json));
       } else {
-        throw Exception(localizations.script_not_found);
+        throw Exception(event.localizations.script_not_found);
       }
     } catch (e) {
       emit(LoadScriptFailed(message: e.toString()));
@@ -48,6 +47,6 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
     ReloadScripts event,
     Emitter<LoadScriptState> emit,
   ) async {
-    return await _loadScriptFile(emit);
+    return await _loadScriptFile(event, emit);
   }
 }

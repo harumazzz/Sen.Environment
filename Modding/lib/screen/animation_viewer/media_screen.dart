@@ -6,17 +6,20 @@ import 'package:sen/screen/animation_viewer/image_page.dart';
 import 'package:sen/screen/animation_viewer/media_page.dart';
 import 'package:sen/screen/animation_viewer/sprite_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 
 class MediaScreen extends StatelessWidget {
   final List<String> sprite;
   final List<String> image;
   final List<String> media;
+  final VisualHelper visualHelper;
 
   const MediaScreen({
     super.key,
     required this.sprite,
     required this.image,
     required this.media,
+    required this.visualHelper,
   });
 
   @override
@@ -67,6 +70,7 @@ class MediaScreen extends StatelessWidget {
           child: TabBarView(
             children: <Widget>[
               MediaPage(
+                visualHelper: visualHelper,
                 media: media,
               ),
               ImagePage(

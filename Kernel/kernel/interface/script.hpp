@@ -144,6 +144,27 @@ namespace Sen::Kernel::Interface::Script
 		});
 	}
 
+	inline static auto test(
+		JSContext *context,
+		JSValue value,
+		int argc,
+		JSValue* argv
+	) -> JSValue
+	{
+		return proxy_wrapper(context, "test"_sv, [&]() {
+			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "test");
+			auto source = JS::Converter::get_string(context, argv[0]);
+			auto xml = tinyxml2::XMLDocument{};
+			auto state = xml.Parse(source.data(), source.size());
+			if (state != tinyxml2::XML_SUCCESS) {
+				throw Exception(fmt::format("XML cannot be loaded, data: {}", source), std::source_location::current(), "test");
+			}
+			auto raw_child = xml.FirstChild()->ToElement();
+			assert_conditional(raw_child != nullptr, "root element is null", "test");
+			return JS::XML::Read::xml2js(context, raw_child);;
+		});
+	}
+
 	namespace JSON
 	{
 
@@ -157,8 +178,8 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto json = nlohmann::ordered_json::parse(source);
-				auto js_obj = JS::to(context, json);
-				return js_obj;
+				auto object = JS::to(context, json);
+				return object;
 			});
 		}
 
@@ -172,8 +193,8 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto json = Kernel::FileSystem::read_json(source);
-				auto js_obj = JS::to(context, json.operator*());
-				return js_obj;
+				auto object = JS::to(context, json.operator*());
+				return object;
 			});
 		}
 
@@ -231,7 +252,6 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "load_language", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "load_language");
-				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "load_language");
 				Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
 				return JS_UNDEFINED;
 			});
@@ -247,7 +267,6 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "get", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get");
-				assert_conditional(JS_IsString(argv[0]), fmt::format("{} {} {} {}", Kernel::Language::get("kernel.expected_argument"), 0, Kernel::Language::get("is"), Kernel::Language::get("kernel.tuple.js_string")), "get");
 				auto result = Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
 				return JS::Converter::to_string(context, result.data());
 			});
@@ -2062,7 +2081,7 @@ namespace Sen::Kernel::Interface::Script
 						argv,
 						[&](int argc, JSValue* argv) -> Data* {
 							if (argc == 1) {
-								return new Data(JS_VALUE_GET_BOOL(argv[0]) == 0 ? false : true);
+								return new Data(JS::Converter::get_bool(context, argv[0]));
 							}
 							return nullptr;
 						},
@@ -2114,7 +2133,7 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					s->value = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
+					s->value = JS::Converter::get_bool(context, val);
 					return JS_UNDEFINED;
 				});
 			}
@@ -2228,8 +2247,7 @@ namespace Sen::Kernel::Interface::Script
 							return JS::Converter::to_array(context, List<double>{s->transform.begin(), s->transform.end()});
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot find any getter to magic %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any getter to magic %d", magic), "getter");
 						}
 					}
 				});
@@ -2262,8 +2280,7 @@ namespace Sen::Kernel::Interface::Script
 							break;
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot find any setter to magic %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any setter to magic %d", magic), "setter");
 						}
 					}
 					return JS_UNDEFINED;
@@ -2396,8 +2413,7 @@ namespace Sen::Kernel::Interface::Script
 							return JS::Converter::to_array(context, List<double>{s->color.begin(), s->color.end()});
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot call getter on magic: %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any getter to magic %d", magic), "getter");
 						}
 					}
 				});
@@ -2432,8 +2448,7 @@ namespace Sen::Kernel::Interface::Script
 							color_from_transform(s->color, color);
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot call setter on magic: %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any setter to magic %d", magic), "setter");
 						}
 					}
 					return JS_UNDEFINED;
@@ -3156,7 +3171,7 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSValue
 			{
 				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
-					s->WriteIndent = JS_VALUE_GET_BOOL(val) == 0 ? false : true;
+					s->WriteIndent = JS::Converter::get_bool(context, val);
 					return JS_UNDEFINED;
 				});
 			}
@@ -3481,8 +3496,7 @@ namespace Sen::Kernel::Interface::Script
 							return JS::Converter::to_bool(context, s->trim);
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot call getter from magic %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any getter to magic %d", magic), "getter");
 						}
 					}
 				});
@@ -3526,8 +3540,7 @@ namespace Sen::Kernel::Interface::Script
 							break;
 						}
 						default: {
-							JS_ThrowInternalError(context, "Cannot call setter from magic %d", magic);
-							return JS_EXCEPTION;
+							assert_conditional(false, fmt::format("Cannot find any setter to magic %d", magic), "setter");
 						}
 					}
 					return JS_UNDEFINED;
@@ -4090,9 +4103,6 @@ namespace Sen::Kernel::Interface::Script
 					JS_FreeValue(context, sen_obj);
 					JS_FreeValue(context, kernel_obj);
 					JS_FreeValue(context, stream_ctor);
-					if (JS_IsException(obj)) {
-						throw Exception("can't define class", std::source_location::current(), m_function_name);
-					}
 					JS_SetOpaque(obj, sub.release());
 					return obj;
 				});
@@ -9364,12 +9374,7 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue
 		{
 			return handle(context, value, argc, argv, "start", [&](Data *s) {
-				try {
-					s->start();
-				} catch (const std::exception &e) {
-					JS_ThrowInternalError(context, e.what());
-					return JS_UNDEFINED;
-				}
+				s->start();
 				return JS_UNDEFINED;
 			});
 		}
@@ -9408,12 +9413,7 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue 
 		{
 			return handle(context, value, argc, argv, "stop", [&](Data* clock){
-				try {
-					clock->stop();
-				} catch (const std::exception &e) {
-					JS_ThrowInternalError(context, e.what());
-					return JS_UNDEFINED;
-				}
+				clock->stop();
 				return JS_UNDEFINED;
 			});
 		}
@@ -9779,6 +9779,7 @@ namespace Sen::Kernel::Interface::Script
 			}
 			return j;
 		}
+
 
 		inline static auto json2xml(
 			const nlohmann::ordered_json &j,

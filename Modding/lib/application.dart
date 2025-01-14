@@ -6,7 +6,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
-import 'package:sen/screen/animation_viewer/main_screen.dart';
+import 'package:sen/screen/animation_viewer/animation_viewer.dart';
 import 'package:sen/screen/javascript_category/javascript_category.dart';
 import 'package:sen/screen/level_maker/level_maker.dart';
 import 'package:sen/screen/map_editor/map_editor.dart';

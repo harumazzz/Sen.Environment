@@ -51,6 +51,8 @@ declare namespace Sen {
 		 */
 		export function arguments(): Array<string>;
 
+		export function test<T>(source: string): T;
+
 		declare class Clock {
 			public constructor();
 

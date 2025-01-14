@@ -48,7 +48,8 @@
 		"noResolve": false,
 		"noUncheckedIndexedAccess": false,
 		"noUncheckedSideEffectImports": false,
-		"newLine": "lf"
+		"newLine": "lf",
+		"experimentalDecorators": true
 	},
 	"include": ["./Kernel.d.ts", "./**/*"],
 	"exclude": ["./.build"]
