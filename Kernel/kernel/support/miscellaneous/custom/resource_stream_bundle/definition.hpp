@@ -69,6 +69,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         {v.template get_bigint<int64_t>()} -> std::same_as<int64_t>;
         {v.get_property(x) } -> std::same_as<Value>;
         {v.template get<bool>() } -> std::same_as<bool>;
+        {v.release() } -> std::same_as<JSValue>;
     }
     inline static auto from_object (
         Value& value,

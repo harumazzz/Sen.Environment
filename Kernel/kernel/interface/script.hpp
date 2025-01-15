@@ -26,9 +26,6 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
 
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr make_handle = JS::make_handle<T>;
-
 	template <typename T> requires std::is_class<T>::value
 	inline auto constexpr initialize_constructor = JS::initialize_constructor<T>;
 
@@ -52,8 +49,6 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr make_instance_object = JS::make_instance_object;
 
-	inline auto constexpr proxy_wrapper = JS::proxy_wrapper;
-
 	template <typename T> requires std::is_same<T, uint32_t>::value || std::is_same<T, std::string_view>::value
 	inline auto constexpr get_value_from_object = JS::get_value_from_object<T>;
 
@@ -75,6 +70,45 @@ namespace Sen::Kernel::Interface::Script
 
 	template <typename T>
 	using Generalization = JS::Generalization<T>;
+
+	template <typename Callable> requires std::is_invocable<Callable>::value
+	inline static auto proxy_wrapper(
+		JSContext* context,
+		std::string_view func_name,
+		Callable&& callable
+	) -> JSValue
+	{
+		auto result = JS_UNDEFINED;
+		try {
+			result = JS::Builder<Callable>::make_function_declaration(context, std::forward<Callable>(callable));
+		}
+		catch (...) {
+			auto exception = parse_exception();
+			if (exception.function_name.empty()) {
+				exception.function_name = func_name;
+			}
+			result = JS::throw_exception(context, exception.message(), exception.source, exception.function_name);
+		}
+		return result;
+	}
+
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
+	inline static auto make_handle(
+		JSContext* context,
+		JSValue value,
+		int argc,
+		JSValue* argv,
+		std::string_view method_name,
+		std::function<JSValue(T*)> method,
+		JSClassID class_id
+	) -> JSValue
+	{
+		auto normalized_lambda = [&](){
+			auto class_pointer = get_opaque_value<T>(context, value, class_id);
+			return method(class_pointer);
+		};
+		return proxy_wrapper<decltype(normalized_lambda)>(context, method_name, std::move(normalized_lambda));
+	}
 
 	inline static auto to_array_of_string(
 		JSContext* context,
@@ -210,8 +244,7 @@ namespace Sen::Kernel::Interface::Script
 				auto json = JS::from(value);
 				auto indent = JS::Converter::get_int32(context, argv[1]);
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[2]);
-				auto source = json.dump(indent, '\t', ensure_ascii);
-				return JS_NewStringLen(context, source.data(), source.size());
+				return json.dump(indent, '\t', ensure_ascii);
 			});
 		}
 
@@ -222,7 +255,7 @@ namespace Sen::Kernel::Interface::Script
 			JSValue* argv
 		) -> JSValue
 		{
-			return proxy_wrapper(context, "serialize_fs", [&]() {
+			return proxy_wrapper(context, "serialize_fs", [&]() -> void {
 				assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto value = Value::as_new_reference(context, argv[1]);
@@ -231,14 +264,9 @@ namespace Sen::Kernel::Interface::Script
 				auto ensure_ascii = JS::Converter::get_bool(context, argv[3]);
 				auto result = json.dump(indent, '\t', ensure_ascii);
 				Kernel::FileSystem::write_file(destination, result);
-				return JS_UNDEFINED;
 			});
 		}
 	}
-
-	/**
-	 * Language Support
-	 */
 
 	namespace Language
 	{
@@ -253,7 +281,6 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "load_language", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "load_language");
 				Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -267,12 +294,9 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "get", [&]() {
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get");
-				auto result = Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
-				return JS::Converter::to_string(context, result.data());
+				return Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
 			});
 		}
-
-
 	}
 
 	namespace Class
@@ -291,8 +315,7 @@ namespace Sen::Kernel::Interface::Script
 				requires BooleanConstraint
 			inline static auto class_id = ClassID::temporary();
 
-			template <auto T>
-				requires BooleanConstraint
+			template <auto T> requires BooleanConstraint
 			inline static auto constructor(
 				JSContext *context,
 				JSValue value,
@@ -5363,7 +5386,6 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_fs");
 					auto s = get_opaque_value<Data>(context, argv[1], class_id.value);
 					Kernel::ImageIO::write_png(JS::Converter::get_string(context, argv[0]), *s);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -5486,7 +5508,6 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sleep");
 				auto time = JS::Converter::get_bigint64(context, argv[0]);
 				std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(time)));
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5498,8 +5519,7 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue
 		{
 			return proxy_wrapper(context, "now", [&](){
-				auto current = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
-				return JS::Converter::to_number(context, current);
+				return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 			});
 		}
 
@@ -5525,7 +5545,6 @@ namespace Sen::Kernel::Interface::Script
 					auto patch_file = JS::Converter::get_string(context, argv[2]);
 					auto flag = JS::Converter::get_int32(context, argv[3]);
 					Kernel::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Kernel::Diff::VCDiff::Flag>(flag));
-					return JS_UNDEFINED; 
 				});
 			}
 
@@ -5542,7 +5561,6 @@ namespace Sen::Kernel::Interface::Script
 					auto patch_file = JS::Converter::get_string(context, argv[1]);
 					auto after_file = JS::Converter::get_string(context, argv[2]);
 					Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -5562,17 +5580,17 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "current", [&](){
 				#if WINDOWS
-				return JS::Converter::to_string(context, std::string{"Windows"});
+				return std::string{"Windows"};
 				#elif ANDROID
-				return JS::Converter::to_string(context, std::string{"Android"});
+				return std::string{"Android"};
 				#elif LINUX
-				return JS::Converter::to_string(context, std::string{"Linux"});
+				return std::string{"Linux"};
 				#elif APPLE
-				return JS::Converter::to_string(context, std::string{"Macintosh"});
+				return std::string{"Macintosh"};
 				#elif IPHONE
-				return JS::Converter::to_string(context, std::string{"iPhone"});
+				return std::string{"iPhone"};
 				#else
-				return JS::Converter::to_string(context, std::string{"Unknown OS"});
+				assert_conditional(false, "Unknown operating system", "current");
 				#endif
 			});
 		}
@@ -5620,34 +5638,21 @@ namespace Sen::Kernel::Interface::Script
 				switch (si.wProcessorArchitecture)
 				{
 					case PROCESSOR_ARCHITECTURE_AMD64:
-					{
-						return JS::Converter::to_string(context, std::string{"x64"});
-					}
+						return std::string{"x64"};
 					case PROCESSOR_ARCHITECTURE_ARM:
-					{
-						return JS::Converter::to_string(context, std::string{"x86"});
-					}
+						return std::string{"x86"};
 					case PROCESSOR_ARCHITECTURE_IA64:
-					{
-						return JS::Converter::to_string(context, std::string{"arm64"});
-					}
+						return std::string{"arm64"};
 					case PROCESSOR_ARCHITECTURE_INTEL:
-					{
-						return JS::Converter::to_string(context, std::string{"arm"});
-					}
+						return std::string{"arm"};
 					default:
-					{
-						return JS::Converter::to_string(context, std::string{"Unknown"});
-					}
+						assert_conditional(false, "Unknown system info", "architecture");
 				}
 				#else
 				auto buffer = std::array<char, 128>();
 				auto result = std::string();
 				auto pipe = std::unique_ptr<FILE, FileDeleter>(popen("uname -m", "r"));
-				if (pipe == nullptr)
-				{
-					throw Exception("cannot open pipe", std::source_location::current(), "architecture");
-				}
+				assert_conditional(pipe != nullptr, "Cannot open pipe to get system info", "architecture");
 				while (fgets(buffer.data(), 128, pipe.get()) != nullptr)
 				{
 					result += buffer.data();
@@ -5655,15 +5660,15 @@ namespace Sen::Kernel::Interface::Script
 				result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
 				switch (hash_string(result)) {
 					case hash_string("x86_64"_sv): 
-						return JS::Converter::to_string(context, std::string{"x64"});
+						return std::string{"x64"};
 					case hash_string("i686"_sv): 
-						return JS::Converter::to_string(context, std::string{"x86"});
+						return std::string{"x86"};
 					case hash_string("aarch64"_sv): 
-						return JS::Converter::to_string(context, std::string{"arm64"});
+						return std::string{"arm64"};
 					case hash_string("armv7l"_sv): 
-						return JS::Converter::to_string(context, std::string{"arm"});
+						return std::string{"arm"};
 					default:
-						return JS::Converter::to_string(context, std::string{"Unknown"});
+						assert_conditional(false, "Unknown system info", "architecture");
 				}
 				#endif
 			});
@@ -5701,7 +5706,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto array_buffer = argv[1];
 				JS::Converter::write_file_as_arraybuffer(context, destination, array_buffer);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5720,7 +5724,6 @@ namespace Sen::Kernel::Interface::Script
 				for (auto i : Range<std::size_t>(byteLength)) {
 					data[i] = rand() % 256;
 				}
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5740,7 +5743,6 @@ namespace Sen::Kernel::Interface::Script
 				for (auto i : Range<std::size_t>(byteLength)) {
 					data[i] = byte_c;
 				}
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5760,7 +5762,6 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "run");
 				auto source = JS::Converter::get_string(context, argv[0]);
 				Kernel::Process::run(source);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5774,8 +5775,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "is_exists_in_path_environment", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_exists_in_path_environment");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Process::is_exists_in_path_environment(source);
-				return JS::Converter::to_bool(context, result);
+				return Kernel::Process::is_exists_in_path_environment(source);
 			});
 		}
 
@@ -5789,8 +5789,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "get_path_environment", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_path_environment");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Process::get_path_environment(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Process::get_path_environment(source);
 			});
 		}
 
@@ -5804,8 +5803,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "execute", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "execute");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Process::execute(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Process::execute(source);
 			});
 		}
 
@@ -5864,7 +5862,6 @@ namespace Sen::Kernel::Interface::Script
 						break;
 					}
 				}
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -5906,7 +5903,7 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[i]);
 					value.emplace_back(source);
 				}
-				return JS::Converter::to_string(context, Kernel::Path::Script::join(value));
+				return Kernel::Path::Script::join(value);
 			});
 		}
 
@@ -5920,8 +5917,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "basename", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "basename");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::basename(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::basename(source);
 			});
 		}
 
@@ -5933,8 +5929,7 @@ namespace Sen::Kernel::Interface::Script
 		) -> JSValue
 		{
 			return proxy_wrapper(context, "delimiter", [&](){
-				auto result = Kernel::Path::Script::delimiter();
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::delimiter();
 			});
 		}
 
@@ -5948,8 +5943,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "dirname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "dirname");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::dirname(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::dirname(source);
 			});
 		}
 
@@ -5966,8 +5960,7 @@ namespace Sen::Kernel::Interface::Script
 				auto base_atom = Atom{context, "base"};
 				auto dir = get_property_string(context, argv[0], dir_atom.value);
 				auto base = get_property_string(context, argv[0], base_atom.value);
-				auto result = Kernel::Path::Script::format(Kernel::Path::Format{dir, base});
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::format(Kernel::Path::Format{dir, base});
 			});
 		}
 
@@ -5981,8 +5974,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "normalize", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "normalize");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::normalize(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::normalize(source);
 			});
 		}
 
@@ -5996,8 +5988,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "base_without_extension", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "base_without_extension");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::base_without_extension(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::base_without_extension(source);
 			});
 		}
 
@@ -6011,8 +6002,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "except_extension", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "except_extension");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::except_extension(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::except_extension(source);
 			});
 		}
 
@@ -6026,8 +6016,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "resolve", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "resolve");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::resolve(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::resolve(source);
 			});
 		}
 
@@ -6041,8 +6030,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "extname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "extname");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::extname(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::extname(source);
 			});
 		}
 
@@ -6056,8 +6044,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "extname", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_absolute");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::Path::Script::is_absolute(source);
-				return JS::Converter::to_bool(context, result);
+				return Kernel::Path::Script::is_absolute(source);
 			});
 		}
 
@@ -6072,8 +6059,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "relative");
 				auto from = JS::Converter::get_string(context, argv[0]);
 				auto to = JS::Converter::get_string(context, argv[1]);
-				auto result = Kernel::Path::Script::relative(from, to);
-				return JS::Converter::to_string(context, result);
+				return Kernel::Path::Script::relative(from, to);
 			});
 		}
 
@@ -6092,8 +6078,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "read_file", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_file");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_file(source);
-				return JS::Converter::to_string(context, result);
+				return Kernel::FileSystem::read_file(source);
 			});
 		}
 
@@ -6109,8 +6094,7 @@ namespace Sen::Kernel::Interface::Script
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto result = Kernel::FileSystem::read_file_by_utf16(source);
 				auto converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
-				auto utf8_string = std::string{converter.to_bytes(result)};
-				return JS::Converter::to_string(context, utf8_string);
+				return std::string{converter.to_bytes(result)};
 			});
 		}
 
@@ -6126,7 +6110,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				auto data = JS::Converter::get_string(context, argv[1]);
 				Kernel::FileSystem::write_file(destination, data);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6144,7 +6127,6 @@ namespace Sen::Kernel::Interface::Script
 				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
 				auto result = std::wstring{ converter.from_bytes(data) };
 				Kernel::FileSystem::write_file_by_utf16le(destination, result);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6219,7 +6201,6 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "create_directory");
 				auto destination = JS::Converter::get_string(context, argv[0]);
 				Kernel::FileSystem::create_directory(destination);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6233,7 +6214,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "is_file", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_file");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				return JS::Converter::to_bool(context, Kernel::Path::Script::is_file(source));
+				return Kernel::Path::Script::is_file(source);
 			});
 		}
 
@@ -6247,7 +6228,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "is_directory", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_directory");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				return JS::Converter::to_bool(context, Kernel::Path::Script::is_directory(source));
+				return Kernel::Path::Script::is_directory(source);
 			});
 		}
 
@@ -6266,7 +6247,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::rename(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -6282,7 +6262,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::copy(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -6298,7 +6277,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Path::Script::copy_directory(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -6313,7 +6291,6 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "remove");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					Kernel::Path::Script::remove(source);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -6328,7 +6305,6 @@ namespace Sen::Kernel::Interface::Script
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "remove_all");
 					auto source = JS::Converter::get_string(context, argv[0]);
 					Kernel::Path::Script::remove_all(source);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -6350,8 +6326,7 @@ namespace Sen::Kernel::Interface::Script
 				auto height_atom = Atom{context, "height"};
 				auto width = get_property_bigint64(context, value, width_atom.value);
 				auto height = get_property_bigint64(context, value, height_atom.value);
-				auto area = width * height;
-				return JS_NewBigInt64(context, area);
+				return width * height;
 			});
 		}
 
@@ -6367,8 +6342,7 @@ namespace Sen::Kernel::Interface::Script
 				auto height_atom = Atom{context, "height"};
 				auto width = get_property_bigint64(context, value, width_atom.value);
 				auto height = get_property_bigint64(context, value, height_atom.value);
-				auto area = (width + height) * 2;
-				return JS_NewBigInt64(context, area);
+				return (width + height) * 2;
 			});
 		}
 
@@ -6490,7 +6464,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
 				Kernel::ImageIO::scale_png(source, destination, percentage);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6507,7 +6480,6 @@ namespace Sen::Kernel::Interface::Script
 				auto width = JS::Converter::get_int32(context, argv[1]);
 				auto height = JS::Converter::get_int32(context, argv[2]);
 				Kernel::ImageIO::transparent_png(destination, width, height);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6552,7 +6524,6 @@ namespace Sen::Kernel::Interface::Script
 					JS_FreeValue(context, current_object);
 				}
 				Kernel::ImageIO::join_png(destination, Kernel::Dimension<int>{static_cast<int>(width), static_cast<int>(height)}, m_data);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6685,7 +6656,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
 				Kernel::ImageIO::resize_png(source, destination, percentage);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6702,7 +6672,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				auto percentage = JS::Converter::get_float64(context, argv[2]);
 				Kernel::ImageIO::rotate_png(source, destination, percentage);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6726,7 +6695,6 @@ namespace Sen::Kernel::Interface::Script
 				auto rectangle_x = get_property_int32(context, argv[2], x_atom.value);
 				auto rectangle_y = get_property_int32(context, argv[2], y_atom.value);
 				Kernel::ImageIO::cut_fs(source, destination, Kernel::Rectangle<int>(rectangle_x, rectangle_y, rectangle_width, rectangle_height));
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6764,19 +6732,8 @@ namespace Sen::Kernel::Interface::Script
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
 				Kernel::ImageIO::cut_pngs(source, data);
-				return JS_UNDEFINED;
 			});
 		}
-
-		/**
-		 * ----------------------------------------
-		 * JavaScript rotate image
-		 * @param argv[0]: source file
-		 * @param argv[1]: destination file
-		 * @param argv[2]: percentage
-		 * @return: UNDEFINED
-		 * ----------------------------------------
-		 */
 
 		inline static auto cut_multiple_fs_asynchronous(
 			JSContext *context,
@@ -6812,7 +6769,6 @@ namespace Sen::Kernel::Interface::Script
 				}
 				auto source = JS::Converter::get_string(context, argv[0]);
 				Kernel::ImageIO::cut_pngs_asynchronous(source, data);
-				return JS_UNDEFINED;
 			});
 		}
 
@@ -6831,8 +6787,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "evaluate", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "evaluate");
 				auto source = JS::Converter::get_string(context, argv[0]);
-				auto m_value = JS_Eval(context, source.data(), source.size(), "unknown", JS_EVAL_TYPE_GLOBAL);
-				return m_value;
+				return JS_Eval(context, source.data(), source.size(), "evaluate", JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 			});
 		}
 
@@ -6846,8 +6801,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "evaluate", [&](){
 				auto source = JS::Converter::get_string(context, argv[0]);
 				auto js_source = Kernel::FileSystem::read_file(source);
-				auto m_value = JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_TYPE_GLOBAL);
-				return m_value;
+				return JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 			});
 		}
 	}
@@ -6951,8 +6905,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::FNV::Hash<std::uint32_t>{}.make_hash(source.data());
-					return JS::Converter::to_bigint(context, result);
+					return Kernel::Encryption::FNV::Hash<std::uint32_t>{}.make_hash(source.data());
 				});
 			}
 
@@ -6966,8 +6919,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
-					return JS::Converter::to_bigint(context, result);
+					return Kernel::Encryption::FNV::Hash<std::uint32_t>::hash_fs(source.data());
 				});
 			}
 
@@ -6986,8 +6938,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::MD5::hash(Kernel::FileSystem::read_binary<unsigned char>(source));
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::MD5::hash(Kernel::FileSystem::read_binary<unsigned char>(source));
 				});
 			}
 
@@ -7001,8 +6952,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::MD5::hash_fs(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::MD5::hash_fs(source);
 				});
 			}
 		}
@@ -7020,8 +6970,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "encode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::Base64::encode(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::Base64::encode(source);
 				});
 			}
 
@@ -7035,8 +6984,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "decode", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::Base64::decode(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::Base64::decode(source);
 				});
 			}
 
@@ -7052,7 +7000,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Encryption::Base64::encode_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7068,7 +7015,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Encryption::Base64::decode_fs(source, destination);
-					return JS_UNDEFINED; 
 				});
 			}
 		}
@@ -7086,8 +7032,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::Sha224::hash(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::Sha224::hash(source);
 				});
 			}
 
@@ -7101,8 +7046,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::Sha224::hash_fs(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::Sha224::hash_fs(source);
 				});
 			}
 
@@ -7121,8 +7065,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA256::hash(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA256::hash(source);
 				});
 			}
 
@@ -7136,8 +7079,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA256::hash_fs(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA256::hash_fs(source);
 				});
 			}
 		}
@@ -7155,8 +7097,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA384::hash(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA384::hash(source);
 				});
 			}
 
@@ -7170,8 +7111,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash_fs", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA384::hash_fs(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA384::hash_fs(source);
 				});
 			}
 		}
@@ -7189,8 +7129,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA512::hash(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA512::hash(source);
 				});
 			}
 
@@ -7204,8 +7143,7 @@ namespace Sen::Kernel::Interface::Script
 				return proxy_wrapper(context, "hash", [&](){
 					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "hash_fs");
 					auto source = JS::Converter::get_string(context, argv[0]);
-					auto result = Kernel::Encryption::SHA512::hash_fs(source);
-					return JS::Converter::to_string(context, result);
+					return Kernel::Encryption::SHA512::hash_fs(source);
 				});
 			}
 		}
@@ -7242,7 +7180,6 @@ namespace Sen::Kernel::Interface::Script
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto key = JS::Converter::to_binary_list(context, argv[2]);
 					Kernel::Encryption::XOR::encrypt_fs(source, destination, key);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7270,7 +7207,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Compression::Zip::Compress::directory(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7292,7 +7228,6 @@ namespace Sen::Kernel::Interface::Script
 						else {
 							Kernel::Compression::Zip::Compress::file(source, destination);
 						}
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7313,7 +7248,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Compression::Zip::Uncompress::process(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7341,7 +7275,6 @@ namespace Sen::Kernel::Interface::Script
 						throw Exception(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level), std::source_location::current(), "compress_fs");
 					}
 					Kernel::Compression::Zlib::compress_fs(source, destination, static_cast<Kernel::Compression::Zlib::Level>(level));
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7357,7 +7290,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Compression::Zlib::uncompress_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7484,7 +7416,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Compression::Bzip2::compress_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7500,7 +7431,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Compression::Bzip2::uncompress_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7522,7 +7452,6 @@ namespace Sen::Kernel::Interface::Script
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_bigint64(context, argv[2]);
 					Kernel::Compression::Lzma::compress_fs(source, destination, static_cast<Kernel::Compression::Lzma::Level>(level));
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7538,7 +7467,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Compression::Lzma::uncompress_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7559,12 +7487,8 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto level = JS::Converter::get_int32(context, argv[2]);
-					if (!(static_cast<int>(Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Kernel::Compression::Zlib::Level::LEVEL_9)))
-					{
-						throw std::invalid_argument(fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level));
-					}
+					assert_conditional((static_cast<int>(Kernel::Compression::Zlib::Level::DEFAULT) <= level or level <= static_cast<int>(Kernel::Compression::Zlib::Level::LEVEL_9)), fmt::format("{}, {} {}", Kernel::Language::get("zlib.compress.invalid_level"), Kernel::Language::get("but_received"), level), "compress_fs");
 					Kernel::Compression::Zlib::compress_gzip_fs(source, destination, static_cast<Kernel::Compression::Zlib::Level>(level));
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7580,7 +7504,6 @@ namespace Sen::Kernel::Interface::Script
 					auto source = JS::Converter::get_string(context, argv[0]);
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					Kernel::Compression::Zlib::uncompress_gzip_fs(source, destination);
-					return JS_UNDEFINED;
 				});
 			}
 		}
@@ -7607,7 +7530,6 @@ namespace Sen::Kernel::Interface::Script
 					auto height = JS::Converter::get_bigint64(context, argv[3]);
 					auto format = JS::Converter::get_int32(context, argv[4]);
 					Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Kernel::Support::Texture::Format>(format));
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7624,7 +7546,6 @@ namespace Sen::Kernel::Interface::Script
 					auto destination = JS::Converter::get_string(context, argv[1]);
 					auto format = JS::Converter::get_int32(context, argv[2]);
 					Kernel::Support::Texture::InvokeMethod::encode_fs(source, destination, static_cast<Kernel::Support::Texture::Format>(format));
-					return JS_UNDEFINED;
 				});
 			}
 
@@ -7647,7 +7568,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::Marmalade::DZip::Unpack::process_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7663,7 +7583,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::Marmalade::DZip::Pack::process_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 			}
@@ -7694,7 +7613,6 @@ namespace Sen::Kernel::Interface::Script
 						else {
 							Kernel::Support::PopCap::Zlib::Compress<false>::compress_fs(source, destination);
 						}
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7760,7 +7678,6 @@ namespace Sen::Kernel::Interface::Script
 						else {
 							Kernel::Support::PopCap::Zlib::Uncompress<false>::uncompress_fs(source, destination);
 						}
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7825,7 +7742,6 @@ namespace Sen::Kernel::Interface::Script
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
 						Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7844,7 +7760,6 @@ namespace Sen::Kernel::Interface::Script
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						auto use_64_bit_variant = JS::Converter::get_bool(context, argv[4]);
 						Kernel::Support::PopCap::CompiledText::Encode::process_fs(source, destination, key, iv, use_64_bit_variant);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7865,7 +7780,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceGroup::BasicConversion::split(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -7881,7 +7795,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceGroup::BasicConversion::merge(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7908,7 +7821,6 @@ namespace Sen::Kernel::Interface::Script
 								break;
 							}
 						}
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7929,7 +7841,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResInfo::BasicConversion::split_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7945,7 +7856,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResInfo::BasicConversion::merge_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7961,7 +7871,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResInfo::Convert::convert_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7982,7 +7891,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -7998,7 +7906,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::RenderEffects::Encode::process_fs(source, destination);
-						return JS_UNDEFINED;
 					});
 				}
 
@@ -8019,7 +7926,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8035,7 +7941,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::CharacterFontWidget2::Encode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8080,7 +7985,6 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, platform);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8097,7 +8001,6 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto platform = get_platform(JS::Converter::get_string(context, argv[2]));
 						Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, platform);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8113,7 +8016,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8129,7 +8031,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Particles::FromXML::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8150,7 +8051,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8166,7 +8066,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::PlayerInfo::Encode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8188,7 +8087,6 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8205,7 +8103,6 @@ namespace Sen::Kernel::Interface::Script
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						auto key = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::CryptData::Encrypt::process_fs(source, destination, key);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8226,7 +8123,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8242,7 +8138,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::NewTypeObjectNotation::Encode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8263,7 +8158,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8281,7 +8175,6 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_fs(source, destination, key, iv);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8299,7 +8192,6 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::decrypt_and_decode_fs(source, destination, key, iv);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8315,7 +8207,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8333,7 +8224,6 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt_fs(source, destination, key, iv);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8351,7 +8241,7 @@ namespace Sen::Kernel::Interface::Script
 						auto key = JS::Converter::get_string(context, argv[2]);
 						auto iv = JS::Converter::get_string(context, argv[3]);
 						Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encode_and_encrypt_fs(source, destination, key, iv);
-						return JS_UNDEFINED; });
+					});
 				}
 			}
 
@@ -8371,7 +8261,6 @@ namespace Sen::Kernel::Interface::Script
 						auto after_file = JS::Converter::get_string(context, argv[1]);
 						auto patch_file = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::ResourceStreamBundlePatch::Encode::process_fs(before_file, after_file, patch_file);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8388,7 +8277,6 @@ namespace Sen::Kernel::Interface::Script
 						auto patch_file = JS::Converter::get_string(context, argv[1]);
 						auto after_file = JS::Converter::get_string(context, argv[2]);
 						Kernel::Support::PopCap::ResourceStreamBundlePatch::Decode::process_fs(before_file, patch_file, after_file);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8409,7 +8297,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Unpack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8425,7 +8312,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::PackResource::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8441,7 +8327,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackResource::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8457,7 +8342,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8473,7 +8357,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamBundle::Pack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 			}
@@ -8493,7 +8376,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8509,7 +8391,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 			}
@@ -8529,7 +8410,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Package::Unpack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8545,7 +8425,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Package::Pack::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 			}
@@ -8565,7 +8444,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -8590,7 +8468,6 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, resolution);
 							}
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -8610,7 +8487,6 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto resolution = static_cast<int>(JS::Converter::get_bigint64(context, argv[1]));
 							Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, resolution);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8643,7 +8519,6 @@ namespace Sen::Kernel::Interface::Script
 								auto atom_action = Atom{context, "action"};  
 								JS_DefinePropertyValue(context, destination, atom_action.value, JS::Converter::to_array(context, doc.action), int{JS_PROP_C_W_E});
 							}
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8658,7 +8533,6 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[0]);
 							auto source = get_opaque_value<Class::Image::Data>(context, argv[1], Class::Image::class_id.value);
 							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8683,7 +8557,6 @@ namespace Sen::Kernel::Interface::Script
 							JS_FreeValue(context, sprite);
 							JS_FreeValue(context, image);
 							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, &source);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8699,7 +8572,6 @@ namespace Sen::Kernel::Interface::Script
 							auto destination = JS::Converter::get_string(context, argv[0]);
 							auto source = get_opaque_value<Class::Sprite::Data>(context, argv[1], Class::Sprite::class_id.value);
 							Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8725,7 +8597,6 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
 							}
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -8751,7 +8622,6 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, resolution);
 							}
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8772,7 +8642,6 @@ namespace Sen::Kernel::Interface::Script
 							else {
 								Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
 							}
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -8789,7 +8658,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 			}
@@ -8819,7 +8687,6 @@ namespace Sen::Kernel::Interface::Script
 								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 							}
 							Kernel::FileSystem::write_json(destination, result);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8843,7 +8710,6 @@ namespace Sen::Kernel::Interface::Script
 								Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(json, result);
 							}
 							Kernel::FileSystem::write_json(destination, result);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8861,8 +8727,7 @@ namespace Sen::Kernel::Interface::Script
 						return proxy_wrapper(context, "check_scg_composite"_sv, [&]() {
 							assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "check_scg_composite");
 							auto source = JS::Converter::get_string(context, argv[0]);
-							auto result = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::check_scg_composite(source);
-							return JS::Converter::to_bool(context, result); 
+							return Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::check_scg_composite(source);
 						});
 					}
 
@@ -8881,7 +8746,6 @@ namespace Sen::Kernel::Interface::Script
 							auto setting = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Setting{};
 							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::from_object(value, setting);
 							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Decode::process_fs(source, destination, setting);
-							return JS_UNDEFINED;
 						});
 					}
 
@@ -8900,7 +8764,6 @@ namespace Sen::Kernel::Interface::Script
 							auto setting = Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Setting{};
 							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::from_object(value, setting);
 							Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Encode::process_fs(source, destination, setting);
-							return JS_UNDEFINED;
 						});
 					}
 				}
@@ -8923,7 +8786,6 @@ namespace Sen::Kernel::Interface::Script
 							auto setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting{};
 							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::from_object(value, setting);
 							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, setting);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -8942,7 +8804,6 @@ namespace Sen::Kernel::Interface::Script
 							auto setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting{};
 							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::from_object(value, setting);
 							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Pack::process_fs(source, destination, setting);
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -8991,7 +8852,6 @@ namespace Sen::Kernel::Interface::Script
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
 						Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, platform);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -9009,7 +8869,6 @@ namespace Sen::Kernel::Interface::Script
 						auto z_platform = JS::Converter::get_string(context, argv[2]);
 						auto platform = get_platform(z_platform);
 						Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, platform);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -9025,7 +8884,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -9038,10 +8896,9 @@ namespace Sen::Kernel::Interface::Script
 				{
 					return proxy_wrapper(context, "from_xml", [&]() {
 						assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "from_xml");
-							auto source = JS::Converter::get_string(context, argv[0]);
-							auto destination = JS::Converter::get_string(context, argv[1]);
-							Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
-							return JS_UNDEFINED; 
+						auto source = JS::Converter::get_string(context, argv[0]);
+						auto destination = JS::Converter::get_string(context, argv[1]);
+						Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
 					});
 				}
 
@@ -9060,7 +8917,6 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -9080,7 +8936,6 @@ namespace Sen::Kernel::Interface::Script
 							auto source = JS::Converter::get_string(context, argv[0]);
 							auto destination = JS::Converter::get_string(context, argv[1]);
 							Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
-							return JS_UNDEFINED; 
 						});
 					}
 				}
@@ -9102,7 +8957,6 @@ namespace Sen::Kernel::Interface::Script
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
 							Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, platform);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -9121,7 +8975,6 @@ namespace Sen::Kernel::Interface::Script
 							auto z_platform = JS::Converter::get_string(context, argv[2]);
 							auto platform = get_platform(z_platform);
 							Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, platform);
-							return JS_UNDEFINED; 
 						});
 					}
 
@@ -9147,7 +9000,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::WWise::SoundBank::Decode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -9163,7 +9015,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						Kernel::Support::WWise::SoundBank::Encode::process_fs(source, destination);
-						return JS_UNDEFINED; 
 					});
 				}
 
@@ -9180,7 +9031,6 @@ namespace Sen::Kernel::Interface::Script
 						auto source = JS::Converter::get_string(context, argv[0]);
 						auto destination = get_opaque_value<Uinteger32C>(context, argv[1], Class::Number::class_id<std::uint32_t>.value);
 						destination->value = Kernel::Support::WWise::SoundBank::Decode::fnv_hash(source);
-						return JS_UNDEFINED; 
 					});
 				}
 			}
@@ -9570,8 +9420,7 @@ namespace Sen::Kernel::Interface::Script
 				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "cast_ArrayBuffer_to_JS_String");
 				auto len = size_t{};
 				auto buf = get_array_buffer(context, &len, argv[0]);
-				auto str = JS_NewStringLen(context, reinterpret_cast<const char*>(buf), len);
-				return str; 
+				return JS_NewStringLen(context, reinterpret_cast<const char*>(buf), len);
 			});
 		}
 
@@ -9618,7 +9467,7 @@ namespace Sen::Kernel::Interface::Script
 				auto size_2 = std::size_t{};
 				auto data_2 = get_array_buffer(context, &size_2, argv[1]);
 				if (size_1 != size_2) {
-					return JS::Converter::to_bool(context, false);
+					return false;
 				}
 				auto is_same = true;
 				for (auto i : Range<std::size_t>(size_1)) {
@@ -9627,7 +9476,7 @@ namespace Sen::Kernel::Interface::Script
 						break;
 					}
 				}
-				return JS::Converter::to_bool(context, is_same); 
+				return is_same; 
 			});
 		}
 
@@ -9644,9 +9493,7 @@ namespace Sen::Kernel::Interface::Script
 				auto buf = get_array_buffer(context, &len, argv[0]);
 				auto utf16 = std::wstring(reinterpret_cast<wchar_t*>(buf), len / sizeof(wchar_t));
 				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
-				auto utf8 = converter.to_bytes(utf16);
-				auto str = JS_NewStringLen(context, utf8.data(), utf8.size());
-				return str; 
+				return converter.to_bytes(utf16);
 			});
 		}
 
@@ -9889,7 +9736,7 @@ namespace Sen::Kernel::Interface::Script
 				convert(j, doc);
 				auto printer = tinyxml2::XMLPrinter{};
 				doc.Print(&printer);
-				return JS::Converter::to_string(context, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)}); 
+				return std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)}; 
 			});
 		}
 
@@ -9910,7 +9757,6 @@ namespace Sen::Kernel::Interface::Script
 				doc.Print(&printer);
 				auto destination = JS::Converter::get_string(context, argv[1]);
 				Kernel::FileSystem::write_file(destination, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)});
-				return JS_UNDEFINED; 
 			});
 		}
 

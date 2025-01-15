@@ -407,46 +407,66 @@ namespace Sen::Kernel::FileSystem
 		std::string_view directory_path
 	) -> List<std::string> const
 	{
+		auto count = std::size_t{0};
+		#if WINDOWS
+			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data()))) {
+				++count;
+			}
+		#else
+			for (auto& c : fs::directory_iterator(directory_path)) {
+				++count;
+			}
+		#endif
 		auto result = List<std::string>{};
+		result.reserve(count); 
 		#if WINDOWS
 			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+				result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
 		#else
 			for (auto& c : fs::directory_iterator(directory_path))
-		#endif
-		{
-			#if WINDOWS
-				result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
-			#else
 				result.emplace_back(Path::normalize(c.path().string()));
-			#endif
-		}
+		#endif
+
 		return result;
 	}
+
 
 	// dirPath: directory to read
 	// return: only files inside
 
 	inline static auto read_directory_only_file(
 		std::string_view directory_path
-	) -> List<string> const
+	) -> List<std::string> const
 	{
-		auto result = List<string>{};
+		auto count = std::size_t{0};
 		#if WINDOWS
-				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+				if (c.is_regular_file()) {
+					++count;
+				}
 		#else
-				for (auto& c : fs::directory_iterator(directory_path))
+			for (auto& c : fs::directory_iterator(directory_path))
+				if (c.is_regular_file()) {
+					++count;
+				}
 		#endif
-		{
-			if(c.is_regular_file()){
-				#if WINDOWS
+		auto result = List<std::string>{};
+		result.reserve(count);  
+		#if WINDOWS
+			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+				if (c.is_regular_file()) {
 					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
-				#else
+				}
+		#else
+			for (auto& c : fs::directory_iterator(directory_path))
+				if (c.is_regular_file()) {
 					result.emplace_back(Path::normalize(c.path().string()));
-				#endif
-			}
-		}
+				}
+		#endif
+
 		return result;
 	}
+
 
 	// dirPath: directory to read
 	// return: only dirs inside
@@ -455,21 +475,27 @@ namespace Sen::Kernel::FileSystem
 		std::string_view directory_path
 	) -> List<std::string> const
 	{
-		auto result = List<std::string>{};
+		auto count = size_t{0};
 		#if WINDOWS
-				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+				if (c.is_directory()) ++count;
 		#else
-				for (auto& c : fs::directory_iterator(directory_path))
+			for (auto& c : fs::directory_iterator(directory_path))
+				if (c.is_directory()) ++count;
 		#endif
-		{
-			if(c.is_directory()){
-				#if WINDOWS
+		auto result = List<std::string>{};
+		result.reserve(count); 
+		#if WINDOWS
+			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+				if (c.is_directory()) {
 					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
-				#else
+				}
+		#else
+			for (auto& c : fs::directory_iterator(directory_path))
+				if (c.is_directory()) {
 					result.emplace_back(Path::normalize(c.path().string()));
-				#endif
-			}
-		}
+				}
+		#endif
 		return result;
 	}
 
@@ -481,24 +507,21 @@ namespace Sen::Kernel::FileSystem
 		std::string_view directory_path
 	) -> List<std::string> const
 	{
-		auto result = List<string>{};
-		#if WINDOWS
-				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
-		#else
-				for (auto& c : fs::directory_iterator(directory_path))
-		#endif
-		{
-			if(c.is_directory()){
-				#if WINDOWS
-					for (auto& e : read_whole_directory(String::utf16_to_utf8(c.path().wstring())))
-				#else
-					for (auto& e : read_whole_directory(c.path().string()))
-				#endif
-				{
-					result.emplace_back(Path::normalize(e));
+		auto result = List<std::string>{};
+		auto directory = std::stack<std::string>{};
+		directory.push(std::string(directory_path));
+		while (!directory.empty()) {
+			auto current_dir = directory.top();
+			directory.pop();
+			#if WINDOWS
+				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(current_dir)))
+			#else
+				for (auto& c : fs::directory_iterator(current_dir))
+			#endif
+			{
+				if (c.is_directory()) {
+					directory.push(c.path().string());
 				}
-			}
-			else{
 				#if WINDOWS
 					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
 				#else
@@ -506,32 +529,81 @@ namespace Sen::Kernel::FileSystem
 				#endif
 			}
 		}
+
 		return result;
 	}
 
-	/**
-	 * outFile: the output file to write
-	 * data: data to write
-	 * return: the written file
-	*/
+	#if defined(_WIN32) || defined(_WIN64)
+
+	struct WindowsFileHandle {
+
+		HANDLE handle;
+
+		explicit WindowsFileHandle(const std::wstring& path) {
+			handle = CreateFileW(
+				path.data(),
+				GENERIC_WRITE,   
+				0,               
+				nullptr,         
+				CREATE_ALWAYS,   
+				FILE_ATTRIBUTE_NORMAL,
+				nullptr          
+			);
+			assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileHandle");
+		}
+
+		~WindowsFileHandle() {
+			if (handle != INVALID_HANDLE_VALUE) {
+				CloseHandle(handle);
+			}
+		}
+
+		WindowsFileHandle(const WindowsFileHandle&) = delete;
+
+		WindowsFileHandle& operator=(const WindowsFileHandle&) = delete;
+
+		WindowsFileHandle(WindowsFileHandle&& other) noexcept : handle(other.handle) {
+			other.handle = INVALID_HANDLE_VALUE;
+		}
+
+		WindowsFileHandle& operator=(WindowsFileHandle&& other) noexcept {
+			if (this != &other) {
+				if (handle != INVALID_HANDLE_VALUE) {
+					CloseHandle(handle);
+				}
+				handle = other.handle;
+				other.handle = INVALID_HANDLE_VALUE;
+			}
+			return *this;
+		}
+	};
+
+	#endif
 
 
 	template <typename T> requires CharacterBufferView<T>
 	inline static auto write_binary(
-		std::string_view filepath,
+		std::string_view path,
 		const List<T> & data
 	) -> void
 	{
-		#if WINDOWS
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-				String::to_windows_style(filepath.data()))).data(), L"wb"), close_file);
+		#if defined(_WIN32) || defined(_WIN64)
+		auto file = WindowsFileHandle(String::utf8_to_utf16({path.data(), path.size()}));
+		auto bytesWritten = DWORD{0};
+		auto result = WriteFile(
+			file.handle, 
+			data.data(), 
+			static_cast<DWORD>(data.size()), 
+			&bytesWritten, 
+			nullptr
+		);
+		assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "write_binary");
+        assert_conditional(bytesWritten == data.size(), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "write_binary");
 		#else
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(String::to_posix_style(std::string{filepath.data(), filepath.size()}).data(), "wb"), close_file);
-		#endif
-		if(file == nullptr){
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(filepath.data())), std::source_location::current(), "write_binary");
-		}
+		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(String::to_posix_style(std::string{path.data(), path.size()}).data(), "wb"), close_file);
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(path.data())), "write_binary");
 		std::fwrite(reinterpret_cast<const char *>(data.data()), sizeof(T), data.size(), file.get());
+		#endif
 		return;
 	}
 

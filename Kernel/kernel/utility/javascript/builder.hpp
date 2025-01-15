@@ -20,28 +20,8 @@ namespace Sen::Kernel::JavaScript {
 			{0}();)",
 			function_name, error, source
 		);
-		JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_TYPE_GLOBAL);
+		JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 		return JS_EXCEPTION;
-	}
-
-	inline static auto proxy_wrapper(
-		JSContext* context,
-		std::string_view func_name,
-		std::function<JSValue()> code
-	) -> JSValue
-	{
-		auto result = JS_UNDEFINED;
-		try {
-			result = code();
-		}
-		catch (...) {
-			auto exception = parse_exception();
-			if (exception.function_name.empty()) {
-				exception.function_name = func_name;
-			}
-			result = throw_exception(context, exception.message(), exception.source, exception.function_name);
-		}
-		return result;
 	}
 
 	using JSGetter = JSValue(*)(JSContext* context, JSValue value, int magic);
@@ -73,21 +53,6 @@ namespace Sen::Kernel::JavaScript {
 		auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
 		assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
 		return obj;
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline static auto make_handle(
-		JSContext* context,
-		JSValue value,
-		int argc,
-		JSValue* argv,
-		std::string_view method_name,
-		std::function<JSValue(T*)> method,
-		JSClassID class_id
-	) -> JSValue
-	{
-		auto class_pointer = get_opaque_value<T>(context, value, class_id);
-		return method(class_pointer);
 	}
 
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -130,7 +95,7 @@ namespace Sen::Kernel::JavaScript {
 		};
 	}
 
-	template <typename T>
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline static auto throw_constructor_error(
 		JSContext* context,
 		std::string_view error_message
@@ -140,11 +105,11 @@ namespace Sen::Kernel::JavaScript {
 		return JS_EXCEPTION;
 	}
 
-	template <typename T>
+	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline static auto generate_constructor(
 		JSContext* context,
 		JSValue value,
-		std::unique_ptr<T, decltype(make_deleter<T>())> class_ptr,
+		std::unique_ptr<T, decltype(make_deleter<T>())>&& class_ptr,
 		ClassID& class_id
 	) -> JSValue
 	{
@@ -216,8 +181,14 @@ namespace Sen::Kernel::JavaScript {
 		return entry;
 	}
 
-	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires std::is_class<Class>::value && 
-	std::is_function<Constructor>::value
+	template <typename T>
+	concept CanBeAllocated = requires(T t, JSContext* context) {
+		{ t.allocate_new(context) } -> std::same_as<void>; 
+	};
+
+	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && 
+         !std::is_pointer<Class>::value && CanBeAllocated<Class> && 
+         std::is_function<std::remove_pointer_t<std::decay_t<Constructor>>>::value) 
 	inline static auto build_class(
 		JSContext* context,
 		Class& class_id,
@@ -298,6 +269,7 @@ namespace Sen::Kernel::JavaScript {
 		return data;
 	}
 
+	template <typename Callable> requires std::is_invocable<Callable>::value
 	struct Builder {
 
 	private:
@@ -345,9 +317,41 @@ namespace Sen::Kernel::JavaScript {
 			return JS_UNDEFINED;
 		}
 
+		static auto make_return_function (
+			JSContext* context,
+			Callable&& function
+		) -> JSValue
+		{
+			auto result = function();
+			if constexpr (std::is_same<std::invoke_result_t<Callable>, bool>::value) {
+				return Converter::to_bool(context, result);
+			}
+			else if constexpr (std::is_integral<std::invoke_result_t<Callable>>::value && !std::is_floating_point< std::invoke_result_t<Callable>>::value && !std::is_pointer<std::invoke_result_t<Callable>>::value) {
+				static_assert(sizeof(std::invoke_result_t<Callable>) != sizeof(bool), "value cannot be bool");
+				return Converter::to_bigint<std::invoke_result_t<Callable>>(context, result);
+			}
+			else if constexpr (std::is_floating_point<std::invoke_result_t<Callable>>::value && !std::is_integral<std::invoke_result_t<Callable>>::value) {
+				return Converter::to_number(context, result);
+			}
+			else if constexpr (std::is_same<std::invoke_result_t<Callable>, std::string>::value || std::is_same<std::invoke_result_t<Callable>, std::string_view>::value) {
+				return Converter::to_string(context, result);
+			}
+			else if constexpr (is_map<std::invoke_result_t<Callable>>::value) {
+				return make_object<std::invoke_result_t<Callable>>(context, result);
+			}
+			else if constexpr (is_container<std::invoke_result_t<Callable>>::value) {
+				return make_array<std::invoke_result_t<Callable>>(context, result);
+			}
+			else if constexpr (std::is_same<std::invoke_result_t<Callable>, JSValue>::value) {
+				return result;
+			}
+			else {
+				static_assert(false, "case not implemented");
+			}
+		}
+
 	public:
 
-		template <typename Callable> requires std::is_function<std::remove_pointer_t<std::decay_t<Callable>>>::value
 		static auto make_function_declaration(
 			JSContext* context,
 			Callable&& function
@@ -357,25 +361,8 @@ namespace Sen::Kernel::JavaScript {
 				function();
 				return JS_UNDEFINED;
 			}
-			auto result = function();
-			if constexpr (std::is_integral<std::invoke_result_t<Callable>>::value && !std::is_floating_point< std::invoke_result_t<Callable>>::value && !std::is_pointer<std::invoke_result_t<Callable>>::value) {
-				static_assert(sizeof(std::invoke_result_t<Callable>) != sizeof(bool), "value cannot be bool");
-				return Converter::to_bigint<std::invoke_result_t<Callable>>(context, result);
-			}
-			else if constexpr (std::is_floating_point<std::invoke_result_t<Callable>>::value && !std::is_integral<std::invoke_result_t<Callable>>::value) {
-				return Converter::to_number(context, result);
-			}
-			else if constexpr (std::is_same<std::invoke_result_t<Callable>, bool>::value) {
-				return Converter::to_bool(context, result);
-			}
-			else if constexpr (is_map<std::invoke_result_t<Callable>>::value) {
-				return make_object<std::invoke_result_t<Callable>>(context, result);
-			}
-			else if constexpr (is_container<std::invoke_result_t<Callable>>::value) {
-				return make_array<std::invoke_result_t<Callable>>(context, result);
-			}
 			else {
-				static_assert(false, "case not implemented");
+				return make_return_function(context, std::forward<Callable>(function));
 			}
 		}
 	};

@@ -46,7 +46,6 @@ namespace Sen::Kernel
 
         Stream() : read_pos(0), write_pos(0), length(0)
         {
-            thiz.data.reserve(buffer_size);
         }
 
         Stream(
@@ -263,38 +262,85 @@ namespace Sen::Kernel
             return;
         }
 
+        #if defined(_WIN32) || defined(_WIN64)
+
+        struct WindowsFileHandle {
+
+            HANDLE handle;
+
+            explicit WindowsFileHandle(const std::wstring& path) {
+                handle = CreateFileW(
+                    path.data(),
+                    GENERIC_WRITE,   
+                    0,               
+                    nullptr,         
+                    CREATE_ALWAYS,   
+                    FILE_ATTRIBUTE_NORMAL,
+                    nullptr          
+                );
+                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileHandle");
+            }
+
+            ~WindowsFileHandle() {
+                if (handle != INVALID_HANDLE_VALUE) {
+                    CloseHandle(handle);
+                }
+            }
+
+            WindowsFileHandle(const WindowsFileHandle&) = delete;
+
+            WindowsFileHandle& operator=(const WindowsFileHandle&) = delete;
+
+            WindowsFileHandle(WindowsFileHandle&& other) noexcept : handle(other.handle) {
+                other.handle = INVALID_HANDLE_VALUE;
+            }
+
+            WindowsFileHandle& operator=(WindowsFileHandle&& other) noexcept {
+                if (this != &other) {
+                    if (handle != INVALID_HANDLE_VALUE) {
+                        CloseHandle(handle);
+                    }
+                    handle = other.handle;
+                    other.handle = INVALID_HANDLE_VALUE;
+                }
+                return *this;
+            }
+        };
+
+        #endif
+
         inline auto out_file(
             std::string_view path
         ) const -> void
         {
-            {
-                #if WINDOWS
-                auto filePath = std::filesystem::path(String::utf8_to_utf16(String::to_windows_style(path.data())));
-                #else
-                auto filePath = std::filesystem::path(path);
-                #endif
-                if (filePath.has_parent_path())
-                {
-                    std::filesystem::create_directories(filePath.parent_path());
-                }
-            }
-            #if WINDOWS
-            auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8_to_utf16(path.data()).data(), L"wb"), close_file);
+            // Ensure the parent directories exist (cross-platform)
+            #if defined(_WIN32) || defined(_WIN64)
+            auto filePath = std::filesystem::path(String::utf8_to_utf16(String::to_windows_style(path.data())));
             #else
-            auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
+            auto filePath = std::filesystem::path(path);
             #endif
-            if (file == nullptr)
-            {
-                #if WINDOWS
-                throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), std::source_location::current(),
-                                "out_file");
-                #else
-                throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), path), std::source_location::current(),
-                                "out_file");
-                #endif
+            if (filePath.has_parent_path()) {
+                std::filesystem::create_directories(filePath.parent_path());
             }
-            std::fwrite(thiz.data.data(), 1, thiz.length, file.get());
-            return;
+            #if defined(_WIN32) || defined(_WIN64)
+            auto file = WindowsFileHandle(String::utf8_to_utf16({path.data(), path.size()}));
+            #else
+             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
+            #endif
+            #if defined(_WIN32) || defined(_WIN64)
+            #else
+            assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), path) "out_file");
+            #endif
+            auto dataSize = thiz.length; 
+            #if defined(_WIN32) || defined(_WIN64)
+            auto bytesWritten = DWORD{};
+            auto result = WriteFile(file.handle, thiz.data.data(), static_cast<DWORD>(dataSize), &bytesWritten, nullptr);
+            assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
+            assert_conditional(bytesWritten == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
+            #else
+            size_t written = std::fwrite(thiz.data.data(), 1, dataSize, file);
+            assert_conditional(written == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");
+            #endif
         }
 
         template <typename... Args>

@@ -21,6 +21,9 @@ namespace Sen::Kernel::Compression {
 			// chunk
 
 			inline static constexpr auto CHUNK = 65536;
+			
+
+			inline static constexpr auto RESERVE_MULTIPLIER = 4;
 
 		public:
 
@@ -71,7 +74,8 @@ namespace Sen::Kernel::Compression {
 			) -> List<unsigned char> 
 			{
 				auto destLen = compressBound(data.size());
-				auto zlib_outdata = List<unsigned char>(static_cast<size_t>(destLen));
+				auto zlib_outdata = List<unsigned char>{};
+				zlib_outdata.reserve(static_cast<size_t>(destLen));
 				auto ret = compress2(zlib_outdata.data(), &destLen, data.data(), data.size(), static_cast<int>(level));
 				assert_conditional(ret == Z_OK, fmt::format("{}", Kernel::Language::get("zlib.compress.failed")), "compress");
 				zlib_outdata.resize(destLen);
@@ -96,6 +100,7 @@ namespace Sen::Kernel::Compression {
 				};
 				inflateInit(&zlib_init);
 				auto result = List<unsigned char>{};
+    			result.reserve(data.size() * Zlib::RESERVE_MULTIPLIER);
 				auto out_chunk = std::array<unsigned char, Zlib::CHUNK>{};
 				do {
 					zlib_init.avail_out = static_cast<uInt>(out_chunk.size());
@@ -136,6 +141,7 @@ namespace Sen::Kernel::Compression {
 				};
 				inflateInit2(&zlib_init, -15);
 				auto result = List<unsigned char>{};
+				result.reserve(data.size() * Zlib::RESERVE_MULTIPLIER);
 				auto out_chunk = std::array<unsigned char, Zlib::CHUNK>{};
 				do {
 					zlib_init.avail_out = static_cast<uInt>(out_chunk.size());
@@ -169,7 +175,8 @@ namespace Sen::Kernel::Compression {
 				const List<unsigned char> &data
 			) ->  List<unsigned char>
 			{
-				auto zlib_outdata = List<unsigned char>(static_cast<size_t>(compressBound(static_cast<uLong>(data.size()))));
+				auto zlib_outdata = List<unsigned char>{};
+				zlib_outdata.reserve(static_cast<size_t>(compressBound(static_cast<uLong>(data.size()))));
 				auto zlib_init = z_stream{
 					.next_in = const_cast<unsigned char*>(data.data()),
 					.avail_in = static_cast<uInt>(data.size()),
@@ -217,7 +224,8 @@ namespace Sen::Kernel::Compression {
 					.opaque = Z_NULL
 				};
 				deflateInit2(&zlib_init, static_cast<int>(level), Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
-				auto result = List<unsigned char>();
+				auto result = List<unsigned char>{};
+				result.reserve(static_cast<size_t>(compressBound(static_cast<uLong>(data.size()))));
 				auto out_chunk = std::array<unsigned char, Zlib::CHUNK>{};
 				do {
 					zlib_init.avail_out = static_cast<uInt>(out_chunk.size());
@@ -251,7 +259,8 @@ namespace Sen::Kernel::Compression {
 				}
 				zlib_init.avail_in = static_cast<uInt>(data.size());
 				zlib_init.next_in = reinterpret_cast<Bytef*>(const_cast<unsigned char*>(data.data()));
-				auto result = List<unsigned char>();
+				auto result = List<unsigned char>{};
+				result.reserve(data.size() * Zlib::RESERVE_MULTIPLIER);
 				do {
         			auto out_chunk = std::array<unsigned char, Zlib::CHUNK>{};
 					zlib_init.avail_out = static_cast<uInt>(out_chunk.size());

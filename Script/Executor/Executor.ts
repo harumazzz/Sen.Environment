@@ -309,7 +309,7 @@ namespace Sen.Script.Executor {
 			(argument as any)[key] = input_boolean();
 		} else {
 			if (/^(true|false)$/.test(configuration[key] as string)) {
-				print_argument(configuration[key] as string);
+				print_argument(`${configuration[key]}`);
 				(argument as any & Argument)[key] = Boolean(configuration[key]);
 				return;
 			}

@@ -75,30 +75,30 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
                 auto resource_data_section_size_original = static_cast<uint32_t>(resource_data.size());
                 switch (hash_sv(current_resource_type))
                 {
-                case hash_sv(k_general_type_string):
-                {
-                    if (definition.compression.general)
+                    case hash_sv(k_general_type_string):
                     {
-                        resource_data = std::move(Compression::Zlib::compress<Compression::Zlib::Level::LEVEL_9>(resource_data));
+                        if (definition.compression.general)
+                        {
+                            resource_data = std::move(Compression::Zlib::compress<Compression::Zlib::Level::LEVEL_9>(resource_data));
+                        }
+                        resource_padding_size = compute_padding_size(stream.write_pos + resource_data.size(), k_padding_unit_size);
+                        information_structure_header.general_resource_data_section_offset = resource_data_section_offset;
+                        information_structure_header.general_resource_data_section_size = static_cast<uint32_t>(resource_data.size() + resource_padding_size);
+                        information_structure_header.general_resource_data_section_size_original = resource_data_section_size_original;
+                        break;
                     }
-                    resource_padding_size = compute_padding_size(stream.write_pos + resource_data.size(), k_padding_unit_size);
-                    information_structure_header.general_resource_data_section_offset = resource_data_section_offset;
-                    information_structure_header.general_resource_data_section_size = static_cast<uint32_t>(resource_data.size() + resource_padding_size);
-                    information_structure_header.general_resource_data_section_size_original = resource_data_section_size_original;
-                    break;
-                }
-                case hash_sv(k_texture_type_string):
-                {
-                    if (definition.compression.texture && resource_data.size() != k_none_size)
+                    case hash_sv(k_texture_type_string):
                     {
-                        resource_data = std::move(Compression::Zlib::compress<Compression::Zlib::Level::LEVEL_9>(resource_data));
+                        if (definition.compression.texture && resource_data.size() != k_none_size)
+                        {
+                            resource_data = std::move(Compression::Zlib::compress<Compression::Zlib::Level::LEVEL_9>(resource_data));
+                        }
+                        resource_padding_size = compute_padding_size(stream.write_pos + resource_data.size(), k_padding_unit_size);
+                        information_structure_header.texture_resource_data_section_offset = resource_data_section_offset;
+                        information_structure_header.texture_resource_data_section_size = static_cast<uint32_t>(resource_data.size() + resource_padding_size);
+                        information_structure_header.texture_resource_data_section_size_original = resource_data_section_size_original;
+                        break;
                     }
-                    resource_padding_size = compute_padding_size(stream.write_pos + resource_data.size(), k_padding_unit_size);
-                    information_structure_header.texture_resource_data_section_offset = resource_data_section_offset;
-                    information_structure_header.texture_resource_data_section_size = static_cast<uint32_t>(resource_data.size() + resource_padding_size);
-                    information_structure_header.texture_resource_data_section_size_original = resource_data_section_size_original;
-                    break;
-                }
                 }
                 stream.writeBytes(resource_data);
                 stream.writeNull(resource_padding_size);
