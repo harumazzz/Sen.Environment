@@ -38,8 +38,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         Setting& setting
     ) -> void
     {
-        setting.decode_method = static_cast<DecodeMethod>(value.get_property("decode_method").get_bigint<int64_t>());
-        setting.animation_split_label = value.get_property("animation_split_label").get<bool>();
+        setting.decode_method = static_cast<DecodeMethod>(value.get_property("decode_method").template get_bigint<int64_t>());
+        setting.animation_split_label = value.get_property("animation_split_label").template get<bool>();
         return;
     }
 

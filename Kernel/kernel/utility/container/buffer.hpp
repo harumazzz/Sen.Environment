@@ -285,7 +285,7 @@ namespace Sen::Kernel
             auto file = WindowsFileWriter{String::utf8_to_utf16(String::to_windows_style(path.data()))};
             #else
             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
-            assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), path) "out_file");
+            assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");
             #endif
             auto dataSize = thiz.length; 
             #if defined(_WIN32) || defined(_WIN64)
@@ -294,7 +294,7 @@ namespace Sen::Kernel
             assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
             assert_conditional(bytesWritten == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
             #else
-            auto written = std::fwrite(thiz.data.data(), 1, dataSize, file);
+            auto written = std::fwrite(thiz.data.data(), 1, dataSize, file.get());
             assert_conditional(written == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");
             #endif
         }

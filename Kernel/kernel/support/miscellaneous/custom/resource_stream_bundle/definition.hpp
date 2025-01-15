@@ -57,10 +57,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         PackagesSetting& setting
     ) -> void
     {
-        setting.iv = value.get_property("iv").get<std::string>();
-        setting.key = value.get_property("key").get<std::string>();
-        setting.rton_count = static_cast<int>(value.get_property("rton_count").get_bigint<int64_t>());
-        setting.json_count = static_cast<int>(value.get_property("json_count").get_bigint<int64_t>());
+        setting.iv = value.get_property("iv").template get<std::string>();
+        setting.key = value.get_property("key").template get<std::string>();
+        setting.rton_count = static_cast<int>(value.get_property("rton_count").template get_bigint<int64_t>());
+        setting.json_count = static_cast<int>(value.get_property("json_count").template get_bigint<int64_t>());
         return;
     }
 
@@ -76,9 +76,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         Setting& setting
     ) -> void
     {
-        setting.texture_format_category = static_cast<TextureFormatCategory>(value.get_property("texture_format_category").get_bigint<int64_t>());
-        setting.only_high_resolution = value.get_property("only_high_resolution").get<bool>();
-        setting.unpack_packages = value.get_property("unpack_packages").get<bool>();
+        setting.texture_format_category = static_cast<TextureFormatCategory>(value.get_property("texture_format_category").template get_bigint<int64_t>());
+        setting.only_high_resolution = value.get_property("only_high_resolution").template get<bool>();
+        setting.unpack_packages = value.get_property("unpack_packages").template get<bool>();
         auto packages_setting = value.get_property("packages_setting");
         from_object<Value>(packages_setting, setting.packages_setting);
         return;
