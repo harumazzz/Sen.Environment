@@ -68,13 +68,11 @@ namespace Sen::Kernel
         ) : read_pos(0), write_pos(0)
         {
             #if WINDOWS
-            auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data(), L"rb"), close_file);
+            auto file = WindowsFileReader(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data());
             #else
             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(source.data(), "rb"), close_file);
             #endif
-            #if WINDOWS
-            assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
-            #else
+            #if !WINDOWS
             assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source), "Stream");
             #endif
             #if WINDOWS
@@ -87,7 +85,14 @@ namespace Sen::Kernel
             thiz.file_path = source;
             thiz.length = size;
             thiz.write_pos = size;
+            #if WINDOWS
+            auto bytes_read = DWORD{};
+            auto read_success = ReadFile(file.handle, thiz.data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
+            assert_conditional(SUCCEEDED(read_success), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
+            assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
+            #else
             std::fread(thiz.data.data(), 1, size, file.get());
+            #endif
         }
 
         Stream(
@@ -262,73 +267,24 @@ namespace Sen::Kernel
             return;
         }
 
-        #if defined(_WIN32) || defined(_WIN64)
-
-        struct WindowsFileHandle {
-
-            HANDLE handle;
-
-            explicit WindowsFileHandle(const std::wstring& path) {
-                handle = CreateFileW(
-                    path.data(),
-                    GENERIC_WRITE,   
-                    0,               
-                    nullptr,         
-                    CREATE_ALWAYS,   
-                    FILE_ATTRIBUTE_NORMAL,
-                    nullptr          
-                );
-                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileHandle");
-            }
-
-            ~WindowsFileHandle() {
-                if (handle != INVALID_HANDLE_VALUE) {
-                    CloseHandle(handle);
-                }
-            }
-
-            WindowsFileHandle(const WindowsFileHandle&) = delete;
-
-            WindowsFileHandle& operator=(const WindowsFileHandle&) = delete;
-
-            WindowsFileHandle(WindowsFileHandle&& other) noexcept : handle(other.handle) {
-                other.handle = INVALID_HANDLE_VALUE;
-            }
-
-            WindowsFileHandle& operator=(WindowsFileHandle&& other) noexcept {
-                if (this != &other) {
-                    if (handle != INVALID_HANDLE_VALUE) {
-                        CloseHandle(handle);
-                    }
-                    handle = other.handle;
-                    other.handle = INVALID_HANDLE_VALUE;
-                }
-                return *this;
-            }
-        };
-
-        #endif
+        
 
         inline auto out_file(
             std::string_view path
         ) const -> void
         {
-            // Ensure the parent directories exist (cross-platform)
             #if defined(_WIN32) || defined(_WIN64)
-            auto filePath = std::filesystem::path(String::utf8_to_utf16(String::to_windows_style(path.data())));
+            auto filePath = std::filesystem::path{String::utf8_to_utf16(String::to_windows_style(path.data()))};
             #else
-            auto filePath = std::filesystem::path(path);
+            auto filePath = std::filesystem::path{path};
             #endif
             if (filePath.has_parent_path()) {
                 std::filesystem::create_directories(filePath.parent_path());
             }
             #if defined(_WIN32) || defined(_WIN64)
-            auto file = WindowsFileHandle(String::utf8_to_utf16({path.data(), path.size()}));
+            auto file = WindowsFileWriter{String::utf8_to_utf16(String::to_windows_style(path.data()))};
             #else
-             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
-            #endif
-            #if defined(_WIN32) || defined(_WIN64)
-            #else
+            auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
             assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), path) "out_file");
             #endif
             auto dataSize = thiz.length; 
@@ -338,7 +294,7 @@ namespace Sen::Kernel
             assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
             assert_conditional(bytesWritten == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
             #else
-            size_t written = std::fwrite(thiz.data.data(), 1, dataSize, file);
+            auto written = std::fwrite(thiz.data.data(), 1, dataSize, file);
             assert_conditional(written == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");
             #endif
         }

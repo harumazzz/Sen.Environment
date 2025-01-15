@@ -39,6 +39,9 @@ add_library(
 	./utility/encryption/crc.hpp
 	./utility/encryption/fnv.hpp
 
+	
+	./utility/platform/windows.hpp
+
 	./utility/compression/zlib.hpp
 	./utility/compression/lzma.hpp
 	./utility/compression/bzip2.hpp

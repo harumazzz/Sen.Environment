@@ -2,6 +2,7 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/assert.hpp"
+#include "kernel/utility/platform/windows.hpp"
 #include "kernel/utility/container/string.hpp"
 #include "kernel/utility/container/path.hpp"
 
@@ -137,12 +138,6 @@ namespace Sen::Kernel::FileSystem
 		return;
 	}
 
-	// Provide file path to write
-	// Provide json content to serialize & write
-	// indent: provide indentation
-	// indent_char: indentation in segment line
-	// return: writed json content
-
 	inline static auto write_json(
 		std::string_view filepath,
 		const nlohmann::ordered_json & content,
@@ -159,22 +154,15 @@ namespace Sen::Kernel::FileSystem
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
-		if (file == nullptr) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), filepath), std::source_location::current(), "write_json");
-			#endif
-		}
+		#if WINDOWS
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		#else
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
+		#endif
 		auto dumped_content = content.dump(indent, indent_char);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
 		return;
 	}
-
-	// Provide file path to write
-	// Provide json content to serialize & write
-	// indent_char: indentation in segment line
-	// return: writed json content
 
 	inline static auto write_json(
 		std::string_view filepath,
@@ -191,24 +179,15 @@ namespace Sen::Kernel::FileSystem
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
-		if (file == nullptr) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), filepath), std::source_location::current(), "write_json");
-			#endif
-		}
+		#if WINDOWS
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		#else
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
+		#endif
 		auto dumped_content = content.dump(1, indent_char);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
 		return;
 	}
-
-	// Provide file path to write
-	// Provide json content to serialize & write
-	// indent: provide indentation
-	// indent_char: indentation in segment line
-	// ensure ascii: will it ensure ascii?
-	// return: writed json content
 
 	inline static auto write_json(
 		std::string_view filepath,
@@ -227,13 +206,11 @@ namespace Sen::Kernel::FileSystem
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
-		if (file == nullptr) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_json");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), filepath), std::source_location::current(), "write_json");
-			#endif
-		}
+		#if WINDOWS
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		#else
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
+		#endif
 		auto dumped_content = content.dump(indent, indent_char, ensureAscii);
 		std::fwrite(dumped_content.data(), 1, dumped_content.size(), file.get());
 		return;
@@ -340,9 +317,11 @@ namespace Sen::Kernel::FileSystem
 		#else
 		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
-		if (file == nullptr) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_write_file"), String::to_posix_style(filepath.data())), std::source_location::current(), "write_file");
-		}
+		#if WINDOWS
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_file");
+		#else
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_file");
+		#endif
 		std::fwrite(content.data(), 1, content.size(), file.get());
 		return;
 	}
@@ -386,17 +365,28 @@ namespace Sen::Kernel::FileSystem
 	) -> List<T> const
 	{
 		#if WINDOWS
-		auto file = std::ifstream(String::utf8_to_utf16(fmt::format("\\\\?\\{}",
-				String::to_windows_style(filepath.data()))).data(), std::ios::binary);
+		auto file = WindowsFileReader{String::utf8_to_utf16(fmt::format("\\\\?\\{}",
+				String::to_windows_style(filepath.data()))).data()};
 		#else
-		auto file = std::ifstream(filepath.data(), std::ios::binary);
+		auto file = std::unique_ptr<FILE, decltype(&std::fclose)>(std::fopen(filepath.data(), "rb"), &std::fclose);
+    	assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
 		#endif
-		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
-		file.seekg(0, std::ios::end);
-		auto size = static_cast<std::streamsize>(file.tellg());
-		file.seekg(0, std::ios::beg);
-		auto data = List<T>(size);
-		assert_conditional(file.read(reinterpret_cast<char*>(data.data()), size), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
+		#if WINDOWS
+		auto size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(filepath.data())});
+		#else
+		auto size = std::filesystem::file_size(std::filesystem::path{filepath});
+		#endif
+		auto data = List<T>{};
+		data.reserve(size);
+		#if WINDOWS
+		auto bytes_read = DWORD{};
+		auto state = ReadFile(file.handle, data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
+		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
+		assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
+		#else
+		auto bytes_read = std::fread(data.data(), sizeof(T), size, file.get());
+    	assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
+		#endif
 		return data;	
 	}
 
@@ -533,54 +523,6 @@ namespace Sen::Kernel::FileSystem
 		return result;
 	}
 
-	#if defined(_WIN32) || defined(_WIN64)
-
-	struct WindowsFileHandle {
-
-		HANDLE handle;
-
-		explicit WindowsFileHandle(const std::wstring& path) {
-			handle = CreateFileW(
-				path.data(),
-				GENERIC_WRITE,   
-				0,               
-				nullptr,         
-				CREATE_ALWAYS,   
-				FILE_ATTRIBUTE_NORMAL,
-				nullptr          
-			);
-			assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileHandle");
-		}
-
-		~WindowsFileHandle() {
-			if (handle != INVALID_HANDLE_VALUE) {
-				CloseHandle(handle);
-			}
-		}
-
-		WindowsFileHandle(const WindowsFileHandle&) = delete;
-
-		WindowsFileHandle& operator=(const WindowsFileHandle&) = delete;
-
-		WindowsFileHandle(WindowsFileHandle&& other) noexcept : handle(other.handle) {
-			other.handle = INVALID_HANDLE_VALUE;
-		}
-
-		WindowsFileHandle& operator=(WindowsFileHandle&& other) noexcept {
-			if (this != &other) {
-				if (handle != INVALID_HANDLE_VALUE) {
-					CloseHandle(handle);
-				}
-				handle = other.handle;
-				other.handle = INVALID_HANDLE_VALUE;
-			}
-			return *this;
-		}
-	};
-
-	#endif
-
-
 	template <typename T> requires CharacterBufferView<T>
 	inline static auto write_binary(
 		std::string_view path,
@@ -588,7 +530,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if defined(_WIN32) || defined(_WIN64)
-		auto file = WindowsFileHandle(String::utf8_to_utf16({path.data(), path.size()}));
+		auto file = WindowsFileWriter{String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style({path.data(), path.size()})))};
 		auto bytesWritten = DWORD{0};
 		auto result = WriteFile(
 			file.handle, 
