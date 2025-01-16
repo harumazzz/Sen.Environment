@@ -174,7 +174,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Decode {
 					argument.destination!,
 					argument!.size!.width,
 					argument!.size!.height,
-					Detail.exchange_format(argument.format!),
+					BigInt(Detail.exchange_format(argument.format!)),
 				);
 				clock.stop_safe();
 			},

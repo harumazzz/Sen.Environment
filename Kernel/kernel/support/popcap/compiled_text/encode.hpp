@@ -5,144 +5,59 @@
 
 namespace Sen::Kernel::Support::PopCap::CompiledText {
 
-	/**
-	 * Use Sen Buffer
-	*/
-
 	using namespace Sen::Kernel;
-
-	/**
-	 * Use base64
-	*/
 
 	using namespace Sen::Kernel::Encryption;
 
-	/**
-	 * Encode Struct
-	*/
-
 	struct Encode {
 
-		private:
+		constexpr explicit Encode(
 
-			/**
-			 * Key for compiled text
-			*/
+		) = default;
 
-			std::string_view key;
+		constexpr ~Encode(
 
-			/**
-			 * Iv for compiled text
-			*/
+		) = default;
 
-			std::string_view iv;
+		template <auto UseVariant>
+		inline static auto process(
+			DataStreamView &stream,
+			std::string_view key,
+			std::string_view iv,
+			DataStreamView &result
+		) -> void {
+			using Rijndael = Kernel::Encryption::Rijndael;
+			auto buffer = DataStreamView{};
+			buffer.writeBytes(PopCap::Zlib::Compress<UseVariant>::process(stream.getBytes(0, stream.size())));
+			Encryption::fill_rijndael_block(buffer, iv);
+			auto decoded_base64 = DataStreamView{};
+			decoded_base64.writeUint8(0x10);
+			decoded_base64.writeUint8(0x00);
+			decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.begin_pointer()), key, iv, buffer.size()));
+			auto encoded_base64 = DataStreamView{};
+			encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
+			result.writeBytes(encoded_base64.getBytes(0, encoded_base64.size()));
+		}
 
-			/**
-			 * The use of 64bit variant
-			*/
-
-			bool use_64_bit_variant;
-
-		public:
-
-			/**
-			 * Buffer handling
-			*/
-
-			std::unique_ptr<DataStreamView> sen;
-
-			/**
-			 * Buffer handling
-			*/
-
-			std::unique_ptr<DataStreamView> result;
-
-			/**
-			 * Default constructor
-			*/
-
-			explicit Encode(
-
-			) = default;
-
-			/**
-			 * Default destructor
-			*/
-
-			~Encode(
-
-			) = default;
-
-			/**
-			 * @param source: source file
-			 * Constructor
-			*/
-
-			explicit Encode(
-				std::string_view source,
-				std::string_view key,
-				std::string_view iv,
-				bool use_64_bit_variant
-			) : sen(std::make_unique<DataStreamView>(source)), key(key), iv(iv), use_64_bit_variant(use_64_bit_variant), result(std::make_unique<DataStreamView>())
-			{
-
+		inline static auto process_fs (
+			std::string_view source,
+			std::string_view destination,
+			std::string_view key,
+			std::string_view iv,
+			bool use_64_bit_variant
+		) -> void
+		{
+			auto source_view = DataStreamView{source};
+			auto destination_view = DataStreamView{};
+			if (use_64_bit_variant) {
+				process<true>(source_view, key, iv, destination_view);
 			}
-
-			explicit Encode(
-				DataStreamView & it,
-				std::string_view key,
-				std::string_view iv,
-				bool use_64_bit_variant
-			) : sen(&it), key(key), iv(iv), use_64_bit_variant(use_64_bit_variant), result(std::make_unique<DataStreamView>())
-			{
-
+			else {
+				process<false>(source_view, key, iv, destination_view);
 			}
-
-			/**
-			 * --------------
-			 * Process method
-			 * --------------
-			*/
-
-			inline auto process(
-
-			) -> void
-			{
-				auto buffer = DataStreamView{};
-				{
-					auto zlib = PopCap::Zlib::Compress<false>{};
-					buffer.writeBytes(zlib.compress(thiz.sen->getBytes(0, thiz.sen->size())));
-				}
-				Encryption::fill_rijndael_block(buffer, thiz.iv);
-				auto decoded_base64 = DataStreamView{};
-				decoded_base64.writeUint8(0x10);
-				decoded_base64.writeUint8(0x00);
-				decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Sen::Kernel::Encryption::Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.begin_pointer()), key, iv, buffer.size()));
-				auto encoded_base64 = DataStreamView{};
-				encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
-				result->writeBytes(encoded_base64.getBytes(0, encoded_base64.size()));
-				return;
-			}
-
-			/**
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @returns: Encoded file
-			*/
-
-			inline static auto process_fs(
-				std::string_view source,
-				std::string_view destination,
-				std::string_view key,
-				std::string_view iv,
-				bool use_64_bit_variant
-			) -> void
-			{
-				auto compiled_text = Encode{source, key, iv, use_64_bit_variant};
-				compiled_text.process();
-				compiled_text.result->out_file(destination);
-				return;
-			}
+			destination_view.out_file(destination);
+			return;
+		}
 
 	};
 }

@@ -6,26 +6,30 @@
 
 namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 {
-    
 
-    struct Instance
+    using Rijndael = Kernel::Encryption::Rijndael;
+   
+    struct Chinese
     {
-    private:
-        using Rijndael = Sen::Kernel::Encryption::Rijndael;
 
-    public:
+        constexpr Chinese() = default;
+
+        constexpr ~Chinese() = default;
+
         inline static auto decrypt(
             DataStreamView &source,
             DataStreamView &destination,
             std::string_view key,
-            std::string_view iv) -> void
+            std::string_view iv
+       ) -> void
         {
             destination.writeBytes(
                 Rijndael::decrypt<std::uint64_t, Rijndael::Mode::CBC>(
                     reinterpret_cast<char *>(source.getBytes(2, source.size()).data()),
                     key,
                     iv,
-                    source.size() - 2_size));
+                    source.size() - 2_size)
+           );
             return;
         }
 
@@ -33,7 +37,8 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             std::string_view source,
             std::string_view destination,
             std::string_view key,
-            std::string_view iv) -> void
+            std::string_view iv
+       ) -> void
         {
             auto stream = DataStreamView{source};
             auto result = DataStreamView{};
@@ -46,7 +51,8 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             std::string_view source,
             std::string_view destination,
             std::string_view key,
-            std::string_view iv) -> void
+            std::string_view iv
+       ) -> void
         {
             auto stream = DataStreamView{source};
             auto dest = DataStreamView{};
@@ -58,7 +64,6 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             return;
         }
 
-        // ---------------------------------------------
 
         inline static auto encrypt(
             DataStreamView &source_buffer,
@@ -96,9 +101,9 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         {
             auto result = DataStreamView{};
             Encode::process_whole(result, FileSystem::read_file(source));
-            auto view = DataStreamView{};
-            encrypt(result, view, key, iv);
-            view.out_file(destination);
+            auto stream = DataStreamView{};
+            encrypt(result, stream, key, iv);
+            stream.out_file(destination);
             return;
         }
     };

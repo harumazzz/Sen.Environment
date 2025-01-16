@@ -143,7 +143,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PTX.Encode {
 				Kernel.Support.Texture.encode_fs(
 					argument.source,
 					argument.destination!,
-					Detail.exchange_format(argument.format!),
+					BigInt(Detail.exchange_format(argument.format!)),
 				);
 				clock.stop_safe();
 			},

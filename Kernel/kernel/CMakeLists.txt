@@ -115,7 +115,7 @@ add_library(
 	./support/popcap/reflection_object_notation/common.hpp
 	./support/popcap/reflection_object_notation/decode.hpp
 	./support/popcap/reflection_object_notation/encode.hpp
-	./support/popcap/reflection_object_notation/instance.hpp
+	./support/popcap/reflection_object_notation/chinese.hpp
 	./support/popcap/render_effects/common.hpp
 	./support/popcap/render_effects/decode.hpp
 	./support/popcap/render_effects/definition.hpp

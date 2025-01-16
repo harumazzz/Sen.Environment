@@ -12,14 +12,6 @@ namespace Sen::Kernel {
 	}\
 	static_assert(true)
 
-	/**
-	 * Object: nlohmann object
-	 * property: json property
-	*/
-
-	#define is_null_object(object, property) \
-		object.find(property) == object.end()
-
 
 	class Exception : public std::runtime_error {
 

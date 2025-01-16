@@ -83,11 +83,11 @@ namespace Sen::Kernel::JavaScript {
 		if constexpr (std::is_same<T, bool>::value) {
 			return Converter::to_bool(context, value);
 		} 
-		else if constexpr (std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_pointer<T>::value) {
+		else if constexpr (std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_pointer<T>::value && !std::is_same<T, bool>::value) {
 			static_assert(sizeof(T) != sizeof(bool), "value cannot be bool");
 			return Converter::to_bigint<T>(context, value);
 		} 
-		else if constexpr (std::is_floating_point<T>::value) {
+		else if constexpr (std::is_floating_point<T>::value && !std::is_same<T, bool>::value) {
 			return Converter::to_number(context, value);
 		} 
 		else if constexpr (std::is_same<T, std::string>::value || std::is_same<T, std::string_view>::value) {
@@ -106,6 +106,7 @@ namespace Sen::Kernel::JavaScript {
 			static_assert(false, "to_value case not implemented for this type");
 		}
 	}
+
 
 	template <typename T>
 	auto from_value(
@@ -134,8 +135,6 @@ namespace Sen::Kernel::JavaScript {
 		return Converter::get_bool(context, value);
 	}
 
-	
-
 	template <>
 	auto from_value<JSValue>(
 		JSContext* context,
@@ -145,7 +144,7 @@ namespace Sen::Kernel::JavaScript {
 		return value;
 	}
 
-	template <typename T> requires (std::is_integral_v<T> && !std::is_unsigned<T>::value)
+	template <typename T> requires (std::is_integral_v<T> && !std::is_unsigned<T>::value && !std::is_same<T, bool>::value)
 	auto from_value(
 		JSContext* context,
 		JSValue value
@@ -154,7 +153,7 @@ namespace Sen::Kernel::JavaScript {
 		return Converter::get_bigint64(context, value);
 	}
 
-	template <typename T> requires (std::is_integral_v<T> && std::is_unsigned<T>::value)
+	template <typename T> requires (std::is_integral_v<T> && std::is_unsigned<T>::value && !std::is_same<T, bool>::value)
 	auto from_value(
 		JSContext* context,
 		JSValue value
@@ -163,13 +162,13 @@ namespace Sen::Kernel::JavaScript {
 		return Converter::get_uint64(context, value);
 	}
 
-	template <typename T> requires (!std::is_integral_v<T> && std::is_floating_point<T>::value)
+	template <typename T> requires (!std::is_integral_v<T> && std::is_floating_point<T>::value && !std::is_same<T, bool>::value)
 	auto from_value(
 		JSContext* context,
 		JSValue value
-	) -> double
+	) -> T
 	{
-		return static_cast<double>(Converter::to_number(context, value));
+		return static_cast<T>(Converter::to_number(context, value));
 	}
 
 	struct ArrayBuffer {
@@ -187,6 +186,15 @@ namespace Sen::Kernel::JavaScript {
 		auto destination = std::make_shared<ArrayBuffer>();
 		destination->value = Converter::get_array_buffer(context, &destination->size, value);
 		return destination;
+	}
+
+
+	template <>
+	static auto to_value<std::shared_ptr<ArrayBuffer>>(
+		JSContext* context, 
+		const std::shared_ptr<ArrayBuffer>& value
+	) -> JSValue {
+		return JS_NewArrayBufferCopy(context, value->value, value->size);
 	}
 
 }

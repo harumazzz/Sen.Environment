@@ -80,20 +80,6 @@ namespace Sen::Kernel::JavaScript
 				return thiz.evaluate(FileSystem::read_quick_file(source), source);
 			}
 
-			inline static auto constexpr not_undefined(
-				const JSValue & that
-			) -> bool
-			{
-				return JS_VALUE_GET_TAG(that) != JS_TAG_UNDEFINED;
-			}
-
-			inline static auto constexpr not_null(
-				const JSValue & that
-			) -> bool
-			{
-				return JS_VALUE_GET_TAG(that) != JS_TAG_NULL;
-			}
-
 			inline auto has_promise(
 			) -> bool
 			{

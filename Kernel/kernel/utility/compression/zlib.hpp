@@ -10,15 +10,9 @@ namespace Sen::Kernel::Compression {
 
 		private:
 
-			// zlib compression check
-
 			inline static constexpr auto Z_COMPRESS_END = 0;
 
-			// zlib uncompression check
-
 			inline static constexpr auto Z_UNCOMPRESS_END = 0;
-
-			// chunk
 
 			inline static constexpr auto CHUNK = 65536;
 			
@@ -27,26 +21,14 @@ namespace Sen::Kernel::Compression {
 
 		public:
 
-			/**
-			 * Constructor
-			*/
 
-			explicit Zlib(
+			constexpr explicit Zlib(
 
 			) = default;
 
-			/**
-			 * Destructor
-			*/
-
-			~Zlib(
+			constexpr ~Zlib(
 
 			) = default;
-			
-
-			/**
-			 * Zlib compression level supported by zlib.h
-			*/
 
 			enum class Level
 			{
@@ -63,11 +45,6 @@ namespace Sen::Kernel::Compression {
 				LEVEL_9,
 			};
 
-			/**
-			 * data: the binary data to compress
-			 * level: zlib compression level
-			 * return: the compressed data
-			 */
 			template <auto level>
 			inline static auto compress(
 				const List<unsigned char> &data
@@ -81,11 +58,6 @@ namespace Sen::Kernel::Compression {
 				zlib_outdata.resize(destLen);
 				return zlib_outdata;
 			}
-
-			/**
-			 * data: the binary data to uncompress
-			 * return: the uncompressed data
-			 */
 			
 			inline static auto uncompress(
 				const List<unsigned char> &data
@@ -122,11 +94,6 @@ namespace Sen::Kernel::Compression {
 				inflateEnd(&zlib_init);
 				return result;
 			}
-
-			/**
-			 * data: the binary data to uncompress
-			 * return: the uncompressed data
-			 */
 			
 			inline static auto uncompress_deflate(
 				const List<unsigned char> &data
@@ -164,12 +131,6 @@ namespace Sen::Kernel::Compression {
 				return result;
 			}
 
-			/**
-			 * data: the binary data to compress
-			 * level: zlib level to compress, should use ZlibLevel::LEVEL_9 for BEST COMPRESSION
-			 * return: the compressed data
-			 */
-
 			template <auto level>
 			inline static auto compress_deflate(
 				const List<unsigned char> &data
@@ -206,11 +167,6 @@ namespace Sen::Kernel::Compression {
 				return zlib_outdata;
 			}
 
-			/**
-			 * data: data stream
-			 * level: zlib level
-			 * return: compressed data
-			*/
 			template <auto level>
 			inline static auto compress_gzip(
 				const List<unsigned char> &data
@@ -237,11 +193,6 @@ namespace Sen::Kernel::Compression {
 				deflateEnd(&zlib_init);
 				return result;
 			}
-
-			/**
-			 * data: data stream
-			 * result: output stream
-			*/
 
 			inline static auto uncompress_gzip(
 				const List<unsigned char> &data
@@ -280,13 +231,6 @@ namespace Sen::Kernel::Compression {
 				inflateEnd(&zlib_init);
 				return result;
 			}
-
-			/**
-			 * source: input file
-			 * destination: output file
-			 * level: zlib level
-			 * return: compress file
-			*/
 
 			inline static auto compress_fs(
 				std::string_view source,
@@ -347,12 +291,6 @@ namespace Sen::Kernel::Compression {
 				return;
 			}
 
-			/**
-			 * source: input file
-			 * destination: output file
-			 * return: uncompress file
-			*/
-
 			inline static auto uncompress_fs(
 				std::string_view source,
 				std::string_view destination
@@ -366,12 +304,6 @@ namespace Sen::Kernel::Compression {
 				FileSystem::write_binary<unsigned char>(destination, uncompressedData);
 				return;
 			}
-
-			/**
-			 * file in: file path
-			 * file out: output path
-			 * return: compressed gzip file
-			*/
 
 			inline static auto compress_gzip_fs(
 				std::string_view source,
@@ -432,13 +364,6 @@ namespace Sen::Kernel::Compression {
 				return;
 			}
 
-			/**
-			 * source: input file
-			 * destination: output file
-			 * level: zlib level
-			 * return: compress file
-			*/
-
 			inline static auto compress_deflate_fs(
 				std::string_view source,
 				std::string_view destination,
@@ -497,12 +422,6 @@ namespace Sen::Kernel::Compression {
 				}
 				return;
 			}
-
-			/**
-			 * source: file path
-			 * file out: output path
-			 * return: uncompressed file
-			*/
 
 			inline static auto uncompress_gzip_fs(
 				std::string_view source,

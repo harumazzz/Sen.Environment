@@ -10,14 +10,14 @@ namespace Sen::Kernel::JavaScript {
 
 	using Value = JavaScript::Value;
 
-	template <typename... Args>
-	auto parse_arguments(JSContext* ctx, JSValueConst* argv) -> std::tuple<std::decay_t<Args>...> {
-		return _parse_arguments<Args...>(ctx, argv, std::index_sequence_for<Args...>{});
-	}
-
 	template <typename... Args, size_t... Indices>
 	auto _parse_arguments(JSContext* ctx, JSValueConst* argv, std::index_sequence<Indices...>) -> std::tuple<std::decay_t<Args>...> {
 		return std::make_tuple(from_value<std::decay_t<Args>>(ctx, argv[Indices])...);
+	}
+
+	template <typename... Args>
+	auto parse_arguments(JSContext* ctx, JSValueConst* argv) -> std::tuple<std::decay_t<Args>...> {
+		return _parse_arguments<Args...>(ctx, argv, std::index_sequence_for<Args...>{});
 	}
 
 	template <typename ReturnType, typename... Args>

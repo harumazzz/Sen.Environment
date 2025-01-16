@@ -21,8 +21,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 		{
 			static_assert(sizeof(UseVariant) == sizeof(bool));
 			static_assert(UseVariant == true or UseVariant == false);
-			auto compress = Sen::Kernel::Support::PopCap::Zlib::Compress<UseVariant>{};
-            return compress.compress(data);
+            return Kernel::Support::PopCap::Zlib::Compress<UseVariant>::process(data);
 		}
 
 		inline auto write_track_nodes(

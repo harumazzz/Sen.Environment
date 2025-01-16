@@ -22,10 +22,9 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             stream.read_pos = 0_size;
             if (magic == zlib_magic || magic == zlib_magic_big)
             {
-                auto uncompress = Sen::Kernel::Support::PopCap::Zlib::Uncompress<UseVariant>{};
                 auto data = stream.toBytes();
                 stream.close();
-                stream.writeBytes(uncompress.uncompress(data));
+                stream.writeBytes(PopCap::Zlib::Uncompress<UseVariant>::process(data));
             }
             return;
         }

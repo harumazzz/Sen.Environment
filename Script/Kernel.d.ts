@@ -164,13 +164,6 @@ declare namespace Sen {
 			 * @returns The name of the current operating system as a string.
 			 */
 			export function current(): string;
-
-			/**
-			 * Gets the current system architecture (e.g., "x64", "arm64").
-			 *
-			 * @returns The system architecture as a string.
-			 */
-			export function architecture(): string;
 		}
 
 		/**
@@ -180,39 +173,11 @@ declare namespace Sen {
 		 */
 		declare namespace ArrayBuffer {
 			/**
-			 * Reads a file from the file system and returns its contents as an ArrayBuffer.
-			 *
-			 * @param source The path to the file to read.
-			 * @returns An ArrayBuffer containing the contents of the file.
-			 *
-			 * **Note:** Consider adding error handling for cases where the file cannot be read.
-			 */
-			export function open(source: string): ArrayBuffer;
-
-			/**
-			 * Writes the contents of an ArrayBuffer to a file on the file system.
-			 *
-			 * @param destination The path to the file to write to.
-			 * @param data The ArrayBuffer containing the data to write.
-			 *
-			 * **Note:** Consider adding error handling for cases where the file cannot be written.
-			 */
-			export function out(destination: string, data: ArrayBuffer): void;
-
-			/**
 			 * Fills an ArrayBuffer with random bytes.
 			 *
 			 * @param value The ArrayBuffer to fill with random bytes.
 			 */
 			export function random(value: ArrayBuffer): void;
-
-			/**
-			 * Fills an ArrayBuffer with a specified value.
-			 *
-			 * @param array The ArrayBuffer to fill.
-			 * @param value The value to fill the ArrayBuffer with (bigint).
-			 */
-			export function fill(array: ArrayBuffer, value: bigint): void;
 		}
 
 		/**
@@ -781,14 +746,6 @@ declare namespace Sen {
 		 */
 		declare namespace JavaScript {
 			/**
-			 * Evaluates a JavaScript code string and returns the result.
-			 *
-			 * @param code The JavaScript code string to execute.
-			 * @returns The result of the code execution, inferred as type `T`.
-			 */
-			export function evaluate<T>(code: string): T;
-
-			/**
 			 * Evaluates a JavaScript file and returns the result.
 			 *
 			 * @param source The path to the JavaScript file to execute.
@@ -798,338 +755,16 @@ declare namespace Sen {
 		}
 
 		/**
-		 * JavaScript Kernel interactive : Encryption
-		 */
-
-		declare namespace Encryption {
-			/**
-			 * Rijndael Support
-			 */
-
-			/**
-			 * Namespace containing functions for Rijndael encryption and decryption.
-			 */
-			declare namespace Rijndael {
-				/**
-				 * Enumeration representing the supported Rijndael encryption modes.
-				 */
-				export type Mode =
-					| 0n // Electronic Codebook Mode (ECB)
-					| 1n // Cipher Block Chaining Mode (CBC)
-					| 2n; // Cipher Feedback Mode (CFB) // Note: CFB mode might require additional implementation
-
-				/**
-				 * Encrypts the provided plaintext using the Rijndael algorithm in the specified mode.
-				 *
-				 * @param plain - The plaintext data as an `ArrayBuffer`.
-				 * @param key - The encryption key as a UTF-8 encoded string.
-				 * @param iv - The initialization vector (IV) as a UTF-8 encoded string (required for CBC mode).
-				 * @param mode - The Rijndael encryption mode (`ECB`, `CBC`, or `CFB`).
-				 */
-				export function encrypt(
-					plain: ArrayBuffer,
-					key: string,
-					iv: string,
-					mode: Mode,
-				): ArrayBuffer;
-
-				/**
-				 * Decrypts the provided ciphertext using the Rijndael algorithm in the specified mode.
-				 *
-				 * @param cipher - The ciphertext data as an `ArrayBuffer`.
-				 * @param key - The decryption key (must match the encryption key) as a UTF-8 encoded string.
-				 * @param iv - The initialization vector (IV) used during encryption (required for CBC mode).
-				 * @param mode - The Rijndael encryption mode used during encryption (`ECB`, `CBC`, or `CFB`).
-				 */
-				export function decrypt(
-					cipher: ArrayBuffer,
-					key: string,
-					iv: string,
-					mode: Mode,
-				): ArrayBuffer;
-			}
-
-			/**
-			 * JavaScript MD5 Hashing methods
-			 */
-			declare namespace MD5 {
-				/**
-				 * Hashes a string using the MD5 algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The MD5 hash of the string.
-				 */
-				export function hash(str: string): string;
-
-				/**
-				 * Hashes a file using the MD5 algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The MD5 hash of the file's contents.
-				 */
-				export function hash_fs(source: string): string;
-			}
-
-			/**
-			 * JavaScript FNV Hashing methods
-			 */
-			declare namespace FNV {
-				/**
-				 * Hashes a string using the FNV algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The FNV hash of the string (as a bigint).
-				 *
-				 * **Note:** FNV hashing implementation might not be available in all JavaScript environments.
-				 */
-				export function hash(str: string): bigint;
-
-				/**
-				 * Hashes a file using the FNV algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The FNV hash of the file's contents (as a bigint).
-				 */
-				export function hash_fs(source: string): bigint;
-			}
-
-			/**
-			 * JavaScript SHA-224 Hashing methods
-			 */
-			declare namespace SHA224 {
-				/**
-				 * Hashes a string using the SHA-224 algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The SHA-224 hash of the string.
-				 */
-				export function hash(str: string): string;
-
-				/**
-				 * Hashes a file using the SHA-224 algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The SHA-224 hash of the file's contents.
-				 */
-				export function hash_fs(source: string): string;
-			}
-
-			/**
-			 * JavaScript SHA-256 Hashing methods
-			 */
-			declare namespace SHA256 {
-				/**
-				 * Hashes a string using the SHA-256 algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The SHA-256 hash of the string.
-				 */
-				export function hash(str: string): string;
-
-				/**
-				 * Hashes a file using the SHA-256 algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The SHA-256 hash of the file's contents.
-				 */
-				export function hash_fs(source: string): string;
-			}
-
-			/**
-			 * JavaScript SHA-384 Hashing methods
-			 */
-			declare namespace SHA384 {
-				/**
-				 * Hashes a string using the SHA-384 algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The SHA-384 hash of the string.
-				 */
-				export function hash(str: string): string;
-
-				/**
-				 * Hashes a file using the SHA-384 algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The SHA-384 hash of the file's contents.
-				 */
-				export function hash_fs(source: string): string;
-			}
-
-			/**
-			 * JavaScript SHA-512 Hashing methods
-			 */
-			declare namespace SHA512 {
-				/**
-				 * Hashes a string using the SHA-512 algorithm.
-				 *
-				 * @param str The string to hash.
-				 * @returns The SHA-512 hash of the string.
-				 */
-				export function hash(str: string): string;
-
-				/**
-				 * Hashes a file using the SHA-512 algorithm.
-				 *
-				 * @param source The path to the file to hash.
-				 * @returns The SHA-512 hash of the file's contents.
-				 */
-				export function hash_fs(source: string): string;
-			}
-
-			/**
-			 * JavaScript XOR Hashing methods
-			 */
-			declare namespace XOR {
-				/**
-				 * --------------------------------------------------
-				 * JavaScript hash method
-				 * @param plain - string to encrypt (uses ArrayBuffer for efficiency)
-				 * @param key - key to encrypt (uses ArrayBuffer for efficiency)
-				 * @returns encrypted string (as ArrayBuffer)
-				 * --------------------------------------------------
-				 */
-				export function encrypt(data: ArrayBuffer, key: ArrayBuffer): ArrayBuffer;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript encrypt method for file
-				 * @param source - source file to encrypt
-				 * @param destination - output file
-				 * @param key - key to encrypt (uses ArrayBuffer for efficiency)
-				 * @returns This function doesn't return a value
-				 * --------------------------------------------------
-				 */
-				export function encrypt_fs(
-					source: string,
-					destination: string,
-					key: ArrayBuffer,
-				): void;
-			}
-
-			/**
-			 * JavaScript Base64 encode/decode methods
-			 */
-			declare namespace Base64 {
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 encoding method
-				 * @param str - string to encode
-				 * @returns: encoded string
-				 * --------------------------------------------------
-				 */
-				export function encode(str: string): string;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 decoding method
-				 * @param str - string to decode
-				 * @returns: decoded string
-				 * --------------------------------------------------
-				 */
-				export function decode(str: string): string;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 encoding method for files
-				 * @param source - source file to encode
-				 * @param destination - destination file for encoded data
-				 * @returns: (void) - This function doesn't return a value, it modifies the destination file
-				 * --------------------------------------------------
-				 */
-				export function encode_fs(source: string, destination: string): void;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Base64 decoding method for files
-				 * @param source - source file containing Base64 encoded data
-				 * @param destination - destination file for decoded data
-				 * @returns: (void) - This function doesn't return a value, it modifies the destination file
-				 * --------------------------------------------------
-				 */
-				export function decode_fs(source: string, destination: string): void;
-			}
-		}
-
-		/**
 		 * JavaScript Compression Utilities
 		 *
 		 * This namespace provides functions for various compression and decompression tasks
 		 */
 		declare namespace Compression {
 			/**
-			 * Namespace for Lzma compression and decompression functions.
-			 */
-			declare namespace Lzma {
-				/**
-				 * Lzma compression level. Higher levels result in better compression ratios
-				 * but take longer to compress.
-				 */
-				export type Level = 0n | 1n | 2n | 3n | 4n | 5n | 6n | 7n | 8n | 9n;
-
-				/**
-				 * Compresses a file system object at the specified path to the destination path
-				 * using the given Lzma compression level.
-				 *
-				 * @param source - The path to the file or directory to compress.
-				 * @param destination - The path to the archive file to create.
-				 * @param level - The Lzma compression level to use (0-9).
-				 */
-				export function compress_fs(
-					source: string,
-					destination: string,
-					level: Level,
-				): void;
-
-				/**
-				 * Decompresses a Lzma archive file at the specified path to the destination path.
-				 *
-				 * @param source - The path to the Lzma archive file to decompress.
-				 * @param destination - The path to extract the decompressed files.
-				 */
-				export function uncompress_fs(source: string, destination: string): void;
-			}
-
-			/**
 			 * JavaScript Zip Compression and Decompression Utilities
 			 * Based on zip.h library written in C
 			 */
 			declare namespace Zip {
-				/**
-				 * JavaScript Zip Compression functions
-				 * Supported for file & directory
-				 */
-				declare namespace Compress {
-					/**
-					 * --------------------------------------------------
-					 * JS Zip compression support
-					 *
-					 * Compresses an array of source files into a single ZIP archive at the specified destination.
-					 *
-					 * @param source An array of file paths to compress.
-					 * @param destination The destination path for the compressed ZIP archive.
-					 * @param root An optional root directory path to exclude from the archive path (for relative paths).
-					 * --------------------------------------------------
-					 */
-					export function file(
-						source: Array<string>,
-						destination: string,
-						root?: string,
-					): void;
-
-					/**
-					 * --------------------------------------------------
-					 * JS Zip compression support
-					 *
-					 * Compresses a directory and its contents into a ZIP archive at the specified destination.
-					 *
-					 * @param source The path to the directory to compress.
-					 * @param destination The destination path for the compressed ZIP archive.
-					 * --------------------------------------------------
-					 */
-					export function directory(source: string, destination: string): void;
-				}
-
 				/**
 				 * JavaScript Zip Decompression functions
 				 */
@@ -1161,34 +796,6 @@ declare namespace Sen {
 				 * but take longer to compress.
 				 */
 				export type Level = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Zlib compression method for file
-				 *
-				 * Compresses a source file using the Zlib algorithm and writes the compressed data to a destination file.
-				 *
-				 * @param source The path to the source file to compress.
-				 * @param destination The path to the destination file for the compressed data.
-				 * @param level The level of compression to use (higher levels result in smaller compressed size but slower compression).
-				 * --------------------------------------------------
-				 */
-				export function compress_fs(
-					source: string,
-					destination: string,
-					level: Zlib.Level,
-				): void;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Zlib decompression method for file
-				 *
-				 * Decompresses a source file compressed with Zlib and writes the decompressed data to a destination file.
-				 *
-				 * @param source The path to the compressed Zlib file.
-				 * @param destination The path to the destination file for the decompressed data.
-				 * --------------------------------------------------
-				 */
-				export function uncompress_fs(source: string, destination: string): void;
 
 				/**
 				 * --------------------------------------------------
@@ -1201,88 +808,6 @@ declare namespace Sen {
 				 * --------------------------------------------------
 				 */
 				export function uncompress(data: BinaryView): BinaryView;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Zlib compression function for data stream (advanced usage)
-				 *
-				 * Compresses a provided BinaryView using the Zlib algorithm.
-				 *
-				 * @param data The BinaryView containing the data to compress.
-				 * @param level The level of compression to use (higher levels result in smaller compressed size but slower compression).
-				 * @returns A new BinaryView containing the compressed data.
-				 * --------------------------------------------------
-				 */
-				export function compress(
-					data: BinaryView,
-					level: Script.Definition.Zlib.Level,
-				): BinaryView;
-			}
-
-			/**
-			 * JavaScript Gzip Compression/Decompression Utilities (may not be directly related to the kernel)
-			 *
-			 * This namespace provides functions for Gzip compression and decompression,
-			 * which is a variant of Zlib with a header for file identification.
-			 * These functionalities might not directly interact with the operating system kernel for compression/decompression.
-			 */
-
-			declare namespace Gzip {
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Gzip compression method for file
-				 *
-				 * Compresses a source file using the Gzip algorithm and writes the compressed data to a destination file.
-				 *
-				 * @param source The path to the source file to compress.
-				 * @param destination The path to the destination file for the compressed data.
-				 * @param level The level of compression to use (higher levels result in smaller compressed size but slower compression).
-				 * --------------------------------------------------
-				 */
-				export function compress_fs(
-					source: string,
-					destination: string,
-					level: Zlib.Level,
-				): void;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Gzip decompression method for file
-				 *
-				 * Decompresses a source file compressed with Gzip and writes the decompressed data to a destination file.
-				 *
-				 * @param source The path to the compressed Gzip file.
-				 * @param destination The path to the destination file for the decompressed data.
-				 * --------------------------------------------------
-				 */
-				export function uncompress_fs(source: string, destination: string): void;
-			}
-
-			/**
-			 * Namespace for Bzip2 compression/decompression utilities.
-			 *
-			 * **Note:** This code likely won't work in a standard JavaScript environment
-			 * as bzip2 decompression requires a specialized library.
-			 * This code might be intended for a specific framework or server-side environment.
-			 */
-			declare namespace Bzip2 {
-				/**
-				 * Compresses a file using the bzip2 algorithm.
-				 *
-				 * @param source The path to the source file to compress.
-				 * @param destination The path to the destination compressed file.
-				 * @throws {Error} If there is an error during compression.
-				 */
-				export function compress_fs(source: string, destination: string): void;
-
-				/**
-				 * Uncompresses a bzip2 compressed file.
-				 *
-				 * @param source The path to the source compressed file.
-				 * @param destination The path to the destination uncompressed file.
-				 * @throws {Error} If there is an error during decompression.
-				 */
-				export function uncompress_fs(source: string, destination: string): void;
 			}
 		}
 
@@ -1431,7 +956,7 @@ declare namespace Sen {
 				export function encode_fs(
 					source: string,
 					destination: string,
-					format: Sen.Script.Support.Texture.Format,
+					format: bigint,
 				): void;
 
 				/**
@@ -1449,7 +974,7 @@ declare namespace Sen {
 					destination: string,
 					width: bigint,
 					height: bigint,
-					format: Sen.Script.Support.Texture.Format,
+					format: bigint,
 				): void;
 			}
 

@@ -4,286 +4,225 @@
 
 namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 
-	/**
-	 * use namespace definition
-	*/
 
 	using namespace Sen::Kernel; 
 
-	/**
-	 * Encode Newton class
-	*/
 
 	struct Encode {
+		
+		constexpr explicit Encode(
+		) = default;
 
-		private:
+		constexpr ~Encode(
 
-			/**
-			 * Resource Enumeration
-			*/
+		) = default;
 
-			inline static std::unordered_map<std::string, unsigned char> const ResourceTypeEnumeration = std::unordered_map<std::string, unsigned char> {
-				{"Image", 0x01_byte},
-				{"PopAnim", 0x02_byte},
-				{"SoundBank", 0x03_byte},
-				{"File", 0x04_byte},
-				{"PrimeFont", 0x05_byte},
-				{"RenderEffect", 0x06_byte},
-				{"DecodedSoundBank", 0x07_byte}
-			};
+		inline static auto is_not_null_object (
+			nlohmann::ordered_json& json,
+			const std::string& property
+		) -> bool 
+		{
+			return json.find(property) != json.end();
+		}
 
-			/***
-			 * Newton JSON
-			*/
+		inline static auto is_null_object (
+			nlohmann::ordered_json& json,
+			const std::string& property
+		) -> bool 
+		{
+			return json.find(property) == json.end();
+		}
 
-			nlohmann::ordered_json resource;
+		inline static auto validate_resource (
+			nlohmann::ordered_json& resource
+		) -> void {
+			assert_conditional(is_not_null_object(resource, "slot_count"),fmt::format("{}", Kernel::Language::get("popcap.newton.encode.slot_count_cannot_be_null")),"validate_resource");
+		}
 
-		public :
+		inline static auto write_slot_and_group_count(
+			DataStreamView& stream,
+			nlohmann::ordered_json& resource
+		) -> void {
+			stream.writeInt32(resource["slot_count"].get<int>());
+			stream.writeInt32(static_cast<int>(resource["groups"].size()));
+		}
 
-			std::unique_ptr<DataStreamView> sen;
+		inline static auto process_group(
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			write_group_type(stream, group);
+			write_group_info(stream, group);
+			process_group_type(stream, group);
+		}
 
-			// constructor
-
-			explicit Encode(
-
-			) : sen(std::make_unique<DataStreamView>())
-			{
-
+		inline static auto process_group_type (
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			switch (hash_string(group["type"].get<std::string>())) {
+				case hash_string("composite"_sv):
+					process_composite_group(stream, group);
+					break;
+				case hash_string("simple"_sv):
+					process_simple_group(stream, group);
+					break;
 			}
+		}
 
-			// destructor
-
-			~Encode(
-
-			) = default;
-
-			// constructor
-
-			explicit Encode(
-				std::string_view source
-			) : resource(*FileSystem::read_json(source)), sen(std::make_unique<DataStreamView>())
-			{
+		inline static auto write_group_type (
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			switch (hash_string(group["type"].get<std::string>())) {
+				case hash_string("composite"_sv):
+					stream.writeUint8(0x01);
+					break;
+				case hash_string("simple"_sv):
+					stream.writeUint8(0x02);
+					break;
+				default:
+					assert_conditional(false,fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.encode.unknown_type"), group["type"].get<std::string>(), Kernel::Language::get("popcap.newton.encode.at_group_id"), group["id"].get<std::string>()), "write_group_type");
 			}
+		}
 
-			explicit Encode(
-				const nlohmann::ordered_json & source
-			) : resource(source), sen(std::make_unique<DataStreamView>())
-			{
+		inline static auto write_group_info (
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			auto subgroups_count = is_null_object(group, "subgroups") ? 0x00 : group["subgroups"].size();
+			auto resources_count = is_null_object(group, "resources") ? 0x00 : group["resources"].size();
+			stream.writeInt32(is_null_object(group, "res") ? 0x00 : Converter::to_int32(group["res"].get<std::string>(),String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")),group["res"].get<std::string>())));
+			stream.writeInt32(subgroups_count);
+			stream.writeInt32(resources_count);
+			stream.writeUint8(0x01);
+			if (is_not_null_object(group, "parent")) {
+				stream.writeUint8(0x01);
+			} else {
+				stream.writeUint8(0x00);
 			}
-
-			inline auto is_not_null_object (
-				nlohmann::ordered_json& json,
-				const std::string& property
-			) -> bool 
-			{
-				return json.find(property) != json.end();
+			stream.writeUint32(group["id"].get<std::string>().size());
+			stream.writeString(group["id"].get<std::string>());
+			if (is_not_null_object(group, "parent")) {
+				stream.writeUint32(group["parent"].get<std::string>().size());
+				stream.writeString(group["parent"].get<std::string>());
 			}
+		}
 
-			/**
-			 * ---------------------
-			 * Process method
-			 * ---------------------
-			 */
-
-			inline auto process(
-
-			) -> void
-			{
-				assert_conditional(is_not_null_object(resource, "slot_count"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.slot_count_cannot_be_null")), "process");
-				sen->writeInt32(resource["slot_count"].get<int>());
-				sen->writeInt32(static_cast<int>(resource["groups"].size()));
-				for(auto & m_data : thiz.resource["groups"]){
-					switch (hash_string(m_data["type"].get<std::string>())) {
-						case hash_string("composite"_sv):
-							sen->writeUint8(0x01);
-							break;
-						case hash_string("simple"_sv):
-							sen->writeUint8(0x02);
-							break;
-						default:
-							assert_conditional(false, fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.encode.unknown_type"), m_data["type"].get<std::string>(), Kernel::Language::get("popcap.newton.encode.at_group_id"), m_data["id"].get<std::string>()), "process");
-					}
-					auto subgroups_count = is_null_object(m_data, "subgroups") ? 0x00 : m_data["subgroups"].size();
-      				auto resources_count = is_null_object(m_data, "resources") ? 0x00 : m_data["resources"].size();
-					sen->writeInt32(is_null_object(m_data, "res") ? 0x00 : Converter::to_int32(m_data["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), m_data["res"].get<std::string>())));
-					sen->writeInt32(subgroups_count);
-					sen->writeInt32(resources_count);
-					sen->writeUint8(0x01);
-					if (is_not_null_object(m_data, "parent")) {
-						sen->writeUint8(0x01);
-					} 
-					else {
-						sen->writeUint8(0x00);
-					}
-					sen->writeUint32(m_data["id"].get<std::string>().size());
-					sen->writeString(m_data["id"].get<std::string>());
-					if (is_not_null_object(m_data, "parent")) {
-						sen->writeUint32(m_data["parent"].get<std::string>().size());
-						sen->writeString(m_data["parent"].get<std::string>());
-					}
-					switch (hash_string(m_data["type"].get<std::string>())) {
-						case hash_string("composite"_sv): {
-							assert_conditional(is_null_object(m_data, "resources"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.resource_must_be_null_with_composite")), "process");
-							for(auto & current : m_data["subgroups"]){
-								if(is_not_null_object(current, "res")){
-									sen->writeInt32(Converter::to_int32(current["res"].get<std::string>(), String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")), current["res"].get<std::string>())));
-								}
-								else{
-									sen->writeInt32(0x00);
-								}
-								sen->writeUint32(current["id"].get<std::string>().size());
-								sen->writeString(current["id"].get<std::string>());
-							}
-							break;
-						}
-						case hash_string("simple"_sv): {
-							assert_conditional(is_null_object(m_data, "subgroups"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.subgroup_must_be_null_with_simple")), "process");
-							for(auto & resource_x : m_data["resources"]){
-								switch (hash_string(resource_x["type"].get<std::string>())) {
-									case hash_string("Image"_sv):
-										sen->writeUint8(0x01);
-										break;
-									case hash_string("PopAnim"_sv):
-										sen->writeUint8(0x02);
-										break;
-									case hash_string("SoundBank"_sv):
-										sen->writeUint8(0x03);
-										break;
-									case hash_string("File"_sv):
-										sen->writeUint8(0x04);
-										break;
-									case hash_string("PrimeFont"_sv):
-										sen->writeUint8(0x05);
-										break;
-									case hash_string("RenderEffect"_sv):
-										sen->writeUint8(0x06);
-										break;
-									case hash_string("DecodedSoundBank"_sv):
-										sen->writeUint8(0x07);
-										break;
-									default:
-										assert_conditional(false, fmt::format("{} {} {}", Kernel::Language::get("popcap.newton.encode.invalid_type"), Kernel::Language::get("popcap.newton.encode.at_group_id"), resource_x["id"].get<std::string>()), "process");
-								}
-								sen->writeInt32(resource_x["slot"]);
-								if (is_null_object(resource_x, "width")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["width"]);
-								}
-								if (is_null_object(resource_x, "height")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["height"]);
-								}
-								auto is_sprite = is_not_null_object(resource_x, "aw") and resource_x["aw"] != 0 and is_not_null_object(resource_x, "ah") and resource_x["ah"] != 0;
-								if (is_null_object(resource_x, "x")) {
-									if (is_sprite) {
-										sen->writeInt32(0x00);
-									} 
-									else {
-										sen->writeInt32(0x7FFFFFFF);
-									}
-								} 
-								else {
-									sen->writeInt32(resource_x["x"]);
-								}
-								if (is_null_object(resource_x, "y")) {
-									if (is_sprite) {
-										sen->writeInt32(0x00);
-									} 
-									else {
-										sen->writeInt32(0x7FFFFFFF);
-									}
-								} 
-								else {
-									sen->writeInt32(resource_x["y"]);
-								}
-								if (is_null_object(resource_x, "ax")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["ax"]);
-								}
-								if (is_null_object(resource_x, "ay")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["ay"]);
-								}
-								if (is_null_object(resource_x, "aw")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["aw"]);
-								}
-								if (is_null_object(resource_x, "ah")) {
-									sen->writeInt32(0x00);
-								} 
-								else {
-									sen->writeInt32(resource_x["ah"]);
-								}
-								if (is_null_object(resource_x, "cols")) {
-									sen->writeInt32(0x01);
-								} 
-								else {
-									sen->writeInt32(resource_x["cols"]);
-								}
-								if (is_null_object(resource_x, "rows")) {
-									sen->writeInt32(0x01);
-								} 
-								else {
-									sen->writeInt32(resource_x["rows"]);
-								}
-								if (is_not_null_object(resource_x, "atlas") and resource_x["atlas"]) {
-									sen->writeUint8(0x01);
-								} 
-								else {
-									sen->writeUint8(0x00);
-								}
-								sen->writeUint8(0x01);
-								sen->writeUint8(0x01);
-								auto resource_has_parent = is_not_null_object(resource_x, "parent");
-								if (resource_has_parent) {
-									sen->writeUint8(0x01);
-								} 
-								else {
-									sen->writeUint8(0x00);
-								}
-								sen->writeUint32(resource_x["id"].get<std::string>().size());
-								sen->writeString(resource_x["id"].get<std::string>());
-								sen->writeUint32(resource_x["path"].get<std::string>().size());
-								sen->writeString(resource_x["path"].get<std::string>());
-								if (resource_has_parent) {
-									sen->writeUint32(resource_x["parent"].get<std::string>().size());
-									sen->writeString(resource_x["parent"].get<std::string>());
-								}
-							}
-							break;
-						}
-					}
-				}
-				return;
+		inline static auto process_composite_group (
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			assert_conditional(is_null_object(group, "resources"), fmt::format("{}", Kernel::Language::get("popcap.newton.encode.resource_must_be_null_with_composite")), "process_composite_group");
+			for (auto& subgroup : group["subgroups"]) {
+				stream.writeInt32(is_null_object(subgroup, "res") ? 0x00 : Converter::to_int32(
+					subgroup["res"].get<std::string>(),
+					String::format(
+						fmt::format("{}", Language::get("popcap.newton.invalid_res_type")),
+						subgroup["res"].get<std::string>()
+					)
+				));
+				stream.writeUint32(subgroup["id"].get<std::string>().size());
+				stream.writeString(subgroup["id"].get<std::string>());
 			}
+		}
 
-			/**
-			 * Quick method for process file
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @returns: the output file after encoded
-			*/
-
-			inline static auto process_fs(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				auto encode = Encode{ source };
-				encode.process();
-				encode.sen->out_file(destination);
-				return;
+		inline static auto process_simple_group(
+			DataStreamView& stream,
+			nlohmann::ordered_json& group
+		) -> void {
+			assert_conditional(is_null_object(group, "subgroups"),fmt::format("{}", Kernel::Language::get("popcap.newton.encode.subgroup_must_be_null_with_simple")),"process_simple_group");
+			for (auto& resource_x : group["resources"]) {
+				write_resource_type(stream, resource_x);
+				writeResourceDetails(stream, resource_x);
 			}
+		}
+
+		inline static auto write_resource_type(
+			DataStreamView& stream,
+			nlohmann::ordered_json& resource
+		) -> void {
+			switch (hash_string(resource["type"].get<std::string>())) {
+				case hash_string("Image"_sv):
+					stream.writeUint8(0x01);
+					break;
+				case hash_string("PopAnim"_sv):
+					stream.writeUint8(0x02);
+					break;
+				case hash_string("SoundBank"_sv):
+					stream.writeUint8(0x03);
+					break;
+				case hash_string("File"_sv):
+					stream.writeUint8(0x04);
+					break;
+				case hash_string("PrimeFont"_sv):
+					stream.writeUint8(0x05);
+					break;
+				case hash_string("RenderEffect"_sv):
+					stream.writeUint8(0x06);
+					break;
+				case hash_string("DecodedSoundBank"_sv):
+					stream.writeUint8(0x07);
+					break;
+				default:
+					assert_conditional(false,fmt::format("{} {} {}", Kernel::Language::get("popcap.newton.encode.invalid_type"), Kernel::Language::get("popcap.newton.encode.at_group_id"), resource["id"].get<std::string>()), "write_resource_type");
+			}
+		}
+
+		inline static auto writeResourceDetails(
+			DataStreamView& stream,
+			nlohmann::ordered_json& resource
+		) -> void {
+			stream.writeInt32(resource["slot"]);
+			stream.writeInt32(is_null_object(resource, "width") ? 0x00 : resource["width"].get<int>());
+			stream.writeInt32(is_null_object(resource, "height") ? 0x00 : resource["height"].get<int>());
+			auto is_sprite = is_not_null_object(resource, "aw") && resource["aw"].get<int>() != 0 &&
+							is_not_null_object(resource, "ah") && resource["ah"].get<int>() != 0;
+			stream.writeInt32(is_null_object(resource, "x") ? (is_sprite ? 0x00 : 0x7FFFFFFF) : resource["x"].get<int>());
+			stream.writeInt32(is_null_object(resource, "y") ? (is_sprite ? 0x00 : 0x7FFFFFFF) : resource["y"].get<int>());
+			stream.writeInt32(is_null_object(resource, "ax") ? 0x00 : resource["ax"].get<int>());
+			stream.writeInt32(is_null_object(resource, "ay") ? 0x00 : resource["ay"].get<int>());
+			stream.writeInt32(is_null_object(resource, "aw") ? 0x00 : resource["aw"].get<int>());
+			stream.writeInt32(is_null_object(resource, "ah") ? 0x00 : resource["ah"].get<int>());
+			stream.writeInt32(is_null_object(resource, "cols") ? 0x01 : resource["cols"].get<int>());
+			stream.writeInt32(is_null_object(resource, "rows") ? 0x01 : resource["rows"].get<int>());
+			stream.writeUint8(is_not_null_object(resource, "atlas") && resource["atlas"].get<bool>() ? 0x01 : 0x00);
+			stream.writeUint8(0x01);
+			stream.writeUint8(0x01);
+			auto has_parent = is_not_null_object(resource, "parent");
+			stream.writeUint8(has_parent ? 0x01 : 0x00);
+			stream.writeUint32(resource["id"].get<std::string>().size());
+			stream.writeString(resource["id"].get<std::string>());
+			stream.writeUint32(resource["path"].get<std::string>().size());
+			stream.writeString(resource["path"].get<std::string>());
+			if (has_parent) {
+				stream.writeUint32(resource["parent"].get<std::string>().size());
+				stream.writeString(resource["parent"].get<std::string>());
+			}
+		}
+
+		inline static auto process(
+			DataStreamView& stream,
+			nlohmann::ordered_json& resource
+		) -> void {
+			validate_resource(resource);
+			write_slot_and_group_count(stream, resource);
+			for (auto& m_data : resource["groups"]) {
+				process_group(stream, m_data);
+			}
+		}
+
+		inline static auto process_fs(
+			std::string_view source,
+			std::string_view destination
+		) -> void
+		{
+			auto resource = FileSystem::read_json(source);
+			auto stream = DataStreamView{};
+			process(stream, resource.operator*());
+			stream.out_file(destination);
+			return;
+		}
 
 	};
 }

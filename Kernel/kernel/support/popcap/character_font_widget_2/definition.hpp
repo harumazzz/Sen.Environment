@@ -252,10 +252,10 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 
 			FontLayer(
 				const std::string & name,
-				const List<std::string> & tag_require,
-				const List<std::string> & tag_exclude,
-				const List<FontKerning> & kerning,
-				const List<FontCharacter> & character,
+				List<std::string> && tag_require,
+				List<std::string> &&tag_exclude,
+				List<FontKerning> && kerning,
+				List<FontCharacter> && character,
 				int multiply_red,
 				int multiply_green,
 				int multiply_blue,

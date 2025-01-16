@@ -87,11 +87,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                         auto path = toupper_back(String::to_windows_style(element.substr(pos, (element.size() - pos - ".json"_sv.size())) + ".rton"));
                         try {
                             auto resource_stream = DataStreamView{};
-                            Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(resource_stream, FileSystem::read_file(element));
+                            Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(resource_stream, FileSystem::read_file(element));
                             if (packages_info.chinese)
                             {
                                 auto encrypted_stream = DataStreamView{};
-                                Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Instance::encrypt(resource_stream, encrypted_stream, packages_setting.key, packages_setting.iv);
+                                Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::encrypt(resource_stream, encrypted_stream, packages_setting.key, packages_setting.iv);
                                 resource_data_section_view_stored[path] = std::move(encrypted_stream.toBytes());
                             }
                             else
@@ -247,10 +247,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
             if (manifest_info.allow_new_type_resource)
             {
-                auto encode = Support::PopCap::NewTypeObjectNotation::Encode(result);
-                encode.process();
+                auto stream = DataStreamView{};
+                Support::PopCap::NewTypeObjectNotation::Encode::process(stream, result);
                 auto newton_path = fmt::format("PROPERTIES\\{}.NEWTON", resources_name);
-                resource_data_section_view_stored[newton_path] = std::move(encode.sen->toBytes());
+                resource_data_section_view_stored[newton_path] = std::move(stream.toBytes());
                 packet_definition.resource.emplace_back(Resource{
                     .path = String::to_posix_style(newton_path)});
             }

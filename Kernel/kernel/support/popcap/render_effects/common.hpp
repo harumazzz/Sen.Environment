@@ -85,7 +85,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects
 
             uint32_t string_section_offset;
 
-            explicit Common(
+            constexpr explicit Common(
 
 			) = default;
 
@@ -112,8 +112,39 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects
 
             }
 
-			~Common(
+			constexpr ~Common(
 
 			) = default;
 	};
+
+    #pragma region Block Offset
+
+	struct BlockOffset {
+
+		uint32_t block1_section_offset{};
+
+		uint32_t block2_section_offset{};
+
+		uint32_t block3_section_offset{};
+
+		uint32_t block4_section_offset{};
+
+		uint32_t block5_section_offset{};
+
+		uint32_t block6_section_offset{};
+
+		uint32_t block7_section_offset{};
+		
+		uint32_t block8_section_offset{};
+
+		constexpr BlockOffset(
+
+		) = default;
+
+		constexpr ~BlockOffset(
+
+		) = default;
+	};
+
+	#pragma endregion
 }

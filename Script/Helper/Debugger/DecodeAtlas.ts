@@ -21,7 +21,7 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 										)}`,
 										BigInt(texture_info.dimension.width),
 										BigInt(texture_info.dimension.height),
-										Support.Texture.Format.RGBA_8888,
+										BigInt(Support.Texture.Format.RGBA_8888),
 									);
 								}
 								if (texture_info.format === 147) {
@@ -34,7 +34,7 @@ namespace Sen.Script.Helper.Debugger.DecodeAtlas {
 										)}`,
 										BigInt(texture_info.dimension.width),
 										BigInt(texture_info.dimension.height),
-										Support.Texture.Format.RGB_ETC1_A_8,
+										BigInt(Support.Texture.Format.RGB_ETC1_A_8),
 									);
 								}
 							}

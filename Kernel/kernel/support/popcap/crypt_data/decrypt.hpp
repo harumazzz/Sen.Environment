@@ -15,53 +15,35 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 
 		public:
 
-			/**
-			 * Constructor
-			*/
-
-			explicit Decrypt(
+			constexpr explicit Decrypt(
 
 			) = default;
 
-			/**
-			 * Destructor
-			*/
-
-			~Decrypt(
+			constexpr ~Decrypt(
 
 			) = default;
 
-			/**
-			 * Process method
-			*/
-
-			inline auto process(
-				const DataStreamView & view,
+			inline static auto process(
+				DataStreamView & source,
+				DataStreamView& destination,
 				std::string_view key
-			) -> List<std::uint8_t>
+			) -> void
 			{
-				auto result = DataStreamView{};
 				auto code = List<uint8_t>{key.begin(), key.end()};
-				assert_conditional((view.readString(magic.size()) == std::string{magic.begin(), magic.end()}), fmt::format("{}", Kernel::Language::get("popcap.crypt_data.decrypt.mismatch_magic")), "process");
-            	auto size = view.readUint64();
-				if (view.size() > 0x112){
+				assert_conditional((source.readString(magic.size()) == std::string{magic.begin(), magic.end()}), fmt::format("{}", Kernel::Language::get("popcap.crypt_data.decrypt.mismatch_magic")), "process");
+            	auto size = source.readUint64();
+				if (source.size() > 0x112){
 					auto index = 0;
 					auto arysize = key.size();
 					for (auto i : Range<int>(0x100))
 					{
-						result.writeUint8((view.readUint8() ^ code[index++]));
+						destination.writeUint8((source.readUint8() ^ code[index++]));
 						index %= arysize;
 					}
 				}
-				result.append(view.get(view.get_read_pos(), view.size()));
-				return result.toBytes();
+				destination.append(source.get(source.get_read_pos(), source.size()));
+				return;
 			}
-
-			
-
-			/**
-			 * Process file sync
-			*/
 
 			inline static auto process_fs(
 				std::string_view source,
@@ -69,9 +51,10 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 				std::string_view key
 			) -> void
 			{
-				auto decrypt = Decrypt{};
-				auto result = decrypt.process(DataStreamView{source}, key);
-				FileSystem::write_binary(destination, result);
+				auto source_view = DataStreamView{ source };
+				auto destination_view = DataStreamView{};
+				Decrypt::process(source_view, destination_view, key);
+				destination_view.out_file(destination);
 				return;
 			}
 

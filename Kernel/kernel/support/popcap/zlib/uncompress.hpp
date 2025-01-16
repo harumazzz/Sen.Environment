@@ -4,89 +4,47 @@
 #include "kernel/support/popcap/zlib/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Zlib {
-
-	// use namespace
-
 	
-
-	// virtual to inherit
-
-	struct Virtual : public PopCap::Zlib::Common {
-
-		public:
-
-			// must override this method
-
-			virtual auto uncompress(
-				const List<unsigned char> & source 
-			) -> List<unsigned char> = 0;
-
-	};
-
-	/**
-	 * Uncompress struct
-	*/
 	template <auto UseVariant>
-	struct Uncompress : Virtual {
+	struct Uncompress : Common {
 
-		public:
-		
-			static_assert(sizeof(UseVariant) == sizeof(bool));
+		static_assert(sizeof(UseVariant) == sizeof(bool));
 
-			static_assert(UseVariant == true or UseVariant == false);
+		static_assert(UseVariant == true or UseVariant == false);
 
-			// default constructor
+		constexpr explicit Uncompress(
 
-			explicit Uncompress(
+		) = default;
 
-			) = default;
+		constexpr ~Uncompress(
 
-			// destructor
+		) = default;
 
-			~Uncompress(
-
-			) = default;
-
-			// uncompress method
-
-			/**
-			 * source: full buffer source
-			 * return: uncompressed buffer source
-			*/
-
-			inline auto uncompress(
-				const List<unsigned char> & source 
-			) -> List<unsigned char> override final
-			{
-				auto sen = DataStreamView{source};
-				auto magic = sen.readUint32();
-				assert_conditional(magic == static_cast<uint32_t>(Uncompress::magic), fmt::format("{}: 0x{:X}", Language::get("popcap.zlib.uncompress.mismatch_zlib_magic"), Uncompress::magic), "uncompress");
-				auto cut_offset = static_cast<size_t>(8);
-				if constexpr (UseVariant){
-					cut_offset += 8;
-					sen.readUint32();
-					sen.readUint32();
-				}
-				auto result = Compression::Zlib::uncompress(sen.getBytes(cut_offset, sen.size()));
-				return result;
+		inline static auto process (
+			const List<unsigned char> & source 
+		) -> List<unsigned char> 
+		{
+			auto stream = DataStreamView{source};
+			auto magic = stream.readUint32();
+			assert_conditional(magic == static_cast<uint32_t>(Uncompress::magic), fmt::format("{}: 0x{:X}", Language::get("popcap.zlib.uncompress.mismatch_zlib_magic"), Uncompress::magic), "process");
+			auto cut_offset = static_cast<size_t>(8);
+			if constexpr (UseVariant){
+				cut_offset += 8;
+				stream.readUint32();
+				stream.readUint32();
 			}
+			auto result = Compression::Zlib::uncompress(stream.getBytes(cut_offset, stream.size()));
+			return result;
+		}
 
-			/**
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @param use_64_bit_variant: use the 64-bit variant (most popcap game doesn't use this)
-			 * @return: the uncompressed data
-			 */
-
-			inline static auto uncompress_fs(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				auto uncompress_zlib = std::make_unique<PopCap::Zlib::Uncompress<UseVariant>>();
-				auto uncompressed_data = uncompress_zlib->uncompress(FileSystem::read_binary<unsigned char>(source));
-				FileSystem::write_binary<unsigned char>(destination, uncompressed_data);
-				return;
-			}
+		inline static auto process_fs(
+			std::string_view source,
+			std::string_view destination
+		) -> void
+		{
+			auto uncompressed_data = Uncompress::process(FileSystem::read_binary<unsigned char>(source));
+			FileSystem::write_binary<unsigned char>(destination, uncompressed_data);
+			return;
+		}
 	};
 }

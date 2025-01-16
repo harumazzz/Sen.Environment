@@ -172,6 +172,7 @@ namespace Sen::Kernel::Interface::API {
 	#pragma endregion
 
 	#pragma region diff
+
 	namespace Diff {
 
 		#pragma region vcdiff
@@ -209,6 +210,7 @@ namespace Sen::Kernel::Interface::API {
 	#pragma endregion
 
 	#pragma region filesystem
+
 	namespace FileSystem {
 
 		inline static auto read_file (
@@ -291,12 +293,15 @@ namespace Sen::Kernel::Interface::API {
 	#pragma endregion
 
 	#pragma region path
+
 	namespace Path {
 
 	}
+
 	#pragma endregion
 
 	#pragma region console
+
 	namespace Console {
 
 		using Color = Kernel::Interface::Color;
@@ -469,6 +474,8 @@ namespace Sen::Kernel::Interface::API {
 
 	#pragma endregion
 
+	#pragma region operating system
+
 	namespace OperatingSystem {
 
 		inline static auto current(
@@ -490,4 +497,497 @@ namespace Sen::Kernel::Interface::API {
 		}
 
 	}
+
+	#pragma endregion
+
+	#pragma region image
+
+	namespace Image {
+
+
+
+	}
+
+	#pragma endregion
+
+	#pragma region javascript
+
+	namespace JS {
+
+		inline static auto evaluate_fs(
+			JSContext* context,
+			JSValue value,
+			int argc,
+			JSValue* argv
+		) -> JSValue
+		{
+			return proxy_wrapper(context, "evaluate", [&]() {
+				auto source = JavaScript::Converter::get_string(context, argv[0]);
+				auto js_source = Kernel::FileSystem::read_file(source);
+				return JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
+			});
+		}
+
+	}
+
+	#pragma endregion
+
+	#pragma region compression
+
+	namespace Compression {
+
+		#pragma region zip
+
+		namespace Zip {
+
+			#pragma region uncompress
+
+			namespace Uncompress {
+
+				inline static auto process(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return
+						Kernel::Compression::Zip::Uncompress::process(source, destination);
+				}
+			}
+
+			#pragma endregion
+
+		}
+
+		#pragma endregion
+
+		#pragma region zlib
+
+		namespace Zlib {
+
+
+		}
+
+		#pragma endregion
+
+	}
+
+	#pragma endregion
+
+	#pragma region support
+
+	namespace Support {
+
+		#pragma region texture
+
+		namespace Texture {
+
+			inline static auto decode_fs(
+				std::string& source,
+				std::string& destination,
+				int64_t& width,
+				int64_t& height,
+				int64_t& format
+			) -> void
+			{
+				return Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Kernel::Support::Texture::Format>(format));
+			}
+
+			inline static auto encode_fs(
+				std::string& source,
+				std::string& destination,
+				int64_t& format
+			) -> void
+			{
+				return Kernel::Support::Texture::InvokeMethod::encode_fs(source, destination, static_cast<Kernel::Support::Texture::Format>(format));
+			}
+
+		}
+
+		#pragma endregion
+
+		#pragma region marmalade
+
+		namespace Marmalade {
+
+			#pragma region dzip
+
+			namespace DZip {
+
+				inline static auto unpack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::Marmalade::DZip::Unpack::process_fs(source, destination);
+				}
+
+				inline static auto pack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::Marmalade::DZip::Pack::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+		}
+
+		#pragma endregion
+	
+		#pragma region popcap
+
+		namespace PopCap {
+
+			#pragma region pak
+			
+			namespace PAK {
+
+				inline static auto unpack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Package::Unpack::process_fs(source, destination);
+				}
+
+				inline static auto pack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Package::Pack::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region newton
+
+			namespace Newton {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::NewTypeObjectNotation::Encode::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region rton
+
+			namespace RTON {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
+				}
+
+				inline static auto decrypt_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::decrypt_fs(source, destination, key, iv);
+				}
+
+				inline static auto decrypt_and_decode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::decrypt_and_decode_fs(source, destination, key, iv);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
+				}
+
+				inline static auto encrypt_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::encrypt_fs(source, destination, key, iv);
+				}
+
+				inline static auto encode_and_encrypt_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::encode_and_encrypt_fs(source, destination, key, iv);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region zlib
+
+			namespace Zlib {
+
+				inline static auto uncompress_fs(
+					std::string& source,
+					std::string& destination,
+					bool use_64_bit_variant
+				) -> void
+				{
+					if (use_64_bit_variant) {
+						Kernel::Support::PopCap::Zlib::Uncompress<true>::process_fs(source, destination);
+					}
+					else {
+						Kernel::Support::PopCap::Zlib::Uncompress<false>::process_fs(source, destination);
+					}
+				}
+
+				inline static auto compress_fs(
+					std::string& source,
+					std::string& destination,
+					bool use_64_bit_variant
+				) -> void
+				{
+					if (use_64_bit_variant) {
+						Kernel::Support::PopCap::Zlib::Compress<true>::process_fs(source, destination);
+					}
+					else {
+						Kernel::Support::PopCap::Zlib::Compress<false>::process_fs(source, destination);
+					}
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region compiled_text
+
+			namespace CompiledText {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv,
+					bool use_64_bit_variant
+				) -> void
+				{
+					return Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key,
+					std::string& iv,
+					bool use_64_bit_variant
+				) -> void
+				{
+					return Kernel::Support::PopCap::CompiledText::Encode::process_fs(source, destination, key, iv, use_64_bit_variant);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region render-effects
+
+			namespace RenderEffects {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::RenderEffects::Encode::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region crypt-data
+
+			namespace CryptData {
+
+				inline static auto decrypt_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key
+				) -> void
+				{
+					return Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
+				}
+
+				inline static auto encrypt_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& key
+				) -> void
+				{
+					return Kernel::Support::PopCap::CryptData::Encrypt::process_fs(source, destination, key);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region character-font-widget-2
+
+			namespace CharacterFontWidget2
+			{
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::CharacterFontWidget2::Encode::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region particles
+
+			namespace Particles
+			{
+				using Platform = Kernel::Support::PopCap::Particles::ParticlesPlatform;
+
+				inline static auto constexpr get_platform(
+					std::string_view platform
+				) -> Platform
+				{
+					switch (hash_string(platform)) {
+						case hash_string("pc"_sv):
+							return Platform::PC_Compile;
+						case hash_string("game_console"_sv):
+							return Platform::GameConsole_Compile;
+						case hash_string("phone-32"_sv):
+							return Platform::Phone32_Compile;
+						case hash_string("phone-64"_sv):
+							return Platform::Phone64_Compile;
+						case hash_string("tv"_sv):
+							return Platform::TV_Compile;
+						case hash_string("wp"_sv):
+							return Platform::WP_XNB;
+						default:
+							assert_conditional(false, fmt::format("{}", Kernel::Language::get("popcap.particles.decode.invalid_particles_platform")), "get_platform");
+						}
+				}
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, get_platform(platform));
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, get_platform(platform));
+				}
+
+				inline static auto to_xml(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
+				}
+
+				inline static auto from_xml(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Particles::FromXML::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion 
+
+			#pragma region player_info
+
+			namespace PlayerInfo
+			{
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::PlayerInfo::Encode::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+		}
+
+		#pragma endregion
+	}
+
+	#pragma endregion
 }

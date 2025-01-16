@@ -381,7 +381,7 @@ namespace Sen::Kernel::FileSystem
 		#if WINDOWS
 		auto bytes_read = DWORD{};
 		auto state = ReadFile(file.handle, data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
-		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
+		assert_conditional(static_cast<bool>(SUCCEEDED(state)), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
 		assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
 		#else
 		auto bytes_read = std::fread(data.data(), sizeof(T), size, file.get());
@@ -390,12 +390,9 @@ namespace Sen::Kernel::FileSystem
 		return data;	
 	}
 
-	// dirPath: directory to read
-	// return: everything inside it even directory or file
-
 	inline static auto read_directory(
 		std::string_view directory_path
-	) -> List<std::string> const
+	) -> List<std::string>
 	{
 		auto count = std::size_t{0};
 		#if WINDOWS
@@ -420,13 +417,9 @@ namespace Sen::Kernel::FileSystem
 		return result;
 	}
 
-
-	// dirPath: directory to read
-	// return: only files inside
-
 	inline static auto read_directory_only_file(
 		std::string_view directory_path
-	) -> List<std::string> const
+	) -> List<std::string>
 	{
 		auto count = std::size_t{0};
 		#if WINDOWS
@@ -456,10 +449,6 @@ namespace Sen::Kernel::FileSystem
 
 		return result;
 	}
-
-
-	// dirPath: directory to read
-	// return: only dirs inside
 
 	inline static auto read_directory_only_directory(
 		std::string_view directory_path

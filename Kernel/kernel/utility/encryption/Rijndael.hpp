@@ -50,15 +50,6 @@ namespace Sen::Kernel::Encryption
 				CBC,
 				CFB,
 			};
-
-			/**
-			 * @param plain: plain buffer
-			 * @param key: key
-			 * @param iv: iv
-			 * @param plain_size: buffer size
-			 * @param mode: rijndael mode
-			 * @returns: encrypted buffer
-			*/
 		
 			template <typename T, auto mode> requires std::is_integral<T>::value
 			inline static auto encrypt(
@@ -81,14 +72,6 @@ namespace Sen::Kernel::Encryption
 				return m_result;
 			}
 
-			/**
-			 * @param plain: cipher buffer
-			 * @param key: key
-			 * @param iv: iv
-			 * @param plain_size: buffer size
-			 * @param mode: rijndael mode
-			 * @returns: decrypted buffer
-			*/
 			template <typename T, auto mode> requires std::is_integral<T>::value
 			inline static auto decrypt(
 				char const* cipher,
@@ -110,15 +93,6 @@ namespace Sen::Kernel::Encryption
 				auto m_result = List<unsigned char>{reinterpret_cast<unsigned char*>(result.get()), reinterpret_cast<unsigned char*>(result.get() + cipher_len)};
 				return m_result;
 			}
-
-			/**
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @param key: key
-			 * @param iv: iv
-			 * @param mode: rijndael mode
-			 * @returns: decrypted buffer
-			*/
 
 			inline static auto encrypt_fs(
 				std::string_view source,
@@ -145,15 +119,6 @@ namespace Sen::Kernel::Encryption
 				}
 				return;
 			}
-
-			/**
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @param key: key
-			 * @param iv: iv
-			 * @param mode: rijndael mode
-			 * @returns: decrypted buffer
-			*/
 
 			inline static auto decrypt_fs(
 				std::string_view source,

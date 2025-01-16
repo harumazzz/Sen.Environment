@@ -15,35 +15,24 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 
 		public:
 
-			/**
-			 * Constructor
-			*/
-
-			explicit Encrypt(
+			constexpr explicit Encrypt(
 
 			) = default;
 
-			/**
-			 * Destructor
-			*/
 
-			~Encrypt(
+			constexpr ~Encrypt(
 
 			) = default;
 
-			/**
-			 * Process method
-			*/
-
-			inline auto process(
-				const DataStreamView & view,
+			inline static auto process(
+				DataStreamView & source,
+				DataStreamView& destination,
 				std::string_view key
-			) -> List<std::uint8_t>
+			) -> void
 			{
-            	auto size = view.size();
-				auto result = DataStreamView{};
-				result.append<uint8_t, magic.size()>(magic);
-				result.writeUint64(size);
+            	auto size = source.size();
+				destination.append<uint8_t, magic.size()>(magic);
+				destination.writeUint64(size);
 				auto code = List<uint8_t>{key.begin(), key.end()};
 				if (size >= 0x100)
 				{
@@ -51,17 +40,13 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 					auto arysize = key.size();
 					for (auto i : Range<int>(0x100))
 					{
-						result.writeUint8((view.readUint8() ^ code[index++]));
+						destination.writeUint8((source.readUint8() ^ code[index++]));
 						index %= arysize;
 					}
 				}
-				result.append(view.get(view.get_write_pos(), view.size()));
-				return result.toBytes();
+				destination.append(source.get(source.get_write_pos(), source.size()));
+				return;
 			}
-
-			/**
-			 * Process file sync
-			*/
 
 			inline static auto process_fs(
 				std::string_view source,
@@ -69,9 +54,10 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 				std::string_view key
 			) -> void
 			{
-				auto encrypt = Encrypt{};
-				auto result = encrypt.process(DataStreamView{source}, key);
-				FileSystem::write_binary(destination, result);
+				auto source_view = DataStreamView{source};
+				auto destination_view = DataStreamView{};
+				Encrypt::process(source_view, destination_view, key);
+				destination_view.out_file(destination);
 				return;
 			}
 

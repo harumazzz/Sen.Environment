@@ -4,229 +4,187 @@
 
 namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 
-	/**
-	 * use namespace definition
-	*/
-
 	using namespace Sen::Kernel;
 
-	/**
-	 * decode 
-	*/
+	struct Decode {
 
-	class Decode {
+		constexpr Decode(
 
-		public:
+		) = default;
 
-			// buffer reader
+		constexpr ~Decode(
 
-			std::unique_ptr<DataStreamView> sen;
+		) = default;
 
-			/**
-			 * Process method
-			*/
+		inline static auto read_group_type(
+			uint8_t group_type, 
+			int index,
+        	std::string& group_type_str
+		) -> void {
+			switch (static_cast<int>(group_type)) {
+				case 0x01: 
+					group_type_str = "composite";
+					break;
+				case 0x02: 
+					group_type_str = "simple";
+					break;
+				default:
+					assert_conditional(false, fmt::format("{} {}. {}: group[\"type\"] == 1 || group[\"type\"] == 2, {} {}", Language::get("popcap.newton.invalid_group_type"), index, Language::get("conditional"), Language::get("but_received"), group_type), "read_group_type");
+			}
+		}
 
-			inline auto process(
+		inline static auto read_resource_type(
+			uint8_t resource_type, 
+			const std::string& group_id,
+			std::string& result
+		) -> void
+		{
+			switch (static_cast<int>(resource_type)) {
+				case 0x01: 
+					result = "Image"; 
+					break;
+				case 0x02: 
+					result = "PopAnim"; 
+					break;
+				case 0x03: 
+					result = "SoundBank"; 
+					break;
+				case 0x04: 
+					result = "File"; 
+					break;
+				case 0x05: 
+					result = "PrimeFont"; 
+					break;
+				case 0x06: 
+					result = "RenderEffect"; 
+					break;
+				case 0x07: 
+					result = "DecodedSoundBank"; 
+					break;
+				default:
+					assert_conditional(false, fmt::format("{} {}, {}", Language::get("popcap.newton.invalid_resource_type"), group_id, Language::get("popcap.newton.expected_from_to"), resource_type), "read_resource_type");
+			}
+		}
 
-			) -> nlohmann::ordered_json
-			{
-				auto result = nlohmann::ordered_json{
-					{"version", 1},
-					{"content_version", 1},
-					{"slot_count", sen->readUint32()}
-				};
-				auto groups = nlohmann::ordered_json::array_t{};
-				auto group_size = sen->readUint32();
-				groups.reserve(group_size);
-				for(auto i : Range(group_size)){
-					auto group = nlohmann::ordered_json{};
-					auto group_type = sen->readUint8();
-					switch (static_cast<int>(group_type)){
-						case 0x01:{
-							group["type"] = "composite";
-							break;
-						}
-						case 0x02:{
-							group["type"] = "simple";
-							break;
-						}
-						default:{
-							throw Exception(fmt::format("{} {}. {}: group[\"type\"] == 1 || group[\"type\"] == 2, {} {}", Language::get("popcap.newton.invalid_group_type"), i, Language::get("conditional"), Language::get("but_received"), group_type), std::source_location::current(), "process");
-						}
-					}
-					auto res = sen->readUint32();
-					if (res != 0x00) {
-						group["res"] = fmt::format("{}", res);
-					}
-					auto subgroups_count = sen->readUint32();
-					auto resources_count = sen->readInt32();
-					auto version = sen->readUint8();
-					assert_conditional(version == 0x01, fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.decode.unknown_version"), version, Kernel::Language::get("popcap.newton.decode.at_index"), i), "process");
-      				auto group_has_parent = sen->readBoolean();
-					group["id"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-					if (group_has_parent) {
-						group["parent"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-					}
-					if (group_type == 0x01) {
-						assert_conditional(resources_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.resource_must_be_null_with_composite"), group["id"].get<std::string>()), "process");
-						auto subgroups = nlohmann::ordered_json::array_t{};
-						subgroups.reserve(subgroups_count);
-						for (auto subgroups_index : Range<int>(subgroups_count)) {
-							auto subgroup = nlohmann::ordered_json{};
-							auto sub_res = sen->readUint32();
-							if (sub_res != 0x00) {
-								subgroup["res"] = fmt::format("{}", sub_res);
-							}
-							subgroup["id"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-							subgroups.emplace_back(subgroup);
-						}
-						group["subgroups"] = subgroups;
-						groups.emplace_back(group);
-					}
-					if(group_type == 0x02){
-						assert_conditional(subgroups_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.subgroup_must_be_null_with_simple"), group["id"].get<std::string>()), "process");
-						auto resources = nlohmann::ordered_json::array_t{};
-						resources.reserve(resources_count);
-						for (auto resources_index : Range<int>(resources_count)){
-          					auto sub_resources = nlohmann::ordered_json{};
-							auto resource_type = sen->readUint8();
-							switch(static_cast<int>(resource_type)){
-								case 0x01:{
-									sub_resources["type"] = "Image";
-									break;
-								}
-								case 0x02:{
-									sub_resources["type"] = "PopAnim";
-									break;
-								}
-								case 0x03:{
-									sub_resources["type"] = "SoundBank";
-									break;
-								}
-								case 0x04:{
-									sub_resources["type"] = "File";
-									break;
-								}
-								case 0x05:{
-									sub_resources["type"] = "PrimeFont";
-									break;
-								}
-								case 0x06:{
-									sub_resources["type"] = "RenderEffect";
-									break;
-								}
-								case 0x07:{
-									sub_resources["type"] = "DecodedSoundBank";
-									break;
-								}
-								default:{
-									throw Exception(fmt::format("{} {}, {}", Language::get("popcap.newton.invalid_resource_type"), group["id"].get<std::string>(), Language::get("popcap.newton.expected_from_to"), resource_type), std::source_location::current(), "process");
-								}
-							}
-							auto slot = sen->readUint32();
-							auto width = sen->readInt32();
-							auto height = sen->readInt32();
-							auto x = sen->readInt32();
-							auto y = sen->readInt32();
-							auto ax = sen->readInt32();
-							auto ay = sen->readInt32();
-							auto aw = sen->readInt32();
-							auto ah = sen->readInt32();
-							auto cols = sen->readInt32();
-							auto rows = sen->readInt32();
-							auto atlas = sen->readBoolean();
-          					auto is_sprite = aw != 0x00 and ah != 0x00;
-							sub_resources["slot"] = slot;
-							if(atlas){
-								sub_resources["width"] = width;
-								sub_resources["height"] = height;
-							}
-							if(is_sprite){
-								sub_resources["ax"] = ax;
-								sub_resources["ay"] = ay;
-								sub_resources["aw"] = aw;
-								sub_resources["ah"] = ah;
-							}
-							if(atlas){
-								sub_resources["atlas"] = true;
-								sub_resources["runtime"] = true;
-							}
-							if(x != 0x00 and x != 0x7FFFFFFF){
-								sub_resources["x"] = x;
-							}
-							if(y != 0x00 and y != 0x7FFFFFFF){
-								sub_resources["y"] = y;
-							}
-							if(cols != 0x01){
-								sub_resources["cols"] = cols;
-							}
-							if(rows != 0x01){
-								sub_resources["rows"] = rows;
-							}
-							sen->readUint8();
-							sen->readUint8();
-							auto resource_has_parent = sen->readBoolean();
-							sub_resources["id"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-							sub_resources["path"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-							if (resource_has_parent) {
-								sub_resources["parent"] = sen->readString(static_cast<size_t>(sen->readUint32()));
-							}
-							resources.emplace_back(sub_resources);
-						}
-        				group["resources"] = resources;
-						groups.emplace_back(group);
-					}
+		inline static auto process(
+			DataStreamView& stream, 
+        	nlohmann::ordered_json& result
+		) -> void{
+			result = nlohmann::ordered_json{
+				{"version", 1},
+				{"content_version", 1},
+				{"slot_count", stream.readUint32()}
+			};
+			auto group_size = stream.readUint32();
+			auto groups = nlohmann::ordered_json::array_t{};
+			groups.reserve(group_size);
+			for (auto i : Range(group_size)) {
+				auto group = nlohmann::ordered_json{};
+				auto group_type = stream.readUint8();
+				auto group_s = std::string{};
+				read_group_type(group_type, i, group_s);
+				group["type"] = std::move(group_s);
+				auto res = stream.readUint32();
+				if (res != 0x00) {
+					group["res"] = fmt::format("{}", res);
 				}
-				result["groups"] = groups;
-				return result;
+				auto subgroups_count = stream.readUint32();
+				auto resources_count = stream.readInt32();
+				auto version = stream.readUint8();
+				assert_conditional(version == 0x01, fmt::format("{} {} {} {}", Kernel::Language::get("popcap.newton.decode.unknown_version"), version, Kernel::Language::get("popcap.newton.decode.at_index"), i), "process");
+				auto group_has_parent = stream.readBoolean();
+				group["id"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+				if (group_has_parent) {
+					group["parent"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+				}
+				if (group_type == 0x01) {
+					process_composite_group(stream, group, subgroups_count);
+				} else if (group_type == 0x02) {
+					process_simple_group(stream, group, resources_count);
+				}
+				groups.emplace_back(std::move(group));
 			}
+			result["groups"] = std::move(groups);
+		}
 
-			// constructor
-
-			Decode(
-
-			) = default;
-
-			// constructor
-
-			explicit Decode(
-				std::string_view source
-			) : sen(std::make_unique<DataStreamView>(source))
-			{
-
+		inline static auto process_composite_group(
+			DataStreamView& stream, 
+			nlohmann::ordered_json& group, 
+			uint32_t subgroups_count
+		) -> void {
+			assert_conditional(stream.readInt32() == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.resource_must_be_null_with_composite"), group["id"].get<std::string>()), "process_composite_group");
+			auto subgroups = nlohmann::ordered_json::array_t{};
+			subgroups.reserve(subgroups_count);
+			for (auto index : Range(subgroups_count)) {
+				auto subgroup = nlohmann::ordered_json{};
+				auto sub_res = stream.readUint32();
+				if (sub_res != 0x00) {
+					subgroup["res"] = fmt::format("{}", sub_res);
+				}
+				subgroup["id"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+				subgroups.emplace_back(std::move(subgroup));
 			}
+			group["subgroups"] = std::move(subgroups);
+		}
 
-			// constructor
-
-			explicit Decode(
-				const List<uint8_t> & data
-			) : sen(std::make_unique<DataStreamView>(data))
-			{
-
+		inline static auto process_simple_group(
+			DataStreamView& stream, 
+			nlohmann::ordered_json& group, 
+			int32_t resources_count
+		) -> void {
+			assert_conditional(stream.readUint32() == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.subgroup_must_be_null_with_simple"), group["id"].get<std::string>()), "process_simple_group");
+			auto resources = nlohmann::ordered_json::array_t{};
+			resources.reserve(resources_count);
+			for (auto index : Range<int>(resources_count)) {
+				auto resource = nlohmann::ordered_json{};
+				auto result = std::string{};
+				read_resource_type(stream.readUint8(), group["id"].get<std::string>(), result);
+				resource["type"] = std::move(result);
+				populate_resource_details(stream, resource);
+				resources.emplace_back(std::move(resource));
 			}
+			group["resources"] = std::move(resources);
+		}
 
-			// destructor
-
-			~Decode(
-
-			) = default;
-
-			/**
-			 * This method will decode newton file
-			 * source: source file
-			 * destination: destination file
-			 * return: the decoded newton file
-			*/
-
-			inline static auto process_fs (
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				auto view = Decode{source};
-				auto result = view.process();
-				FileSystem::write_json(destination, result);
-				return;
+		inline static auto populate_resource_details(
+			DataStreamView& stream, 
+			nlohmann::ordered_json& resource
+		) -> void {
+			resource["slot"] = stream.readUint32();
+			auto width = stream.readInt32();
+			auto height = stream.readInt32();
+			auto ax = stream.readInt32();
+			auto ay = stream.readInt32();
+			auto aw = stream.readInt32();
+			auto ah = stream.readInt32();
+			auto atlas = stream.readBoolean();
+			if (atlas) {
+				resource["width"] = width;
+				resource["height"] = height;
+				resource["atlas"] = true;
+				resource["runtime"] = true;
 			}
+			if (aw != 0x00 && ah != 0x00) {
+				resource["ax"] = ax;
+				resource["ay"] = ay;
+				resource["aw"] = aw;
+				resource["ah"] = ah;
+			}
+			resource["id"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+			resource["path"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+			if (stream.readBoolean()) {
+				resource["parent"] = stream.readString(static_cast<size_t>(stream.readUint32()));
+			}
+		}
+
+		inline static auto process_fs(
+			std::string_view source, 
+			std::string_view destination
+		) -> void {
+			auto stream_view = DataStreamView{source};
+			auto result = nlohmann::ordered_json{};
+			process(stream_view, result);
+			FileSystem::write_json(destination, result);
+		}
 	};
 }

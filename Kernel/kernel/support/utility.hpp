@@ -20,7 +20,7 @@
 #include "kernel/support/popcap/resource_stream_group/pack.hpp"
 #include "kernel/support/popcap/reflection_object_notation/decode.hpp"
 #include "kernel/support/popcap/reflection_object_notation/encode.hpp"
-#include "kernel/support/popcap/reflection_object_notation/instance.hpp"
+#include "kernel/support/popcap/reflection_object_notation/chinese.hpp"
 #include "kernel/support/popcap/new_type_object_notation/encode.hpp"
 #include "kernel/support/popcap/new_type_object_notation/decode.hpp"
 #include "kernel/support/popcap/compiled_text/decode.hpp"

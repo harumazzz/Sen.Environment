@@ -29,19 +29,16 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 if (packet_id.starts_with(manifest_string))
                 {
                     manifest_info.resource_additional_name = packet_id.substr(manifest_string.size(), packet_id.size() - manifest_string.size());
-                    auto convertion = [&](nlohmann::ordered_json const &data, bool newtype) -> void
+                    auto convert_whole = [&]<auto newtype>(nlohmann::ordered_json const &data) -> void
                     {
-                        // resource_info.expand_path = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::get_expand_path(data);
                         auto res_temp = data;
-                        if (newtype)
+                        if constexpr (newtype)
                         {
-                            Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(res_temp, resource_info);
-                            // manifest_info.expand_path = ExpandPath::String;
+                            Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(res_temp, resource_info);
                         }
                         else
                         {
-                            Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(res_temp, resource_info);
-                            // manifest_info.expand_path = ExpandPath::Array;
+                            Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(res_temp, resource_info);
                         }
                         auto group_size_left = k_none_size;
                         for (auto &group : res_temp["groups"])
@@ -60,16 +57,18 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                         if (compare_string(extenstion, k_newton_extension_string))
                         {
                             manifest_info.allow_new_type_resource = true;
-                            auto decode = Sen::Kernel::Support::PopCap::NewTypeObjectNotation::Decode(resource_data);
-                            convertion(decode.process(), true);
+                            auto stream = DataStreamView{};
+                            auto result = nlohmann::ordered_json{};
+                            Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process(stream, result);
+                            convert_whole.template operator()<true>(result);
                             break;
                         }
                         else if (compare_string(extenstion, k_rton_extension_string))
                         {
                             auto stream = DataStreamView{resource_data};
                             auto writer = JsonWriter{};
-                            Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
-                            convertion(nlohmann::ordered_json::parse(writer.ToString()), false);
+                            Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
+                            convert_whole.template operator()<true>(writer.ToString());
                             break;
                         }
                         else
