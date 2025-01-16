@@ -1,56 +1,53 @@
 #pragma once
 
-#include "kernel/utility/javascript/common.hpp"
-#include "kernel/utility/javascript/value.hpp"
-#include "kernel/utility/javascript/runtime.hpp"
-#include "kernel/utility/javascript/converter.hpp"
+#include "kernel/utility/javascript/value_adapter.hpp"
 
 
 namespace Sen::Kernel::JavaScript {
 
-	template <typename F>
+	template <typename ReturnType, typename... Args>
 	struct Proxy;
 
 	using Value = JavaScript::Value;
 
-	template <typename T>
-	concept HasValueMember = requires(T t) {
-		{ t.value } -> std::convertible_to<JSValue>;
-	};
+	template <typename... Args>
+	auto parse_arguments(JSContext* ctx, JSValueConst* argv) -> std::tuple<std::decay_t<Args>...> {
+		return _parse_arguments<Args...>(ctx, argv, std::index_sequence_for<Args...>{});
+	}
 
-	template <
-		typename ReturnType,
-		typename ContextType,
-		typename ValueType,
-		typename ListType
-	> requires HasValueMember<ReturnType>
-	struct Proxy<ReturnType(ContextType, ValueType, ListType)> {
+	template <typename... Args, size_t... Indices>
+	auto _parse_arguments(JSContext* ctx, JSValueConst* argv, std::index_sequence<Indices...>) -> std::tuple<std::decay_t<Args>...> {
+		return std::make_tuple(from_value<std::decay_t<Args>>(ctx, argv[Indices])...);
+	}
 
-		static_assert(sizeof(decltype(std::declval<ReturnType>().value)) == sizeof(JSValue));
+	template <typename ReturnType, typename... Args>
+	struct Proxy {
 
-		using Function = JSValue (*)(JSContext*, JSValue, int, JSValue*);
+		using NativeFunction = ReturnType (*)(Args...);
 
-		using Value = JavaScript::Value;
-
-		using Context = JavaScript::Context;
-
-		template <ReturnType (*function)(ContextType, ValueType, ListType)> requires HasValueMember<ReturnType>
-		static auto call(
-			JSContext* context,
+		template <NativeFunction function>
+		static auto as_function(
+			JSContext* context, 
 			JSValue value,
-			int argc,
+			int argc, 
 			JSValue* argv
 		) -> JSValue
 		{
-			auto ctx = Context{context};
-			auto val = Value{context, value};
-			auto arguments = std::vector<Value>{};  
-			arguments.reserve(argc);
-			std::transform(argv, argv + argc, std::back_inserter(arguments),
-				[&](const JSValue& v) { return Value{context, v}; }
-			);
-			auto result = function(ctx, val, arguments);
-			return result.value; 
+			try {
+				auto constexpr expected_args = sizeof...(Args);
+				assert_conditional(argc == expected_args, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), expected_args, Kernel::Language::get("kernel.argument_received"), argc), "assert_conditional");
+				auto arguments = parse_arguments<Args...>(context, argv);
+				if constexpr (std::is_void_v<ReturnType>) {
+					std::apply(function, arguments);
+					return JS_UNDEFINED;
+				} else {
+					auto result = std::apply(function, arguments);
+					return to_value<ReturnType>(context, result);
+				}
+			} catch (...) {
+				auto exception = parse_exception();
+				return throw_exception(context, exception.message(), exception.source, exception.function_name);
+			}
 		}
 	};
 

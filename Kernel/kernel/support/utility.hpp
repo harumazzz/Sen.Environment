@@ -62,7 +62,6 @@
 #include "kernel/support/wwise/sound_bank/encode.hpp"
 #include "kernel/support/wwise/sound_bank/decode.hpp"
 #include "kernel/support/wwise/sound_bank/common.hpp"
-#include "kernel/support/wwise/sound_bank/miscellaneous/support.hpp"
 #include "kernel/support/marmalade/dzip/common.hpp"
 #include "kernel/support/marmalade/dzip/unpack.hpp"
 #include "kernel/support/marmalade/dzip/pack.hpp"
@@ -70,6 +69,7 @@
 #include "kernel/support/miscellaneous/custom/stream_compressed_group/encode.hpp"
 #include "kernel/support/miscellaneous/custom/stream_compressed_group/decode.hpp"
 #include "kernel/support/miscellaneous/custom/resource_stream_bundle/common.hpp"
+#include "kernel/support/miscellaneous/custom/resource_stream_bundle/convert.hpp"
 #include "kernel/support/miscellaneous/custom/resource_stream_bundle/pack.hpp"
 #include "kernel/support/miscellaneous/custom/resource_stream_bundle/unpack.hpp"
 

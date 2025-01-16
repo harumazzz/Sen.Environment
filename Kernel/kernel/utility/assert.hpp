@@ -8,7 +8,7 @@ namespace Sen::Kernel {
 
 	#define assert_conditional(conditional, message, function_name)\
 	if (!(conditional)) { \
-		throw Exception(message, std::source_location::current(), function_name); \
+		throw Exception{message, std::source_location::current(), function_name}; \
 	}\
 	static_assert(true)
 
@@ -39,7 +39,7 @@ namespace Sen::Kernel {
 			return this->arg;
 		}
 
-		Exception(const std::string &arg, const std::source_location &loc = std::source_location::current(), const std::string & function_name = "") : std::runtime_error(arg), source(std::string{loc.file_name()} + std::string{":"} + std::to_string(loc.line())), arg(arg), function_name(function_name)
+		Exception(const std::string &arg, const std::source_location &loc = std::source_location::current(), const std::string & function_name = "") : std::runtime_error{arg}, source{std::string{loc.file_name()} + std::string{":"} + std::to_string(loc.line())}, arg{arg}, function_name{function_name}
 		{
 			{
 					auto current_stack = source;

@@ -35,7 +35,7 @@ namespace Sen::Kernel::Interface::Script
 	template <typename T, int length> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline auto constexpr generate_class_function = JS::generate_class_function<T, length>;
 
-	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires std::is_class<Class>::value && std::is_function<Constructor>::value
+	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && std::is_function<Constructor>::value && JS::CanBeAllocated<Class>)
 	inline auto constexpr build_class = JS::build_class<Class, Constructor, InstanceCount, ProtoFunctionCount>;
 
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
@@ -56,7 +56,7 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr make_instance_of_class = JS::make_instance_of_class;
 
-	inline auto constexpr get_array_buffer = JS::get_array_buffer;
+	inline auto constexpr get_array_buffer = JS::Converter::get_array_buffer;
 
 	inline auto constexpr get_global_object = JS_GetGlobalObject;
 
@@ -67,9 +67,6 @@ namespace Sen::Kernel::Interface::Script
 	using Value = JS::Value;
 
 	using JavaScriptNativeMethod = JSValue(*)(JSContext *, JSValue, int, JSValue *);
-
-	template <typename T>
-	using Generalization = JS::Generalization<T>;
 
 	template <typename Callable> requires std::is_invocable<Callable>::value
 	inline static auto proxy_wrapper(
@@ -108,195 +105,6 @@ namespace Sen::Kernel::Interface::Script
 			return method(class_pointer);
 		};
 		return proxy_wrapper<decltype(normalized_lambda)>(context, method_name, std::move(normalized_lambda));
-	}
-
-	inline static auto to_array_of_string(
-		JSContext* context,
-		const StringList* list
-	) -> JSValue
-	{
-		auto destination = JS_NewArray(context);
-		for (auto index : Range<std::size_t>(list->size)) {
-			auto atom_index = JS_NewAtomUInt32(context, static_cast<std::uint32_t>(index));
-			auto& str_view = list->value[index];
-			auto js_str = JS_NewStringLen(context, reinterpret_cast<const char*>(str_view.value), str_view.size);
-			JS_SetProperty(context, destination, atom_index, js_str);
-			JS_FreeAtom(context, atom_index);
-		}
-		return destination;
-	}
-
-	inline static auto to_string_list(
-		JSContext* context,
-		JSValue value,
-		StringList& list
-	) -> void
-	{
-		auto atom = Atom{ context, "length" };
-		auto array_length = get_property_uint32(context, value, atom.value);
-		list.size = array_length;
-		list.value = new StringView[array_length];
-		for (auto i : Range{ array_length }) {
-			auto atom = Atom{ context, i };
-			auto js_element = JS_GetProperty(context, value, atom.value);
-			auto str_len = size_t{};
-			auto str = JS_ToCStringLen(context, &str_len, js_element);
-			auto temporary = std::unique_ptr<uint8_t[]>(new uint8_t[str_len + 1]);
-			temporary.get()[str_len] = '\0';
-			std::memcpy(temporary.get(), str, str_len);
-			list.value[i].value = temporary.release();
-			list.value[i].size = str_len;
-			JS_FreeCString(context, str);
-			JS_FreeValue(context, js_element);
-		}
-		return;
-	}
-
-	inline static auto to_string (
-		JSContext* context,
-		CStringView* value
-	) -> JSValue 
-	{
-		return JS_NewStringLen(context, reinterpret_cast<const char*>(value->value), value->size);
-	}
-
-	inline static auto callback(
-		JSContext *context,
-		JSValue value,
-		int argc,
-		JSValue* argv
-	) -> JSValue
-	{
-		return proxy_wrapper(context, "callback"_sv, [&]() {
-			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "callback");
-			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-			to_string_list(context, argv[0], parameters.operator*());
-			Shell::callback(parameters.get(), destination.get());
-			auto result = to_string(context, destination.get());
-			return result;
-		});
-	}
-
-	inline static auto test(
-		JSContext *context,
-		JSValue value,
-		int argc,
-		JSValue* argv
-	) -> JSValue
-	{
-		return proxy_wrapper(context, "test"_sv, [&]() {
-			assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "test");
-			auto source = JS::Converter::get_string(context, argv[0]);
-			auto xml = tinyxml2::XMLDocument{};
-			auto state = xml.Parse(source.data(), source.size());
-			if (state != tinyxml2::XML_SUCCESS) {
-				throw Exception(fmt::format("XML cannot be loaded, data: {}", source), std::source_location::current(), "test");
-			}
-			auto raw_child = xml.FirstChild()->ToElement();
-			assert_conditional(raw_child != nullptr, "root element is null", "test");
-			return JS::XML::Read::xml2js(context, raw_child);;
-		});
-	}
-
-	namespace JSON
-	{
-
-		inline static auto deserialize(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue {
-			return proxy_wrapper(context, "deserialize", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto json = nlohmann::ordered_json::parse(source);
-				auto object = JS::to(context, json);
-				return object;
-			});
-		}
-
-		inline static auto deserialize_fs(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue {
-			return proxy_wrapper(context, "deserialize_fs", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto json = Kernel::FileSystem::read_json(source);
-				auto object = JS::to(context, json.operator*());
-				return object;
-			});
-		}
-
-		inline static auto serialize(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue {
-			return proxy_wrapper(context, "serialize", [&]() {
-				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize");
-				auto value = Value::as_new_reference(context, argv[0]);
-				auto json = JS::from(value);
-				auto indent = JS::Converter::get_int32(context, argv[1]);
-				auto ensure_ascii = JS::Converter::get_bool(context, argv[2]);
-				return json.dump(indent, '\t', ensure_ascii);
-			});
-		}
-
-		inline static auto serialize_fs(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "serialize_fs", [&]() -> void {
-				assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
-				auto destination = JS::Converter::get_string(context, argv[0]);
-				auto value = Value::as_new_reference(context, argv[1]);
-				auto json = JS::from(value);
-				auto indent = JS::Converter::get_int32(context, argv[2]);
-				auto ensure_ascii = JS::Converter::get_bool(context, argv[3]);
-				auto result = json.dump(indent, '\t', ensure_ascii);
-				Kernel::FileSystem::write_file(destination, result);
-			});
-		}
-	}
-
-	namespace Language
-	{
-
-		inline static auto load_language(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "load_language", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "load_language");
-				Kernel::Language::read_language(JS::Converter::get_string(context, argv[0]));
-			});
-		}
-
-
-		inline static auto get(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "get", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get");
-				return Kernel::Language::get(JS::Converter::get_string(context, argv[0]));
-			});
-		}
 	}
 
 	namespace Class
@@ -2205,7 +2013,7 @@ namespace Sen::Kernel::Interface::Script
 							if (argc == 3) {
 								auto name = JS::Converter::get_string(context, argv[0]);
 								auto id = JS::Converter::get_string(context, argv[1]);
-								auto transform = JS::Converter::get_vector<double>(context, argv[2]);
+								auto transform = JS::Converter::get_array<double>(context, argv[2]);
 								auto matrix = Matrix{};
 								matrix_from_transform(matrix, transform);
 								return new Data(name, id, matrix);
@@ -2267,7 +2075,7 @@ namespace Sen::Kernel::Interface::Script
 						}
 						case Value::transform:
 						{
-							return JS::Converter::to_array(context, List<double>{s->transform.begin(), s->transform.end()});
+							return JS::Converter::to_array(context, s->transform);
 						}
 						default: {
 							assert_conditional(false, fmt::format("Cannot find any getter to magic %d", magic), "getter");
@@ -2336,6 +2144,8 @@ namespace Sen::Kernel::Interface::Script
 
 			using Color = std::array<double, 4>;
 
+			// TODO : Remove
+
 			auto constexpr matrix_from_transform(Matrix &matrix, List<double> &transform) -> void
 			{
 				matrix = {transform.at(0), transform.at(1), transform.at(2), transform.at(3), transform.at(4), transform.at(5)};
@@ -2363,8 +2173,8 @@ namespace Sen::Kernel::Interface::Script
 							if (argc == 4) {
 								auto name = JS::Converter::get_string(context, argv[0]);
 								auto link = JS::Converter::get_string(context, argv[1]);
-								auto transform = JS::Converter::get_vector<double>(context, argv[2]);
-								auto color = JS::Converter::get_vector<double>(context, argv[3]);
+								auto transform = JS::Converter::get_array<double>(context, argv[2]);
+								auto color = JS::Converter::get_array<double>(context, argv[3]);
 								auto matrix = Matrix{};
 								auto basic_color = Color{};
 								matrix_from_transform(matrix, transform);
@@ -2429,11 +2239,11 @@ namespace Sen::Kernel::Interface::Script
 						}
 						case Value::transform:
 						{
-							return JS::Converter::to_array(context, List<double>{s->transform.begin(), s->transform.end()});
+							return JS::Converter::to_array(context, s->transform);
 						}
 						case Value::color:
 						{
-							return JS::Converter::to_array(context, List<double>{s->color.begin(), s->color.end()});
+							return JS::Converter::to_array(context, s->color);
 						}
 						default: {
 							assert_conditional(false, fmt::format("Cannot find any getter to magic %d", magic), "getter");
@@ -5154,7 +4964,7 @@ namespace Sen::Kernel::Interface::Script
 								auto size = std::size_t{};
 								auto data = get_array_buffer(context, &size, data_val);
 								JS_FreeValue(context, data_val);
-								return new Data(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>(data, data + size)));
+								return new Data(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(List<uint8_t>{data, data + size}));
 							}
 							return nullptr;
 						},
@@ -5486,88 +5296,6 @@ namespace Sen::Kernel::Interface::Script
 
 	}
 
-	namespace Thread
-	{
-
-		/**
-		 * ----------------------------------------
-		 * JavaScript Sleep
-		 * @param argv[0]: time to sleep
-		 * @return: undefined
-		 * ----------------------------------------
-		 */
-
-		inline static auto sleep (
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "sleep", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sleep");
-				auto time = JS::Converter::get_bigint64(context, argv[0]);
-				std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(time)));
-			});
-		}
-
-		inline static auto now (
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "now", [&](){
-				return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
-			});
-		}
-
-	}
-
-	namespace Diff
-	{
-
-		namespace VCDiff
-		{
-
-			inline static auto encode_fs(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "encode_fs", [&](){
-					assert_conditional(argc == 4, fmt::format("{} 4, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "encode_fs");
-					auto before_file = JS::Converter::get_string(context, argv[0]);
-					auto after_file = JS::Converter::get_string(context, argv[1]);
-					auto patch_file = JS::Converter::get_string(context, argv[2]);
-					auto flag = JS::Converter::get_int32(context, argv[3]);
-					Kernel::Diff::VCDiff::encode_fs(before_file, after_file, patch_file, static_cast<Kernel::Diff::VCDiff::Flag>(flag));
-				});
-			}
-
-			inline static auto decode_fs(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "decode_fs", [&](){
-					assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "decode_fs");
-					auto before_file = JS::Converter::get_string(context, argv[0]);
-					auto patch_file = JS::Converter::get_string(context, argv[1]);
-					auto after_file = JS::Converter::get_string(context, argv[2]);
-					Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
-				});
-			}
-
-		}
-
-	}
-
 	namespace OperatingSystem
 	{
 
@@ -5676,215 +5404,6 @@ namespace Sen::Kernel::Interface::Script
 
 	}
 
-	namespace ArrayBuffer
-	{
-
-		inline static auto open (
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "open", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = JS::Converter::read_file_as_js_arraybuffer(context, source);
-				return result;
-			});
-		}
-
-		inline static auto out(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "out", [&]() {
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "out");
-				auto destination = JS::Converter::get_string(context, argv[0]);
-				auto array_buffer = argv[1];
-				JS::Converter::write_file_as_arraybuffer(context, destination, array_buffer);
-			});
-		}
-
-		inline static auto random(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "random", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "random");
-				auto arrayBuffer = argv[0];
-				auto byteLength = std::size_t{};
-				auto data = get_array_buffer(context, &byteLength, arrayBuffer);
-				for (auto i : Range<std::size_t>(byteLength)) {
-					data[i] = rand() % 256;
-				}
-			});
-		}
-
-		inline static auto fill(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "fill", [&](){
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "fill");
-				auto arrayBuffer = argv[0];
-				auto byte_c = static_cast<std::uint8_t>(JS::Converter::get_bigint64(context, argv[0]));
-				auto byteLength = std::size_t{};
-				auto data = get_array_buffer(context, &byteLength, arrayBuffer);
-				for (auto i : Range<std::size_t>(byteLength)) {
-					data[i] = byte_c;
-				}
-			});
-		}
-
-	}
-
-	namespace Process
-	{
-
-		inline static auto run(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "run", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "run");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				Kernel::Process::run(source);
-			});
-		}
-
-		inline static auto is_exists_in_path_environment(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "is_exists_in_path_environment", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_exists_in_path_environment");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::Process::is_exists_in_path_environment(source);
-			});
-		}
-
-		inline static auto get_path_environment(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "get_path_environment", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "get_path_environment");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::Process::get_path_environment(source);
-			});
-		}
-
-		inline static auto execute(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "execute", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "execute");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::Process::execute(source);
-			});
-		}
-
-	}
-
-	namespace Console
-	{
-
-		inline static auto exchange_color(
-			Kernel::Interface::Color color
-		) -> std::string
-		{
-			using Color = Kernel::Interface::Color;
-			switch (color) {
-				case Color::RED:
-					return "red";
-				case Color::GREEN:
-					return "green";
-				case Color::CYAN:
-					return "cyan";
-				case Color::YELLOW:
-					return "yellow";
-				default:
-					return "default";
-			}
-		}
-
-		inline static auto print(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "print", [&](){
-				assert_conditional(argc >= 1, fmt::format("argument expected greater than {} but received {}", "1", argc), "print");
-				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				switch (argc)
-				{
-					case 1:
-					{
-						construct_string_list(std::array<std::string, 2>{std::string{"display"}, JS::Converter::get_string(context, argv[0])}, parameters.operator*());
-						Shell::callback(parameters.get(), nullptr);
-						break;
-					}
-					case 2:
-					{
-						construct_string_list(std::array<std::string, 3>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1])}, parameters.operator*());
-						Shell::callback(parameters.get(), nullptr);
-						break;
-					}
-					default:
-					{
-						construct_string_list(std::array<std::string, 4>{std::string{"display"}, JS::Converter::get_string(context, argv[0]), JS::Converter::get_string(context, argv[1]), exchange_color(static_cast<Kernel::Interface::Color>(JS::Converter::get_int32(context, argv[2])))}, parameters.operator*());
-						Shell::callback(parameters.get(), nullptr);
-						break;
-					}
-				}
-			});
-		}
-
-		inline static auto readline(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "readline", [&](){
-				auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				construct_string_list(std::array<std::string, 1>{std::string{"wait"}}, wait_parameters.operator*());
-				Shell::callback(wait_parameters.get(), nullptr);
-				auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				construct_string_list(std::array<std::string, 1>{std::string{"input"}}, parameters.operator*());
-				Shell::callback(parameters.get(), destination.get());
-				return to_string(context, destination.get());
-			});
-		}
-	}
-
 	namespace Path
 	{
 
@@ -5898,7 +5417,7 @@ namespace Sen::Kernel::Interface::Script
 			return proxy_wrapper(context, "join", [&](){
 				auto value = List<std::string>{};
 				value.reserve(static_cast<size_t>(argc));
-				for(auto i : Range<int>(argc))
+				for(auto i : Range<int>{ argc })
 				{
 					auto source = JS::Converter::get_string(context, argv[i]);
 					value.emplace_back(source);
@@ -6067,170 +5586,6 @@ namespace Sen::Kernel::Interface::Script
 
 	namespace FileSystem
 	{
-
-		inline static auto read_file(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_file", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_file");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::FileSystem::read_file(source);
-			});
-		}
-
-		inline static auto read_file_encode_with_utf16le(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_file_encode_with_utf16le", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_file_encode_with_utf16le");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_file_by_utf16(source);
-				auto converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
-				return std::string{converter.to_bytes(result)};
-			});
-		}
-
-		inline static auto write_file(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "write_file", [&](){
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_file");
-				auto destination = JS::Converter::get_string(context, argv[0]);
-				auto data = JS::Converter::get_string(context, argv[1]);
-				Kernel::FileSystem::write_file(destination, data);
-			});
-		}
-
-		inline static auto write_file_encode_with_utf16le(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "write_file_encode_with_utf16le", [&](){
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_file_encode_with_utf16le");
-				auto destination = JS::Converter::get_string(context, argv[0]);
-				auto data = JS::Converter::get_string(context, argv[1]);
-				auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
-				auto result = std::wstring{ converter.from_bytes(data) };
-				Kernel::FileSystem::write_file_by_utf16le(destination, result);
-			});
-		}
-
-		inline static auto read_current_directory(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_current_directory", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_current_directory");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_directory(source);
-				return JS::Converter::to_array(context, result);
-			});
-		}
-
-		inline static auto read_directory_only_file(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_directory_only_file", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory_only_file");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_directory_only_file(source);
-				return JS::Converter::to_array(context, result);
-			});
-		}
-
-		inline static auto read_directory_only_directory(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_directory_only_directory", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory_only_directory");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_directory_only_directory(source);
-				return JS::Converter::to_array(context, result);
-			});
-		}
-
-		inline static auto read_directory(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "read_directory", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "read_directory");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto result = Kernel::FileSystem::read_whole_directory(source);
-				return JS::Converter::to_array(context, result);
-			});
-		}
-
-		inline static auto create_directory(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "create_directory", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "create_directory");
-				auto destination = JS::Converter::get_string(context, argv[0]);
-				Kernel::FileSystem::create_directory(destination);
-			});
-		}
-
-		inline static auto is_file(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "is_file", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_file");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::Path::Script::is_file(source);
-			});
-		}
-
-		inline static auto is_directory(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "is_directory", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "is_directory");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				return Kernel::Path::Script::is_directory(source);
-			});
-		}
 
 		namespace Operation
 		{
@@ -7219,7 +6574,7 @@ namespace Sen::Kernel::Interface::Script
 				{
 					return proxy_wrapper(context, "file", [&](){
 						assert_conditional(argc == 3 || argc == 2, fmt::format("argument expected {} but received {}", "2 or 3", argc), "file");
-						auto source = JS::Converter::get_vector<std::string>(context, argv[0]);
+						auto source = JS::Converter::get_array<std::string>(context, argv[0]);
 						auto destination = JS::Converter::get_string(context, argv[1]);
 						if (argc == 3) {
 							auto root = JS::Converter::get_string(context, argv[2]);
@@ -8550,9 +7905,9 @@ namespace Sen::Kernel::Interface::Script
 							auto media = get_value_from_object<std::string_view>(context, argv[1], "media");
 							auto sprite = get_value_from_object<std::string_view>(context, argv[1], "sprite");
 							auto image = get_value_from_object<std::string_view>(context, argv[1], "image");
-							source.media = JS::Converter::get_vector<std::string>(context, media);
-							source.sprite = JS::Converter::get_vector<std::string>(context, sprite);
-							source.image = JS::Converter::get_vector<std::string>(context, image);
+							source.media = JS::Converter::get_array<std::string>(context, media);
+							source.sprite = JS::Converter::get_array<std::string>(context, sprite);
+							source.image = JS::Converter::get_array<std::string>(context, image);
 							JS_FreeValue(context, media);
 							JS_FreeValue(context, sprite);
 							JS_FreeValue(context, image);
@@ -8771,22 +8126,15 @@ namespace Sen::Kernel::Interface::Script
 				namespace ResourceStreamBundle
 				{
 
-					inline static auto unpack_fs(
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue* argv
-					) -> JSValue
+					using Setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting;
+
+					static auto unpack_fs (
+						std::string& source,
+						std::string& destination,
+						std::shared_ptr<Setting>& setting
+					) -> void
 					{
-						return proxy_wrapper(context, "unpack_fs"_sv, [&]() {
-							assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "unpack_fs");
-							auto source = JS::Converter::get_string(context, argv[0]);
-							auto destination = JS::Converter::get_string(context, argv[1]);
-							auto value = Value::as_new_reference(context, argv[2]);
-							auto setting = Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting{};
-							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::from_object(value, setting);
-							Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, setting);
-						});
+						Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Unpack::process_fs(source, destination, setting.operator*());
 					}
 
 					inline static auto pack_fs(
@@ -9506,7 +8854,7 @@ namespace Sen::Kernel::Interface::Script
 		{
 			return proxy_wrapper(context, "to_apng"_sv, [&]() {
 				assert_conditional(argc == 3, fmt::format("{} 3, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "to_apng");
-				auto a = JS::Converter::get_vector<std::string>(context, argv[0]);
+				auto a = JS::Converter::get_array<std::string>(context, argv[0]);
 				auto b = JS::Converter::get_string(context, argv[1]);
 				auto s = get_opaque_value<Class::APNGMakerSetting::Data>(context, argv[2], Class::APNGMakerSetting::class_id.value);
 				Kernel::APNGMaker::process_fs(a, b, s);

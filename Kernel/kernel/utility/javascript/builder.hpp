@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/utility/javascript/generalization.hpp"
+#include "kernel/utility/javascript/value_adapter.hpp"
 
 namespace Sen::Kernel::JavaScript {
 
@@ -186,9 +186,7 @@ namespace Sen::Kernel::JavaScript {
 		{ t.allocate_new(context) } -> std::same_as<void>; 
 	};
 
-	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && 
-         !std::is_pointer<Class>::value && CanBeAllocated<Class> && 
-         std::is_function<std::remove_pointer_t<std::decay_t<Constructor>>>::value) 
+	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && !std::is_pointer<Class>::value && CanBeAllocated<Class> && std::is_function<Constructor>::value) 
 	inline static auto build_class(
 		JSContext* context,
 		Class& class_id,
@@ -205,6 +203,7 @@ namespace Sen::Kernel::JavaScript {
 		auto proto = JS_NewObject(context);
 		JS_SetPropertyFunctionList(context, proto, proto_functions.data(), proto_functions.size());
 		JS_SetConstructor(context, ctor, proto);
+		JS_SetClassProto(context, class_id.value, proto);
 		auto global_obj = JS_GetGlobalObject(context);
 		auto parent_obj = global_obj;
 		auto allocated = std::array<JSValue, InstanceCount>{};
@@ -258,64 +257,10 @@ namespace Sen::Kernel::JavaScript {
 		return destination;
 	}
 
-	inline auto get_array_buffer (
-		JSContext* context,
-		size_t* size,
-		JSValue& value
-	) -> uint8_t*
-	{
-		auto data = JS_GetArrayBuffer(context, size, value);
-		assert_conditional(data != nullptr, "Cannot get instance of ArrayBuffer", "get_array_buffer");
-		return data;
-	}
-
 	template <typename Callable> requires std::is_invocable<Callable>::value
 	struct Builder {
 
 	private:
-
-		template <typename T>
-		struct is_container : std::false_type {};
-
-		template <typename T, typename Alloc>
-		struct is_container<std::vector<T, Alloc>> : std::true_type {};
-
-		template <typename T, std::size_t N>
-		struct is_container<std::array<T, N>> : std::true_type {};
-
-		template <typename T>
-		struct is_map : std::false_type {};
-
-		template <typename Key, typename Value, typename Compare, typename Alloc>
-		struct is_map<std::map<Key, Value, Compare, Alloc>> : std::false_type {
-			static_assert(false, "Do not use std::map");
-		};
-
-		template <typename Key, typename Value, typename Hash, typename KeyEqual, typename Alloc>
-		struct is_map<std::unordered_map<Key, Value, Hash, KeyEqual, Alloc>> : std::false_type {
-			static_assert(false, "Do not use std::unordered_map");
-		};
-
-		template <typename Key, typename Value>
-		struct is_map<tsl::ordered_map<Key, Value>> : std::true_type {};
-
-		template <typename T> requires is_container<T>::value
-		static auto make_array(
-			JSContext* context,
-			T& value
-		) -> JSValue
-		{
-			return JS_UNDEFINED;
-		}
-
-		template <typename T> requires is_map<T>::value
-		static auto make_object(
-			JSContext* context,
-			T& value
-		) -> JSValue
-		{
-			return JS_UNDEFINED;
-		}
 
 		static auto make_return_function (
 			JSContext* context,
@@ -323,31 +268,7 @@ namespace Sen::Kernel::JavaScript {
 		) -> JSValue
 		{
 			auto result = function();
-			if constexpr (std::is_same<std::invoke_result_t<Callable>, bool>::value) {
-				return Converter::to_bool(context, result);
-			}
-			else if constexpr (std::is_integral<std::invoke_result_t<Callable>>::value && !std::is_floating_point< std::invoke_result_t<Callable>>::value && !std::is_pointer<std::invoke_result_t<Callable>>::value) {
-				static_assert(sizeof(std::invoke_result_t<Callable>) != sizeof(bool), "value cannot be bool");
-				return Converter::to_bigint<std::invoke_result_t<Callable>>(context, result);
-			}
-			else if constexpr (std::is_floating_point<std::invoke_result_t<Callable>>::value && !std::is_integral<std::invoke_result_t<Callable>>::value) {
-				return Converter::to_number(context, result);
-			}
-			else if constexpr (std::is_same<std::invoke_result_t<Callable>, std::string>::value || std::is_same<std::invoke_result_t<Callable>, std::string_view>::value) {
-				return Converter::to_string(context, result);
-			}
-			else if constexpr (is_map<std::invoke_result_t<Callable>>::value) {
-				return make_object<std::invoke_result_t<Callable>>(context, result);
-			}
-			else if constexpr (is_container<std::invoke_result_t<Callable>>::value) {
-				return make_array<std::invoke_result_t<Callable>>(context, result);
-			}
-			else if constexpr (std::is_same<std::invoke_result_t<Callable>, JSValue>::value) {
-				return result;
-			}
-			else {
-				static_assert(false, "case not implemented");
-			}
+			return to_value<std::invoke_result_t<Callable>>(context, result);
 		}
 
 	public:

@@ -489,13 +489,9 @@ namespace Sen::Kernel::FileSystem
 		return result;
 	}
 
-
-	// dirPath: directory to read
-	// return: only files inside nested directories
-
 	inline static auto read_whole_directory(
 		std::string_view directory_path
-	) -> List<std::string> const
+	) -> List<std::string>
 	{
 		auto result = List<std::string>{};
 		auto directory = std::stack<std::string>{};

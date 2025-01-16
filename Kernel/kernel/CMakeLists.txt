@@ -50,6 +50,7 @@ add_library(
 
 	./utility/javascript/common.hpp
 	./utility/javascript/value.hpp
+	./utility/javascript/value_adapter.hpp
 	./utility/javascript/runtime.hpp
 	./utility/javascript/generalization.hpp
 	./utility/javascript/builder.hpp
@@ -168,7 +169,6 @@ add_library(
 	./support/wwise/sound_bank/encode.hpp
 	./support/wwise/sound_bank/decode.hpp
 	./support/wwise/sound_bank/common.hpp
-	./support/wwise/sound_bank/miscellaneous/support.hpp
 	./support/marmalade/dzip/pack.hpp
 	./support/marmalade/dzip/unpack.hpp
 	./support/marmalade/dzip/common.hpp
@@ -179,6 +179,7 @@ add_library(
 	./support/miscellaneous/custom/stream_compressed_group/decode.hpp
 	./support/miscellaneous/custom/resource_stream_bundle/common.hpp
 	./support/miscellaneous/custom/resource_stream_bundle/definition.hpp
+	./support/miscellaneous/custom/resource_stream_bundle/convert.hpp
 	./support/miscellaneous/custom/resource_stream_bundle/pack.hpp
 	./support/miscellaneous/custom/resource_stream_bundle/unpack.hpp
 
@@ -187,6 +188,8 @@ add_library(
 	./interface/callback.hpp
 	./interface/version.hpp
 	./interface/shell.hpp
+	./interface/api/method.hpp
+	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
 )

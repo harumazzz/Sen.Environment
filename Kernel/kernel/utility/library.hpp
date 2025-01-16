@@ -28,6 +28,7 @@
 #include <locale>
 #include <cstdint>
 #include <future>
+#include <random>
 #include <set>
 #include <bitset>
 #include <condition_variable>

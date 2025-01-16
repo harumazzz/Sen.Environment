@@ -76,11 +76,11 @@ namespace Sen::Kernel::Language
 
 	inline static auto get(
 		std::string_view key
-	) -> std::string_view
+	) -> std::string
 	{
 		auto value = language.find({key.data(), key.size()});
 		if (value == language.end()) {
-			return key;
+			return {key.data(), key.size()};
 		}
 		return value->second;
 	}

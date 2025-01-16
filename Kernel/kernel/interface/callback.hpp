@@ -1,6 +1,8 @@
 #pragma once
 
 #include "kernel/interface/script.hpp"
+#include "kernel/interface/api/method.hpp"
+#include "kernel/interface/api/class.hpp"
 #include "kernel/interface/version.hpp"
 #include "kernel/interface/shell.hpp"
 
@@ -11,6 +13,9 @@ namespace Sen::Kernel::Interface {
 	*/
 
 	namespace JS = Sen::Kernel::JavaScript;
+	
+	template <typename ReturnType, typename... Args>
+	using Proxy = JS::Proxy<ReturnType, Args...>;
 
 	// callback
 
@@ -46,63 +51,23 @@ namespace Sen::Kernel::Interface {
 			{
 				// shell callback
 				{
+					// is_gui
 					{
-						javascript.add_proxy([](
-							JSContext* context,
-							JSValue value,
-							int argc,
-							JSValue* argv
-						) -> JSValue {
-							auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-							auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-							construct_string_list(Array<std::string, 1>{std::string{ "is_gui" }}, parameters.operator*());
-							Shell::callback(parameters.get(), is_gui.get());
-							auto state = Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell");
-							auto destination = JS::Converter::to_bool(context, static_cast<bool>(state));
-							return destination;
-						}, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "is_gui"_sv);
-					}
-					{
-						javascript.add_proxy([](
-							JSContext *context,
-							JSValue value,
-							int argc,
-							JSValue *argv
-						) -> JSValue {
-							auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-							auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-							construct_string_list(Array<std::string, 1>{std::string{"version"}}, parameters.operator*());
-							Shell::callback(parameters.get(), shell_version.get());
-							auto state = static_cast<int>(Converter::to_int32(std::string{reinterpret_cast<const char*>(shell_version->value), static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
-							auto destination = JS::Converter::to_number(context, state);
-							return destination;
-						}, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "version"_sv);
+						javascript.add_proxy(JS::Proxy<bool>::as_function<Kernel::Interface::API::Shell::is_gui>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "is_gui"_sv);
 					}
 					// version
-					javascript.add_proxy([](
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue *argv
-					) -> JSValue {
-						return JS::Converter::to_number(context, Kernel::version); 
-					}, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "version"_sv);
-					// callback
-					javascript.add_proxy(Script::callback, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "callback"_sv);
-					// arguments
-					javascript.add_proxy([](
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue *argv
-					) -> JSValue 
 					{
-						return Script::to_array_of_string(context, Executor::arguments);
-					}, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "arguments"_sv);
+						javascript.add_proxy(JS::Proxy<int>::as_function<Kernel::Interface::API::Shell::version>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "version"_sv);
+					}
+					// version
+					javascript.add_proxy(Proxy<int>::as_function<Kernel::Interface::API::version>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "version"_sv);
+					// callback
+					javascript.add_proxy(Interface::API::Shell::callback, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "callback"_sv);
+					// arguments
+					javascript.add_proxy(Interface::API::arguments, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "arguments"_sv);
 				}
-					// deserialize
-					javascript.add_proxy(Script::test, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "test"_sv);
 				// xml
+				// TODO : Later
 				{
 					// deserialize
 					javascript.add_proxy(Script::XML::deserialize, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "XML"_sv}), "deserialize"_sv);
@@ -116,57 +81,51 @@ namespace Sen::Kernel::Interface {
 				// json
 				{
 					// deserialize
-					javascript.add_proxy(Script::JSON::deserialize, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize"_sv);
+					javascript.add_proxy(Interface::API::JSON::deserialize, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize"_sv);
 					// serialize
-					javascript.add_proxy(Script::JSON::serialize, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize"_sv);
+					javascript.add_proxy(Interface::API::JSON::serialize, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize"_sv);
 					// deserialize fs
-					javascript.add_proxy(Script::JSON::deserialize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize_fs"_sv);
+					javascript.add_proxy(Interface::API::JSON::deserialize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize_fs"_sv);
 					// serialize fs
-					javascript.add_proxy(Script::JSON::serialize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize_fs"_sv);
+					javascript.add_proxy(Interface::API::JSON::serialize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize_fs"_sv);
 				}
 				// home
 				{
-					// script path
-					javascript.add_proxy([](
-						JSContext *context,
-						JSValue value,
-						int argc,
-						JSValue *argv
-					) -> JSValue {
-						return JS::Converter::to_string(context, String::to_posix_style(construct_string(Executor::script)));
-					}, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Home"_sv}), "script"_sv);
+					// script
+					javascript.add_proxy(Proxy<std::string>::as_function<Interface::API::script>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Home"_sv }), "script"_sv);
 				}
 				// vcdiff
 				{
 					// encode fs
-					javascript.add_proxy(Script::Diff::VCDiff::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Diff"_sv, "VCDiff"_sv}), "encode_fs"_sv);
+					javascript.add_proxy(Proxy<void, std::string&, std::string&, std::string&, int32_t&>::as_function<Interface::API::Diff::VCDiff::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Diff"_sv, "VCDiff"_sv}), "encode_fs"_sv);
 					// decode fs
-					javascript.add_proxy(Script::Diff::VCDiff::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Diff"_sv, "VCDiff"_sv}), "decode_fs"_sv);
+					javascript.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Diff::VCDiff::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Diff"_sv, "VCDiff"_sv}), "decode_fs"_sv);
 				}
-				// file system
+				// filesystem
 				{
-					// read file
-					javascript.add_proxy(Script::FileSystem::read_file, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file"_sv);
+					// read_file
+					javascript.add_proxy(Proxy<std::string, std::string&>::as_function<Interface::API::FileSystem::read_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file"_sv);
 					// read_file_encode_with_utf16le
-					javascript.add_proxy(Script::FileSystem::read_file_encode_with_utf16le, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file_encode_with_utf16le"_sv);
+					javascript.add_proxy(Proxy<std::string,std::string&>::as_function<Interface::API::FileSystem::read_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file_encode_with_utf16le"_sv);
+					// write_file
+					javascript.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::write_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "write_file"_sv);
 					// write_file_encode_with_utf16le
-					javascript.add_proxy(Script::FileSystem::write_file_encode_with_utf16le, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "write_file_encode_with_utf16le"_sv);
-					// write file
-					javascript.add_proxy(Script::FileSystem::write_file, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "write_file"_sv);
-					// create directory
-					javascript.add_proxy(Script::FileSystem::create_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "create_directory"_sv);
+					javascript.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::write_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "write_file_encode_with_utf16le"_sv);
 					// read_current_directory
-					javascript.add_proxy(Script::FileSystem::read_current_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_current_directory"_sv);
+					javascript.add_proxy(Proxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_current_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_current_directory"_sv);
 					// read_directory_only_file
-					javascript.add_proxy(Script::FileSystem::read_directory_only_file, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_directory_only_file"_sv);
+					javascript.add_proxy(Proxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory_only_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_file"_sv);
 					// read_directory_only_directory
-					javascript.add_proxy(Script::FileSystem::read_directory_only_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_directory_only_directory"_sv);
+					javascript.add_proxy(Proxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory_only_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_directory"_sv);
 					// read_directory
-					javascript.add_proxy(Script::FileSystem::read_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_directory"_sv);
-					// is file
-					javascript.add_proxy(Script::FileSystem::is_file, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "is_file"_sv);
-					// is directory
-					javascript.add_proxy(Script::FileSystem::is_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}),"is_directory"_sv);
+					javascript.add_proxy(Proxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory"_sv);
+					// create_directory
+					javascript.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::FileSystem::create_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "create_directory"_sv);
+					// is_file
+					javascript.add_proxy(Proxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "is_file"_sv);
+					// is_directory
+					javascript.add_proxy(Proxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}),"is_directory"_sv);
+					// TODO : Must do later
 					// operation : rename
 					javascript.add_proxy(Script::FileSystem::Operation::rename, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "rename"_sv);
 					// operation : remove
@@ -179,6 +138,7 @@ namespace Sen::Kernel::Interface {
 					javascript.add_proxy(Script::FileSystem::Operation::copy_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "copy_directory"_sv);
 				}
 				// path
+				// TODO : Remove Script : Finish this later
 				{
 					// join
 					javascript.add_proxy(Script::Path::join, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "join"_sv);
@@ -207,46 +167,40 @@ namespace Sen::Kernel::Interface {
 				}
 				// console
 				{
-					// console print
-					javascript.add_proxy(Script::Console::print, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "print"_sv);
-					// read line
-					javascript.add_proxy(Script::Console::readline, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "readline"_sv);
+					// print
+					javascript.add_proxy(Interface::API::Console::print, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "print"_sv);
+					// readline
+					javascript.add_proxy(Interface::API::Console::readline, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "readline"_sv);
 				}
 				// language
 				{
-					// load language
-					javascript.add_proxy(Script::Language::load_language, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Language"_sv}), "load_language"_sv);
-					// get language
-					javascript.add_proxy(Script::Language::get, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Language"_sv}), "get"_sv);
+					// load_language
+					javascript.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::Language::load_language>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Language"_sv}), "load_language"_sv);
+					// get
+					javascript.add_proxy(Proxy<std::string, std::string&>::as_function<Interface::API::Language::get>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Language"_sv}), "get"_sv);
 				}
 				// process
 				{
 					// run
-					javascript.add_proxy(Script::Process::run, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "run"_sv);
+					javascript.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::Process::run>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "run"_sv);
 					// execute
-					javascript.add_proxy(Script::Process::execute, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "execute"_sv);
+					javascript.add_proxy(Proxy<std::string, std::string&>::as_function<Interface::API::Process::execute>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "execute"_sv);
 					// is_exists_in_path_environment
-					javascript.add_proxy(Script::Process::is_exists_in_path_environment, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "is_exists_in_path_environment"_sv);
+					javascript.add_proxy(Proxy<bool, std::string&>::as_function<Interface::API::Process::is_exists_in_path_environment>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "is_exists_in_path_environment"_sv);
 					// get_path_environment
-					javascript.add_proxy(Script::Process::get_path_environment, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "get_path_environment"_sv);
+					javascript.add_proxy(Proxy<std::string, std::string&>::as_function<Interface::API::Process::get_path_environment>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Process"_sv}), "get_path_environment"_sv);
 				}
 				// thread
 				{
 					// sleep
-					javascript.add_proxy(Script::Thread::sleep, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Thread"_sv}), "sleep"_sv);
+					javascript.add_proxy(Proxy<void, int64_t&>::as_function<Interface::API::Thread::sleep>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Thread"_sv}), "sleep"_sv);
 					// now
-					javascript.add_proxy(Script::Thread::now, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Thread"_sv}), "now"_sv);
+					javascript.add_proxy(Proxy<double>::as_function<Interface::API::Thread::now>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Thread"_sv}), "now"_sv);
 				}
 				// array buffer
 				{
-					// open
-					javascript.add_proxy(Script::ArrayBuffer::open, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "ArrayBuffer"_sv}), "open"_sv);
-					// out
-					javascript.add_proxy(Script::ArrayBuffer::out, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "ArrayBuffer"_sv}), "out"_sv);
 					// random
-					javascript.add_proxy(Script::ArrayBuffer::random, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "ArrayBuffer"_sv}), "random"_sv);
-					// fill
-					javascript.add_proxy(Script::ArrayBuffer::fill, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "ArrayBuffer"_sv}), "fill"_sv);
+					javascript.add_proxy(Proxy<void, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::ArrayBuffer::random>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "ArrayBuffer"_sv}), "random"_sv);
 				}
 				// operating system
 				{
@@ -604,7 +558,7 @@ namespace Sen::Kernel::Interface {
 					// pack_scg
 					javascript.add_proxy(Script::Support::PopCap::Custom::StreamCompressedGroup::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "StreamCompressedGroup"_sv}), "encode_fs"_sv);
 					// unpack_rsb
-					javascript.add_proxy(Script::Support::PopCap::Custom::ResourceStreamBundle::unpack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "ResourceStreamBundle"_sv}), "unpack_fs"_sv);
+					javascript.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting>&>::as_function<Script::Support::PopCap::Custom::ResourceStreamBundle::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "ResourceStreamBundle"_sv}), "unpack_fs"_sv);
 					// pack_rsb
 					javascript.add_proxy(Script::Support::PopCap::Custom::ResourceStreamBundle::pack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "ResourceStreamBundle"_sv}), "pack_fs"_sv);
 				}
