@@ -170,7 +170,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 					unpack_packages: true,
 				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(
+				Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
 					argument.source,
 					argument.destination!,
 					setting,

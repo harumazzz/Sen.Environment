@@ -121,8 +121,12 @@ add_library(
 	./support/popcap/render_effects/definition.hpp
 	./support/popcap/render_effects/encode.hpp
 	./support/popcap/resource_group/common.hpp
+	./support/popcap/resource_group/split.hpp
+	./support/popcap/resource_group/merge.hpp
 	./support/popcap/resource_group/convert.hpp
 	./support/popcap/res_info/common.hpp
+	./support/popcap/res_info/split.hpp
+	./support/popcap/res_info/merge.hpp
 	./support/popcap/res_info/convert.hpp
 	./support/popcap/resource_stream_bundle/definition.hpp
 	./support/popcap/resource_stream_bundle/pack.hpp
@@ -173,15 +177,16 @@ add_library(
 	./support/marmalade/dzip/unpack.hpp
 	./support/marmalade/dzip/common.hpp
 	./support/utility.hpp
-	./support/miscellaneous/custom/stream_compressed_group/common.hpp
-	./support/miscellaneous/custom/stream_compressed_group/definition.hpp
-	./support/miscellaneous/custom/stream_compressed_group/encode.hpp
-	./support/miscellaneous/custom/stream_compressed_group/decode.hpp
-	./support/miscellaneous/custom/resource_stream_bundle/common.hpp
-	./support/miscellaneous/custom/resource_stream_bundle/definition.hpp
-	./support/miscellaneous/custom/resource_stream_bundle/convert.hpp
-	./support/miscellaneous/custom/resource_stream_bundle/pack.hpp
-	./support/miscellaneous/custom/resource_stream_bundle/unpack.hpp
+	./support/miscellaneous/project/stream_compressed_group/common.hpp
+	./support/miscellaneous/project/stream_compressed_group/convert.hpp
+	./support/miscellaneous/project/stream_compressed_group/definition.hpp
+	./support/miscellaneous/project/stream_compressed_group/encode.hpp
+	./support/miscellaneous/project/stream_compressed_group/decode.hpp
+	./support/miscellaneous/project/resource_stream_bundle/common.hpp
+	./support/miscellaneous/project/resource_stream_bundle/definition.hpp
+	./support/miscellaneous/project/resource_stream_bundle/convert.hpp
+	./support/miscellaneous/project/resource_stream_bundle/pack.hpp
+	./support/miscellaneous/project/resource_stream_bundle/unpack.hpp
 
 	./interface/data.hpp
 	./interface/cli.hpp

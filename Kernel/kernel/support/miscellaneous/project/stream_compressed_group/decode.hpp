@@ -2,7 +2,7 @@
 
 #include "kernel/utility/utility.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
+namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
 {
     
 
@@ -621,7 +621,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             Setting const &setting) -> void
         {
             auto packet_original_information = PacketOriginalInformation{};
-            Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, stream);
+            Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, stream);
             exchange_packet(packet_original_information, definition, destination, setting);
             return;
         }

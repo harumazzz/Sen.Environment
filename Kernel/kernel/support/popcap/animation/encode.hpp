@@ -321,7 +321,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
             std::string_view destination
             ) -> void
         {
-            auto animation = *FileSystem::read_json(source);
+            auto animation = FileSystem::read_json(source);
             auto stream = DataStreamView{};
             process_whole(stream, animation);
             stream.out_file(destination);

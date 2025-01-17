@@ -1055,7 +1055,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
             std::string_view source
         ) -> void
         {
-            VersionInfo definition = *FileSystem::read_json(source);
+            VersionInfo definition = FileSystem::read_json(source);
             return;
         }
 
@@ -1067,12 +1067,12 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
             read_version(source);
             if (k_version == 14)
             {
-                SummaryInfo definition = *FileSystem::read_json(source);
+                SummaryInfo definition = FileSystem::read_json(source);
                 exchange_summary_info(stream, definition);
             }
             else
             {
-                DetailInfo definition = *FileSystem::read_json(source);
+                DetailInfo definition = FileSystem::read_json(source);
                 exchange_player_info(stream, definition);
             }
             return;

@@ -164,7 +164,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
 		{
 			auto source_view = FileSystem::read_json(source);
 			auto destination_view = DataStreamView{};
-			Encode::process(source_view.operator*(), destination_view);
+			Encode::process(source_view, destination_view);
 			destination_view.out_file(destination);
 		}
 	};

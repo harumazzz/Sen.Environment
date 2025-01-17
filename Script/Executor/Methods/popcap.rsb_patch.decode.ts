@@ -51,7 +51,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSBPatch.Decode {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.RSBPatch.decode_fs(
+				Kernel.Support.PopCap.ResourceStreamBundlePatch.decode_fs(
 					argument.source,
 					argument.before_file!,
 					argument.destination!,

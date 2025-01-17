@@ -2,9 +2,9 @@
 
 #include "kernel/utility/utility.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
-#include "kernel/support/miscellaneous/custom/resource_stream_bundle/definition.hpp"
+#include "kernel/support/miscellaneous/project/resource_stream_bundle/definition.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
+namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
 {
     
 

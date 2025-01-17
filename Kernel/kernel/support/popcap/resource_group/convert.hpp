@@ -1,330 +1,199 @@
 #pragma once
 
-#include "kernel/utility/utility.hpp"
+#include "kernel/support/popcap/resource_group/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceGroup { 
 
-	// Path style
-
-	enum class PathStyle : uint8_t
-	{
-
-		// old path style
-
-		ArrayStyle,
-
-		// new path style
-
-		WindowStyle,
-
-	};
-
-	/**
-	 * Common class
-	*/
-
-	class Common {
-
-		public:
-
-			// constructor
-
-			Common(
-
-			) = default;
-
-			// destructor
-
-			~Common(
-
-			) = default;
-			
-			// x and y
-
-			inline static auto constexpr DefaultCoordinateOffset = 0;
-
-			// cols and rows
-
-			inline static auto constexpr DefaultLayoutOffset = 1;
-
-			// New path style
-
-			inline static auto const WindowStyle = std::string{"\\"};
-
-			// Posix style
-
-			inline static auto const PosixStyle = std::string{"/"};
-
-			// Array
-
-			inline static auto const Array = std::string{"array"};
-			
-			// String
-
-			inline static auto const String = std::string{"string"};
-
-			// empty string
-
-			inline static auto const emptyString = std::string{""};
-
-			// empty type
-
-			inline static auto const emptyType = std::string{"0"};
-	};
-
-	/**
-	 * Convert class
-	*/
 	template <auto use_string_for_style>
-	class Convert : public Common {
+	struct Convert : public Common {
 
 		private:
 
 			static_assert(sizeof(use_string_for_style) == sizeof(bool));
+			static_assert(use_string_for_style == true || use_string_for_style == false);
 
-			static_assert(use_string_for_style == true or use_string_for_style == false);
-
-			/**
-			 * This function will convert atlas
-			 * subgroup: the subgroup json object
-			 * return: the newly converted json
-			*/
-
-			inline auto convert_atlas(
-				const nlohmann::ordered_json & subgroup
-			) -> nlohmann::ordered_json
-			{
-				auto result = nlohmann::ordered_json {
-					{"type", subgroup["res"]}
-				};
-				auto atlas = List<nlohmann::ordered_json>{};
-				for(auto & element : subgroup["resources"]){
-					if(element.find("atlas") != element.end() && element["atlas"].get<bool>()){
-						atlas.emplace_back(element);
+			inline static auto gather_atlas_elements(
+				const nlohmann::ordered_json& subgroup
+			) -> List<const nlohmann::ordered_json*> {
+				auto atlas = List<const nlohmann::ordered_json*>{};
+				for (const auto& element : subgroup["resources"]) {
+					if (element.contains("atlas") && element["atlas"].get<bool>()) {
+						atlas.emplace_back(&element);
 					}
 				}
-				for(auto & parent : atlas) {
-					auto atlas_data = nlohmann::ordered_json{};
+				return atlas;
+			}
+
+			inline static auto process_children_for_parent(
+				const nlohmann::ordered_json& subgroup,
+				const nlohmann::ordered_json& parent
+			) -> nlohmann::ordered_json {
+				auto children_data = nlohmann::ordered_json{};
+				auto children_in_parent = List<const nlohmann::ordered_json*>{};
+				for (const auto& element : subgroup["resources"]) {
+					if (element.contains("parent") && element["parent"].get<std::string>() == parent["id"].get<std::string>()) {
+						children_in_parent.emplace_back(&element);
+					}
+				}
+				for (const auto* element : children_in_parent) {
+					auto child = nlohmann::ordered_json{};
 					if constexpr (use_string_for_style) {
-						atlas_data =  nlohmann::ordered_json{
-							{"type", parent["type"].get<std::string>()},
-							{"path", String::replaceAll(parent["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)},
-							{"dimension", nlohmann::ordered_json {
-								{"width", parent["width"].get<int>() },
-								{"height", parent["height"].get<int>() }
+						child = {
+							{"type", (*element)["type"].get<std::string>()},
+							{"path", String::replaceAll((*element)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)},
+							{"default", {
+								{"ax", (*element)["ax"].get<int>()},
+								{"ay", (*element)["ay"].get<int>()},
+								{"aw", (*element)["aw"].get<int>()},
+								{"ah", (*element)["ah"].get<int>()}
+							}}
+						};
+					} else {
+						child = {
+							{"type", (*element)["type"].get<std::string>()},
+							{"path", String::join((*element)["path"].get<List<std::string>>(), Common::PosixStyle)},
+							{"default", {
+								{"ax", (*element)["ax"].get<int>()},
+								{"ay", (*element)["ay"].get<int>()},
+								{"aw", (*element)["aw"].get<int>()},
+								{"ah", (*element)["ah"].get<int>()}
 							}}
 						};
 					}
-					else {
-						atlas_data =  nlohmann::ordered_json{
-							{"type", parent["type"].get<std::string>()},
-							{"path", String::join(parent["path"].get<List<std::string>>(), Common::PosixStyle)},
-							{"dimension", nlohmann::ordered_json {
-								{"width", parent["width"].get<int>() },
-								{"height", parent["height"].get<int>() }
-							}}
-						};
+					if (element->contains("x") && (*element)["x"] != Common::DefaultCoordinateOffset) {
+						child["default"]["x"] = (*element)["x"].get<int>();
+					} else {
+						child["default"]["x"] = Common::DefaultCoordinateOffset;
 					}
-					auto children_in_current_parent = List<nlohmann::ordered_json>{};
-					for(auto & element : subgroup["resources"]) {
-						if(element.find("parent") != element.end() and element["parent"].get<std::string>() == parent["id"].get<std::string>()) {
-							children_in_current_parent.emplace_back(element);
-						}
+					if (element->contains("y") && (*element)["y"] != Common::DefaultCoordinateOffset) {
+						child["default"]["y"] = (*element)["y"].get<int>();
+					} else {
+						child["default"]["y"] = Common::DefaultCoordinateOffset;
 					}
-					for(auto & element : children_in_current_parent) {
-						auto children_data = nlohmann::ordered_json{};
-						if constexpr (use_string_for_style) {
-							children_data = nlohmann::ordered_json {
-								{"type", element["type"].get<std::string>()},
-								{"path", String::replaceAll(element["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)},
-								{
-									"default", nlohmann::ordered_json {
-										{"ax", element["ax"].get<int>()},
-										{"ay", element["ay"].get<int>()},
-										{"aw", element["aw"].get<int>()},
-										{"ah", element["ah"].get<int>()}
-								}}
-							};
-						}
-						else {
-							children_data = nlohmann::ordered_json {
-								{"type", element["type"].get<std::string>()},
-								{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle)},
-								{
-									"default", nlohmann::ordered_json {
-										{"ax", element["ax"].get<int>()},
-										{"ay", element["ay"].get<int>()},
-										{"aw", element["aw"].get<int>()},
-										{"ah", element["ah"].get<int>()}
-								}}
-							};
-						}
-						if(element.find("x") != element.end() and element["x"] != Common::DefaultCoordinateOffset){
-							children_data["default"]["x"] = element["x"].get<int>();
-						}
-						else{
-							children_data["default"]["x"] = Common::DefaultCoordinateOffset;
-						}
-						if(element.find("y") != element.end() and element["y"] != Common::DefaultCoordinateOffset){
-							children_data["default"]["y"] = element["y"].get<int>();
-						}
-						else{
-							children_data["default"]["y"] = Common::DefaultCoordinateOffset;
-						}
-						if(element.find("rows") != element.end() and element["rows"] != Common::DefaultLayoutOffset){
-							children_data["default"]["rows"] = element["rows"].get<int>();
-						}
-						if(element.find("cols") != element.end() and element["cols"] != Common::DefaultLayoutOffset){
-							children_data["default"]["cols"] = element["cols"].get<int>();
-						}
-						atlas_data["data"][element["id"].get<std::string>()] = children_data;
+					if (element->contains("rows") && (*element)["rows"] != Common::DefaultLayoutOffset) {
+						child["default"]["rows"] = (*element)["rows"].get<int>();
 					}
-					result["packet"][parent["id"].get<std::string>()] = atlas_data;
+					if (element->contains("cols") && (*element)["cols"] != Common::DefaultLayoutOffset) {
+						child["default"]["cols"] = (*element)["cols"].get<int>();
+					}
+					children_data[(*element)["id"].get<std::string>()] = std::move(child);
 				}
+				return children_data;
+			}
+
+			inline static auto convert_atlas(
+				const nlohmann::ordered_json& subgroup
+			) -> nlohmann::ordered_json {
+				auto result = nlohmann::ordered_json{{"type", subgroup["res"]}};
+				auto atlas = gather_atlas_elements(subgroup);
+				for (const auto* parent : atlas) {
+					auto atlas_data = nlohmann::ordered_json{
+						{"type", (*parent)["type"].get<std::string>()},
+						{"path", use_string_for_style
+									? String::replaceAll((*parent)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)
+									: String::join((*parent)["path"].get<List<std::string>>(), Common::PosixStyle)},
+						{"dimension", {
+							{"width", (*parent)["width"].get<int>()},
+							{"height", (*parent)["height"].get<int>()}
+						}}
+					};
+					atlas_data["data"] = process_children_for_parent(subgroup, *parent);
+					result["packet"][(*parent)["id"].get<std::string>()] = std::move(atlas_data);
+				}
+
 				return result;
 			}
 
-			/**
-			 * This function will convert common data to json map
-			 * subgroup: subgroup data
-			 * return: map
-			*/
+			inline static auto process_resource(
+				const nlohmann::ordered_json& element
+			) -> nlohmann::ordered_json {
+				if constexpr (use_string_for_style) {
+					return {
+						{"type", element["type"].get<std::string>()},
+						{"path", String::replaceAll(element["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)}
+					};
+				} else {
+					return {
+						{"type", element["type"].get<std::string>()},
+						{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle)}
+					};
+				}
+			}
 
-			inline auto convert_common(
-				const nlohmann::ordered_json & subgroup
-			) -> nlohmann::ordered_json
-			{
-				auto result = nlohmann::ordered_json {
-					{"type", nullptr}
-				};
-				if (subgroup.find("loc") != subgroup.end()) {
+			inline static auto convert_common(
+				const nlohmann::ordered_json& subgroup
+			) -> nlohmann::ordered_json {
+				auto result = nlohmann::ordered_json{{"type", nullptr}};
+				if (subgroup.contains("loc")) {
 					result["loc"] = subgroup["loc"];
 				}
-				result["packet"] = nlohmann::ordered_json{{"type", "File"}};
-				auto data = nlohmann::ordered_json{};
-				for(auto & element : subgroup["resources"]) {
-					auto sub_data = nlohmann::ordered_json{};
-					if constexpr (use_string_for_style)
-					{
-						sub_data = nlohmann::ordered_json {
-							{"type", element["type"].get<std::string>()},
-							{"path", String::replaceAll(element["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle) }
-						};
-					}
-					else {
-						sub_data = nlohmann::ordered_json {
-							{"type", element["type"].get<std::string>()},
-							{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle) }
-						};
-					}
-					data[element["id"].get<std::string>()] = sub_data;
+				result["packet"] = {{"type", "File"}};
+				auto& data = result["packet"]["data"];
+				for (const auto& element : subgroup["resources"]) {
+					data[element["id"].get<std::string>()] = process_resource(element);
 				}
-				result["packet"]["data"] = data;
+
 				return result;
 			}
 
-			/**
-			 * This function will find the first subgroup in the resource group
-			 * resource_group: resource group
-			 * id: the parent id
-			 * return: the subgroup
-			*/
-
 			inline static auto first_where(
-				const nlohmann::ordered_json & resource_group,
-				const std::string & id
-			) -> nlohmann::ordered_json
-			{
-				for(auto & element : resource_group["groups"]){
-					if(element["id"] == id) {
+				const nlohmann::ordered_json& resource_group, 
+				const std::string& id
+			) -> const nlohmann::ordered_json& {
+				for (const auto& element : resource_group["groups"]) {
+					if (element["id"] == id) {
 						return element;
 					}
 				}
-				throw Exception(String::format(fmt::format("{}", Language::get("popcap.resource_group.convert.cannot_find_id")), id), std::source_location::current(), "first_where");
+				assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.resource_group.convert.cannot_find_id")), id), "first_where");
 			}
 
-		
 		public:
 
-			/**
-			 * This function will convert whole resource group to res info
-			 * source: resource group after deserialized
-			 * return: res info
-			*/
+			constexpr Convert(
 
-			inline auto convert_whole(
-				const nlohmann::ordered_json & resource_group
-			) -> nlohmann::ordered_json
+			) = default;
+
+			constexpr ~Convert(
+
+			) = default;
+
+			inline static auto process_whole(
+				const nlohmann::ordered_json& resource_group
+			) -> nlohmann::ordered_json 
 			{
-				assert_conditional(resource_group.find("groups") != resource_group.end(), fmt::format("\"{}\" cannot be null in resource group", "groups"), "convert_whole");
-				auto result = nlohmann::ordered_json{};
-				if constexpr (use_string_for_style) {
-					result = nlohmann::ordered_json{
-						{"expand_path", Common::String
-					}};
-				}
-				else {
-					result = nlohmann::ordered_json{
-						{"expand_path", Common::Array
-					}};
-				}
-				for(auto & element : resource_group["groups"]) {
-					if(element.find("subgroups") != element.end()){
-						auto subgroup = nlohmann::ordered_json {
-							{"is_composite", true}
-						};
-						for(auto & k : element["subgroups"]) {
-							if (k.find("res") != k.end() and k["res"].get<std::string>() != "0") {
-								subgroup["subgroup"][k["id"].get<std::string>()] = thiz.convert_atlas(thiz.first_where(resource_group, k["id"]));
-							}
-							else {
-								subgroup["subgroup"][k["id"].get<std::string>()] = thiz.convert_common(thiz.first_where(resource_group, k["id"]));
+				assert_conditional(resource_group.find("groups") != resource_group.end(), fmt::format("{}", Language::get("popcap.resource_group.group_cannot_be_null_in_resource_group")), "process_whole");
+				auto result = nlohmann::ordered_json{{"expand_path", use_string_for_style ? Common::String : Common::Array}};
+				for (const auto& element : resource_group["groups"]) {
+					if (element.find("subgroups") != element.end()) {
+						auto subgroup = nlohmann::ordered_json{{"is_composite", true}};
+						for (const auto& k : element["subgroups"]) {
+							if (k.find("res") != k.end() && k["res"].get<std::string>() != "0") {
+								subgroup["subgroup"][k["id"].get<std::string>()] = convert_atlas(first_where(resource_group, k["id"]));
+							} else {
+								subgroup["subgroup"][k["id"].get<std::string>()] = convert_common(first_where(resource_group, k["id"]));
 							}
 						}
-						result["groups"][element["id"].get<std::string>()] = subgroup;
+						result["groups"][element["id"].get<std::string>()] = std::move(subgroup);
 					}
-					if(element.find("parent") == element.end() && element.find("resources") != element.end()) {
-						auto subgroup = nlohmann::ordered_json {
-							{"is_composite", false}
-						};
-						subgroup["subgroup"][element["id"].get<std::string>()] = thiz.convert_common(element);
-						result["groups"][element["id"].get<std::string>()] = subgroup;
+					if (element.find("parent") == element.end() && element.find("resources") != element.end()) {
+						auto subgroup = nlohmann::ordered_json{{"is_composite", false}};
+						subgroup["subgroup"][element["id"].get<std::string>()] = convert_common(element);
+						result["groups"][element["id"].get<std::string>()] = std::move(subgroup);
 					}
-					
 				}
+
 				return result;
 			}
 
-			// convert method
-
-			/**
-			 * This is a quick method to call to convert resource group to res info
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @param style: resource path style
-			 * @return: Resource group in source converted to Res-Info in destination
-			*/
-
-			inline static auto convert_fs(
-				std::string_view source,
+			inline static auto process_fs(
+				std::string_view source, 
 				std::string_view destination
-			) -> void 
+			) -> void
 			{
-				auto view = std::make_unique<ResourceGroup::Convert<use_string_for_style>>();
-				FileSystem::write_json(destination, view->convert_whole(*FileSystem::read_json(source)));
+				auto resource_group = FileSystem::read_json(source);
+				FileSystem::write_json(destination, process_whole(resource_group));
 				return;
 			}
-
-			// default constructor
-
-			explicit Convert(
-
-			) = default;
-
-			// default destructor
-
-			~Convert(
-
-			) = default;
 	};
 }

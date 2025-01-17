@@ -134,7 +134,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         ) -> void
         {
             auto to_xml = ToXML{};
-            auto definition = *FileSystem::read_json(source);
+            auto definition = FileSystem::read_json(source);
             auto document = XMLDocument{};
             to_xml.process(definition, document);
             FileSystem::write_xml(destination, &document);

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "kernel/utility/utility.hpp"
-#include "kernel/support/miscellaneous/custom/stream_compressed_group/definition.hpp"
+#include "kernel/support/miscellaneous/project/stream_compressed_group/definition.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
+namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
 {
     using TextureInformationVersion = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::TextureInformationVersion;
 
-    using TextureFormatCategory = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::TextureFormatCategory;
+    using TextureFormatCategory = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::TextureFormatCategory;
 
     struct PackagesSetting
     {

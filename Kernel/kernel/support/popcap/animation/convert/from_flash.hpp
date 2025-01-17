@@ -659,7 +659,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			static_assert(split_label == true || split_label == false, "split_label must be true or false");
 			auto definition = SexyAnimation{};
-			auto extra = *FileSystem::read_json(fmt::format("{}/data.json", source));
+			auto extra = FileSystem::read_json(fmt::format("{}/data.json", source));
 			process_whole(definition, extra, source);
 			FileSystem::write_json(destination, definition);
 			return;

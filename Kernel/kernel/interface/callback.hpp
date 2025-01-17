@@ -8,24 +8,16 @@
 
 namespace Sen::Kernel::Interface {
 
-	/**
-	 * Use JS
-	*/
-
 	namespace JS = Sen::Kernel::JavaScript;
 	
 	template <typename ReturnType, typename... Args>
 	using Proxy = JS::Proxy<ReturnType, Args...>;
-
-	// callback
 
 	class Runtime {
 
 		private:
 
 			JS::Handler runtime;
-
-			using None = void;
 
 		public:
 
@@ -34,10 +26,6 @@ namespace Sen::Kernel::Interface {
 			{
 
 			}
-			
-			/**
-			 * Destructor
-			*/
 
 			~Runtime(
 
@@ -230,6 +218,12 @@ namespace Sen::Kernel::Interface {
 					runtime.add_proxy(Script::Image::cut_multiple_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs"_sv);
 					// cut_multiple_fs_asynchronous
 					runtime.add_proxy(Script::Image::cut_multiple_fs_asynchronous, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs_asynchronous"_sv);
+					// open
+					runtime.add_proxy(Script::Dimension::open, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "open"_sv);
+					// write
+					runtime.add_proxy(Script::Dimension::write, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "write"_sv);
+					// instance
+					runtime.add_proxy(Script::Dimension::instance, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "instance"_sv);
 				}
 				// runtime
 				{
@@ -261,34 +255,34 @@ namespace Sen::Kernel::Interface {
 					// pack_fs
 					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::Marmalade::DZip::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Marmalade"_sv, "DZip"_sv}), "pack_fs"_sv);
 				}
-				// pak
+				// package
 				{
 					// unpack_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::PAK::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "PAK"_sv}), "unpack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Package::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Package"_sv}), "unpack_fs"_sv);
 					// pack_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::PAK::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "PAK"_sv}), "pack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Package::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Package"_sv}), "pack_fs"_sv);
 				}
-				// newton
+				// new-type-object-notation
 				{
 					// decode_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Newton::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Newton"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::NewTypeObjectNotation::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "NewTypeObjectNotation"_sv}), "decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Newton::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Newton"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::NewTypeObjectNotation::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "NewTypeObjectNotation"_sv}), "encode_fs"_sv);
 				}
-				// rton
+				// reflection-object-notation
 				{
 					// decode_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "decode_fs"_sv);
 					// decrypt_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::decrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "decrypt_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::decrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "decrypt_fs"_sv);
 					// decrypt_and_decode_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::decrypt_and_decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "decrypt_and_decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::decrypt_and_decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "decrypt_and_decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "encode_fs"_sv);
 					// encrypt_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::encrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "encrypt_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::encrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "encrypt_fs"_sv);
 					// encode_and_encrypt_fs
-					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::RTON::encode_and_encrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RTON"_sv}), "encode_and_encrypt_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReflectionObjectNotation::encode_and_encrypt_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReflectionObjectNotation"_sv}), "encode_and_encrypt_fs"_sv);
 				}
 				// zlib
 				{
@@ -343,49 +337,50 @@ namespace Sen::Kernel::Interface {
 					// encode fs
 					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::PlayerInfo::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "PlayerInfo"_sv}), "encode_fs"_sv);
 				}
-				// rsb
+				// resource-stream-bundle
 				{
 					// unpack_fs
-					runtime.add_proxy(Script::Support::PopCap::RSB::unpack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv}), "unpack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundle::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"ResourceStreamBundle"_sv}), "unpack_fs"_sv);
 					// pack_fs
-					runtime.add_proxy(Script::Support::PopCap::RSB::pack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv}), "pack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundle::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"ResourceStreamBundle"_sv}), "pack_fs"_sv);
 					// unpack_cipher
-					runtime.add_proxy(Script::Support::PopCap::RSB::unpack_cipher, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv}), "unpack_cipher"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundle::unpack_cipher>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"ResourceStreamBundle"_sv}), "unpack_cipher"_sv);
 					// unpack_resource
-					runtime.add_proxy(Script::Support::PopCap::RSB::unpack_resource, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv}), "unpack_resource"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundle::unpack_resource>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"ResourceStreamBundle"_sv}), "unpack_resource"_sv);
 					// pack_resource
-					runtime.add_proxy(Script::Support::PopCap::RSB::pack_resource, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"RSB"_sv}), "pack_resource"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundle::pack_resource>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv,"ResourceStreamBundle"_sv}), "pack_resource"_sv);
 				}
-				// rsb-patch
+				// resource-stream-bundle-patch
 				{
 					// decode_fs
-					runtime.add_proxy(Script::Support::PopCap::RSBPatch::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSBPatch"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundlePatch::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSBPatch"_sv}), "decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Script::Support::PopCap::RSBPatch::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSBPatch"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamBundlePatch::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSBPatch"_sv}), "encode_fs"_sv);
 				}
-				// rsg
+				// resource-stream-group
 				{
 					// unpack_fs
-					runtime.add_proxy(Script::Support::PopCap::RSG::unpack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv}), "unpack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamGroup::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceStreamGroup"_sv}), "unpack_fs"_sv);
 					// pack_fs
-					runtime.add_proxy(Script::Support::PopCap::RSG::pack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "RSG"_sv}), "pack_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceStreamGroup::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceStreamGroup"_sv}), "pack_fs"_sv);
 				}
-				// pam
+				// animation
 				{
 					// decode_fs
-					runtime.add_proxy(Script::Support::PopCap::Animation::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Animation::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv}), "decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Script::Support::PopCap::Animation::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::Animation::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv}), "encode_fs"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::Animation::ToFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "ToFlash"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, int64_t&, bool>::as_function<Interface::API::Support::PopCap::Animation::ToFlash::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "ToFlash"_sv}), "convert_fs"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::Animation::FromFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "FromFlash"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, bool>::as_function<Interface::API::Support::PopCap::Animation::FromFlash::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "FromFlash"_sv}), "convert_fs"_sv);
 					// to_flash
-					runtime.add_proxy(Script::Support::PopCap::Animation::Instance::to_flash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Instance"_sv}), "to_flash"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, int64_t&, bool>::as_function<Interface::API::Support::PopCap::Animation::Instance::to_flash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Instance"_sv}), "to_flash"_sv);
 					// from_flash
-					runtime.add_proxy(Script::Support::PopCap::Animation::Instance::from_flash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Instance"_sv}), "from_flash"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, bool>::as_function<Interface::API::Support::PopCap::Animation::Instance::from_flash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Instance"_sv}), "from_flash"_sv);
 					// resize_fs
-					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::resize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"}), "resize_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, int64_t&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::resize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"}), "resize_fs"_sv);
+					// TODO : Rework
 					// dump_document
 					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::dump_document, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "dump_document"_sv);
 					// generate_document
@@ -395,111 +390,88 @@ namespace Sen::Kernel::Interface {
 					// generate_sprite
 					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::generate_sprite, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_sprite"_sv);
 				}
-				// reanim
+				// re-animation
 				{
 					// decode_fs
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "encode_fs"_sv);
 					// to_xml
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::to_xml, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "to_xml"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::to_xml>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "to_xml"_sv);
 					// from_xml
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::from_xml, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "from_xml"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::from_xml>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv}), "from_xml"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::ToFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "ToFlash"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::ToFlash::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "ToFlash"_sv}), "convert_fs"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::FromFlash::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "FromFlash"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::FromFlash::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "FromFlash"_sv}), "convert_fs"_sv);
 					// to_flash
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::Instance::to_flash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "Instance"_sv}), "to_flash"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::Instance::to_flash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "Instance"_sv}), "to_flash"_sv);
 					// from_flash
-					runtime.add_proxy(Script::Support::PopCap::ReAnimation::Instance::from_flash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "Instance"_sv}), "from_flash"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ReAnimation::Instance::from_flash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ReAnimation"_sv, "Instance"_sv}), "from_flash"_sv);
 				}
-				// bnk
+				// sound_bank
 				{
 					// decode_fs
-					runtime.add_proxy(Script::Support::WWise::SoundBank::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "decode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::WWise::SoundBank::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "decode_fs"_sv);
 					// encode_fs
-					runtime.add_proxy(Script::Support::WWise::SoundBank::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::WWise::SoundBank::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "encode_fs"_sv);
 					// hash
-					runtime.add_proxy(Script::Support::WWise::SoundBank::hash, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "hash"_sv);
+					runtime.add_proxy(Proxy<uint32_t, std::string&>::as_function<Interface::API::Support::WWise::SoundBank::hash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "WWise"_sv, "SoundBank"_sv}), "hash"_sv);
 				}
-				// resource group
+				// resource-group
 				{
 					// split_fs
-					runtime.add_proxy(Script::Support::PopCap::ResourceGroup::split_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "split_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceGroup::split_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "split_fs"_sv);
 					// merge_fs
-					runtime.add_proxy(Script::Support::PopCap::ResourceGroup::merge_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "merge_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResourceGroup::merge_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "merge_fs"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::ResourceGroup::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&, int64_t&>::as_function<Interface::API::Support::PopCap::ResourceGroup::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResourceGroup"_sv}), "convert_fs"_sv);
 				}
-				// res info
+				// res_info
 				{
 					// split_fs
-					runtime.add_proxy(Script::Support::PopCap::ResInfo::split_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "split_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResInfo::split_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "split_fs"_sv);
 					// merge_fs
-					runtime.add_proxy(Script::Support::PopCap::ResInfo::merge_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "merge_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResInfo::merge_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "merge_fs"_sv);
 					// convert_fs
-					runtime.add_proxy(Script::Support::PopCap::ResInfo::convert_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "convert_fs"_sv);
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResInfo::convert_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "ResInfo"_sv}), "convert_fs"_sv);
 				}
-				// custom
+				// project
 				{
-					// to_resource_custom
-					runtime.add_proxy(Script::Support::PopCap::Custom::Debug::to_resource_custom, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "Debug"_sv}), "to_resource_custom"_sv);
-					// from_resource_custom
-					runtime.add_proxy(Script::Support::PopCap::Custom::Debug::from_resource_custom, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "Debug"_sv}), "from_resource_custom"_sv);
 					// check_scg_composite
-					runtime.add_proxy(Script::Support::PopCap::Custom::StreamCompressedGroup::check_scg_composite, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "StreamCompressedGroup"_sv}), "check_scg_composite"_sv);
-					// unpack_scg
-					runtime.add_proxy(Script::Support::PopCap::Custom::StreamCompressedGroup::decode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "StreamCompressedGroup"_sv}), "decode_fs"_sv);
-					// pack_scg
-					runtime.add_proxy(Script::Support::PopCap::Custom::StreamCompressedGroup::encode_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "StreamCompressedGroup"_sv}), "encode_fs"_sv);
+					runtime.add_proxy(JS::Proxy<bool, std::string&>::as_function<Interface::API::Support::Miscellaneous::Project::StreamCompressedGroup::check_scg_composite>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "StreamCompressedGroup"_sv}), "check_scg_composite"_sv);
+					// decode_fs
+					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::StreamCompressedGroup::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "StreamCompressedGroup"_sv}), "decode_fs"_sv);
+					// encode_fs
+					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::StreamCompressedGroup::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "StreamCompressedGroup"_sv}), "encode_fs"_sv);
 					// unpack_rsb
-					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle::Setting>&>::as_function<Script::Support::PopCap::Custom::ResourceStreamBundle::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "ResourceStreamBundle"_sv}), "unpack_fs"_sv);
+					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::ResourceStreamBundle::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "ResourceStreamBundle"_sv}), "unpack_fs"_sv);
 					// pack_rsb
-					runtime.add_proxy(Script::Support::PopCap::Custom::ResourceStreamBundle::pack_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Custom"_sv, "ResourceStreamBundle"_sv}), "pack_fs"_sv);
-				}
-				// dimension
-				{
-					// instance of dimension
-					runtime.add_proxy(Script::Dimension::instance, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Dimension"_sv}), "instance"_sv);
-					// open the image
-					runtime.add_proxy(Script::Dimension::open, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "open"_sv);
-					// write the image
-					runtime.add_proxy(Script::Dimension::write, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "write"_sv);
+					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::ResourceStreamBundle::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "ResourceStreamBundle"_sv}), "pack_fs"_sv);
 				}
 				// miscellaneous
 				{
+					// TODO : Rework make_copy
 					// make_copy
 					runtime.add_proxy(Script::Miscellaneous::make_copy, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "make_copy"_sv);
 					// cast_ArrayBuffer_to_JS_String
-					runtime.add_proxy(Script::Miscellaneous::cast_ArrayBuffer_to_JS_String, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_ArrayBuffer_to_JS_String"_sv);
+					runtime.add_proxy(Proxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_String>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_ArrayBuffer_to_JS_String"_sv);
 					// cast_ArrayBuffer_to_JS_WideString
-					runtime.add_proxy(Script::Miscellaneous::cast_ArrayBuffer_to_JS_WideString, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_ArrayBuffer_to_JS_WideString"_sv);
+					runtime.add_proxy(Proxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_WideString>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_ArrayBuffer_to_JS_WideString"_sv);
 					// cast_movable_String_to_ArrayBuffer
-					runtime.add_proxy(Script::Miscellaneous::cast_movable_String_to_ArrayBuffer, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_movable_String_to_ArrayBuffer"_sv);
+					runtime.add_proxy(Proxy<std::shared_ptr<JS::ArrayBuffer>, std::string&>::as_function<Interface::API::Miscellaneous::cast_movable_String_to_ArrayBuffer>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_movable_String_to_ArrayBuffer"_sv);
 					// copyArrayBuffer
-					runtime.add_proxy(Script::Miscellaneous::copyArrayBuffer, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "copyArrayBuffer"_sv);
+					runtime.add_proxy(Proxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::copyArrayBuffer>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "copyArrayBuffer"_sv);
 					// compareArrayBuffer
-					runtime.add_proxy(Script::Miscellaneous::compareArrayBuffer, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "compareArrayBuffer"_sv);
+					runtime.add_proxy(Proxy<bool, std::shared_ptr<JS::ArrayBuffer>&, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::compareArrayBuffer>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "compareArrayBuffer"_sv);
 					// to_apng
+					// TODO : Rework to_apng
 					runtime.add_proxy(Script::Miscellaneous::to_apng, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "to_apng"_sv);
 				}
 				// DataStreamView
 				runtime.register_object(Script::Class::DataStreamView::register_class<false>);
-				// DataStreamViewUseBigEndian
-				runtime.register_object(Script::Class::DataStreamView::register_class<true>);
 				// Boolean
 				runtime.register_object(Script::Class::Boolean::register_class);
-				// // Size
-				runtime.register_object(Script::Class::Size::register_class);
-				// // String
-				runtime.register_object(Script::Class::String::register_class);
-				// Character
-				runtime.register_object(Script::Class::Character::register_class<char>);
-				// UCharacter
-				runtime.register_object(Script::Class::Character::register_class<unsigned char>);
-				// WideCharacter
-				runtime.register_object(Script::Class::Character::register_class<wchar_t>);
 				// DimensionView
 				runtime.register_object(Script::Class::DimensionView::register_class);
 				// Rectangle
@@ -510,36 +482,12 @@ namespace Sen::Kernel::Interface {
 				runtime.register_object(Script::Class::Canvas::register_class);
 				// BinaryView
 				runtime.register_object(Script::Class::BinaryView::register_class);
-				// Integer8
-				runtime.register_object(Script::Class::Number::register_class<int8_t>);
-				// Integer16
-				runtime.register_object(Script::Class::Number::register_class<int16_t>);
-				// Integer32
-				runtime.register_object(Script::Class::Number::register_class<int32_t>);
-				// Integer64
-				runtime.register_object(Script::Class::Number::register_class<int64_t>);
-				// UInteger8
-				runtime.register_object(Script::Class::Number::register_class<uint8_t>);
-				// UInteger16
-				runtime.register_object(Script::Class::Number::register_class<uint16_t>);
 				// UInteger32
 				runtime.register_object(Script::Class::Number::register_class<uint32_t>);
-				// UInteger64
-				runtime.register_object(Script::Class::Number::register_class<uint64_t>);
-				// Float
-				runtime.register_object(Script::Class::Number::register_class<float>);
-				// Double
-				runtime.register_object(Script::Class::Number::register_class<double>);
 				// JsonWriter
 				runtime.register_object(Script::Class::JsonWriter::register_class);
 				// APNGMakerSetting
 				runtime.register_object(Script::Class::APNGMakerSetting::register_class);
-				// FileInputStream
-				runtime.register_object(Script::Class::FileInputStream::register_class);
-				// FileOutputStream
-				runtime.register_object(Script::Class::FileOutputStream::register_class);
-				// FileStream
-				runtime.register_object(Script::Class::FileStream::register_class);
 				// Image
 				runtime.register_object(Script::Class::Image::register_class);
 				// Sprite

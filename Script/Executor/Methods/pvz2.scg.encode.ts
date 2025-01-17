@@ -106,7 +106,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
 					animation_split_label: argument.animation_split_label! ?? false,
 				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.encode_fs(
+				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
 					argument.source,
 					argument.destination!,
 					setting,

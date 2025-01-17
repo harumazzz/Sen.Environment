@@ -48,7 +48,10 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.Encode {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.RTON.encode_fs(argument.source, argument.destination!);
+				Kernel.Support.PopCap.ReflectionObjectNotation.encode_fs(
+					argument.source,
+					argument.destination!,
+				);
 				clock.stop_safe();
 			},
 			batch_forward(argument: BatchArgument): void {

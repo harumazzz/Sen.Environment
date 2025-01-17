@@ -141,3 +141,72 @@ namespace Sen.Script {
 }
 Sen.Script.main();
 ```
+
+-   In order to receive the user defined in JS, you need to implement the `to_value` method.
+
+```cpp
+template <>
+static auto to_value<std::shared_ptr<Point>>(
+	JSContext* context,
+	const std::shared_ptr<Point>& value
+) -> JSValue {
+	// Create a new instance of JS Value
+	auto destination = Value::as_new_instance(context, JS_UNITIALIZED);
+	// Set the destination is an object first
+	destination.set_object();
+	// Defint it's custom property
+	destination.set_property("x", value->x);
+	// Defint it's custom property
+	destination.set_property("y", value->y);
+	// Release the value, so that the engine is holding the value instead of inside this global scope
+	return destination.release();
+}
+```
+
+```cpp
+// This is an user defined type, please use std::shared_ptr to wrap it
+inline static auto return_point(
+
+) -> std::shared_ptr<Point>
+{
+	// for custom type that has pointer, I suggest you make a custom deleter
+	return std::make_shared<Point>(1, 2);
+}
+```
+
+-   In `kernel/interface/callback.hpp`:
+
+```cpp
+// the proxy need to take return type and the rest are the required arguments type
+runtime.add_proxy(Proxy<std::shared_ptr<Point>>::as_function<Interface::API::return_point>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "return_point"_sv);
+```
+
+-   You need to add a custom define, example:
+
+```ts
+namespace Sen.Kernel {
+	export interface Point {
+		x: bigint;
+		y: bigint;
+	}
+
+	export function return_point(): Point;
+}
+```
+
+-   After compile, you can now call in TS:
+
+```ts
+namespace Sen.Script {
+	export function main() {
+		// Use the method
+		let point: Kernel.Point = Kernel.return_point();
+		// Accessing object
+		let x: bigint = point.x;
+		let y: bigint = point.y;
+		// Use it
+		// ... Other codes
+	}
+}
+Sen.Script.main();
+```

@@ -2,7 +2,7 @@
 
 #include "kernel/utility/utility.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
+namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
 {
 
     struct Encode : Common
@@ -13,7 +13,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             PacketOriginalInformation &packet_original_information,
             std::string_view source) -> void
         {
-            DebuggerInformation definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+            DebuggerInformation definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             packet_original_information.version = definition.version;
             packet_original_information.composite = definition.composite;
             packet_original_information.texture_format_category = definition.texture_format_category;
@@ -22,7 +22,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 auto &packet = packet_original_information.subgroup[subgroup_id];
                 packet.is_image = subgroup_value.is_image;
                 packet.packet_data = FileSystem::read_binary<uint8_t>(fmt::format("{}/{}", source, subgroup_value.packet_path));
-                packet.info = *FileSystem::read_json(fmt::format("{}/{}", source, subgroup_value.info_path));
+                packet.info = FileSystem::read_json(fmt::format("{}/{}", source, subgroup_value.info_path));
             }
             return;
         }
@@ -317,7 +317,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         {
                             auto animation_source = fmt::format("{}/{}", resource_source, resource_info.path);
                             assert_conditional(compare_string(Kernel::Path::getExtension(resource_info.path), ""_sv) && std::filesystem::is_directory(animation_source), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_folder_and_no_file_extension")), resource_info.path), "exchange_texture_advanced");
-                            Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo extra = *FileSystem::read_json(fmt::format("{}/data.json", animation_source));
+                            Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo extra = FileSystem::read_json(fmt::format("{}/data.json", animation_source));
                             Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(highest_resolution, extra.resolution, Path::getFileName(resource_info.path), "pvz2.scg.resolution_mismatch");
                             exchange_image_sprite(texture_sprite_view_stored, extra, resource_source, resource_info.path);
                             auto resource_data = List<uint8_t>{};
@@ -407,7 +407,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                         Sen::Kernel::Support::PopCap::ResourceStreamGroup::Common::packet_compression_from_data(packet_value.category.compression, packet_info.packet_structure.compression);
                         packet_info.is_image = true;
                         auto image_information = SubgroupCompressedInfo{};
-                        exchange_subgroup_compression_info(*FileSystem::read_json(fmt::format("{}/{}", resource_source, resource_info.path)), image_information);
+                        exchange_subgroup_compression_info(FileSystem::read_json(fmt::format("{}/{}", resource_source, resource_info.path)), image_information);
                         auto image_index = k_begin_index;
                         auto texture_sprite_view_stored = std::map<string, ImageSpriteInfo>{};
                         for (auto &[image_id, image_info] : image_information.texture.packet)
@@ -557,7 +557,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     auto soundbank_source = fmt::format("{}/{}", resource_source, data_information.path);
                     assert_conditional(compare_string(extension, ""_sv) && std::filesystem::is_directory(soundbank_source), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_folder_and_no_file_extension")), data_information.path), "encode_popcap_file");
                     auto stream = DataStreamView{};
-                    auto soundbank_definition = *FileSystem::read_json(fmt::format("{}/data.json", soundbank_source));
+                    auto soundbank_definition = FileSystem::read_json(fmt::format("{}/data.json", soundbank_source));
                     Sen::Kernel::Support::WWise::SoundBank::Encode::process_whole(stream, soundbank_definition, soundbank_source);
                     exchange_path(data_information.path, ""_sv, ".bnk"_sv);
                     resource_data = std::move(stream.toBytes());
@@ -566,7 +566,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                 case DataType::PopAnim:
                 {
                     assert_conditional(compare_string(extension, ".json"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), data_information.path), "encode_popcap_file");
-                    auto animation = *FileSystem::read_json(fmt::format("{}/{}", resource_source, data_information.path));
+                    auto animation = FileSystem::read_json(fmt::format("{}/{}", resource_source, data_information.path));
                     auto stream = DataStreamView{};
                     Sen::Kernel::Support::PopCap::Animation::Encode::process_whole(stream, animation);
                     exchange_path(data_information.path, ".json"_sv, ""_sv);
@@ -676,7 +676,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         {
             auto packet_original_information = PacketOriginalInformation{};
             exchange_packet(packet_original_information, definition, source, setting);
-            Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(stream, packet_original_information);
+            Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_stream_resource_group(stream, packet_original_information);
             return;
         }
 
@@ -689,7 +689,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
             auto definition = InformationStructure{};
             if (setting.decode_method != DecodeMethod::Debug)
             {
-                definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+                definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             }
             process_whole(stream, definition, source, setting);
             stream.out_file(destination);

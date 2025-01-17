@@ -610,7 +610,7 @@ namespace Sen::Kernel::Support::PopCap::Particles
 			ParticlesPlatform platform) -> void
 		{
 			auto encode = Encode{};
-			auto definition = *FileSystem::read_json(source);
+			auto definition = FileSystem::read_json(source);
 			encode.process(definition, platform);
 			encode.stream.out_file(destination);
 			return;

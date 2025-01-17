@@ -126,7 +126,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             std::string_view destination) -> void
         {
             auto stream = DataStreamView{};
-            auto definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+            auto definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             auto packet_source = get_string(source);
             process_whole(stream, definition, packet_source);
             stream.out_file(destination);

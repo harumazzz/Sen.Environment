@@ -84,7 +84,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			std::string_view source,
 			int const &resolution) -> void
 		{
-			ExtraInfo definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+			ExtraInfo definition = FileSystem::read_json(fmt::format("{}/data.json", source));
 			auto image_list = FileSystem::read_directory_only_file(fmt::format("{}/library/image", source));
 			auto ratio = calculate_ratio<double>(resolution);
 			auto old_ratio = calculate_ratio<double>(definition.resolution);

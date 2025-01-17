@@ -70,7 +70,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RTON.Encrypt {
 					Kernel.Language.get('popcap.rton.decrypt.iv'),
 				);
 				clock.start_safe();
-				Kernel.Support.PopCap.RTON.encrypt_fs(
+				Kernel.Support.PopCap.ReflectionObjectNotation.encrypt_fs(
 					argument.source,
 					argument.destination!,
 					argument.key!,

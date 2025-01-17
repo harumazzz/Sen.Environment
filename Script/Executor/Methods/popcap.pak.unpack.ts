@@ -48,7 +48,7 @@ namespace Sen.Script.Executor.Methods.PopCap.PAK.Unpack {
 				check_overwrite(argument as { destination: string }, 'directory');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.PAK.unpack_fs(argument.source, argument.destination!);
+				Kernel.Support.PopCap.Package.unpack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
 			batch_forward(argument: BatchArgument): void {

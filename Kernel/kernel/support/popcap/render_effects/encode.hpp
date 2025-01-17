@@ -242,7 +242,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			{
 				auto stream = DataStreamView{};
 				auto render_effects = FileSystem::read_json(source);
-				Encode::process(stream, render_effects.operator*());
+				Encode::process(stream, render_effects);
 				stream.out_file(destination);
 				return;
 			}

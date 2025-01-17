@@ -2,7 +2,7 @@
 
 project (
   Kernel
-  VERSION 7
+  VERSION 10
   HOMEPAGE_URL https://github.com/Haruma-VN/Sen.Environment
   LANGUAGES CXX
 )

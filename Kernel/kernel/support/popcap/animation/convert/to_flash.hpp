@@ -738,7 +738,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			int resolution) -> void
 		{
 			static_assert(split_label == true || split_label == false, "split_label must be true or false");
-			auto definition = *FileSystem::read_json(source);
+			auto definition = FileSystem::read_json(source);
 			auto extra = ExtraInfo{.resolution = resolution};
 			process_whole(definition, extra, destination);
 			write_json(fmt::format("{}/data.json", destination), extra);

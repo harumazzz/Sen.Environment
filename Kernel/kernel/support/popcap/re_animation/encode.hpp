@@ -305,7 +305,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         ) -> void
         {
             auto encode = Encode{};
-            auto reanim_info = *FileSystem::read_json(source);
+            auto reanim_info = FileSystem::read_json(source);
             encode.process(reanim_info, platform);
             encode.stream.out_file(destination);
             return;

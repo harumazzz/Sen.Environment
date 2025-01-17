@@ -64,7 +64,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 			// TODO
 			Console.argument(e);
 			const source_directory = `${international_bundle}/packet/${e}.scg.package`;
-			Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.decode_fs(
+			Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
 				`${chinese_bundle}/packet/${e}.scg`,
 				source_directory,
 				scg_setting,
@@ -80,7 +80,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 				(value as any).category.compression = 3n;
 			}
 			Kernel.JSON.serialize_fs(`${source_directory}/data.json`, scg_data, 1, false);
-			Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.encode_fs(
+			Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
 				source_directory,
 				`${international_bundle}/packet/${e}.scg`,
 				scg_setting,

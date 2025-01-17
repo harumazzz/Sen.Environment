@@ -171,7 +171,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
             std::string_view destination) -> void
         {
             auto stream = DataStreamView{};
-            auto definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+            auto definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             process_whole(stream, definition, source);
             stream.out_file(destination);
             return;

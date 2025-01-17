@@ -3,9 +3,9 @@
 #include "kernel/utility/utility.hpp"
 #include "kernel/support/texture/invoke.hpp"
 #include "kernel/support/miscellaneous/shared.hpp"
-#include "kernel/support/miscellaneous/custom/stream_compressed_group/definition.hpp"
+#include "kernel/support/miscellaneous/project/stream_compressed_group/definition.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
+namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
 {
     
 
@@ -222,7 +222,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         template <auto use_string_for_style>
         inline static auto exchange_custom_resource_info(
             nlohmann::ordered_json &data,
-            CustomResourceInformation &value) -> void
+            ProjectResourceInformation &value) -> void
         {
             static_assert(sizeof(use_string_for_style) == sizeof(bool));
             static_assert(use_string_for_style == true or use_string_for_style == false);
@@ -448,7 +448,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
         template <auto use_string_for_style>
         inline static auto exchange_custom_resource_info(
-            CustomResourceInformation const &data,
+            ProjectResourceInformation const &data,
             nlohmann::ordered_json &value) -> void
         {
             static_assert(sizeof(use_string_for_style) == sizeof(bool));
@@ -526,7 +526,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
                     }
                 }
             }
-            Sen::Kernel::Support::PopCap::ResourceGroup::RewriteSlot::rewrite_slot_count(value);
+            Sen::Kernel::Support::PopCap::ResourceGroup::Common::rewrite_slot_count(value);
             return;
         }
 

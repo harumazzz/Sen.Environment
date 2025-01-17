@@ -50,7 +50,10 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.PackResource {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.RSB.pack_resource(argument.source, argument.destination!);
+				Kernel.Support.PopCap.ResourceStreamBundle.pack_resource(
+					argument.source,
+					argument.destination!,
+				);
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,

@@ -37,11 +37,17 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			animation_split_label: false,
 		} as Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting;
 		if (setting.rebuild_rsb_by_loose_constraints_first) {
-			Kernel.Support.PopCap.RSB.unpack_cipher(source, `${source}.temp_bundle`);
-			Kernel.Support.PopCap.RSB.pack_resource(`${source}.temp_bundle`, `${source}.temp.rsb`);
+			Kernel.Support.PopCap.ResourceStreamBundle.unpack_cipher(
+				source,
+				`${source}.temp_bundle`,
+			);
+			Kernel.Support.PopCap.ResourceStreamBundle.pack_resource(
+				`${source}.temp_bundle`,
+				`${source}.temp.rsb`,
+			);
 			source = `${source}.temp.rsb`;
 		}
-		Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.unpack_fs(
+		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.unpack_fs(
 			source,
 			`${source}.bundle`,
 			rsb_setting,
@@ -53,13 +59,13 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			Console.send(`${Kernel.Language.get('unpack')}: ${Kernel.Path.basename(element)}`);
 			try {
 				const composite =
-					Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.check_scg_composite(
+					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.check_scg_composite(
 						element,
 					);
 				const scg_dest = `${source}.bundle/packet/${Kernel.Path.base_without_extension(
 					element,
 				)}.package`;
-				Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.decode_fs(
+				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
 					element,
 					scg_dest,
 					scg_setting,
@@ -89,7 +95,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		)) {
 			try {
 				Console.send(`${Kernel.Language.get('pack')}: ${Kernel.Path.basename(element)}`);
-				Kernel.Support.Miscellaneous.Custom.StreamCompressedGroup.encode_fs(
+				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
 					element,
 					`${source}.bundle/packet/${Kernel.Path.base_without_extension(element)}.scg`,
 					scg_setting,
@@ -113,7 +119,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			Kernel.Path.extname(source),
 			`_rebuild${Kernel.Path.extname(source)}`,
 		);
-		Kernel.Support.Miscellaneous.Custom.ResourceStreamBundle.pack_fs(
+		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
 			`${source}.bundle`,
 			destination,
 			rsb_setting,

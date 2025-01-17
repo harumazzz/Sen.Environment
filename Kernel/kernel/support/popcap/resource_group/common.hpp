@@ -1,166 +1,68 @@
 #pragma once
+
 #include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 
-	// using nlohmann json
-
 	using namespace nlohmann;
 
-	// Resource Group class
+	struct Common {
 
-	class RewriteSlot {
-
-		public:
-
-			inline static auto rewrite_slot_count(
-				nlohmann::ordered_json &resource
-			) -> void
-			{
-				auto slot_group = std::unordered_map<std::string, size_t>();
-				for(auto &e : resource["groups"]){
-					if(e.find("resources") == e.end()){
-						continue;
+		inline static auto rewrite_slot_count(
+			nlohmann::ordered_json& resource
+		) -> void
+		{
+			auto slot_group = tsl::ordered_map<std::string, size_t>{};
+			for (auto& e : resource["groups"]) {
+				if (e.find("resources") == e.end()) {
+					continue;
+				}
+				for (auto& c : e["resources"]) {
+					if (slot_group.find(c["id"]) == slot_group.end()) {
+						c["slot"] = slot_group.size();
+						slot_group.insert({ c["id"], slot_group.size() });
 					}
-					for(auto &c : e["resources"]){
-						if(slot_group.find(c["id"]) == slot_group.end()){
-							c["slot"] = slot_group.size();
-							slot_group.insert(std::pair<std::string, size_t>(c["id"], slot_group.size()));
-						}
-						else{
-							c["slot"] = slot_group[c["id"]];
-						}
+					else {
+						c["slot"] = slot_group[c["id"]];
 					}
 				}
-				resource["slot_count"] = slot_group.size();
-				return;
 			}
+			resource["slot_count"] = slot_group.size();
+			return;
+		}
 
-			explicit RewriteSlot(
+		constexpr explicit Common(
 
-			) noexcept = default;
+		) noexcept = default;
 
-			~RewriteSlot(
+		constexpr ~Common(
 
-			) = default;
+		) = default;
+
+		inline static auto constexpr DefaultCoordinateOffset = 0;
+
+		inline static auto constexpr DefaultLayoutOffset = 1;
+
+		inline static auto const WindowStyle = std::string{"\\"};
+
+		inline static auto const PosixStyle = std::string{"/"};
+
+		inline static auto const Array = std::string{"array"};
+
+		inline static auto const String = std::string{"string"};
+
+		inline static auto const emptyString = std::string{""};
+
+		inline static auto const emptyType = std::string{"0"};
 	};
 
-	class BasicConversion : public RewriteSlot {
+	enum class PathStyle : uint8_t
+	{
 
-		public:
+		ArrayStyle,
 
-			explicit BasicConversion(
+		WindowStyle,
 
-			) = default;
-
-			~BasicConversion(
-
-			) = default;
-
-			/**
-			 * inFile: the input file
-			 * output: the output directory
-			*/
-
-			inline static auto split(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				auto resource = *FileSystem::read_json(source);
-				assert_conditional(!resource["groups"].is_null(), fmt::format("{}", Language::get("popcap.resource_group.split.groups_cannot_be_null")), "split");
-				FileSystem::create_directory(fmt::format("{}/{}", destination, "subgroup"));
-				auto content = nlohmann::ordered_json{};
-				for(auto & c : resource["groups"])
-				{
-					if (c.find("resources") != c.end())
-					{
-						for(auto & e : c["resources"])
-						{
-							e.erase("slot");
-						}
-					}
-					if((c.find("resources") != c.end()) && (c.find("parent") != c.end()))
-					{
-						FileSystem::write_json(fmt::format("{}/subgroup/{}.json", destination, c["id"].get<std::string>()), c);
-					}
-					if((c.find("subgroups") != c.end()) || (c.find("resources") != c.end() && c.find("parent") == c.end())){
-						if(c.find("subgroups") != c.end())
-						{
-							content[c["id"].get<std::string>()]["is_composite"] = true;
-							for(auto &e : c["subgroups"]){
-								content[c["id"].get<std::string>()]["subgroups"][e["id"].get<std::string>()] = ordered_json{{"type", e["res"]}};
-								if (e.find("loc") != e.end()) {
-									content[c["id"].get<std::string>()]["subgroups"][e["id"].get<std::string>()]["loc"] = e["loc"];
-								}	
-							}
-						}
-						else{
-							content[c["id"].get<std::string>()] = ordered_json{
-								{"is_composite",  false},
-								{"subgroups", ordered_json{
-									{c["id"], ordered_json{
-										{"type", nullptr}
-									}}
-								}}
-							};
-							FileSystem::write_json(fmt::format("{}/subgroup/{}.json", destination, c["id"].get<std::string>()), c);
-						}
-					}
-				}
-				FileSystem::write_json(fmt::format("{}/data.json", destination), content);
-				return;
-			}
-
-			/**
-			 * directoryPath: the path of directory
-			 * file output: file output path
-			*/
-
-			inline static auto merge(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				auto content = *FileSystem::read_json(Path::normalize(fmt::format("{}/{}", source, "data.json")));
-				auto resources_json = nlohmann::ordered_json{
-					{"version", 1},
-					{"content_version", 1},
-					{"slot_count", 0}
-				};
-				auto groups = nlohmann::ordered_json::array_t{};
-				groups.reserve(content.size());
-				for(auto & [parent, parent_value] : content.items()){
-					if(content[parent]["is_composite"]){
-						auto composite_object = nlohmann::ordered_json{
-							{"id", parent},
-							{"type", "composite"},
-							{"subgroups", nlohmann::ordered_json::array()}
-						};
-						for(auto & [subgroup, subgroup_value] : content[parent]["subgroups"].items()){
-							auto resource_for_subgroup = nlohmann::ordered_json{{"id", subgroup}};
-							if(!content[parent]["subgroups"][subgroup]["type"].is_null()){
-								resource_for_subgroup["res"] = content[parent]["subgroups"][subgroup]["type"];
-							}
-							if (content[parent]["subgroups"][subgroup].find("loc") != content[parent]["subgroups"][subgroup].end()) {
-								resource_for_subgroup["loc"] = content[parent]["subgroups"][subgroup]["loc"];
-							}
-							composite_object["subgroups"].emplace_back(resource_for_subgroup);
-						}
-						groups.emplace_back(composite_object);
-					}
-					for(auto & [subgroup, subgroup_value] : content[parent]["subgroups"].items()){
-						auto resource_json_path = Path::normalize(fmt::format("{}/subgroup/{}.json", source, subgroup));
-						auto resource_content = *FileSystem::read_json(resource_json_path);
-						assert_conditional(resource_content.find("resources") != resource_content.end(), String::format(fmt::format("{}", Language::get("popcap.resource_group.property_cannot_be_null")), std::string{"groups"}), "merge");
-						groups.emplace_back(resource_content);
-					}
-				}
-				resources_json["groups"] = groups;
-				BasicConversion::rewrite_slot_count(resources_json);
-				FileSystem::write_json(destination, resources_json);
-				return;
-			}
 	};
 
 }

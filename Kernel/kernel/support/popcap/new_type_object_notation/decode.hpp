@@ -78,7 +78,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			auto group_size = stream.readUint32();
 			auto groups = nlohmann::ordered_json::array_t{};
 			groups.reserve(group_size);
-			for (auto i : Range(group_size)) {
+			for (auto i : Range{group_size}) {
 				auto group = nlohmann::ordered_json{};
 				auto group_type = stream.readUint8();
 				auto group_s = std::string{};
@@ -98,8 +98,10 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 					group["parent"] = stream.readString(static_cast<size_t>(stream.readUint32()));
 				}
 				if (group_type == 0x01) {
+					assert_conditional(resources_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.resource_must_be_null_with_composite"), group["id"].get<std::string>()), "process");
 					process_composite_group(stream, group, subgroups_count);
 				} else if (group_type == 0x02) {
+					assert_conditional(subgroups_count == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.subgroup_must_be_null_with_simple"), group["id"].get<std::string>()), "process");
 					process_simple_group(stream, group, resources_count);
 				}
 				groups.emplace_back(std::move(group));
@@ -112,10 +114,9 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			nlohmann::ordered_json& group, 
 			uint32_t subgroups_count
 		) -> void {
-			assert_conditional(stream.readInt32() == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.resource_must_be_null_with_composite"), group["id"].get<std::string>()), "process_composite_group");
 			auto subgroups = nlohmann::ordered_json::array_t{};
 			subgroups.reserve(subgroups_count);
-			for (auto index : Range(subgroups_count)) {
+			for (auto index : Range{subgroups_count}) {
 				auto subgroup = nlohmann::ordered_json{};
 				auto sub_res = stream.readUint32();
 				if (sub_res != 0x00) {
@@ -132,10 +133,9 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			nlohmann::ordered_json& group, 
 			int32_t resources_count
 		) -> void {
-			assert_conditional(stream.readUint32() == 0x00, fmt::format("{}, id: {}", Kernel::Language::get("popcap.newton.decode.subgroup_must_be_null_with_simple"), group["id"].get<std::string>()), "process_simple_group");
 			auto resources = nlohmann::ordered_json::array_t{};
 			resources.reserve(resources_count);
-			for (auto index : Range<int>(resources_count)) {
+			for (auto index : Range{resources_count}) {
 				auto resource = nlohmann::ordered_json{};
 				auto result = std::string{};
 				read_resource_type(stream.readUint8(), group["id"].get<std::string>(), result);
@@ -153,26 +153,44 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			resource["slot"] = stream.readUint32();
 			auto width = stream.readInt32();
 			auto height = stream.readInt32();
+			auto x = stream.readInt32();
+			auto y = stream.readInt32();
 			auto ax = stream.readInt32();
 			auto ay = stream.readInt32();
 			auto aw = stream.readInt32();
 			auto ah = stream.readInt32();
+			auto cols = stream.readInt32();
+			auto rows = stream.readInt32();
 			auto atlas = stream.readBoolean();
 			if (atlas) {
 				resource["width"] = width;
 				resource["height"] = height;
 				resource["atlas"] = true;
-				resource["runtime"] = true;
 			}
-			if (aw != 0x00 && ah != 0x00) {
+			if (aw != 0x00 and ah != 0x00) {
 				resource["ax"] = ax;
 				resource["ay"] = ay;
 				resource["aw"] = aw;
 				resource["ah"] = ah;
 			}
+			if(x != 0x00 and x != 0x7FFFFFFF){
+				resource["x"] = x;
+			}
+			if(y != 0x00 and y != 0x7FFFFFFF){
+				resource["y"] = y;
+			}
+			if(cols != 0x01){
+				resource["cols"] = cols;
+			}
+			if(rows != 0x01){
+				resource["rows"] = rows;
+			}
+			stream.readUint8();
+			stream.readUint8();
+			auto has_parent = stream.readBoolean();
 			resource["id"] = stream.readString(static_cast<size_t>(stream.readUint32()));
 			resource["path"] = stream.readString(static_cast<size_t>(stream.readUint32()));
-			if (stream.readBoolean()) {
+			if (has_parent) {
 				resource["parent"] = stream.readString(static_cast<size_t>(stream.readUint32()));
 			}
 		}

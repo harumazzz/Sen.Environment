@@ -48,7 +48,10 @@ namespace Sen.Script.Executor.Methods.PopCap.Newton.Encode {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.Newton.encode_fs(argument.source, argument.destination!);
+				Kernel.Support.PopCap.NewTypeObjectNotation.encode_fs(
+					argument.source,
+					argument.destination!,
+				);
 				clock.stop_safe();
 			},
 			is_enabled: true,

@@ -2,23 +2,23 @@
 
 #include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/definition.hpp"
-#include "kernel/support/miscellaneous/custom/stream_compressed_group/common.hpp"
+#include "kernel/support/miscellaneous/project/stream_compressed_group/common.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
+namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
 {
     
 
     using namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle;
 
-    using PacketOriginalInformation = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::PacketOriginalInformation;
+    using PacketOriginalInformation = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::PacketOriginalInformation;
 
-    using CustomResourceInformation = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation;
+    using ProjectResourceInformation = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::ProjectResourceInformation;
 
     struct Unpack : Common
     {
     private:
         inline static auto exchange_manifest_group(
-            CustomResourceInformation &resource_info,
+            ProjectResourceInformation &resource_info,
             DataSectionViewStored &packet_data_section_view_stored,
             ManifestGroupInfo &manifest_info,
             std::string_view destination) -> void
@@ -34,11 +34,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                         auto res_temp = data;
                         if constexpr (newtype)
                         {
-                            Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(res_temp, resource_info);
+                            Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(res_temp, resource_info);
                         }
                         else
                         {
-                            Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(res_temp, resource_info);
+                            Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(res_temp, resource_info);
                         }
                         auto group_size_left = k_none_size;
                         for (auto &group : res_temp["groups"])
@@ -86,7 +86,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         inline static auto exchange_packages(
             DataSectionViewStored &packet_data_section_view_stored,
             PackagesInfo &packages_info,
-            CustomResourceInformation &resource_info,
+            ProjectResourceInformation &resource_info,
             std::string_view destination) -> void
         {
             auto check_rton_is_encrypted = [](List<uint8_t> &data) -> bool
@@ -134,7 +134,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             std::string const &destination) -> void
         {
             auto stream = DataStreamView{};
-            Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(stream, packet_original_information);
+            Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_stream_resource_group(stream, packet_original_information);
             stream.out_file(destination);
             return;
         }
@@ -170,7 +170,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         inline static auto exchange_packet(
             InformationStructure &definition,
             BundleStructure &bundle,
-            CustomResourceInformation &resource_info,
+            ProjectResourceInformation &resource_info,
             DataSectionViewStored &packet_data_section_view_stored,
             std::string_view destination,
             Setting const &setting) -> void
@@ -197,7 +197,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                     if (!packet_data_section_view_stored.contains(toupper_back(subgroup_id)) || !contain)
                     {
                         auto removed_data = nlohmann::ordered_json{};
-                        Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_subgroup_compression_info(subgroup_value, removed_data);
+                        Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_subgroup_compression_info(subgroup_value, removed_data);
                         write_json(fmt::format("{}/removed_data/{}.json", destination, subgroup_id), removed_data);
                         continue;
                     }
@@ -263,7 +263,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             assert_conditional(bundle.version == 4_ui, fmt::format("{}", Language::get("popcap.rsb.custom.version_is_not_support")), "exchange_bundle");
             definition.version = bundle.version;
             definition.texture_information_version = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(bundle.texture_information_section_size);
-            auto resource_info = CustomResourceInformation{};
+            auto resource_info = ProjectResourceInformation{};
             exchange_manifest_group(resource_info, packet_data_section_view_stored, definition.manifest_info, destination);
             if (setting.unpack_packages)
             {

@@ -87,34 +87,25 @@ namespace Sen::Kernel::FileSystem
 		return content;
 	}
 
-	// Provide file path to read json
-	// return: if the json is valid, the json data will be parsed as object
-
 	inline static auto read_json(
 		std::string_view source
-	) -> std::shared_ptr<nlohmann::ordered_json> const 
+	) -> nlohmann::ordered_json
 	{
 		#if WINDOWS
 		auto file = std::ifstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data());
+			String::to_windows_style(source.data()))).data(), std::ios::binary);
 		#else
-		auto file = std::ifstream(source.data());
+		auto file = std::ifstream(source.data(), std::ios::binary);
 		#endif
-        if (!file.is_open()) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_file");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_file");
-			#endif
-        }
-        auto buffer = std::stringstream{};
+		#if WINDOWS
+		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), "read_json");
+		#else
+		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), "read_json");
+		#endif
+		auto buffer = std::stringstream{};
         buffer << file.rdbuf();
-		return std::make_shared<nlohmann::ordered_json>(nlohmann::ordered_json::parse(buffer.str()));
+		return nlohmann::ordered_json::parse(buffer.str());
 	}
-
-	// Provide file path to write
-	// Provide json content to serialize & write
-	// return: writed json content
 
 	inline static auto write_json(
 		std::string_view filepath,

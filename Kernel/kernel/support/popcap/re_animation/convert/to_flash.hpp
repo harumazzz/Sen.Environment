@@ -223,7 +223,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation::Convert
 			std::string_view destination) -> void
 		{
 			auto to_flash = ToFlash{};
-			auto reanim = *FileSystem::read_json(source);
+			auto reanim = FileSystem::read_json(source);
 			to_flash.process(reanim, destination);
 			return;
 		}

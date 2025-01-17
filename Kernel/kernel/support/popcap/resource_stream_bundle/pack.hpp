@@ -387,10 +387,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             std::string_view destination) -> void
         {
             auto stream = DataStreamView{};
-            BundleStructure definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+            BundleStructure definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             auto manifest = ManifestStructure{};
             if (definition.version <= 3_ui) {
-                manifest = *FileSystem::read_json(fmt::format("{}/resource.json", source));
+                manifest = FileSystem::read_json(fmt::format("{}/resource.json", source));
             }
             auto source_path = get_string(source);
             process_whole(stream, definition, manifest, source_path);

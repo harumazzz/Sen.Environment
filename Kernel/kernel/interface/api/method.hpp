@@ -128,7 +128,7 @@ namespace Sen::Kernel::Interface::API {
 				assert_conditional(argc == 1, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), 1, Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
 				auto source = JavaScript::Converter::get_string(context, argv[0]);
 				auto json = Kernel::FileSystem::read_json(source);
-				auto object = JavaScript::to(context, json.operator*());
+				auto object = JavaScript::to(context, json);
 				return object;
 			});
 		}
@@ -641,9 +641,9 @@ namespace Sen::Kernel::Interface::API {
 
 		namespace PopCap {
 
-			#pragma region pak
+			#pragma region package
 			
-			namespace PAK {
+			namespace Package {
 
 				inline static auto unpack_fs(
 					std::string& source,
@@ -665,9 +665,9 @@ namespace Sen::Kernel::Interface::API {
 
 			#pragma endregion
 
-			#pragma region newton
+			#pragma region new-type-object-notation
 
-			namespace Newton {
+			namespace NewTypeObjectNotation {
 
 				inline static auto decode_fs(
 					std::string& source,
@@ -689,9 +689,9 @@ namespace Sen::Kernel::Interface::API {
 
 			#pragma endregion
 
-			#pragma region rton
+			#pragma region reflection-object-notation
 
-			namespace RTON {
+			namespace ReflectionObjectNotation {
 
 				inline static auto decode_fs(
 					std::string& source,
@@ -984,9 +984,604 @@ namespace Sen::Kernel::Interface::API {
 			}
 
 			#pragma endregion
+
+			#pragma region resource-stream-bundle
+
+			namespace ResourceStreamBundle {
+
+				inline static auto unpack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundle::Unpack::process_fs(source, destination);
+				}
+
+				inline static auto pack_fs (
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundle::Pack::process_fs(source, destination);
+				}
+
+				inline static auto unpack_cipher(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
+				}
+
+				inline static auto unpack_resource(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
+				}
+
+				inline static auto pack_resource(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::PackResource::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region resource-stream-bundle-patch
+
+			namespace ResourceStreamBundlePatch
+			{
+
+				inline static auto encode_fs(
+					std::string& before_file,
+					std::string& after_file,
+					std::string& patch_file
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundlePatch::Encode::process_fs(before_file, after_file, patch_file);
+				}
+
+				inline static auto decode_fs(
+					std::string& before_file,
+					std::string& patch_file,
+					std::string& after_file
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamBundlePatch::Decode::process_fs(before_file, patch_file, after_file);
+				}
+
+			}
+
+			#pragma endregion
+
+			#pragma region resource-stream-group
+
+			namespace ResourceStreamGroup
+			{
+
+				inline static auto unpack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_fs(source, destination);
+				}
+
+				inline static auto pack_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_fs(source, destination);
+				}
+			}
+
+			#pragma endregion
+
+			#pragma region animation
+
+			namespace Animation {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
+				}
+
+				#pragma region to-flash
+
+				namespace ToFlash
+				{
+
+					inline static auto convert_fs(
+						std::string& source,
+						std::string& destination,
+						int64_t& resolution,
+						bool use_label
+					) -> void
+					{
+						if (use_label) {
+							return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_fs(source, destination, static_cast<int>(resolution));
+						}
+						else {
+							return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, static_cast<int>(resolution));
+						}
+					}
+				}
+
+				#pragma endregion
+
+				#pragma region from-flash
+
+				namespace FromFlash
+				{
+
+					inline static auto convert_fs(
+						std::string& source,
+						std::string& destination,
+						bool use_label
+					) -> void
+					{
+						if (use_label) {
+							return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithLabel::process_fs(source, destination);
+						}
+						else {
+							return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
+						}
+					}
+				}
+
+				#pragma endregion
+
+				#pragma region instance
+
+				namespace Instance
+				{
+
+					inline static auto to_flash(
+						std::string& source,
+						std::string& destination,
+						int64_t& resolution,
+						bool use_label
+					) -> void
+					{
+						if (use_label) {
+							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<true>(source, destination, static_cast<int>(resolution));
+						}
+						else {
+							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, static_cast<int>(resolution));
+						}
+					}
+
+					inline static auto from_flash(
+						std::string& source,
+						std::string& destination,
+						bool use_label
+					) -> void
+					{
+						if (use_label) {
+							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<true>(source, destination);
+						}
+						else {
+							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
+						}
+					}
+				}
+
+				#pragma endregion
+
+				#pragma region miscellaneous
+
+				namespace Miscellaneous {
+
+					inline static auto resize_fs(
+						std::string& source,
+						int64_t& resolution
+					) -> void
+					{
+						return Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, static_cast<int>(resolution));
+					}
+
+				}
+
+				#pragma endregion
+			}
+
+			#pragma endregion
+
+			#pragma region re-animation
+
+			namespace ReAnimation {
+
+				using Platform = Kernel::Support::PopCap::ReAnimation::ReanimPlatform;
+
+				inline static auto constexpr exchange_platform(
+					std::string_view platform
+				) -> Platform
+				{
+					switch (hash_string(platform)) {
+						case hash_string("pc"_sv):
+							return Platform::PC_Compile;
+						case hash_string("game-console"_sv):
+							return Platform::GameConsole_Compile;
+						case hash_string("phone-32"_sv):
+							return Platform::Phone32_Compile;
+						case hash_string("phone-64"_sv):
+							return Platform::Phone64_Compile;
+						case hash_string("tv"_sv):
+							return Platform::TV_Compile;
+						case hash_string("wp"_sv):
+							return Platform::WP_XNB;
+						default:
+							assert_conditional(false, fmt::format("{}", Kernel::Language::get("popcap.reanim.decode.invalid_reanim_platform")), "exchange_platform");
+					}
+				}
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, exchange_platform(platform));
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, exchange_platform(platform));
+				}
+
+				inline static auto to_xml(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
+				}
+
+				inline static auto from_xml(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
+				}
+
+				#pragma region to_flash
+
+				namespace ToFlash {
+
+					inline static auto convert_fs(
+						std::string& source,
+						std::string& destination
+					) -> void
+					{
+						return Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
+					}
+
+				}
+
+				#pragma endregion
+
+				#pragma region from_flash
+
+				namespace FromFlash {
+
+					inline static auto convert_fs(
+						std::string& source,
+						std::string& destination
+					) -> void
+					{
+						return Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
+					}
+
+				}
+
+				#pragma endregion
+
+				#pragma region instance
+
+				namespace Instance {
+
+					inline static auto to_flash(
+						std::string& source,
+						std::string& destination,
+						std::string& platform
+					) -> void
+					{
+						return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, exchange_platform(platform));
+					}
+
+
+					inline static auto from_flash(
+						std::string& source,
+						std::string& destination,
+						std::string& platform
+					) -> void
+					{
+						return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, exchange_platform(platform));
+					}
+
+				}
+
+				#pragma endregion
+
+			}
+
+			#pragma endregion
+
+			#pragma region resource-group
+
+			namespace ResourceGroup {
+
+				using PathStyle = Kernel::Support::PopCap::ResourceGroup::PathStyle;
+
+				inline static auto split_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceGroup::Split::process_fs(source, destination);
+				}
+
+				inline static auto merge_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResourceGroup::Merge::process_fs(source, destination);
+				}
+
+				inline static auto convert_fs(
+					std::string& source,
+					std::string& destination,
+					int64_t& path_style
+				) -> void
+				{
+					switch (static_cast<PathStyle>(path_style)) {
+						case PathStyle::ArrayStyle: {
+							Kernel::Support::PopCap::ResourceGroup::Convert<false>::process_fs(source, destination);
+							break;
+						}
+						case PathStyle::WindowStyle: {
+							Kernel::Support::PopCap::ResourceGroup::Convert<true>::process_fs(source, destination);
+							break;
+						}
+					}
+				}
+			}
+
+			#pragma endregion
+
+			#pragma region res-info
+
+			namespace ResInfo
+			{
+
+				inline static auto split_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResInfo::Split::process_fs(source, destination);
+				}
+
+				inline static auto merge_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResInfo::Merge::process_fs(source, destination);
+				}
+
+				inline static auto convert_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ResInfo::Convert::process_fs(source, destination);
+				}
+
+			}
+
+			#pragma endregion
 		}
 
 		#pragma endregion
+
+		#pragma region wwise
+
+		namespace WWise {
+
+			#pragma region soundbank
+
+			namespace SoundBank {
+
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::WWise::SoundBank::Decode::process_fs(source, destination);
+				}
+
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::WWise::SoundBank::Encode::process_fs(source, destination);
+				}
+
+				inline static auto hash(
+					std::string& value
+				) -> uint32_t
+				{
+					return Kernel::Support::WWise::SoundBank::Decode::fnv_hash(value);
+				}
+			}
+
+			#pragma endregion
+
+		}
+
+		#pragma endregion
+
+		#pragma region miscellaneous
+
+		namespace Miscellaneous {
+
+			#pragma region project
+
+			namespace Project
+			{
+
+				#pragma region stream-compressed-group
+
+				namespace StreamCompressedGroup
+				{
+
+					using Setting = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting;
+
+					inline static auto check_scg_composite(
+						std::string& source
+					) -> bool
+					{
+						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::check_scg_composite(source);
+					}
+
+					inline static auto decode_fs(
+						std::string& source,
+						std::string& destination,
+						std::shared_ptr<Setting>& setting
+					) -> void
+					{
+						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Decode::process_fs(source, destination, setting.operator*());
+					}
+
+					inline static auto encode_fs(
+						std::string& source,
+						std::string& destination,
+						std::shared_ptr<Setting>& setting
+					) -> void
+					{
+						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Encode::process_fs(source, destination, setting.operator*());
+					}
+				}
+
+				#pragma endregion
+
+				#pragma region resource-stream-bundle
+
+				namespace ResourceStreamBundle
+				{
+
+					using Setting = Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting;
+
+					static auto unpack_fs(
+						std::string& source,
+						std::string& destination,
+						std::shared_ptr<Setting>& setting
+					) -> void
+					{
+						Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Unpack::process_fs(source, destination, setting.operator*());
+					}
+
+					inline static auto pack_fs(
+						std::string& source,
+						std::string& destination,
+						std::shared_ptr<Setting>& setting
+					) -> void
+					{
+						return Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Pack::process_fs(source, destination, setting.operator*());
+					}
+				}
+
+				#pragma endregion
+
+			}
+
+			#pragma endregion
+
+		}
+
+		#pragma endregion
+	}
+
+	#pragma endregion
+
+	#pragma region miscellaneous
+
+	namespace Miscellaneous {
+
+		inline static auto cast_ArrayBuffer_to_JS_String(
+			std::shared_ptr<JavaScript::ArrayBuffer>& data
+		) -> std::string
+		{
+			return std::string{ reinterpret_cast<char*>(data->value), data->size};
+		}
+
+		inline static auto cast_movable_String_to_ArrayBuffer(
+			std::string& data
+		) -> std::shared_ptr<JavaScript::ArrayBuffer>
+		{
+			return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data.data()), data.size());
+		}
+
+		inline static auto copyArrayBuffer(
+			std::shared_ptr<JavaScript::ArrayBuffer>& data
+		) -> std::shared_ptr<JavaScript::ArrayBuffer>
+		{
+			return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data->value), data->size);
+		}
+
+		inline static auto compareArrayBuffer(
+			std::shared_ptr<JavaScript::ArrayBuffer>& source,
+			std::shared_ptr<JavaScript::ArrayBuffer>& destination
+		) -> bool
+		{
+			if (source->size != destination->size) {
+				return false;
+			}
+			auto is_same = true;
+			for (auto i : Range<std::size_t>(source->size)) {
+				if (source->value[i] != destination->value[i]) {
+					is_same = false;
+					break;
+				}
+			}
+			return is_same;
+		}
+
+		inline static auto cast_ArrayBuffer_to_JS_WideString(
+			std::shared_ptr<JavaScript::ArrayBuffer>& source
+		) -> std::string
+		{
+			auto utf16 = std::wstring(reinterpret_cast<wchar_t*>(source->value), source->size / sizeof(wchar_t));
+			auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
+			return converter.to_bytes(utf16);
+		}
+
 	}
 
 	#pragma endregion

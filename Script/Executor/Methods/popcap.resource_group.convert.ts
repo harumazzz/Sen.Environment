@@ -109,7 +109,7 @@ namespace Sen.Script.Executor.Methods.PopCap.ResourceGroup.Convert {
 				Kernel.Support.PopCap.ResourceGroup.convert_fs(
 					argument.source,
 					argument.destination!,
-					Detail.exchange_layout(argument.layout!),
+					BigInt(Detail.exchange_layout(argument.layout!)),
 				);
 				clock.stop_safe();
 			},

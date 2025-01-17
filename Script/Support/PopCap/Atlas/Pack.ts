@@ -326,7 +326,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					e.height = BigInt(e.height);
 				});
 				const image: Kernel.Dimension.Image = Kernel.Image.join(
-					Kernel.Dimension.instance(
+					Kernel.Image.instance(
 						BigInt(destination_size.width),
 						BigInt(destination_size.height),
 					),
@@ -519,7 +519,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					e.height = BigInt(e.height);
 				});
 				const image: Kernel.Dimension.Image = Kernel.Image.join_extend(
-					Kernel.Dimension.instance(
+					Kernel.Image.instance(
 						BigInt(destination_size.width),
 						BigInt(destination_size.height),
 					),

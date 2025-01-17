@@ -2,7 +2,7 @@
 
 #include "kernel/utility/utility.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
+namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
 {
     using ImageAdditional = Sen::Kernel::Support::PopCap::Animation::Convert::ImageAdditional;
 
@@ -337,7 +337,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
         Array
     };
 
-    struct CustomResourceInformation
+    struct ProjectResourceInformation
     {
         ExpandPath expand_path;
         std::map<std::string, GroupCompressedInfo> group;
@@ -345,7 +345,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
     inline auto to_json(
         nlohmann::ordered_json &nlohmann_json_j,
-        const CustomResourceInformation &nlohmann_json_t) -> void
+        const ProjectResourceInformation &nlohmann_json_t) -> void
     {
         nlohmann_json_j["expand_path"] = nlohmann_json_t.expand_path;
         nlohmann_json_j["group"] = nlohmann_json_t.group;
@@ -354,7 +354,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup
 
     inline auto from_json(
         const nlohmann::ordered_json &nlohmann_json_j,
-        CustomResourceInformation &nlohmann_json_t) -> void
+        ProjectResourceInformation &nlohmann_json_t) -> void
     {
         nlohmann_json_j.at("expand_path").get_to(nlohmann_json_t.expand_path);
         nlohmann_json_j.at("group").get_to(nlohmann_json_t.group);

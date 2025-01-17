@@ -219,7 +219,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 		{
 			auto resource = FileSystem::read_json(source);
 			auto stream = DataStreamView{};
-			process(stream, resource.operator*());
+			process(stream, resource);
 			stream.out_file(destination);
 			return;
 		}

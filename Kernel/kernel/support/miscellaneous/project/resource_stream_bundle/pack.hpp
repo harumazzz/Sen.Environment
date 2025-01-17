@@ -2,19 +2,19 @@
 
 #include "kernel/utility/utility.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/definition.hpp"
-#include "kernel/support/miscellaneous/custom/stream_compressed_group/common.hpp"
+#include "kernel/support/miscellaneous/project/stream_compressed_group/common.hpp"
 
-namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
+namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
 {
     
 
     using namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle;
 
-    using CustomResourceInformation = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::CustomResourceInformation;
+    using ProjectResourceInformation = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::ProjectResourceInformation;
 
-    using SubgroupCompressedInfo = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::SubgroupCompressedInfo;
+    using SubgroupCompressedInfo = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::SubgroupCompressedInfo;
 
-    using PacketOriginalInformation = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::Common::PacketOriginalInformation;
+    using PacketOriginalInformation = Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::PacketOriginalInformation;
 
     struct Pack : Common
     {
@@ -30,7 +30,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
 
         inline static auto exchange_packages(
             DataSectionViewStored &packet_data_section_view_stored,
-            CustomResourceInformation &resource_info,
+            ProjectResourceInformation &resource_info,
             BundleStructure &bundle,
             PackagesInfo const &packages_info,
             std::string const &packages_source,
@@ -59,7 +59,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 packet_definition.resource.emplace_back(Resource{
                     .path = toupper_back(String::to_posix_style(path))});
                 auto &data_info = packages_subgroup_info.general.data[get_resfile(path)];
-                data_info.type = Sen::Kernel::Support::Miscellaneous::Custom::StreamCompressedGroup::DataType::File;
+                data_info.type = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::DataType::File;
                 data_info.path = tolower_back(String::to_posix_style(path));
                 return;
             };
@@ -131,7 +131,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             assert_conditional(json_count == k_none_size, fmt::format("{}", Language::get("popcap.rsb.project.json_count_mismatch")), "exchange_packages");
             assert_conditional(rton_count == k_none_size, fmt::format("{}", Language::get("popcap.rsb.project.rton_count_mismatch")), "exchange_packages");
             auto packet_stream = DataStreamView{};
-            Sen::Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_whole(packet_stream, packet_definition, resource_data_section_view_stored);
+            Kernel::Support::PopCap::ResourceStreamGroup::Pack::process_whole(packet_stream, packet_definition, resource_data_section_view_stored);
             packet_data_section_view_stored[packages_string] = std::move(packet_stream.toBytes());
             bundle.group[packages_string].subgroup[packages_string] = Sen::Kernel::Support::PopCap::ResourceStreamBundle::SubgroupInformation{
                 .compression = k_highest_compression_method,
@@ -141,7 +141,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         }
 
         inline static auto exchange_packet(
-            CustomResourceInformation &resource_info,
+            ProjectResourceInformation &resource_info,
             BundleStructure &bundle,
             DataSectionViewStored &packet_data_section_view_stored,
             InformationStructure const &definition,
@@ -154,12 +154,13 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 auto packet_original_information = PacketOriginalInformation{};
                 try
                 {
-                    Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, group_stream);
+                    Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_stream_resource_group(packet_original_information, group_stream);
                 }
                 catch (Exception &ex)
                 {
                     assert_conditional(false, fmt::format("{} at {}", ex.message(), group_id), "exchange_packet");
                 }
+                // TODO : Redo
                 Support::PopCap::ResourceStreamBundle::Common::compare_conditional(packet_original_information.version, definition.version, group_id, "popcap.rsb.custom.mismatch_scg_version");
                 Support::PopCap::ResourceStreamBundle::Common::compare_conditional(static_cast<int>(packet_original_information.texture_format_category), static_cast<int>(setting.texture_format_category), group_id, "popcap.rsb.custom.mismatch_texture_format_category");
                 auto &group_information = bundle.group[group_id];
@@ -188,7 +189,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                             {
                                 for (auto &[packet_id, packet_value] : subgroup_value.info.texture.packet)
                                 {
-                                    if (!Support::Miscellaneous::Custom::StreamCompressedGroup::Common::is_program_path(packet_value.path))
+                                    if (!Support::Miscellaneous::Project::StreamCompressedGroup::Common::is_program_path(packet_value.path))
                                     {
                                         if (compare_string(resource.path, fmt::format("{}.ptx", packet_value.path)))
                                         {
@@ -226,7 +227,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
         inline static auto exchange_manifest_group(
             BundleStructure &bundle,
             DataSectionViewStored &packet_data_section_view_stored,
-            CustomResourceInformation const &resource_info,
+            ProjectResourceInformation const &resource_info,
             ManifestGroupInfo const &manifest_info,
             Setting const &setting) -> void
         {
@@ -237,11 +238,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             if (manifest_info.allow_new_type_resource)
             {
 
-                Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(resource_info, result);
+                Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_custom_resource_info<true>(resource_info, result);
             }
             else
             {
-                Support::Miscellaneous::Custom::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(resource_info, result);
+                Support::Miscellaneous::Project::StreamCompressedGroup::Common::exchange_custom_resource_info<false>(resource_info, result);
             }
             auto resources_name = toupper_back(fmt::format("resources{}", manifest_info.resource_additional_name));
             auto resource_data_section_view_stored = std::map<std::string, List<uint8_t>>{};
@@ -285,7 +286,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
                 .texture_information_section_size = Support::PopCap::ResourceStreamBundle::Common::exchange_texture_information_version(definition.texture_information_version)};
             auto manifest = ManifestStructure{};
             auto packet_data_section_view_stored = DataSectionViewStored{};
-            auto resource_info = CustomResourceInformation{};
+            auto resource_info = ProjectResourceInformation{};
             if (definition.packages_info.is_contain_packages && setting.unpack_packages)
             {
                 exchange_packages(packet_data_section_view_stored, resource_info, bundle, definition.packages_info, fmt::format("{}/packages", source), setting);
@@ -314,7 +315,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Custom::ResourceStreamBundle
             Setting const &setting) -> void
         {
             auto stream = DataStreamView{};
-            auto definition = *FileSystem::read_json(fmt::format("{}/data.json", source));
+            auto definition = FileSystem::read_json(fmt::format("{}/data.json", source));
             process_whole(stream, definition, source, setting);
             stream.out_file(destination);
             return;

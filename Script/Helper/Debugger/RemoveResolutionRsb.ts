@@ -16,8 +16,8 @@ namespace Sen.Script.Helper.Debugger.RemoveResolutionRSB {
 		}
 		Kernel.JSON.serialize_fs(`${source}/data.json`, bundle, 1, true);
 		const mainfest = `${source}/packet/__MANIFESTGROUP__.rsg`;
-		Kernel.Support.PopCap.RSG.unpack_fs(mainfest, mainfest + '.temp');
-		Kernel.Support.PopCap.RTON.decode_fs(
+		Kernel.Support.PopCap.ResourceStreamGroup.unpack_fs(mainfest, mainfest + '.temp');
+		Kernel.Support.PopCap.ReflectionObjectNotation.decode_fs(
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.RTON`,
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.JSON`,
 		);
@@ -50,11 +50,11 @@ namespace Sen.Script.Helper.Debugger.RemoveResolutionRSB {
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.split`,
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.JSON`,
 		);
-		Kernel.Support.PopCap.RTON.encode_fs(
+		Kernel.Support.PopCap.ReflectionObjectNotation.encode_fs(
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.JSON`,
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.RTON`,
 		);
-		Kernel.Support.PopCap.RSG.pack_fs(mainfest + '.temp', mainfest);
+		Kernel.Support.PopCap.ResourceStreamGroup.pack_fs(mainfest + '.temp', mainfest);
 	}
 }
 Sen.Script.Helper.Debugger.RemoveResolutionRSB.execute();
