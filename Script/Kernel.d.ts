@@ -808,13 +808,11 @@ declare namespace Sen {
 				 * --------------------------------------------------
 				 * JavaScript Zlib decompression function for data stream (advanced usage)
 				 *
-				 * Decompresses a provided BinaryView containing Zlib compressed data.
-				 *
-				 * @param data The BinaryView containing the compressed data.
-				 * @returns A new BinaryView containing the decompressed data.
+				 * @param data The ArrayBufer containing the compressed data.
+				 * @returns A new ArrayBufer containing the decompressed data.
 				 * --------------------------------------------------
 				 */
-				export function uncompress(data: BinaryView): BinaryView;
+				export function uncompress(data: ArrayBuffer): ArrayBuffer;
 			}
 		}
 
@@ -1637,18 +1635,6 @@ declare namespace Sen {
 						 * @param sprite  The Sprite object containing the sprite data
 						 */
 						export function generate_sprite(destination: string, sprite: Sprite): void;
-
-						// TODO : Add this function
-
-						/**
-						 * Function to append a sprite to an existing image or sprite sheet (likely at a specified layer)
-						 * @param destination Path of the target image or sprite sheet where the sprite will be appended
-						 * @param sprite  A Sprite object with an additional `layer` property of type `bigint` (a large integer) to specify the layer for placement.
-						 */
-						export function append_sprite(
-							destination: string,
-							sprite: Sprite & { layer: bigint },
-						): void;
 					}
 
 					/**
@@ -2756,10 +2742,10 @@ declare namespace Sen {
 			 */
 			public constructor(
 				delay_frames_list: typeof this._delay_frames_list,
-				loop: Kernel.UInteger32,
-				width: Kernel.UInteger32,
-				height: Kernel.UInteger32,
-				trim: Kernel.Boolean,
+				loop: bigint,
+				width: bigint,
+				height: bigint,
+				trim: boolean,
 			): void;
 
 			/**
@@ -2990,23 +2976,6 @@ declare namespace Sen {
 			 */
 			public set data(value: ArrayBuffer): void;
 
-			// Getters and Setters for image properties (bit_depth, channels, color_type, etc.)
-			// (Comments omitted for brevity)
-
-			/**
-			 * Calculates the area of the image (width * height)
-			 *
-			 * @returns {bigint} - The calculated area of the image.
-			 */
-			public area(): bigint;
-
-			/**
-			 * Calculates the circumference of the image (likely not applicable to most images)
-			 *
-			 * @returns {bigint} - The calculated circumference of the image (may not be meaningful).
-			 */
-			public circumference(): bigint;
-
 			/**
 			 * Static method to cut a portion of an image
 			 *
@@ -3236,148 +3205,6 @@ declare namespace Sen {
 			 * @param value The BigInt value to write.
 			 */
 			public writeBigInt(value: bigint): void;
-		}
-
-		/**
-		 * Kernel Unsigned Integer32 Class
-		 *
-		 * This class represents a 32-bit unsigned integer data type in the Kernel framework.
-		 * It provides functionalities for working with non-negative integer values within the 0 to 4294967295 range.
-		 */
-		declare class UInteger32 implements BaseWrapper {
-			/**
-			 * Instance
-			 */
-
-			private _UInteger32: UInteger32;
-			/**
-			 * Internal storage for the 32-bit unsigned integer value.
-			 */
-			private _value: bigint;
-
-			/**
-			 * Getter for the internal unsigned integer value.
-			 *
-			 * @returns {bigint} - The current 32-bit unsigned integer value.
-			 */
-			public get value(): bigint;
-
-			/**
-			 * Setter for the internal unsigned integer value.
-			 *
-			 * @param {bigint} value - The new 32-bit unsigned integer value to set.
-			 * @throws {RangeError} - If the provided value is outside the 0 to 4294967295 range.
-			 */
-			public set value(value: bigint): void;
-
-			/**
-			 * Constructor for the Kernel UInteger32 class.
-			 *
-			 * Initializes the internal value with the provided non-negative integer argument.
-			 *
-			 * @param {bigint} value - The initial 32-bit unsigned integer value for the object.
-			 * @throws {RangeError} - If the provided value is outside the 0 to 4294967295 range.
-			 */
-			public constructor(value?: bigint): void;
-		}
-
-		/**
-		 * BinaryView Class
-		 *
-		 * This class likely represents a view of a binary data buffer stored in an ArrayBuffer.
-		 * It provides methods to access, manipulate, and extract sub-sections of the binary data.
-		 */
-		declare class BinaryView {
-			/**
-			 * Internal storage for the BinaryView object (might be redundant with _value)
-			 */
-			private _BinaryView: BinaryView;
-
-			/**
-			 * Internal storage for the underlying ArrayBuffer containing the binary data
-			 */
-			private _value: ArrayBuffer;
-
-			/**
-			 * Constructor for the BinaryView class
-			 *
-			 * Initializes a new BinaryView object from the provided ArrayBuffer.
-			 *
-			 * @param {ArrayBuffer} value - The ArrayBuffer containing the binary data.
-			 */
-			public constructor(value: ArrayBuffer): void;
-
-			/**
-			 * Getter for the underlying ArrayBuffer
-			 *
-			 * @returns {ArrayBuffer} - The ArrayBuffer containing the binary data.
-			 */
-			public get value(): ArrayBuffer;
-
-			/**
-			 * Setter for the underlying ArrayBuffer
-			 *
-			 * Modifies the underlying ArrayBuffer associated with the BinaryView.
-			 * Caution: Changing the ArrayBuffer externally might invalidate this BinaryView.
-			 *
-			 * @param {ArrayBuffer} value - The new ArrayBuffer to associate with the BinaryView.
-			 */
-			public set value(value: ArrayBuffer): void;
-
-			/**
-			 * Get the size of the underlying ArrayBuffer in bytes
-			 *
-			 * @returns {bigint} - The size of the ArrayBuffer in bytes.
-			 */
-			public size(): bigint;
-
-			/**
-			 * Get the capacity of the underlying ArrayBuffer in bytes
-			 * (might be the same as size)
-			 *
-			 * @returns {bigint} - The capacity of the ArrayBuffer in bytes.
-			 */
-			public capacity(): bigint;
-
-			/**
-			 * Extract a sub-section of the underlying ArrayBuffer
-			 *
-			 * Creates a new ArrayBuffer containing the data between the specified 'from' and 'to' byte offsets (inclusive).
-			 *
-			 * @param {bigint} from - The starting byte offset (inclusive).
-			 * @param {bigint} to - The ending byte offset (inclusive).
-			 * @returns {ArrayBuffer} - A new ArrayBuffer containing the extracted data.
-			 */
-			public sub(from: bigint, to: bigint): ArrayBuffer;
-
-			/**
-			 * Allocate additional memory to the underlying ArrayBuffer
-			 *
-			 * This method likely resizes the underlying ArrayBuffer to accommodate the specified amount of additional bytes.
-			 *
-			 * @param {bigint} value - The number of bytes to allocate.
-			 */
-			public allocate(value: bigint): void;
-
-			/**
-			 * Convert the BinaryView to a DataStreamView (little-endian byte order)
-			 *
-			 * This method likely creates a new DataStreamView object that allows reading and writing data from the underlying ArrayBuffer
-			 * using little-endian byte order.
-			 *
-			 * @returns {DataStreamView} - A new DataStreamView object.
-			 */
-			public stream_view(): DataStreamView;
-
-			/**
-			 * Convert the BinaryView to a DataStreamView (big-endian byte order)
-			 *
-			 * This method likely creates a new DataStreamView object that allows reading and writing data from the underlying ArrayBuffer
-			 * using big-endian byte order.
-			 *
-			 * @returns {DataStreamViewUseBigEndian} - A new DataStreamView object.
-			 */
-			public big_stream_view(): DataStreamViewUseBigEndian;
 		}
 
 		/**

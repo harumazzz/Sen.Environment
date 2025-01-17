@@ -564,6 +564,15 @@ namespace Sen::Kernel::Interface::API {
 
 		namespace Zlib {
 
+			inline static auto uncompress(
+				std::shared_ptr<JavaScript::ArrayBuffer>& source
+			) -> std::shared_ptr<JavaScript::ArrayBuffer>
+			{
+				auto buffer = List<unsigned char>{};
+				buffer.assign(source->value, source->value + source->size);
+				auto result = Kernel::Compression::Zlib::uncompress(buffer);
+				return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(result.data()), result.size());
+			}
 
 		}
 
@@ -1498,7 +1507,7 @@ namespace Sen::Kernel::Interface::API {
 
 					using Setting = Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting;
 
-					static auto unpack_fs(
+					inline static auto unpack_fs(
 						std::string& source,
 						std::string& destination,
 						std::shared_ptr<Setting>& setting

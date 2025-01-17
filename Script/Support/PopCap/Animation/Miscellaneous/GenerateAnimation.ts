@@ -625,10 +625,10 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					destination,
 					new Kernel.APNGMakerSetting(
 						frame_list,
-						new Kernel.UInteger32(setting.apng_setting.loop),
-						new Kernel.UInteger32(setting.rendering_size.width),
-						new Kernel.UInteger32(setting.rendering_size.height),
-						new Kernel.Boolean(false),
+						setting.apng_setting.loop,
+						setting.rendering_size.width,
+						setting.rendering_size.height,
+						false,
 					),
 				);
 			};

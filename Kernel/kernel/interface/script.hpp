@@ -159,10 +159,10 @@ namespace Sen::Kernel::Interface::Script
 			) -> std::string_view
 			{
 				if constexpr (T) {
-					return "DataStreamView";
+					return "DataStreamViewUseBigEndian";
 				}
 				else {
-					return "DataStreamViewUseBigEndian";
+					return "DataStreamView";
 				}
 			}
 
@@ -1878,110 +1878,6 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		namespace Boolean
-		{
-
-			struct Data
-			{
-				bool value;
-
-				Data() = default;
-
-				Data(
-					bool value) : value(value)
-				{
-				}
-
-				~Data() = default;
-			};
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								return new Data(JS::Converter::get_bool(context, argv[0]));
-							}
-							return nullptr;
-						},
-						class_id,
-						Kernel::Language::get("Constructor for Boolean class does not match, expected 1 argument")
-					);
-				});
-			}
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "Boolean";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bool(context, s->value);
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					s->value = JS::Converter::get_bool(context, val);
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("value", getter, setter),
-			});
-
-			inline static auto register_class (
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
 		namespace Image
 		{
 
@@ -2304,480 +2200,6 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		namespace FileInputStream
-		{
-
-			using Data = Kernel::FileSystem::FileHandler;
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto source = JS::Converter::get_string(context, argv[0]);
-								return new Data(source, "rb");
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("Constructor for FileInputStream class does not match, expected 1 argument, got: {}", argc)
-					);
-				});
-			}
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "FileInputStream";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto close(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "close", [&](Data* s) {
-					s->close();
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto size(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "size", [&](Data* s) {
-					return JS::Converter::to_bigint<std::uint64_t>(context, s->size());
-				});
-			}
-
-			inline static auto read(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "read", [&](Data* s) {
-					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
-				});
-			}
-
-			inline static auto read_all(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "read_all", [&](Data* s) {
-					auto data = s->read_all();
-					return JS_NewArrayBufferCopy(context, data.data(), data.size());
-				});
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bigint(context, s->position());
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("position", getter, setter),
-				generate_class_function<Data, 0>("close", close),
-				generate_class_function<Data, 0>("size", size),
-				generate_class_function<Data, 0>("read", read),
-				generate_class_function<Data, 0>("read_all", read_all),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-		namespace FileOutputStream
-		{
-
-			using Data = Kernel::FileSystem::FileHandler;
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto source = JS::Converter::get_string(context, argv[0]);
-								return new Data(source, "wb");
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("Constructor for FileOutputStream class does not match, expected 1 argument, got: {}", argc)
-					);
-				});
-			}
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "FileOutputStream";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto close(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "close", [&](Data* s) {
-					s->close();
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto size(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "size", [&](Data* s) {
-					return JS::Converter::to_bigint(context, s->size());
-				});
-			}
-
-			inline static auto write(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "write", [&](Data* s) {
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
-					s->write(static_cast<char>(JS::Converter::get_bigint64(context, argv[0])));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto write_all(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "write_all", [&](Data* s) {
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
-					s->write_all(JS::Converter::to_binary_list(context, argv[0]));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_bigint(context, s->position());
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("position", getter, setter),
-				generate_class_function<Data, 0>("close", close),
-				generate_class_function<Data, 0>("size", size),
-				generate_class_function<Data, 0>("write", write),
-				generate_class_function<Data, 0>("write_all", write_all),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-		namespace FileStream
-		{
-
-			using Data = Kernel::FileSystem::FileHandler;
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&](){
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto source = JS::Converter::get_string(context, argv[0]);
-								return new Data(source, "w+b");
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("Constructor for FileStream class does not match, expected 1 argument, got: {}", argc)
-					);
-				});
-			}
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "FileStream";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto close(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "close", [&](Data* s){
-					s->close();
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto size(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "size", [&](Data* s){
-					return JS::Converter::to_bigint(context, s->size());
-				});
-			}
-
-			inline static auto write(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "write", [&](Data* s){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
-					s->write(static_cast<char>(JS::Converter::get_bigint64(context, argv[0])));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto write_all(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "write_all", [&](Data* s){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write_all");
-					s->write_all(JS::Converter::to_binary_list(context, argv[0]));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto read(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "read", [&](Data* s){
-					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->read()));
-				});
-			}
-
-			inline static auto read_all(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "read_all", [&](Data* s){
-					auto data = s->read_all();
-					return JS_NewArrayBufferCopy(context, data.data(), data.size());
-				});
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
-					return JS::Converter::to_bigint(context, s->position());
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
-					s->position(static_cast<std::size_t>(JS::Converter::get_bigint64(context, val)));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("position", getter, setter),
-				generate_class_function<Data, 0>("close", close),
-				generate_class_function<Data, 0>("size", size),
-				generate_class_function<Data, 0>("write", write),
-				generate_class_function<Data, 0>("write_all", write_all),
-				generate_class_function<Data, 0>("read", read),
-				generate_class_function<Data, 0>("read_all", read_all),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 7>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
 		namespace JsonWriter
 		{
 
@@ -3034,201 +2456,6 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		namespace Number
-		{
-
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			struct Data
-			{
-				T value{};
-
-				Data() = default;
-
-				Data(
-					T value
-				) : value(value)
-				{
-				}
-
-				~Data() = default;
-			};
-
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto class_id = ClassID::temporary();
-
-			
-
-			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto this_class = make_class_definition<Data<T>>(
-				"Number",
-				class_id<T>.value
-			);
-
-			template <>
-			auto this_class<int8_t> = make_class_definition<Data<int8_t>>(
-				"Integer8",
-				class_id<int8_t>.value
-			);
-
-			template <>
-			auto this_class<int16_t> = make_class_definition<Data<int16_t>>(
-				"Integer16",
-				class_id<int16_t>.value
-			);
-
-			template <>
-			auto this_class<int32_t> = make_class_definition<Data<int32_t>>(
-				"Integer32",
-				class_id<int32_t>.value
-			);
-
-			template <>
-			auto this_class<int64_t> = make_class_definition<Data<int64_t>>(
-				"Integer64",
-				class_id<int64_t>.value
-			);
-
-			template <>
-			auto this_class<uint8_t> = make_class_definition<Data<uint8_t>>(
-				"UInteger8",
-				class_id<uint8_t>.value
-			);
-
-			template <>
-			auto this_class<uint16_t> = make_class_definition<Data<uint16_t>>(
-				"UInteger16",
-				class_id<uint16_t>.value
-			);
-
-			template <>
-			auto this_class<uint32_t> = make_class_definition<Data<uint32_t>>(
-				"UInteger32",
-				class_id<uint32_t>.value
-			);
-
-			template <>
-			auto this_class<uint64_t> = make_class_definition<Data<uint64_t>>(
-				"UInteger64",
-				class_id<uint64_t>.value
-			);
-
-			template <>
-			auto this_class<float> = make_class_definition<Data<float>>(
-				"Float",
-				class_id<float>.value
-			);
-
-			template <>
-			auto this_class<double> = make_class_definition<Data<double>>(
-				"Double",
-				class_id<double>.value
-			);
-
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					return initialize_constructor<Data<T>>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data<T>* {
-							if (argc == 1) {
-								if constexpr (std::is_integral<T>::value) {
-									return new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
-								}
-								else {
-									return new Data<T>(static_cast<T>(JS::Converter::get_float64(context, argv[0])));
-								}
-							}
-							return new Data<T>();
-						},
-						class_id<T>,
-						fmt::format("Cannot initialize {} class", this_class<T>.class_name)
-					);
-				});
-			}
-
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data<T>*)> method
-			) -> JSValue {
-				return make_handle<Data<T>>(context, value, argc, argv, method_name, method, class_id<T>.value);
-			}
-
-			template <typename T>
-				requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s){
-					if constexpr (std::is_integral<T>::value)
-					{
-						return JS::Converter::to_bigint(context, s->value);
-					}
-					else
-					{
-						return JS::Converter::to_number(context, s->value);
-					}
-				});
-			}
-
-			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle<T>(context, value, 0, nullptr, "setter", [&](Data<T>* s){
-					if constexpr (std::is_integral<T>::value)
-					{
-						s->value = static_cast<T>(JS::Converter::get_bigint64(context, val));
-					}
-					else
-					{
-						s->value = static_cast<T>(JS::Converter::get_float64(context, val));
-					}
-					return JS_UNDEFINED;
-				});
-			}
-
-			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data<T>, 0>("value", getter<T>, setter<T>),
-			});
-
-			template <typename T> requires (std::is_integral<T>::value or std::is_floating_point<T>::value) && (!std::is_pointer<T>::value && !std::is_class<T>::value)
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id<T>), decltype(constructor<T>), 2, 1>(context, class_id<T>, constructor<T>, fmt::format("{}", this_class<T>.class_name), proto_functions<T>, this_class<T>, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-		
-
-
 		namespace APNGMakerSetting
 		{
 
@@ -3253,7 +2480,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> JSValue
 			{
 				return proxy_wrapper(context, "constructor", [&]() {
-					using Uinteger32C = Number::Data<std::uint32_t>;
 					return initialize_constructor<Data>(
 						context,
 						value,
@@ -3262,11 +2488,11 @@ namespace Sen::Kernel::Interface::Script
 						[&](int argc, JSValue* argv) -> Data* {
 							if (argc == 5) {
 								auto delay_frames_list = JS::Converter::get_array<std::uint32_t>(context, argv[0]);
-								auto loop = get_opaque_value<Uinteger32C>(context, argv[1], Number::class_id<std::uint32_t>.value);
-								auto width = get_opaque_value<Uinteger32C>(context, argv[2], Number::class_id<std::uint32_t>.value);
-								auto height = get_opaque_value<Uinteger32C>(context, argv[3], Number::class_id<std::uint32_t>.value);
-								auto trim = get_opaque_value<Boolean::Data>(context, argv[4], Boolean::class_id.value);
-								return new Data(delay_frames_list, loop->value, width->value, height->value, trim->value);
+								auto loop = JS::Converter::get_bigint64(context, argv[1]);
+								auto width = JS::Converter::get_bigint64(context, argv[2]);
+								auto height = JS::Converter::get_bigint64(context, argv[3]);
+								auto trim = JS::Converter::get_bool(context, argv[4]);
+								return new Data(delay_frames_list, loop, width, height, trim);
 							}
 							return new Data();
 						},
@@ -3393,624 +2619,6 @@ namespace Sen::Kernel::Interface::Script
 			) -> void
 			{
 				return build_class<decltype(class_id), decltype(constructor), 2, 5>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-		namespace Size
-		{
-
-			struct Data
-			{
-
-				std::size_t value;
-
-				Data() = default;
-
-				Data(
-					std::size_t value
-				) : value(value)
-				{
-				}
-
-				~Data() = default;
-			};
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&](){
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								return new Data(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("Size class cannot be initialized because number of argument does not match. Expected: {}, got: {}", 1, argc)
-					);
-				});
-			}
-
-			inline auto constexpr _class_name( 
-
-			) -> std::string_view
-			{
-				return "Size";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
-					return JS::Converter::to_bigint(context, s->value);
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
-					s->value = JS::Converter::get_bigint64(context, val);
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("value", getter, setter),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-
-		namespace Character
-		{
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			struct Data
-			{
-
-				static_assert(sizeof(T) == sizeof(char) || sizeof(T) == sizeof(unsigned char) || sizeof(T) == sizeof(wchar_t), "invalid size");
-
-				T value;
-
-				Data() = default;
-
-				Data(
-					T value) : value(value)
-				{
-				}
-
-				~Data(
-
-					) = default;
-			};
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto class_id = ClassID::temporary();
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&](){
-					return initialize_constructor<Data<T>>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data<T>* {
-							if (argc == 1) {
-								return new Data<T>(static_cast<T>(JS::Converter::get_bigint64(context, argv[0])));
-							}
-							return new Data<T>();
-						},
-						class_id<T>,
-						fmt::format("Character class cannot be initialized due to internal error")
-					);
-				});
-			}
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			auto this_class = make_class_definition<Data<T>>(
-				"Character",
-				class_id<T>.value
-			);
-
-			template <>
-			auto this_class<unsigned char> = make_class_definition<Data<unsigned char>>(
-				"UCharacter",
-				class_id<unsigned char>.value
-			); 
-
-			template <>
-			auto this_class<wchar_t> = make_class_definition<Data<wchar_t>>(
-				"WideCharacter",
-				class_id<wchar_t>.value
-			);
-
-			template <typename T> 
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data<T>*)> method
-			) -> JSValue {
-				return make_handle<Data<T>>(context, value, argc, argv, method_name, method, class_id<T>.value);
-			}
-
-			template <typename T> 
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s) {
-					return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->value));
-				});
-			}
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle<T>(context, value, 0, nullptr, "getter", [&](Data<T>* s) {
-					s->value = static_cast<T>(JS::Converter::get_bigint64(context, val));
-					return JS_UNDEFINED;
-				});
-			}
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data<T>, 0>("value", getter<T>, setter<T>),
-			});
-
-			template <typename T>
-				requires std::is_same<T, char>::value or std::is_same<T, unsigned char>::value or std::is_same<T, wchar_t>::value && (!std::is_class<T>::value && !std::is_pointer<T>::value)
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				auto class_name = std::string_view{};
-				if constexpr (std::is_same<T, char>::value)
-				{
-					class_name = "Character"_sv;
-				}
-				else if constexpr (std::is_same<T, wchar_t>::value)
-				{
-					class_name = "WideCharacter"_sv;
-				}
-				else
-				{
-					class_name = "UCharacter"_sv;
-				}
-				return build_class<decltype(class_id<T>), decltype(constructor<T>), 2, 1>(context, class_id<T>, constructor<T>, class_name, proto_functions<T>, this_class<T>, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-		namespace String
-		{
-
-			struct CData
-			{
-				char *value = nullptr;
-
-				std::size_t size{};
-
-				CData(
-
-					) = default;
-
-				CData(
-					std::size_t size) : size(size)
-				{
-				}
-
-				CData(
-					char *value,
-					std::size_t size) : value(value), size(size)
-				{
-				}
-
-				CData(
-					char *value) : value(value), size(strlen(value))
-				{
-				}
-
-				~CData()
-				{
-					free(const_cast<char *>(value));
-				}
-
-				auto view(
-
-					) -> std::string_view
-				{
-					return std::string_view{thiz.value, thiz.size};
-				}
-			};
-
-			using Data = CData;
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&](){
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto ptr = new Data();
-								auto str = JS::Converter::get_string(context, argv[0]);
-								ptr->value = static_cast<char*>(malloc(sizeof(char) * str.size() + 1));
-								assert_conditional(ptr->value != nullptr, "could not allocate Kernel String", "lambda");
-								std::memcpy(ptr->value, str.data(), str.size());
-								ptr->size = str.size();
-								ptr->value[str.size()] = '\0';
-								return ptr;
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("String class cannot be initialized due to internal error")
-					);
-				});
-			}
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "String";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					return JS::Converter::to_string(context, s->view());
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "setter", [&](Data* s) {
-					auto str = JS::Converter::get_string(context, val);
-					if (s->value != nullptr) {
-						std::free(s->value);
-					}
-					s->value = static_cast<char *>(std::malloc(sizeof(char) * str.size() + 1));
-					std::memcpy(s->value, str.data(), str.size());
-					s->size = str.size();
-					s->value[str.size()] = '\0';
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("value", getter, setter),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 1>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
-		namespace BinaryView
-		{
-
-			struct Data
-			{
-
-				List<std::uint8_t> value;
-
-				using It = decltype(value.begin());
-
-				Data() = default;
-
-				explicit Data(
-					List<std::uint8_t> &&value
-				) : value(std::move(value))
-				{
-				}
-
-				explicit Data(
-					It begin,
-					It end) : value(begin, end)
-				{
-				}
-
-				explicit Data(
-					uint8_t *begin,
-					uint8_t *end) : value(begin, end)
-				{
-				}
-
-				~Data(
-
-				) = default;
-			};
-
-			using Data = Data;
-
-			inline static auto class_id = ClassID::temporary();
-
-			inline static auto constexpr _class_name(
-
-			) -> std::string_view
-			{
-				return "BinaryView";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto size(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "size", [&](Data* s){
-					return JS::Converter::to_bigint<uint64_t>(context, s->value.size());
-				});
-			}
-
-			inline static auto capacity(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "capacity", [&](Data* s){
-					return JS::Converter::to_bigint<uint64_t>(context, s->value.capacity());
-				});
-			}
-
-			inline static auto allocate(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "allocate", [&](Data* s){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "allocate");
-					s->value.reserve(static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0])));
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto sub(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return handle(context, value, argc, argv, "sub", [&](Data* s){
-					assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "sub");
-					auto from = static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[0]));
-					auto to = static_cast<std::size_t>(JS::Converter::get_bigint64(context, argv[1]));
-					assert_conditional(from < to, fmt::format("sub failed because {} >= {}", from, to), "sub");
-					assert_conditional(to < s->value.size(), fmt::format("sub failed because trying to reach outside bounds"), "sub");
-					assert_conditional(from >= 0, fmt::format("from cannot smaller than zero. Got value: {}", from), "sub");
-					return JS_NewArrayBufferCopy(context, s->value.data() + from, to);
-				});
-			}
-
-			template <auto use_big_endian>
-			inline static auto stream(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				static_assert(use_big_endian == true || use_big_endian == false, "use_big_endian can only be true or false");
-				auto m_function_name = std::string{DataStreamView::_class_name<use_big_endian>().data(), DataStreamView::_class_name<use_big_endian>().size()};
-				return handle(context, value, argc, argv, m_function_name, [&](Data* s) {
-					auto sub = std::make_unique<Stream<use_big_endian>>(s->value);
-					auto global_obj = get_global_object(context);
-					auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
-					auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
-					auto constructor_name = DataStreamView::_class_name<use_big_endian>();
-					auto stream_ctor = get_value_from_object<std::string_view>(context, kernel_obj, constructor_name);
-					auto proto = get_prototype_from_object(context, stream_ctor);
-					auto obj = make_instance_of_class(context, proto, DataStreamView::class_id<use_big_endian>.value);
-					JS_FreeValue(context, proto);
-					JS_FreeValue(context, global_obj);
-					JS_FreeValue(context, sen_obj);
-					JS_FreeValue(context, kernel_obj);
-					JS_FreeValue(context, stream_ctor);
-					JS_SetOpaque(obj, sub.release());
-					return obj;
-				});
-			}
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&](){
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto size = std::size_t{};
-								auto data = get_array_buffer(context, &size, argv[0]);
-								return new Data(make_list(data, size));
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("BinaryView cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 1, argc)
-					);
-				});
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s){
-					return JS_NewArrayBufferCopy(context, s->value.data(), s->value.size());
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "setter", [&](Data* s){
-					auto byteLength = std::size_t{};
-					auto data = get_array_buffer(context, &byteLength, val);
-					s->value.clear();
-					s->value.assign(data, data + byteLength);
-					return JS_UNDEFINED;
-				});
-			}
-
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, 0>("value", getter, setter),
-				generate_class_function<Data, 0>("size", size),
-				generate_class_function<Data, 0>("capacity", capacity),
-				generate_class_function<Data, 1>("allocate", allocate),
-				generate_class_function<Data, 2>("sub", sub),
-				generate_class_function<Data, 0>("stream_view", stream<false>),
-				generate_class_function<Data, 0>("big_stream_view", stream<true>),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 7>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
 			}
 
 		}
@@ -4772,145 +3380,6 @@ namespace Sen::Kernel::Interface::Script
 
 		}
 
-		namespace Rectangle
-		{
-
-			using Data = Kernel::Rectangle<int>;
-
-			inline static auto class_id = ClassID::temporary();
-
-			enum Magic
-			{
-				x,
-				y,
-				width,
-				height,
-			};
-
-			inline static auto constructor(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				return proxy_wrapper(context, "constructor", [&]() {
-					return initialize_constructor<Data>(
-						context,
-						value,
-						argc,
-						argv,
-						[&](int argc, JSValue* argv) -> Data* {
-							if (argc == 1) {
-								auto width_atom = Atom{context, "width"};
-								auto height_atom = Atom{context, "height"};
-								auto x_atom = Atom{context, "x"};
-								auto y_atom = Atom{context, "y"};
-								auto width = get_property_bigint64(context, argv[0], width_atom.value);
-								auto height = get_property_bigint64(context, argv[0], height_atom.value);
-								auto x = get_property_bigint64(context, argv[0], x_atom.value);
-								auto y = get_property_bigint64(context, argv[0], y_atom.value);
-								return new Data(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height));
-							}
-							return nullptr;
-						},
-						class_id,
-						fmt::format("Rectangle cannot be initialized because the number of argument does not match. Expected: {}, got: {}", 1, argc)
-					);
-				});
-			}
-
-			inline auto constexpr _class_name( 
-
-			) -> std::string_view
-			{
-				return "Rectangle";
-			}
-
-			inline static auto this_class = make_class_definition<Data>(
-				_class_name(),
-				class_id.value
-			);
-
-			inline static auto handle (
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv,
-				std::string_view method_name,
-				std::function<JSValue(Data*)> method
-			) -> JSValue {
-				return make_handle<Data>(context, value, argc, argv, method_name, method, class_id.value);
-			}
-
-			inline static auto getter(
-				JSContext *context,
-				JSValue value,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					switch (static_cast<Rectangle::Magic>(magic))
-					{
-						case Rectangle::Magic::x:
-							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->x));
-						case Rectangle::Magic::y:
-							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->y));
-						case Rectangle::Magic::width:
-							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->width));
-						case Rectangle::Magic::height:
-							return JS::Converter::to_bigint(context, static_cast<std::int64_t>(s->height));
-						default:
-							assert_conditional(false, fmt::format("Cannot call getter method on magic {}", magic), "getter");
-					}
-				});
-			}
-
-			inline static auto setter(
-				JSContext *context,
-				JSValue value,
-				JSValueConst val,
-				int magic
-			) -> JSValue
-			{
-				return handle(context, value, 0, nullptr, "getter", [&](Data* s) {
-					switch (static_cast<Rectangle::Magic>(magic))
-					{
-						case Rectangle::Magic::x:
-							s->x = static_cast<int>(JS::Converter::get_bigint64(context, val));
-							break;
-						case Rectangle::Magic::y:
-							s->y = static_cast<int>(JS::Converter::get_bigint64(context, val));
-							break;
-						case Rectangle::Magic::width:
-							s->width = static_cast<int>(JS::Converter::get_bigint64(context, val));
-							break;
-						case Rectangle::Magic::height:
-							s->height = static_cast<int>(JS::Converter::get_bigint64(context, val));
-							break;
-						default:
-							assert_conditional(false, fmt::format("Cannot call setter method on magic {}", magic), "setter");
-					}
-					return JS_UNDEFINED;
-				});
-			}
-
-			inline static auto proto_functions = std::to_array<JSCFunctionListEntry>({
-				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::x)>("x", getter, setter),
-				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::y)>("y", getter, setter),
-				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::width)>("width", getter, setter),
-				generate_getter_setter<Data, static_cast<int>(Rectangle::Magic::height)>("height", getter, setter),
-			});
-
-			inline static auto register_class(
-				JSContext *context
-			) -> void
-			{
-				return build_class<decltype(class_id), decltype(constructor), 2, 4>(context, class_id, constructor, _class_name(), proto_functions, this_class, std::to_array<std::string_view>({"Sen", "Kernel"}));
-			}
-
-		}
-
 		namespace ImageView
 		{
 
@@ -5558,143 +4027,6 @@ namespace Sen::Kernel::Interface::Script
 		}
 	}
 
-	namespace Dimension
-	{
-
-		inline static auto area(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "area", [&](){
-				auto width_atom = Atom{context, "width"};
-				auto height_atom = Atom{context, "height"};
-				auto width = get_property_bigint64(context, value, width_atom.value);
-				auto height = get_property_bigint64(context, value, height_atom.value);
-				return width * height;
-			});
-		}
-
-		inline static auto circumference(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "circumference", [&](){
-				auto width_atom = Atom{context, "width"};
-				auto height_atom = Atom{context, "height"};
-				auto width = get_property_bigint64(context, value, width_atom.value);
-				auto height = get_property_bigint64(context, value, height_atom.value);
-				return (width + height) * 2;
-			});
-		}
-
-		inline static auto instance(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "instance", [&](){
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
-				auto image_obj = JSValue{};
-				auto area_func = JS_NewCFunction2(context, area, "area", 0, JS_CFUNC_generic, 0);
-				auto circumference_func = JS_NewCFunction2(context, circumference, "circumference", 0, JS_CFUNC_generic, 0);
-				image_obj = JS_NewObject(context);
-				auto atom_width = Atom(context, "width");
-				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, JS::Converter::get_bigint64(context, argv[0])), int{JS_PROP_C_W_E});
-				auto atom_height = Atom(context, "height");
-				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, JS::Converter::get_bigint64(context, argv[1])), int{JS_PROP_C_W_E});
-				auto atom_area = Atom(context, "area");
-				JS_DefinePropertyValue(context, image_obj, atom_area.value, area_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				auto atom_circumference = Atom(context, "circumference");
-				JS_DefinePropertyValue(context, image_obj, atom_circumference.value, circumference_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				return image_obj;
-			});
-		}
-
-		inline static auto open(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			return proxy_wrapper(context, "open", [&](){
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
-				auto source = JS::Converter::get_string(context, argv[0]);
-				auto image = Kernel::ImageIO::read_png(source);
-				auto image_obj = JSValue{};
-				auto area_func = JS_NewCFunction2(context, area, "area", 0, JS_CFUNC_generic, 0);
-				auto circumference_func = JS_NewCFunction2(context, circumference, "circumference", 0, JS_CFUNC_generic, 0);
-				image_obj = JS_NewObject(context);
-				auto atom_width = Atom(context, "width");
-				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, image.width), int{JS_PROP_C_W_E});
-				auto atom_height = Atom(context, "height"); 
-				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, image.height), int{JS_PROP_C_W_E});
-				auto atom_bit_depth = Atom(context, "bit_depth");  
-				JS_DefinePropertyValue(context, image_obj, atom_bit_depth.value, JS_NewBigInt64(context, image.bit_depth), int{JS_PROP_C_W_E});
-				auto atom_color_type = Atom(context, "color_type"); 
-				JS_DefinePropertyValue(context, image_obj, atom_color_type.value, JS_NewBigInt64(context, image.color_type), int{JS_PROP_C_W_E});
-				auto atom_interlace_type = Atom(context, "interlace_type");
-				JS_DefinePropertyValue(context, image_obj, atom_interlace_type.value, JS_NewBigInt64(context, image.interlace_type), int{JS_PROP_C_W_E});
-				auto atom_channels = Atom(context, "channels"); 
-				JS_DefinePropertyValue(context, image_obj, atom_channels.value, JS_NewBigInt64(context, image.channels), int{JS_PROP_C_W_E});
-				auto atom_rowbytes = Atom(context, "rowbytes"); 
-				JS_DefinePropertyValue(context, image_obj, atom_rowbytes.value, JS_NewBigInt64(context, image.rowbytes), int{JS_PROP_C_W_E});
-				auto atom_data = Atom(context, "data");  
-				JS_DefinePropertyValue(context, image_obj, atom_data.value, JS_NewArrayBufferCopy(context, image.data().data(), image.data().size()), int{JS_PROP_C_W_E});
-				auto atom_area = Atom(context, "area");  
-				JS_DefinePropertyValue(context, image_obj, atom_area.value, area_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				auto atom_circumference = Atom(context, "circumference");
-				JS_DefinePropertyValue(context, image_obj, atom_circumference.value, circumference_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				return image_obj;
-			});
-		}
-
-		inline static auto write(
-			JSContext *context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
-		{
-			using Image = Kernel::Image<int>;
-			return proxy_wrapper(context, "write", [&](){
-				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
-				auto source_file = JS::Converter::get_string(context, argv[0]);
-				auto obj = argv[1];
-				auto atom_width = Atom{context, "width"};
-				auto atom_height = Atom{context, "height"};
-				auto atom_bit_depth = Atom{context, "bit_depth"};
-				auto atom_color_type = Atom{context, "color_type"};
-				auto atom_interlace_type = Atom{context, "interlace_type"};
-				auto atom_channels = Atom{context, "channels"};
-				auto atom_rowbytes = Atom{context, "rowbytes"};
-				auto width = get_property_bigint64(context, obj, atom_width.value);
-				auto height = get_property_bigint64(context, obj, atom_height.value);
-				auto bit_depth = get_property_bigint64(context, obj, atom_bit_depth.value);
-				auto color_type = get_property_bigint64(context, obj, atom_color_type.value);
-				auto interlace_type = get_property_bigint64(context, obj, atom_interlace_type.value);
-				auto channels = get_property_bigint64(context, obj, atom_channels.value);
-				auto rowbytes = get_property_bigint64(context, obj, atom_rowbytes.value);
-				auto data_val = get_value_from_object<std::string_view>(context, obj, "data");
-				auto data_len = std::size_t{};
-				auto data = get_array_buffer(context, &data_len, data_val);
-				JS_FreeValue(context, data_val);
-				auto image = Image(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
-				Kernel::ImageIO::write_png(source_file, image);
-				return JS_UNDEFINED;
-			});
-		}
-
-	}
-
 	namespace Image
 	{
 
@@ -5712,6 +4044,94 @@ namespace Sen::Kernel::Interface::Script
 				auto percentage = JS::Converter::get_float32(context, argv[2]);
 				Kernel::ImageIO::scale_png(source, destination, percentage);
 			});
+		}
+
+		inline static auto instance(
+			JSContext* context,
+			JSValue value,
+			int argc,
+			JSValue* argv
+		) -> JSValue
+		{
+			return proxy_wrapper(context, "instance", [&]() {
+				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "instance");
+				auto image_obj = JSValue{};
+				image_obj = JS_NewObject(context);
+				auto atom_width = Atom(context, "width");
+				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, JS::Converter::get_bigint64(context, argv[0])), int{ JS_PROP_C_W_E });
+				auto atom_height = Atom(context, "height");
+				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, JS::Converter::get_bigint64(context, argv[1])), int{ JS_PROP_C_W_E });
+				return image_obj;
+				});
+		}
+
+		inline static auto open(
+			JSContext* context,
+			JSValue value,
+			int argc,
+			JSValue* argv
+		) -> JSValue
+		{
+			return proxy_wrapper(context, "open", [&]() {
+				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "open");
+				auto source = JS::Converter::get_string(context, argv[0]);
+				auto image = Kernel::ImageIO::read_png(source);
+				auto image_obj = JSValue{};
+				image_obj = JS_NewObject(context);
+				auto atom_width = Atom(context, "width");
+				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, image.width), int{ JS_PROP_C_W_E });
+				auto atom_height = Atom(context, "height");
+				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, image.height), int{ JS_PROP_C_W_E });
+				auto atom_bit_depth = Atom(context, "bit_depth");
+				JS_DefinePropertyValue(context, image_obj, atom_bit_depth.value, JS_NewBigInt64(context, image.bit_depth), int{ JS_PROP_C_W_E });
+				auto atom_color_type = Atom(context, "color_type");
+				JS_DefinePropertyValue(context, image_obj, atom_color_type.value, JS_NewBigInt64(context, image.color_type), int{ JS_PROP_C_W_E });
+				auto atom_interlace_type = Atom(context, "interlace_type");
+				JS_DefinePropertyValue(context, image_obj, atom_interlace_type.value, JS_NewBigInt64(context, image.interlace_type), int{ JS_PROP_C_W_E });
+				auto atom_channels = Atom(context, "channels");
+				JS_DefinePropertyValue(context, image_obj, atom_channels.value, JS_NewBigInt64(context, image.channels), int{ JS_PROP_C_W_E });
+				auto atom_rowbytes = Atom(context, "rowbytes");
+				JS_DefinePropertyValue(context, image_obj, atom_rowbytes.value, JS_NewBigInt64(context, image.rowbytes), int{ JS_PROP_C_W_E });
+				auto atom_data = Atom(context, "data");
+				JS_DefinePropertyValue(context, image_obj, atom_data.value, JS_NewArrayBufferCopy(context, image.data().data(), image.data().size()), int{ JS_PROP_C_W_E });
+				return image_obj;
+				});
+		}
+
+		inline static auto write(
+			JSContext* context,
+			JSValue value,
+			int argc,
+			JSValue* argv
+		) -> JSValue
+		{
+			using Image = Kernel::Image<int>;
+			return proxy_wrapper(context, "write", [&]() {
+				assert_conditional(argc == 2, fmt::format("{} 2, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "write");
+				auto source_file = JS::Converter::get_string(context, argv[0]);
+				auto obj = argv[1];
+				auto atom_width = Atom{ context, "width" };
+				auto atom_height = Atom{ context, "height" };
+				auto atom_bit_depth = Atom{ context, "bit_depth" };
+				auto atom_color_type = Atom{ context, "color_type" };
+				auto atom_interlace_type = Atom{ context, "interlace_type" };
+				auto atom_channels = Atom{ context, "channels" };
+				auto atom_rowbytes = Atom{ context, "rowbytes" };
+				auto width = get_property_bigint64(context, obj, atom_width.value);
+				auto height = get_property_bigint64(context, obj, atom_height.value);
+				auto bit_depth = get_property_bigint64(context, obj, atom_bit_depth.value);
+				auto color_type = get_property_bigint64(context, obj, atom_color_type.value);
+				auto interlace_type = get_property_bigint64(context, obj, atom_interlace_type.value);
+				auto channels = get_property_bigint64(context, obj, atom_channels.value);
+				auto rowbytes = get_property_bigint64(context, obj, atom_rowbytes.value);
+				auto data_val = get_value_from_object<std::string_view>(context, obj, "data");
+				auto data_len = std::size_t{};
+				auto data = get_array_buffer(context, &data_len, data_val);
+				JS_FreeValue(context, data_val);
+				auto image = Image(0, 0, static_cast<int>(width), static_cast<int>(height), static_cast<int>(bit_depth), static_cast<int>(color_type), static_cast<int>(interlace_type), static_cast<int>(channels), static_cast<int>(rowbytes), std::move(make_list(data, data_len)));
+				Kernel::ImageIO::write_png(source_file, image);
+				return JS_UNDEFINED;
+				});
 		}
 
 		inline static auto transparent_fs(
@@ -5810,8 +4230,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(static_cast<int>(width), static_cast<int>(height)));
 				Kernel::ImageIO::join(destination, m_data);
 				auto image_obj = JS_NewObject(context);
-				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
-				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
 				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, destination.width), int{JS_PROP_C_W_E});
 				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, destination.height), int{JS_PROP_C_W_E});
 				auto atom_bit_depth = Atom{context, "bit_depth"};
@@ -5826,10 +4244,6 @@ namespace Sen::Kernel::Interface::Script
 				JS_DefinePropertyValue(context, image_obj, atom_rowbytes.value, JS_NewBigInt64(context, destination.rowbytes), int{JS_PROP_C_W_E});
 				auto atom_data = Atom(context, "data");  
 				JS_DefinePropertyValue(context, image_obj, atom_data.value, JS_NewArrayBufferCopy(context, destination.data().data(), destination.data().size()), int{JS_PROP_C_W_E});
-				auto atom_area = Atom(context, "area");  
-				JS_DefinePropertyValue(context, image_obj, atom_area.value, area_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
-				auto atom_circumference = Atom(context, "circumference");
-				JS_DefinePropertyValue(context, image_obj, atom_circumference.value, circumference_func, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE);
 				return image_obj;
 			});
 		}
@@ -5870,8 +4284,6 @@ namespace Sen::Kernel::Interface::Script
 				auto destination = Kernel::Image<int>::transparent(Kernel::Dimension<int>(atlas_width, atlas_height));
 				Kernel::ImageIO::join_extend(destination,m_data);
 				auto image_obj = JS_NewObject(context);
-				auto area_func = JS_NewCFunction2(context, Dimension::area, "area", 0, JS_CFUNC_generic, 0);
-				auto circumference_func = JS_NewCFunction2(context, Dimension::circumference, "circumference", 0, JS_CFUNC_generic, 0);
 				JS_DefinePropertyValue(context, image_obj, atom_width.value, JS_NewBigInt64(context, destination.width), int{JS_PROP_C_W_E});
 				JS_DefinePropertyValue(context, image_obj, atom_height.value, JS_NewBigInt64(context, destination.height), int{JS_PROP_C_W_E});
 				auto atom_bit_depth = Atom{context, "bit_depth"};
@@ -6019,43 +4431,6 @@ namespace Sen::Kernel::Interface::Script
 			});
 		}
 
-	}
-
-	namespace Compression
-	{
-
-		namespace Zlib
-		{
-
-			inline static auto uncompress(
-				JSContext *context,
-				JSValue value,
-				int argc,
-				JSValue* argv
-			) -> JSValue
-			{
-				using Data = Class::BinaryView::Data;
-				return proxy_wrapper(context, "uncompress", [&](){
-					assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "uncompress");
-					auto s = get_opaque_value<Data>(context, argv[0], Class::BinaryView::class_id.value);
-					auto sub = std::make_unique<Data>(Kernel::Compression::Zlib::uncompress(s->value));
-					auto global_obj = get_global_object(context);
-					auto sen_obj = get_value_from_object<std::string_view>(context, global_obj, "Sen");
-					JS_FreeValue(context, global_obj);
-					auto kernel_obj = get_value_from_object<std::string_view>(context, sen_obj, "Kernel");
-					JS_FreeValue(context, sen_obj);
-					auto binary_ctor = get_value_from_object<std::string_view>(context, kernel_obj, "BinaryView");
-					JS_FreeValue(context, kernel_obj);
-					auto proto = get_prototype_from_object(context, binary_ctor);
-					JS_FreeValue(context, binary_ctor);
-					auto obj = make_instance_of_class(context, proto, Class::BinaryView::class_id.value);
-					JS_FreeValue(context, proto);
-					JS_SetOpaque(obj, sub.release());
-					return obj;
-				});
-			}
-
-		}
 	}
 
 	namespace Support

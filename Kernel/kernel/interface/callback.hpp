@@ -219,11 +219,11 @@ namespace Sen::Kernel::Interface {
 					// cut_multiple_fs_asynchronous
 					runtime.add_proxy(Script::Image::cut_multiple_fs_asynchronous, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs_asynchronous"_sv);
 					// open
-					runtime.add_proxy(Script::Dimension::open, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "open"_sv);
+					runtime.add_proxy(Script::Image::open, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "open"_sv);
 					// write
-					runtime.add_proxy(Script::Dimension::write, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "write"_sv);
+					runtime.add_proxy(Script::Image::write, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "write"_sv);
 					// instance
-					runtime.add_proxy(Script::Dimension::instance, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "instance"_sv);
+					runtime.add_proxy(Script::Image::instance, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "instance"_sv);
 				}
 				// runtime
 				{
@@ -237,9 +237,8 @@ namespace Sen::Kernel::Interface {
 				}
 				// zlib
 				{
-					// TODO : Rework this
 					// uncompress
-					runtime.add_proxy(Script::Compression::Zlib::uncompress, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Compression"_sv, "Zlib"_sv}), "uncompress"_sv);
+					runtime.add_proxy(Proxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Compression::Zlib::uncompress>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Compression"_sv, "Zlib"_sv}), "uncompress"_sv);
 				}
 				// texture
 				{
@@ -444,9 +443,9 @@ namespace Sen::Kernel::Interface {
 					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::StreamCompressedGroup::decode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "StreamCompressedGroup"_sv}), "decode_fs"_sv);
 					// encode_fs
 					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::StreamCompressedGroup::encode_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "StreamCompressedGroup"_sv}), "encode_fs"_sv);
-					// unpack_rsb
+					// unpack_fs
 					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::ResourceStreamBundle::unpack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "ResourceStreamBundle"_sv}), "unpack_fs"_sv);
-					// pack_rsb
+					// pack_fs
 					runtime.add_proxy(JS::Proxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Miscellaneous::Project::ResourceStreamBundle::pack_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "Miscellaneous"_sv, "Project"_sv, "ResourceStreamBundle"_sv}), "pack_fs"_sv);
 				}
 				// miscellaneous
@@ -470,20 +469,10 @@ namespace Sen::Kernel::Interface {
 				}
 				// DataStreamView
 				runtime.register_object(Script::Class::DataStreamView::register_class<false>);
-				// Boolean
-				runtime.register_object(Script::Class::Boolean::register_class);
-				// DimensionView
-				runtime.register_object(Script::Class::DimensionView::register_class);
-				// Rectangle
-				runtime.register_object(Script::Class::Rectangle::register_class);
 				// ImageView
 				runtime.register_object(Script::Class::ImageView::register_class);
 				// Canvas
 				runtime.register_object(Script::Class::Canvas::register_class);
-				// BinaryView
-				runtime.register_object(Script::Class::BinaryView::register_class);
-				// UInteger32
-				runtime.register_object(Script::Class::Number::register_class<uint32_t>);
 				// JsonWriter
 				runtime.register_object(Script::Class::JsonWriter::register_class);
 				// APNGMakerSetting

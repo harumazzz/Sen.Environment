@@ -59,8 +59,9 @@ namespace Sen::Kernel::Compression {
 				return zlib_outdata;
 			}
 			
+			template <typename Container>
 			inline static auto uncompress(
-				const List<unsigned char> &data
+				const Container &data
 			) -> List<unsigned char>
 			{
 				auto zlib_init = z_stream {
@@ -86,7 +87,7 @@ namespace Sen::Kernel::Compression {
 						case Z_DATA_ERROR:
 						case Z_MEM_ERROR:{
 							inflateEnd(&zlib_init);
-							return List<unsigned char>();
+							return List<unsigned char>{};
 						}
 					}
 					result.insert(result.end(), out_chunk.begin(), out_chunk.begin() + (out_chunk.size() - zlib_init.avail_out));
