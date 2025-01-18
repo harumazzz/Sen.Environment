@@ -277,9 +277,6 @@ namespace Sen::Kernel::JavaScript {
 			}
 			auto atom = Atom{ context, class_name };
 			JS_DefinePropertyValue(context, parent_obj, atom.value, thiz.constructor.value(), int{JS_PROP_C_W_E});
-			for (auto it = allocated.rbegin(); it != allocated.rend(); ++it) {
-				JS_FreeValue(context, *it);
-			}
 			JS_FreeValue(context, global_obj);
 			return;
 		}
