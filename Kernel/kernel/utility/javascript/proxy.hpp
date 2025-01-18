@@ -268,11 +268,9 @@ namespace Sen::Kernel::JavaScript {
 			assert_conditional(thiz.constructor.has_value(), fmt::format("Class {} must have a constructor", class_name), "build");
 			auto global_obj = JS_GetGlobalObject(context);
 			auto parent_obj = JS_DupValue(context, global_obj);
-			auto allocated = std::array<JSValue, InstanceCount>{};
 			auto index = std::size_t{ 0 };
 			for (auto& name : instance_names) {
 				auto new_obj = make_instance_object(context, parent_obj, name);
-				allocated[index++] = new_obj;
 				parent_obj = new_obj;
 			}
 			auto atom = Atom{ context, class_name };
