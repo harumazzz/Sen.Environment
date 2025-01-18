@@ -474,7 +474,7 @@ namespace Sen::Kernel::Interface {
 				// Canvas
 				runtime.register_object(Script::Class::Canvas::register_class);
 				// JsonWriter
-				runtime.register_object(Script::Class::JsonWriter::register_class);
+				runtime.register_object<2>(Interface::API::JsonWriter::register_class<2>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 				// APNGMakerSetting
 				runtime.register_object(Script::Class::APNGMakerSetting::register_class);
 				// Image

@@ -40,7 +40,7 @@ namespace Sen::Kernel
 
         std::size_t mutable write_pos = size_t{0};
 
-        Stream() : read_pos(0), write_pos(0), length(0)
+        Stream() : read_pos{0}, write_pos{0}, length{0}
         {
         }
 
@@ -61,7 +61,7 @@ namespace Sen::Kernel
 
         Stream(
             std::string_view source
-        ) : read_pos(0), write_pos(0)
+        ) : read_pos{0}, write_pos{0}
         {
             #if WINDOWS
             auto file = WindowsFileReader(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data());

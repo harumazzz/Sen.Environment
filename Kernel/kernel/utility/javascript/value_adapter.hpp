@@ -168,7 +168,7 @@ namespace Sen::Kernel::JavaScript {
 		JSValue value
 	) -> T
 	{
-		return static_cast<T>(Converter::to_number(context, value));
+		return static_cast<T>(Converter::get_float64(context, value));
 	}
 
 	struct ArrayBuffer {

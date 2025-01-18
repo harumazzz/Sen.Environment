@@ -521,9 +521,9 @@ namespace Sen::Kernel::Interface::API {
 			JSValue* argv
 		) -> JSValue
 		{
-			return proxy_wrapper(context, "evaluate", [&]() {
+			return proxy_wrapper(context, "evaluate_fs", [&]() {
 				auto source = JavaScript::Converter::get_string(context, argv[0]);
-				auto js_source = Kernel::FileSystem::read_file(source);
+				auto js_source = Kernel::FileSystem::read_quick_file(source);
 				return JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 			});
 		}

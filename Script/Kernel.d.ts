@@ -3109,7 +3109,7 @@ declare namespace Sen {
 			/**
 			 * Controls whether to write indented JSON for readability.
 			 */
-			private _write_indent: boolean;
+			private _writeIndent: boolean;
 
 			/**
 			 * Creates a new instance of the JsonWriter class.
@@ -3121,14 +3121,14 @@ declare namespace Sen {
 			 *
 			 * @returns True if indentation is enabled, false otherwise.
 			 */
-			public get write_indent(): boolean;
+			public get writeIndent(): boolean;
 
 			/**
 			 * Sets a value to enable or disable indentation.
 			 *
 			 * @param value True to enable indentation, false to disable.
 			 */
-			public set write_indent(value: boolean): void;
+			public set writeIndent(value: boolean): void;
 
 			/**
 			 * Clears any previously written JSON data.

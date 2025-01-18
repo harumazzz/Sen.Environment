@@ -58,17 +58,14 @@ namespace Sen::Kernel::FileSystem
 		};
 		#if WINDOWS
 		auto wide_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data())));
-		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(_wfopen(wide_path.data(), L"rb"), file_deleter);
+		auto file = WindowsFileReader{ wide_path };
 		#else
 		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(std::fopen(std::string(source.data()).data(), "rb"), file_deleter);
 		#endif
-		if (file == nullptr) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_quick_file");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_quick_file");
-			#endif
-		}
+		#if WINDOWS
+		#else
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{ source.data(), source.size() }), "read_quick_file");
+		#endif
 		#if WINDOWS
 		auto file_path = std::filesystem::path{wide_path};
 		#else
@@ -76,8 +73,15 @@ namespace Sen::Kernel::FileSystem
 		#endif
     	auto file_size = std::filesystem::file_size(file_path);
 		auto content = std::string(file_size, '\0');
+		#if WINDOWS
+		auto bytes_read = DWORD{ 0 };
+		auto state = ReadFile(file.handle, content.data(), static_cast<DWORD>(file_size), &bytes_read, nullptr);
+		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
+		assert_conditional(bytes_read == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
+		#else
 		auto count = std::fread(content.data(), 1, file_size, file.get());
 		assert_conditional(count == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), "read_quick_file");
+		#endif
 		return content;
 	}
 
@@ -227,10 +231,6 @@ namespace Sen::Kernel::FileSystem
 		return content;
 	#endif
 	}
-
-	// filePath: the file path to write
-	// data: utf16-le charset
-	// return: the data has been written
 
 	inline static auto write_file_by_utf16le(
 		std::string_view source,
