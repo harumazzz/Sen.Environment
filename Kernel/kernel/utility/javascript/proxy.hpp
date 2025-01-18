@@ -288,5 +288,12 @@ namespace Sen::Kernel::JavaScript {
 
 	};
 
+	template <typename T> requires (std::is_pointer<T>::value && std::is_class_v<std::remove_pointer_t<T>>)
+	auto from_value(JSContext* context, JSValue value) -> T {
+		using NativeClass = std::remove_pointer_t<T>;
+		return get_opaque_value<NativeClass>(context, value, ClassBuilder<NativeClass>::class_id.value);
+	}
+
+
 	
 }

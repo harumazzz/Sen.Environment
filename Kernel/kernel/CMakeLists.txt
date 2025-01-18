@@ -85,6 +85,7 @@ add_library(
 	./dependencies/canvas_ity.hpp
 	./dependencies/tsl.hpp
 	./dependencies/compile-time-regular-expressions.hpp
+	./dependencies/stringzilla.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
@@ -274,6 +275,7 @@ target_link_libraries(
 	canvas_ity
 	tsl
 	compile-time-regular-expressions
+	stringzilla
 )
 
 if (WIN32)

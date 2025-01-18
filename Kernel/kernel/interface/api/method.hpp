@@ -1,7 +1,7 @@
 #pragma once
-#include "kernel/interface/shell.hpp"
+
+#include "kernel/interface/api/class.hpp"
 #include "kernel/interface/version.hpp"
-#include "kernel/utility/javascript/builder.hpp"
 
 namespace Sen::Kernel::Interface::API {
 
@@ -40,7 +40,7 @@ namespace Sen::Kernel::Interface::API {
 			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({std::string{"is_gui"}}), parameters.operator*());
 			Interface::Shell::callback(parameters.get(), is_gui.get());
-			return Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell");
+			return static_cast<bool>(Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell"));
 		}
 		
 		inline static auto version (
