@@ -649,207 +649,92 @@ namespace Sen::Kernel::FileSystem
 		return;
 	}
 
-	class FileHandler {
-
-		private:
-
-			template <typename T, typename CloseMethod>
-			using Pointer = std::unique_ptr<T, CloseMethod>;
-
-		protected:
-
-			inline static auto constexpr close_file = [](FILE* file) {
-				if (file != nullptr) {
-					std::fclose(file);
-					file = nullptr;
-				}
-				return;
-			};
-
-
-		public:
-
-			Pointer<std::FILE, decltype(close_file)> file{nullptr, close_file};
-
-			FileHandler(
-				std::string_view source,
-				std::string_view mode
-			) 
-			{
-				#if WINDOWS
-					file.reset(_wfopen(String::utf8_to_utf16(String::to_windows_style(source.data())).data(), String::utf8view_to_utf16(mode).data()));
-				#else
-					file.reset(std::fopen(source.data(), mode.data()));
-				#endif
-				assert_conditional(file != nullptr, String::format(fmt::format("{}", Language::get("file_is_nullptr")), String::to_posix_style(source.data())), "FileHandler");
-			}
-
-			auto close(
-
-			) -> void
-			{
-				thiz.file.reset(nullptr);
-				return;
-			}
-
-			auto read(
-
-			) -> char
-			{
-				return std::fgetc(thiz.file.get());
-			}
-
-			auto position(
-			) -> std::size_t
-			{
-				return fsize(thiz.file.get());
-			}
-
-			auto position(
-				std::size_t pos
-			) -> void
-			{
-				std::fseek(thiz.file.get(), 0, pos);
-				return;
-			}
-
-			auto size(
-
-			) -> std::size_t
-			{
-				std::fseek(thiz.file.get(), 0, SEEK_END);
-				auto file_size = fsize(thiz.file.get());
-				std::fseek(thiz.file.get(), 0, SEEK_SET);
-				return file_size;
-			}
-
-			auto read_all (
-
-			) -> List<uint8_t>
-			{
-				auto file_size = size();
-				auto data = List<uint8_t>{};
-				data.resize(file_size);
-				std::fread(data.data(), 1, file_size, thiz.file.get());
-				return data;
-			}
-
-			auto write_all (
-				const List<uint8_t>& data
-			) -> void
-			{
-				std::fwrite(reinterpret_cast<char const*>(data.data()), 1, data.size(), thiz.file.get());
-				return;
-			}
-
-			auto write (
-				char data
-			) -> void
-			{
-				std::fputc(static_cast<int>(data), thiz.file.get());
-				return;
-			}
-
-			FileHandler(
-			) = delete;
-
-			FileHandler(
-				FileHandler const& that
-			) = delete;
-
-			FileHandler(
-				FileHandler&& that
-			) = delete;
-
-			~FileHandler(
-			) = default;
-
-
-	};
-
-	class FileSystemWatcher {
-		public:
-			using Callback = std::function<void(const std::string& event, const std::string& filename)>;
-
-			FileSystemWatcher(const std::string& directory)
-				: directory(directory) {}
-
-			void start(Callback callback) {
-				this->callback = callback;
-
-		#ifdef _WIN32
-				watch_windows();
+	inline static auto is_file(
+		std::string_view source
+	) -> bool
+	{
+		#if WINDOWS
+		auto result = std::filesystem::is_regular_file(String::utf8_to_utf16(source.data()));
 		#else
-				assert_conditional(false, fmt::format("{}", Language::get("os.system.process_invalid")), "start");
+		auto result = std::filesystem::is_regular_file(source.data());
 		#endif
-			}
+		return result;
+	}
 
-		private:
-			std::string directory;
-			
-			Callback callback;
-
-		#ifdef _WIN32
-			void watch_windows() {
-				auto utf16_directory = String::utf8_to_utf16(directory);
-				auto hDir = CreateFile(
-					reinterpret_cast<LPCWSTR>(utf16_directory.data()),
-					FILE_LIST_DIRECTORY,
-					FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-					nullptr,
-					OPEN_EXISTING,
-					FILE_FLAG_BACKUP_SEMANTICS,
-					nullptr
-				);
-				assert_conditional(!(hDir == INVALID_HANDLE_VALUE), fmt::format("{}", Language::get("windows.process.failed_to_open_directory_to_handle")), "watch_windows");
-				auto buffer = std::array<char, 1024>{};
-				auto bytesReturned = DWORD{};
-				while (true) {
-					if (ReadDirectoryChangesW(
-							hDir,
-							buffer.data(),
-							buffer.size(),
-							TRUE,
-							FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE,
-							&bytesReturned,
-							nullptr,
-							nullptr
-						)) {
-
-						auto pNotify = static_cast<FILE_NOTIFY_INFORMATION*>(nullptr);
-						auto offset = int{0};
-						do {
-							pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buffer[offset]);
-							auto wfilename = std::wstring(pNotify->FileName, pNotify->FileName + pNotify->FileNameLength / sizeof(WCHAR));
-							auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wfilename.data(), static_cast<int>(wfilename.size()), nullptr, 0, nullptr, nullptr);
-							auto filename = std::string(size_needed, 0);
-							WideCharToMultiByte(CP_UTF8, 0, wfilename.data(), static_cast<int>(wfilename.size()), &filename[0], size_needed, nullptr, nullptr);
-							auto event = std::string{};
-							switch (pNotify->Action) {
-								case FILE_ACTION_ADDED:
-									event = "add";
-									break;
-								case FILE_ACTION_REMOVED:
-									event = "delete";
-									break;
-								case FILE_ACTION_MODIFIED:
-									event = "update";
-									break;
-								case FILE_ACTION_RENAMED_OLD_NAME:
-								case FILE_ACTION_RENAMED_NEW_NAME:
-									event = "rename";
-									break;
-								default:
-									event = "unknown";
-									break;
-								}
-							callback(event, filename);
-							offset += pNotify->NextEntryOffset;
-						} while (pNotify->NextEntryOffset != 0);
-					}
-				}
-				CloseHandle(hDir);
-			}
+	inline static auto is_directory(
+		std::string_view source
+	) -> bool
+	{
+		#if WINDOWS
+		auto result = std::filesystem::is_directory(String::utf8_to_utf16(source.data()));
+		#else
+		auto result = std::filesystem::is_directory(source.data());
 		#endif
-		};
+		return result;
+	}
+
+	inline static auto rename(
+		std::string_view source,
+		std::string_view destination
+	) -> void
+	{
+		#if WINDOWS
+		std::filesystem::rename(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) });
+		#else
+		std::filesystem::rename(std::filesystem::path{ source.data() }, std::filesystem::path{ destination.data() });
+		#endif
+		return;
+	}
+
+	inline static auto copy_directory(
+		std::string_view source,
+		std::string_view destination
+	) -> void
+	{
+		#if WINDOWS
+		std::filesystem::copy(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) },
+			std::filesystem::copy_options::recursive |
+			std::filesystem::copy_options::overwrite_existing);
+		#else
+		std::filesystem::copy(std::filesystem::path{ source.data() }, std::filesystem::path{ destination.data() }, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+		#endif
+		return;
+	}
+
+	inline static auto copy(
+		std::string_view source,
+		std::string_view destination
+	) -> void
+	{
+		#if WINDOWS
+		std::filesystem::copy(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) });
+		#else
+		std::filesystem::copy(std::filesystem::path{ source.data() }, std::filesystem::path{ destination.data() });
+		#endif
+		return;
+	}
+
+	inline static auto remove(
+		std::string_view source
+	) -> void
+	{
+		#if WINDOWS
+		std::filesystem::remove(std::filesystem::path{ String::utf8_to_utf16(source.data()) });
+		#else
+		std::filesystem::remove(std::filesystem::path{ source.data() });
+		#endif
+		return;
+	}
+
+	inline static auto remove_all(
+		std::string_view source
+	) -> void
+	{
+		#if WINDOWS
+		std::filesystem::remove_all(std::filesystem::path{ String::utf8_to_utf16(source.data()) });
+		#else
+		std::filesystem::remove_all(std::filesystem::path{ source.data() });
+		#endif
+		return;
+	}
 }

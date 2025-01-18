@@ -86,7 +86,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 				scg_setting,
 			);
 			international_data.packet.push(e);
-			Kernel.FileSystem.Operation.remove_all(source_directory);
+			Kernel.FileSystem.remove_all(source_directory);
 		}
 		Console.finished(
 			Kernel.Language.get(

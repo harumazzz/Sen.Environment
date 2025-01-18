@@ -96,7 +96,7 @@ namespace Sen::Kernel::JavaScript
 			) -> JSModuleDef*
 			{
 				auto source = std::string{module_name, std::strlen(module_name)};
-				if (!Path::Script::is_file(source)) {
+				if (!FileSystem::is_file(source)) {
 					JS_ThrowInternalError(context, "Cannot read module, import file is missing, path: %s", module_name);
 					return nullptr;
 				}

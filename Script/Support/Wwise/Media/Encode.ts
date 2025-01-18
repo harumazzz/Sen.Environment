@@ -326,8 +326,8 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
 			k_sample_conversion_settings,
 		);
 		if (Kernel.FileSystem.is_file(`${wwise_project_dir}/Sample.wav`))
-			Kernel.FileSystem.Operation.remove(`${wwise_project_dir}/Sample.wav`);
-		Kernel.FileSystem.Operation.copy(source, `${wwise_project_dir}/Sample.wav`);
+			Kernel.FileSystem.remove(`${wwise_project_dir}/Sample.wav`);
+		Kernel.FileSystem.copy(source, `${wwise_project_dir}/Sample.wav`);
 		const platform = {
 			pcm: 'Android',
 			adpcm: 'Android',
@@ -343,12 +343,12 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
 			result_string_list[result_string_list.length - 2] === 'Process completed successfully.',
 			Kernel.Language.get('wwise.media.encode.failed'),
 		);
-		Kernel.FileSystem.Operation.remove(destination);
-		Kernel.FileSystem.Operation.copy(
+		Kernel.FileSystem.remove(destination);
+		Kernel.FileSystem.copy(
 			`${wwise_project_dir}/GeneratedSoundBanks/${platform}/Sample.wem`,
 			destination,
 		);
-		Kernel.FileSystem.Operation.remove_all(wwise_project_dir);
+		Kernel.FileSystem.remove_all(wwise_project_dir);
 	}
 
 	export function process_fs(source: string, destination: string, format: Common.Format): void {

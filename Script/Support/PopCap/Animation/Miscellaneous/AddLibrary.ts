@@ -41,7 +41,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AddLibrary {
 		}
 		const multipler = 1200 / Number(data.resolution);
 		for (const { media, image, sprite, original_path } of additional) {
-			Kernel.FileSystem.Operation.copy(original_path, `${source}/library/media/${media}.png`);
+			Kernel.FileSystem.copy(original_path, `${source}/library/media/${media}.png`);
 			Kernel.Support.PopCap.Animation.Miscellaneous.generate_image(
 				`${source}/library/image/${image}.xml`,
 				new Kernel.Support.PopCap.Animation.Miscellaneous.Image(

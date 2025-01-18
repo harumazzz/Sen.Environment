@@ -700,40 +700,38 @@ declare namespace Sen {
 			/**
 			 * File system operations such as rename, copy, and remove.
 			 */
-			declare namespace Operation {
-				/**
-				 * Rename a file or directory.
-				 * @param source - The path of the file or directory to rename
-				 * @param destination - The new path or name
-				 */
-				export function rename(source: string, destination: string): void;
+			/**
+			 * Rename a file or directory.
+			 * @param source - The path of the file or directory to rename
+			 * @param destination - The new path or name
+			 */
+			export function rename(source: string, destination: string): void;
 
-				/**
-				 * Copy a file or directory.
-				 * @param source - The path of the file or directory to copy
-				 * @param destination - The destination path or directory
-				 */
-				export function copy(source: string, destination: string): void;
+			/**
+			 * Copy a file or directory.
+			 * @param source - The path of the file or directory to copy
+			 * @param destination - The destination path or directory
+			 */
+			export function copy(source: string, destination: string): void;
 
-				/**
-				 * Copy a file or directory.
-				 * @param source - The path of the file or directory to copy
-				 * @param destination - The destination path or directory
-				 */
-				export function copy_directory(source: string, destination: string): void;
+			/**
+			 * Copy a file or directory.
+			 * @param source - The path of the file or directory to copy
+			 * @param destination - The destination path or directory
+			 */
+			export function copy_directory(source: string, destination: string): void;
 
-				/**
-				 * Remove a file or directory.
-				 * @param source - The path of the file or directory to remove
-				 */
-				export function remove(source: string): void;
+			/**
+			 * Remove a file or directory.
+			 * @param source - The path of the file or directory to remove
+			 */
+			export function remove(source: string): void;
 
-				/**
-				 * Remove a file or directory.
-				 * @param source - The path of the file or directory to remove
-				 */
-				export function remove_all(source: string): void;
-			}
+			/**
+			 * Remove a file or directory.
+			 * @param source - The path of the file or directory to remove
+			 */
+			export function remove_all(source: string): void;
 		}
 
 		/**

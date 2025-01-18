@@ -113,17 +113,16 @@ namespace Sen::Kernel::Interface {
 					runtime.add_proxy(Proxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "is_file"_sv);
 					// is_directory
 					runtime.add_proxy(Proxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}),"is_directory"_sv);
-					// TODO : Must do later
-					// operation : rename
-					runtime.add_proxy(Script::FileSystem::Operation::rename, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "rename"_sv);
-					// operation : remove
-					runtime.add_proxy(Script::FileSystem::Operation::remove, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "remove"_sv);
-					// operation : remove all
-					runtime.add_proxy(Script::FileSystem::Operation::remove_all, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "remove_all"_sv);
-					// operation : copy
-					runtime.add_proxy(Script::FileSystem::Operation::copy, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "copy"_sv);
-					// operation : copy_directory
-					runtime.add_proxy(Script::FileSystem::Operation::copy_directory, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv, "Operation"_sv}), "copy_directory"_sv);
+					//  rename
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::rename>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "rename"_sv);
+					//  remove
+					runtime.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::FileSystem::remove>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove"_sv);
+					//  remove all
+					runtime.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::FileSystem::remove_all>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove_all"_sv);
+					//  copy
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::copy>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy"_sv);
+					//  copy_directory
+					runtime.add_proxy(Proxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::copy_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy_directory"_sv);
 				}
 				// path
 				// TODO : Remove Script : Finish this later

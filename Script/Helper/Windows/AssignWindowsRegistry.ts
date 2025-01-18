@@ -53,7 +53,7 @@ namespace Sen.Script.Helper.Windows.AssignWindowsRegistry {
 		const destination = `${entry}/sen.reg`;
 		Kernel.FileSystem.write_file(destination, command);
 		Kernel.Process.run(`regedit /s ${destination}`);
-		Kernel.FileSystem.Operation.remove(destination);
+		Kernel.FileSystem.remove(destination);
 	}
 }
 

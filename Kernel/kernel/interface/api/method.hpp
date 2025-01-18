@@ -279,14 +279,52 @@ namespace Sen::Kernel::Interface::API {
 			std::string& source
 		) -> bool
 		{
-			return Kernel::Path::Script::is_file(source);
+			return Kernel::FileSystem::is_file(source);
 		}
 
 		inline static auto is_directory(
 			std::string& source
 		) -> bool
 		{
-			return Kernel::Path::Script::is_directory(source);
+			return Kernel::FileSystem::is_directory(source);
+		}
+
+		inline static auto rename(
+			std::string& source,
+			std::string& destination
+		) -> void
+		{
+			return Kernel::FileSystem::rename(source, destination);
+		}
+
+		inline static auto copy(
+			std::string& source,
+			std::string& destination
+		) -> void
+		{
+			return Kernel::FileSystem::copy(source, destination);
+		}
+
+		inline static auto copy_directory(
+			std::string& source,
+			std::string& destination
+		) -> void
+		{
+			return Kernel::FileSystem::copy_directory(source, destination);
+		}
+
+		inline static auto remove(
+			std::string& source
+		) -> void
+		{
+			return Kernel::FileSystem::remove(source);
+		}
+
+		inline static auto remove_all(
+			std::string& source
+		) -> void
+		{
+			return Kernel::FileSystem::remove_all(source);
 		}
 
 	}

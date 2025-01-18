@@ -57,7 +57,7 @@ namespace Sen.Script.Support.Texture.Upscaler {
 		Console.argument(Kernel.Language.get('image.upscaler.enter_model'));
 		const model_selected: string = load_string_by_int(model_rule);
 		const command = `${real_esrgan_program_file_path} -i "${source}" -o "${destination}" -n "${model_selected}" > nul 2>&1`;
-		Kernel.FileSystem.Operation.remove(destination);
+		Kernel.FileSystem.remove(destination);
 		Kernel.Process.execute(command);
 		assert(
 			Kernel.FileSystem.is_file(destination),
