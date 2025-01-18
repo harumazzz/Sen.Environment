@@ -438,6 +438,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.2.1"
+  flutter_fancy_tree_view:
+    dependency: "direct main"
+    description:
+      name: flutter_fancy_tree_view
+      sha256: e8ef261170be1d63fe56843baa2b501fc353196eadef51d848e882d8cbe10c31
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   flutter_hooks:
     dependency: "direct main"
     description:
@@ -499,14 +507,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
-  flutter_riverpod:
-    dependency: "direct main"
-    description:
-      name: flutter_riverpod
-      sha256: "9532ee6db4a943a1ed8383072a2e3eeda041db5657cdf6d2acecf3c21ecbe7e1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.6.1"
   flutter_shaders:
     dependency: transitive
     description:
@@ -533,14 +533,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.2.1"
-  hooks_riverpod:
-    dependency: "direct main"
-    description:
-      name: hooks_riverpod
-      sha256: "70bba33cfc5670c84b796e6929c54b8bc5be7d0fe15bb28c2560500b9ad06966"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.6.1"
   html:
     dependency: transitive
     description:
@@ -893,14 +885,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
-  riverpod:
-    dependency: "direct main"
-    description:
-      name: riverpod
-      sha256: "59062512288d3056b2321804332a13ffdd1bf16df70dcc8e506e411280a72959"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.6.1"
   rxdart:
     dependency: transitive
     description:
@@ -1050,14 +1034,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.0"
-  state_notifier:
-    dependency: transitive
-    description:
-      name: state_notifier
-      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:

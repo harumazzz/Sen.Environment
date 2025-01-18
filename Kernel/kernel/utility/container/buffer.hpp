@@ -3,14 +3,10 @@
 #include "kernel/utility/utility.hpp"
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
+#include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel
 {
-    template <typename Type>
-    concept CharacterOnView = std::is_same_v<Type, char> || std::is_same_v<Type, unsigned char>;
-
-    template <typename Type>
-    concept IsValidArgument = std::is_same<Type, std::size_t>::value && true;
 
     template <auto use_big_endian>
     struct Stream

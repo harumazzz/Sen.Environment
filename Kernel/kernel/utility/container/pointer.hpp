@@ -5,8 +5,6 @@
 
 namespace Sen::Kernel {
 
-	// free c++ memory allocation
-
 	inline static auto constexpr free_memory = [](auto p)
 	{
 		if (p != nullptr) {
@@ -14,8 +12,7 @@ namespace Sen::Kernel {
 		}
 		return;
 	};
-
-	// free c++ memory allocation
+	
 	template <typename T>
 	inline static auto constexpr free_array = [](T* p)
 	{

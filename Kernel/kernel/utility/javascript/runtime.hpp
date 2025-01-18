@@ -1,20 +1,13 @@
 #pragma once
 
 #include "kernel/utility/javascript/value.hpp"
+#include "kernel/utility/trait/trait.hpp"
 #include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::JavaScript
 {
 
 	namespace FileSystem = Sen::Kernel::FileSystem;
-
-	template <typename Type>
-	concept SpaceX = std::is_same_v<Type, int32_t> || std::is_same_v<Type, uint32_t>
-	|| std::is_same_v<Type, int64_t> || std::is_same_v<Type, uint64_t> || std::is_same_v<Type, float> || std::is_same_v<Type, double> || std::is_same_v<Type, std::string> || std::is_same_v<Type, bool>;
-
-	template <typename Type>
-	concept PrimitiveJSValue = std::is_same_v<Type, bool> or std::is_same_v<Type, std::string_view> or
-		std::is_integral<Type>::value or std::is_floating_point<Type>::value;
 		
 	struct Handler {
 		
@@ -70,6 +63,16 @@ namespace Sen::Kernel::JavaScript
 			) -> void
 			{
 				register_method(thiz.context.value);
+				return;
+			}
+
+			template <size_t Size>
+			inline auto register_object(
+				std::function<void(JSContext*, const std::array<std::string_view, Size>&)> register_method,
+				const std::array<std::string_view, Size>& space
+			) -> void
+			{
+				register_method(thiz.context.value, space);
 				return;
 			}
 

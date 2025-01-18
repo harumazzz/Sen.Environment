@@ -181,12 +181,7 @@ namespace Sen::Kernel::JavaScript {
 		return entry;
 	}
 
-	template <typename T>
-	concept CanBeAllocated = requires(T t, JSContext* context) {
-		{ t.allocate_new(context) } -> std::same_as<void>; 
-	};
-
-	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && !std::is_pointer<Class>::value && CanBeAllocated<Class> && std::is_function<Constructor>::value) 
+	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && !std::is_pointer<Class>::value && CanBeAllocated<Class, JSContext> && std::is_function<Constructor>::value) 
 	inline static auto build_class(
 		JSContext* context,
 		Class& class_id,

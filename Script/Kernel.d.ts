@@ -56,10 +56,6 @@ declare namespace Sen {
 		declare class Clock {
 			public constructor();
 
-			public start(): void;
-
-			public stop(): void;
-
 			public start_safe(): void;
 
 			public stop_safe(): void;
@@ -70,9 +66,9 @@ declare namespace Sen {
 
 			public duration_as_seconds(): number;
 
-			public isStarted(): boolean;
+			public is_started(): boolean;
 
-			public isStopped(): boolean;
+			public is_stopped(): boolean;
 		}
 
 		/**

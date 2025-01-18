@@ -1,13 +1,12 @@
 #pragma once
 
 #include "kernel/utility/utility.hpp"
+#include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel
 {
     namespace UTF8Json
     {
-        template <typename T>
-        concept HasEmptyMethod = requires(T a) { { a.empty() } -> std::same_as<void>; };
 
         class JsonConstants
         {

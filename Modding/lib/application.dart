@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/model/theme.dart';
 import 'package:sen/screen/animation_viewer/animation_viewer.dart';
@@ -118,8 +119,11 @@ class _MainApplication extends StatelessWidget {
           ),
           BlocProvider<InitialDirectoryCubit>(
             create: (context) => InitialDirectoryCubit(),
-            lazy: true,
           ),
+          if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+            BlocProvider<MapEditorConfigurationCubit>(
+              create: (context) => MapEditorConfigurationCubit(),
+            ),
         ],
         child: Builder(
           builder: (context) {

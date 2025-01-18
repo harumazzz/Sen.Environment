@@ -5,6 +5,7 @@
 #include "kernel/utility/platform/windows.hpp"
 #include "kernel/utility/container/string.hpp"
 #include "kernel/utility/container/path.hpp"
+#include "kernel/utility/trait/trait.hpp"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -12,13 +13,6 @@
 
 namespace Sen::Kernel::FileSystem
 {
-
-	template <typename T>
-	concept CharacterBufferView = std::is_same_v<T, char> || std::is_same_v<T, unsigned char>;
-
-	/**
-	 * Lambda
-	*/
 	
 	inline static auto constexpr close_file =  [](FILE* file){ 
 		if (file != nullptr) {

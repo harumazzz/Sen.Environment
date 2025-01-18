@@ -4,19 +4,9 @@
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
 #include "kernel/utility/container/array.hpp"
+#include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel {
-
-	// Integral typename
-
-	template <typename Type>
-	concept Integral = std::is_integral_v<Type>;
-
-	inline static auto constexpr IsCategoryOfInteger = true;
-	
-	/**
-	 * Dimension struct
-	*/
 
 	template <typename T> requires IsCategoryOfInteger and Integral<T>
 

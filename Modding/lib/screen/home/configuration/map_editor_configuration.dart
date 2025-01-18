@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/provider/map_provider.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class MapEditorConfiguration extends ConsumerStatefulWidget {
-  const MapEditorConfiguration({super.key});
+class MapEditorConfiguration extends StatefulWidget {
+  const MapEditorConfiguration({
+    super.key,
+  });
 
   @override
-  ConsumerState<MapEditorConfiguration> createState() => _MapEditorConfigurationState();
+  State<MapEditorConfiguration> createState() => _MapEditorConfigurationState();
 }
 
-class _MapEditorConfigurationState extends ConsumerState<MapEditorConfiguration> {
+class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
   late TextEditingController _resourceLocationController;
 
   @override
   void initState() {
     super.initState();
-    _resourceLocationController = TextEditingController(text: '');
+    _resourceLocationController = TextEditingController(
+      text: BlocProvider.of<SettingsCubit>(context).state.mapEditorResource,
+    );
   }
 
   @override
@@ -34,7 +38,7 @@ class _MapEditorConfigurationState extends ConsumerState<MapEditorConfiguration>
 
   Future<void> _onValueChange() async {
     final value = _resourceLocationController.text;
-    await ref.watch(mapProvider.notifier).setResourceLocation(value);
+    await BlocProvider.of<SettingsCubit>(context).setMapEditorResource(value);
   }
 
   void _onChangeSetting(String? value) async {
@@ -44,7 +48,7 @@ class _MapEditorConfigurationState extends ConsumerState<MapEditorConfiguration>
   }
 
   void _onUploadDirectory() async {
-    var result = await FileHelper.uploadDirectory();
+    final result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
       await _onValueChange();
@@ -54,14 +58,6 @@ class _MapEditorConfigurationState extends ConsumerState<MapEditorConfiguration>
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    if (ref.watch(mapProvider).isLoading) {
-      return const CircularProgressIndicator.adaptive();
-    } else {
-      final value = ref.watch(mapProvider).resourceLocation;
-      if (value != null) {
-        _resourceLocationController.text = value;
-      }
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 12.0,

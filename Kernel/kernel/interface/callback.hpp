@@ -482,7 +482,7 @@ namespace Sen::Kernel::Interface {
 				// Sprite
 				runtime.register_object(Script::Class::Sprite::register_class);
 				// Clock
-				runtime.register_object(Script::Clock::register_class);
+				runtime.register_object<2>(Interface::API::Clock::register_class<2>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 				// execute the script
 				runtime.evaluate_fs(construct_string(Executor::script));
 				return;

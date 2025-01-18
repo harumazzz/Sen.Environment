@@ -7,12 +7,7 @@
 
 namespace Sen::Kernel::Support::WWise::SoundBank
 {
-    
-
     using namespace Sen::Kernel::Support::Miscellaneous::Shared;
-
-    template <typename Value>
-    concept IsValidConstArgument = (std::is_same<Value, bool>::value || std::is_enum<Value>::value);
 
     struct Encode : Common
     {

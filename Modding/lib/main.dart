@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sen/application.dart';
 import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/notification_helper.dart';
@@ -30,8 +29,6 @@ Future<void> main(
     WindowsHelper.initialize();
   }
   runApp(
-    const ProviderScope(
-      child: Application(),
-    ),
+    const Application(),
   );
 }

@@ -25,10 +25,12 @@ add_library(
 	./utility/container/buffer.hpp
 	./utility/container/array.hpp
 	./utility/container/system.hpp
-	./utility/container/thread.hpp
 	./utility/container/json_writer.hpp
 	./utility/container/apng_maker.hpp
 	./utility/container/utility.hpp
+	./utility/clock.hpp
+
+	./utility/trait/trait.hpp
 
 	./utility/encryption/md5.hpp
 	./utility/encryption/Rijndael.hpp
@@ -355,4 +357,26 @@ if (NOT MSVC)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fvisibility=hidden")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fvisibility=hidden")
+endif()
+
+if (MSVC)
+    target_compile_options(
+		${PROJECT_NAME} PRIVATE 
+        /W4           
+        /WX           
+        /permissive-  
+        /wd4100       
+        /wd4189       
+        /wd4324       
+        /wd4456       
+        /wd4458       
+        /wd4996       
+    )
+
+    target_compile_options(
+		${PROJECT_NAME} PRIVATE 
+        /external:W0      
+        /external:anglebrackets 
+        /external:env:EXTERNAL 
+    )
 endif()

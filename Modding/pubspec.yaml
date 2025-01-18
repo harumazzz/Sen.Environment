@@ -28,16 +28,13 @@ dependencies:
     flutter_launcher_icons: ^0.14.1
     file_selector: ^1.0.3
     url_launcher: ^6.3.1
-    flutter_riverpod: ^2.6.1
     path_provider: ^2.1.5
     flutter_dotenv: ^5.2.1
     shimmer: ^3.0.0
     flutter_native_splash: ^2.4.3
-    hooks_riverpod: ^2.6.1
     nil: ^1.1.1
     flutter_hooks: ^0.20.5
     matrix4_transform: ^4.0.1
-    riverpod: ^2.6.1
     interactive_box: ^0.4.0
     pie_menu: ^3.2.7
     flutter_box_transform: ^0.4.6
@@ -60,6 +57,7 @@ dependencies:
     flutter_acrylic: ^1.1.4
     loading_indicator: ^3.1.1
     screenshot: ^3.0.0
+    flutter_fancy_tree_view: ^1.6.0
 dev_dependencies:
     flutter_test:
         sdk: flutter

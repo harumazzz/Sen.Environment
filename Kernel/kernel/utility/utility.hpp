@@ -4,6 +4,8 @@
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
 
+#include "kernel/utility/clock.hpp"
+
 #include "kernel/utility/container/math.hpp"
 #include "kernel/utility/container/array.hpp"
 #include "kernel/utility/container/filesystem.hpp"
@@ -16,10 +18,11 @@
 #include "kernel/utility/container/json_writer.hpp"
 #include "kernel/utility/container/buffer.hpp"
 #include "kernel/utility/container/system.hpp"
-#include "kernel/utility/container/thread.hpp"
 #include "kernel/utility/container/apng_maker.hpp"
 #include "kernel/utility/container/max_rects_lite.hpp"
 #include "kernel/utility/container/utility.hpp"
+
+#include "kernel/utility/trait/trait.hpp"
 
 #include "kernel/utility/encryption/md5.hpp"
 #include "kernel/utility/encryption/sha224.hpp"

@@ -1,0 +1,530 @@
+import 'dart:async';
+import 'dart:collection';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:custom_mouse_cursor/custom_mouse_cursor.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/model/item.dart';
+import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
+import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
+import 'package:sen/screen/map_editor/include/visual_animation.dart';
+import 'package:sen/screen/map_editor/include/visual_image.dart';
+import 'package:sen/screen/map_editor/models/action_service.dart';
+import 'package:sen/screen/map_editor/models/config.dart';
+import 'package:sen/screen/map_editor/models/editor_resource.dart';
+import 'package:sen/screen/map_editor/models/game_resource.dart';
+import 'package:sen/service/file_helper.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+part 'map_editor_configuration_state.dart';
+
+class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
+  MapEditorConfigurationCubit() : super(MapEditorConfigurationState());
+
+  void _setState(MapEditorConfigurationState state) => emit(state);
+
+  void _throwErrorState(String ex) {
+    emit(MapEditorConfigurationState(
+        status: AppConfigurationStatus.failed, errorSnapShot: ex));
+  }
+
+  ConfigModel _loadConfig(AppLocalizations los, String path) {
+    return ConfigModel.fromJson(FileHelper.readJson(source: path));
+  }
+
+  Future<EditorResource> _loadEditorResource(
+    AppLocalizations los,
+    String path,
+  ) async {
+    final eraseCursor = await CustomMouseCursor.icon(Symbols.ink_eraser,
+        size: 28, color: Colors.white);
+    final panCursor = await CustomMouseCursor.icon(Symbols.pan_tool,
+        size: 28, color: Colors.white);
+    final multiSelectCursor = await CustomMouseCursor.icon(Symbols.pan_tool_alt,
+        size: 28, color: Colors.white);
+    final pickItemSound = AudioPlayer();
+    try {
+      pickItemSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final removeItemSound = AudioPlayer();
+    try {
+      removeItemSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final setItemSound = AudioPlayer();
+    try {
+      setItemSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final mapLoadedSound = AudioPlayer();
+    try {
+      mapLoadedSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final clearMapSound = AudioPlayer();
+    try {
+      clearMapSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final switchResourceSound = AudioPlayer();
+    try {
+      switchResourceSound.setSourceBytes(
+          FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
+    }
+    // ignore: empty_catches
+    catch (ex) {}
+    final senLogo = Image.asset(
+      'assets/images/logo.png',
+      opacity: const AlwaysStoppedAnimation(.5),
+    );
+
+    return EditorResource(
+        senLogo: senLogo,
+        eraseCursor: eraseCursor,
+        panCursor: panCursor,
+        multiSelectCursor: multiSelectCursor,
+        pickItemSound: pickItemSound,
+        removeItemSound: removeItemSound,
+        setItemSound: setItemSound,
+        mapLoadedSound: mapLoadedSound,
+        clearMapSound: clearMapSound,
+        switchResourceSound: switchResourceSound);
+  }
+
+  Future<VisualImage?> loadVisualImage(String path) async {
+    try {
+      final data = FileHelper.readBuffer(source: path);
+      final completer = Completer<VisualImage>();
+      final listener = ImageStreamListener((info, _) {
+        completer.complete(info.image);
+      });
+      final stream = MemoryImage(data).resolve(const ImageConfiguration())
+        ..addListener(listener);
+      final image = await completer.future;
+      stream.removeListener(listener);
+      return image;
+    } catch (ex) {
+      return null;
+    }
+  }
+
+  Future<VisualAnimation?> loadVisualAnimation(String path,
+      {FilterQuality? filterQuality}) async {
+    try {
+      final animationPath = '$path/animation.pam.json';
+      final mediaPath = '$path/media';
+      final visual = await VisualAnimation.create(animationPath, mediaPath,
+          filterQuality: filterQuality);
+      return visual;
+    } catch (ex) {
+      return null;
+    }
+  }
+
+  Future<GameResource> _loadGameResource(
+      AppLocalizations los, String path, ConfigModel config) async {
+    final filterQuality = config.setting.filterQuality;
+    final commonImage = HashMap<ImageCommonType, VisualImage>();
+    //
+    final missingArtPiece =
+        await loadVisualImage('$path/alwaysloaded/missing_artpiece.png');
+    if (missingArtPiece == null) {
+      throw Exception(los.cannot_load_missing_artpiece);
+    }
+    commonImage[ImageCommonType.missingArtPiece] = missingArtPiece;
+    final readySeedBank = await loadVisualImage('$path/plant/ready.png');
+    if (readySeedBank == null) {
+      throw Exception(los.cannot_load_ready_seedbank);
+    }
+    commonImage[ImageCommonType.readySeedBank] = readySeedBank;
+    final readyPlant = await loadVisualImage('$path/plant/sunflower.png');
+    if (readyPlant == null) {
+      throw Exception('cannot_load_ready_plant'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.readyPlant] = readyPlant;
+    final spaceSpiral =
+        await loadVisualImage('$path/alwaysloaded/space_spiral.png');
+    if (spaceSpiral == null) {
+      throw Exception(los.cannot_load_space_spiral);
+    }
+    commonImage[ImageCommonType.spaceSpiral] = spaceSpiral;
+    final spaceDust =
+        await loadVisualImage('$path/alwaysloaded/space_dust.png');
+    if (spaceDust == null) {
+      throw Exception(los.cannot_load_space_dust);
+    }
+    commonImage[ImageCommonType.spaceDust] = spaceDust;
+    final freePinata =
+        await loadVisualImage('$path/pinata/pinata_free_spine.png');
+    if (freePinata == null) {
+      throw Exception(los.cannot_load_free_pinata);
+    }
+    commonImage[ImageCommonType.freePinata] = freePinata;
+    final freePinataOpen =
+        await loadVisualImage('$path/pinata/pinatas_dust_spine_free.png');
+    if (freePinataOpen == null) {
+      throw Exception(los.cannot_load_free_pinata_dust);
+    }
+    commonImage[ImageCommonType.freePinataOpen] = freePinataOpen;
+    final buttonHudBackNormal =
+        await loadVisualImage('$path/common/buttons_hud_back_normal.png');
+    if (buttonHudBackNormal == null) {
+      throw Exception(los.cannot_load_buttons_hud_back_normal);
+    }
+    commonImage[ImageCommonType.buttonHudBackNormal] = buttonHudBackNormal;
+    final buttonHudBackSelected =
+        await loadVisualImage('$path/common/buttons_hud_back_selected.png');
+    if (buttonHudBackSelected == null) {
+      throw Exception(los.cannot_load_buttons_hud_back_selected);
+    }
+    commonImage[ImageCommonType.buttonHudBackSelected] = buttonHudBackSelected;
+    final keygateFlag = await loadVisualImage('$path/common/keygate_flag.png');
+    if (keygateFlag == null) {
+      throw Exception('cannot load key gate flag'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.keygateFlag] = keygateFlag;
+    final infoIcon = await loadVisualImage('$path/common/info_icon.png');
+    if (infoIcon == null) {
+      throw Exception('cannot load info icon'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.infoIcon] = infoIcon;
+
+    final sprout = await loadVisualImage('$path/common/sprout.png');
+    if (sprout == null) {
+      throw Exception('cannot load sprout'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.sprout] = sprout;
+    final doodad = await loadVisualImage('$path/common/doodad1.png');
+    if (doodad == null) {
+      throw Exception('cannot load doodad'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.doodad] = doodad;
+    final pathNode = await loadVisualImage('$path/common/grass_light.png');
+    if (pathNode == null) {
+      throw Exception('cannot load pathNode'); //TODO: add locale
+    }
+    commonImage[ImageCommonType.pathNode] = pathNode;
+    //-----------------
+    final commonAnimation = HashMap<AnimationCommonType, VisualAnimation>();
+    //
+    final giftBox = await loadVisualAnimation('$path/common/giftbox_world_map',
+        filterQuality: filterQuality);
+    if (giftBox == null) {
+      throw Exception(los.cannot_load_giftbox_world_map);
+    }
+    commonAnimation[AnimationCommonType.giftBox] = giftBox;
+    final levelNode = await loadVisualAnimation('$path/common/level_node',
+        filterQuality: filterQuality);
+    if (levelNode == null) {
+      throw Exception(los.cannot_load_level_node);
+    }
+    commonAnimation[AnimationCommonType.levelNode] = levelNode;
+    final levelNodeGargantuar = await loadVisualAnimation(
+        '$path/common/level_node_gargantuar',
+        filterQuality: filterQuality);
+    if (levelNodeGargantuar == null) {
+      throw Exception(los.cannot_load_level_node_gargantuar);
+    }
+    commonAnimation[AnimationCommonType.levelNodeGargantuar] =
+        levelNodeGargantuar;
+    final levelNodeMinigame = await loadVisualAnimation(
+        '$path/common/level_node_minigame',
+        filterQuality: filterQuality);
+    if (levelNodeMinigame == null) {
+      throw Exception(los.cannot_load_level_node_minigame);
+    }
+    commonAnimation[AnimationCommonType.levelNodeMinigame] = levelNodeMinigame;
+    final mapPath = await loadVisualAnimation('$path/common/map_path',
+        filterQuality: filterQuality);
+    if (mapPath == null) {
+      throw Exception(los.cannot_load_map_path);
+    }
+    commonAnimation[AnimationCommonType.mapPath] = mapPath;
+    final yetiIcon = await loadVisualAnimation('$path/common/yeti_icon',
+        filterQuality: filterQuality);
+    if (yetiIcon == null) {
+      throw Exception(los.cannot_load_yeti_icon);
+    }
+    commonAnimation[AnimationCommonType.yetiIcon] = yetiIcon;
+    final zombossNodeHologram = await loadVisualAnimation(
+        '$path/common/zomboss_node_hologram',
+        filterQuality: filterQuality);
+    if (zombossNodeHologram == null) {
+      throw Exception(los.cannot_load_zomboss_node_hologram);
+    }
+    commonAnimation[AnimationCommonType.zombossNodeHologram] =
+        zombossNodeHologram;
+    final missingArtPieceAnimation = await loadVisualAnimation(
+        '$path/alwaysloaded/missing_artpiece',
+        filterQuality: filterQuality);
+    if (missingArtPieceAnimation == null) {
+      throw Exception(los.cannot_load_map_path);
+    }
+    commonAnimation[AnimationCommonType.missingArtPieceAnimation] =
+        missingArtPieceAnimation;
+    final stargate = await loadVisualAnimation('$path/common/stargate',
+        filterQuality: filterQuality);
+    if (stargate == null) {
+      throw Exception('cannot load star gate'); //TODO: add locale
+    }
+    commonAnimation[AnimationCommonType.stargate] = stargate;
+    final sodRoll = await loadVisualAnimation('$path/common/sod_roll',
+        filterQuality: filterQuality);
+    if (sodRoll == null) {
+      throw Exception('cannot load sod roll'); //TODO: add locale
+    }
+    commonAnimation[AnimationCommonType.sodRoll] = sodRoll;
+    final collectedUpgradeEffect = await loadVisualAnimation(
+        '$path/common/collected_upgrade_effect',
+        filterQuality: filterQuality);
+    if (collectedUpgradeEffect == null) {
+      throw Exception(
+          'cannot load collected upgrade effect'); //TODO: add locale
+    }
+    commonAnimation[AnimationCommonType.collectedUpgradeEffect] =
+        collectedUpgradeEffect;
+    //-----------------
+    final uiUniverse = HashMap<String, VisualImage>();
+    //
+    for (final mapName in config.resource.worldmap.keys) {
+      uiUniverse[mapName] = await loadVisualImage(
+              '$path/alwaysloaded/ui_universe/$mapName.png') ??
+          missingArtPiece;
+    }
+    //-----------------
+    final seedBank = HashMap<String, VisualImage?>();
+    final plant = HashMap<String, VisualImage?>();
+    //
+    for (final plantName in config.resource.plant.keys) {
+      final seedBankName = config.resource.plant[plantName];
+      if (!seedBank.containsKey(seedBankName)) {
+        seedBank[seedBankName] =
+            await loadVisualImage('$path/plant/$seedBankName.png');
+      }
+      plant[plantName] = await loadVisualImage('$path/plant/$plantName.png');
+    }
+    final upgrade = HashMap<String, VisualImage?>();
+    //
+    for (final upgradeName in config.resource.upgrade.keys) {
+      final src = config.resource.upgrade[upgradeName];
+      upgrade[upgradeName] =
+          await loadVisualImage('$path/upgrade/upgrade_$src.png');
+    }
+    //-----------------
+    return GameResource(
+        commonImage: commonImage,
+        commonAnimation: commonAnimation,
+        uiUniverse: uiUniverse,
+        seedBank: seedBank,
+        plant: plant,
+        upgrade: upgrade);
+  }
+
+  HashMap<ToolType, Item> _initailizeTool(AppLocalizations los) {
+    final toolItem = HashMap<ToolType, Item>.from({
+      ToolType.openFile: Item(
+        title: '${los.open} (Ctrl + O)',
+        description: los.open_description,
+        icon: const Icon(Symbols.file_open),
+        isEnabled: true,
+      ),
+      ToolType.saveFile: Item(
+        title: '${los.save} (Ctrl + S)',
+        description: los.save_description,
+        icon: const Icon(Symbols.save),
+        isEnabled: true,
+      ),
+      ToolType.rectangleTool: Item(
+        title: 'Rectangle Tool (Ctrl Left)', //TODO: add locale
+        description: 'Select multi item by rectangle', //TODO: add locale
+        icon: const Icon(Symbols.gesture_select),
+        isEnabled: true,
+      ),
+      ToolType.eraseTool: Item(
+        title: '${los.eraser} (E)',
+        description: los.eraser_description,
+        icon: const Icon(Symbols.ink_eraser),
+        isEnabled: true,
+      ),
+      ToolType.panTool: Item(
+        title: '${los.pan_tool} (Space)',
+        description: los.pan_tool_description,
+        icon: const Icon(Symbols.pan_tool),
+        isEnabled: true,
+      ),
+      ToolType.resizeTool: Item(
+        title: '${los.resizer} (Ctrl + R)',
+        description: los.resizer_description,
+        icon: const Icon(Symbols.resize),
+        isEnabled: true,
+      ),
+      ToolType.clearEditor: Item(
+        title: '${los.clear} (F8)',
+        description: los.clear_description,
+        icon: const Icon(Symbols.clear_all),
+        isEnabled: true,
+      ),
+      ToolType.configEditor: Item(
+        title: '${los.config} (F9)',
+        description: los.config_description,
+        icon: const Icon(Symbols.settings),
+        isEnabled: true,
+      ),
+      ToolType.shortcutMenu: Item(
+        title: 'Shortcut Help (F2)', //TODO: add locale
+        description: ' ', //TODO: add locale
+        icon: const Icon(Symbols.help),
+        isEnabled: true,
+      ),
+    });
+    return toolItem;
+  }
+
+  HashMap<SectionType, Item> _initailizeSection(AppLocalizations los) {
+    final sectionItem = HashMap<SectionType, Item>.from({
+      SectionType.select: Item(
+        title: 'Select', //TODO: add locale
+        description: los.section_description,
+        icon: const Icon(Symbols.pan_tool_alt),
+        isEnabled: true,
+      ),
+      SectionType.image: Item(
+        title: 'Island Images', //TODO: add locale
+        description:
+            'Open island image selection list and place an island image piece to this section', //TODO: add locale
+        icon: const Icon(Symbols.filter_hdr),
+        isEnabled: true,
+      ),
+      SectionType.animation: Item(
+        title: 'Island Animations', //TODO: add locale
+        description:
+            'Open island animation selection list and place an island animation piece to this section', //TODO: add locale
+        icon: const Icon(Symbols.filter_drama),
+        isEnabled: true,
+      ),
+      SectionType.event: Item(
+        title: los.events,
+        description: los.events_description,
+        icon: const Icon(Symbols.kid_star),
+        isEnabled: true,
+      )
+    });
+    return sectionItem;
+  }
+
+  HashMap<ExtensionType, Item> _initailizeExtension(AppLocalizations los) {
+    final extensionItem = HashMap<ExtensionType, Item>.from({
+      ExtensionType.layer: Item(
+        title: 'Layer', //TODO: add locale
+        description: 'los.layer_description', //TODO: add locale
+        icon: const Icon(Symbols.layers),
+        isEnabled: true,
+      ),
+      ExtensionType.history: Item(
+        title: 'History', //TODO: add locale
+        description: 'los.island_pieces_description', //TODO: add locale
+        icon: const Icon(Symbols.history),
+        isEnabled: true,
+      ),
+      ExtensionType.setting: Item(
+        title: los.map_editor_setting,
+        description: los.map_editor_setting_description,
+        icon: const Icon(Symbols.widgets),
+        isEnabled: true,
+      ),
+      ExtensionType.palette: Item(
+        title: los.palette,
+        description: los.palette_description,
+        icon: const Icon(Symbols.palette),
+        isEnabled: true,
+      )
+    });
+    return extensionItem;
+  }
+
+  HashMap<ActionType, String> _initlActionTypeString(AppLocalizations los) {
+    final actionTypeLocalization = HashMap<ActionType, String>.from({
+      //TODO: add locale
+      ActionType.islandChangeID: 'Change Island ID',
+      ActionType.islandScale: 'Scale Island',
+      ActionType.islandChangeLayer: 'Change Island Layer',
+      ActionType.islandChangeParallax: 'Change Island Parallax',
+      ActionType.islandRotate: 'Rotate Island',
+      ActionType.islandChangeRotationRate: 'Change Rotation Rate',
+      ActionType.islandArtFlip: 'Flip Island',
+      ActionType.eventChangeID: 'Change Event ID',
+      ActionType.eventChangeName: 'Change Event Name',
+      ActionType.eventChangeParent: 'Change Event Parent',
+      ActionType.eventChangeUnlockedFrom: 'Change Unlocked From',
+      ActionType.eventChangeVisibleFrom: 'Change Visibile From',
+      ActionType.eventChangeAutoVisible: 'Change Auto Visible',
+      ActionType.eventChangeLevelData: 'Change Level Data',
+      ActionType.eventChangeDisplayText: 'Change Display Text',
+      ActionType.eventChangeNarUnlocked: 'Change Narration Unlocked',
+      ActionType.eventChangeNarCompleted: 'Change Narration Completed',
+      ActionType.eventChangeTutorialUnlocked: 'Change Tutorial Unlocked',
+      ActionType.eventChangeLevelToggle: 'Change Level Toggle',
+      ActionType.eventChangePlantType: 'Change Plant Type',
+      ActionType.eventChangeUpgradeType: 'Change Upgrade Type',
+      ActionType.eventChangeStarCost: 'Change Star Cost',
+      ActionType.eventChangeKeyCost: 'Change Key Cost',
+      ActionType.eventArtFlip: 'Flip Event',
+      ActionType.addItem: 'Add Item',
+      ActionType.moveItem: 'Move Item',
+      ActionType.eraseItem: 'Erase Item',
+      ActionType.pasteItem: 'Paste Item',
+      ActionType.selectItem: 'Select Item',
+      ActionType.rectangleSelect: 'Rectangle Select',
+      ActionType.deSelect: 'Deselect',
+      ActionType.mapChangeName: 'Change World Name',
+      ActionType.mapChangeWorldID: 'Change World ID',
+      ActionType.mapChangeResID: 'Change Res ID',
+      ActionType.mapChangeBounding: 'Resize Map Bounding',
+      ActionType.newMapEditor: 'New Window',
+      ActionType.loadWorldResource: 'Load World Resource',
+      ActionType.openWorldMap: 'Open World Map',
+      ActionType.createNewLayer: 'Create New Layer',
+      ActionType.deleteLayer: 'Delete Layer',
+      ActionType.mergeDownLayer: 'Merge Down Layer',
+      ActionType.moveUpLayer: 'Move Up Layer',
+      ActionType.moveDownLayer: 'Move Down Layer',
+    });
+    return actionTypeLocalization;
+  }
+
+  Future<void> load(AppLocalizations los, String resourceLocation) async {
+    try {
+      final newState =
+          MapEditorConfigurationState(status: AppConfigurationStatus.success);
+      await Future.delayed(const Duration(milliseconds: 10));
+      newState.settingPath = resourceLocation;
+      newState.toolItem = _initailizeTool(los);
+      newState.sectionItem = _initailizeSection(los);
+      newState.extensionItem = _initailizeExtension(los);
+      newState.actionTypeLocalization = _initlActionTypeString(los);
+      newState.configModel = _loadConfig(los, '$resourceLocation/config.json');
+      newState.editorResource =
+          await _loadEditorResource(los, resourceLocation);
+      newState.gameResource =
+          await _loadGameResource(los, resourceLocation, newState.configModel);
+      _setState(newState);
+    } catch (ex) {
+      _throwErrorState(ex.toString());
+    }
+    return;
+  }
+}
