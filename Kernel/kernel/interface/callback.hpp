@@ -41,18 +41,18 @@ namespace Sen::Kernel::Interface {
 				{
 					// is_gui
 					{
-						runtime.add_proxy(FunctionProxy<bool>::as_function<Kernel::Interface::API::Shell::is_gui>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "is_gui"_sv);
+						runtime.add_proxy(FunctionProxy<bool>::template as_function<Kernel::Interface::API::Shell::is_gui>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "is_gui"_sv);
 					}
 					// version
 					{
-						runtime.add_proxy(FunctionProxy<int>::as_function<Kernel::Interface::API::Shell::version>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "version"_sv);
+						runtime.add_proxy(FunctionProxy<int>::template as_function<Kernel::Interface::API::Shell::version>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "version"_sv);
 					}
 					// version
-					runtime.add_proxy(FunctionProxy<int>::as_function<Kernel::Interface::API::version>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "version"_sv);
+					runtime.add_proxy(FunctionProxy<int>::template as_function<Kernel::Interface::API::version>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "version"_sv);
 					// callback
-					runtime.add_proxy(SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Shell::callback>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "callback"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<JSValue, JSValue&>::template as_function<Interface::API::Shell::callback>, std::to_array<std::string_view>({"Sen"_sv, "Shell"_sv}), "callback"_sv);
 					// arguments
-					runtime.add_proxy(SpecialFunctionProxy<JSValue>::as_function<Interface::API::arguments>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "arguments"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<JSValue>::template as_function<Interface::API::arguments>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "arguments"_sv);
 				}
 				// xml
 				// TODO : Later
@@ -69,60 +69,60 @@ namespace Sen::Kernel::Interface {
 				// json
 				{
 					// deserialize
-					runtime.add_proxy(SpecialFunctionProxy<JSValue, std::string&>::as_function<Interface::API::JSON::deserialize>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<JSValue, std::string&>::template as_function<Interface::API::JSON::deserialize>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize"_sv);
 					// serialize
-					runtime.add_proxy(SpecialFunctionProxy<std::string, JSValue&, int64_t&, bool>::as_function<Interface::API::JSON::serialize>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<std::string, JSValue&, int64_t&, bool>::template as_function<Interface::API::JSON::serialize>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize"_sv);
 					// deserialize fs
-					runtime.add_proxy(SpecialFunctionProxy<JSValue, std::string&>::as_function<Interface::API::JSON::deserialize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize_fs"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<JSValue, std::string&>::template as_function<Interface::API::JSON::deserialize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "deserialize_fs"_sv);
 					// serialize fs
-					runtime.add_proxy(SpecialFunctionProxy<void, std::string&, JSValue&, int64_t&, bool>::as_function<Interface::API::JSON::serialize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize_fs"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<void, std::string&, JSValue&, int64_t&, bool>::template as_function<Interface::API::JSON::serialize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "JSON"_sv}), "serialize_fs"_sv);
 				}
 				// home
 				{
 					// script
-					runtime.add_proxy(FunctionProxy<std::string>::as_function<Interface::API::script>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Home"_sv }), "script"_sv);
+					runtime.add_proxy(FunctionProxy<std::string>::template as_function<Interface::API::script>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Home"_sv }), "script"_sv);
 				}
 				// filesystem
 				{
 					// read_file
-					runtime.add_proxy(FunctionProxy<std::string, std::string&>::as_function<Interface::API::FileSystem::read_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file"_sv);
+					runtime.add_proxy(FunctionProxy<std::string, std::string&>::template as_function<Interface::API::FileSystem::read_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file"_sv);
 					// read_file_encode_with_utf16le
-					runtime.add_proxy(FunctionProxy<std::string,std::string&>::as_function<Interface::API::FileSystem::read_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file_encode_with_utf16le"_sv);
+					runtime.add_proxy(FunctionProxy<std::string,std::string&>::template as_function<Interface::API::FileSystem::read_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "read_file_encode_with_utf16le"_sv);
 					// write_file
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::write_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "write_file"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::write_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "write_file"_sv);
 					// write_file_encode_with_utf16le
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::write_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "write_file_encode_with_utf16le"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::write_file_encode_with_utf16le>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "write_file_encode_with_utf16le"_sv);
 					// read_current_directory
-					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_current_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_current_directory"_sv);
+					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_current_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_current_directory"_sv);
 					// read_directory_only_file
-					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory_only_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_file"_sv);
+					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory_only_file>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_file"_sv);
 					// read_directory_only_directory
-					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory_only_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_directory"_sv);
+					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory_only_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory_only_directory"_sv);
 					// read_directory
-					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::as_function<Interface::API::FileSystem::read_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory"_sv);
+					runtime.add_proxy(FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "FileSystem"_sv }), "read_directory"_sv);
 					// create_directory
-					runtime.add_proxy(FunctionProxy<void, std::string&>::as_function<Interface::API::FileSystem::create_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "create_directory"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::create_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "create_directory"_sv);
 					// is_file
-					runtime.add_proxy(FunctionProxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "is_file"_sv);
+					runtime.add_proxy(FunctionProxy<bool, std::string&>::template as_function<Interface::API::FileSystem::is_file>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "is_file"_sv);
 					// is_directory
-					runtime.add_proxy(FunctionProxy<bool, std::string&>::as_function<Interface::API::FileSystem::is_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}),"is_directory"_sv);
+					runtime.add_proxy(FunctionProxy<bool, std::string&>::template as_function<Interface::API::FileSystem::is_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}),"is_directory"_sv);
 					//  rename
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::rename>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "rename"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::rename>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "rename"_sv);
 					//  remove
-					runtime.add_proxy(FunctionProxy<void, std::string&>::as_function<Interface::API::FileSystem::remove>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::remove>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove"_sv);
 					//  remove all
-					runtime.add_proxy(FunctionProxy<void, std::string&>::as_function<Interface::API::FileSystem::remove_all>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove_all"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::remove_all>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "remove_all"_sv);
 					//  copy
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::copy>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::copy>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy"_sv);
 					//  copy_directory
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::FileSystem::copy_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy_directory"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::copy_directory>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "FileSystem"_sv}), "copy_directory"_sv);
 				}
 				// path
 				{
 					// join
-					runtime.add_proxy(FunctionProxy<std::string, List<std::string>&>::as_function<Interface::API::Path::join>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "join"_sv);
+					runtime.add_proxy(FunctionProxy<std::string, List<std::string>&>::template as_function<Interface::API::Path::join>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "join"_sv);
 					// basename
-					runtime.add_proxy(FunctionProxy<std::string, std::string&>::as_function<Interface::API::Path::basename>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "basename"_sv);
+					runtime.add_proxy(FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::basename>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "basename"_sv);
 					// delimiter
 					runtime.add_proxy(FunctionProxy<std::string>::as_function<Interface::API::Path::delimiter>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Path"_sv}), "delimiter"_sv);
 					// dirname
@@ -188,7 +188,7 @@ namespace Sen::Kernel::Interface {
 				// TODO : Rework : Finish this later
 				{
 					// scale_fs
-					runtime.add_proxy(Script::Image::scale_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "scale_fs"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&, float&>::as_function<Interface::API::Image::scale_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "scale_fs"_sv);
 					// join_png
 					runtime.add_proxy(Script::Image::join_png, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join_png"_sv);
 					// join
@@ -368,15 +368,14 @@ namespace Sen::Kernel::Interface {
 					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&, bool>::as_function<Interface::API::Support::PopCap::Animation::Instance::from_flash>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Instance"_sv}), "from_flash"_sv);
 					// resize_fs
 					runtime.add_proxy(FunctionProxy<void, std::string&, int64_t&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::resize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"}), "resize_fs"_sv);
-					// TODO : Rework
 					// dump_document
-					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::dump_document, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "dump_document"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<void, std::string&, JSValue&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::dump_document>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "dump_document"_sv);
 					// generate_document
-					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::generate_document, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_document"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::shared_ptr<Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument>&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_document>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_document"_sv);
 					// generate_image
-					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::generate_image, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_image"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, Pointer<Kernel::Support::PopCap::Animation::Miscellaneous::Image>&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_image>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_image"_sv);
 					// generate_sprite
-					runtime.add_proxy(Script::Support::PopCap::Animation::Miscellaneous::generate_sprite, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_sprite"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, Pointer<Kernel::Support::PopCap::Animation::Miscellaneous::Sprite>&>::as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_sprite>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Support"_sv, "PopCap"_sv, "Animation"_sv, "Miscellaneous"_sv}), "generate_sprite"_sv);
 				}
 				// re-animation
 				{
@@ -453,23 +452,22 @@ namespace Sen::Kernel::Interface {
 					// compareArrayBuffer
 					runtime.add_proxy(FunctionProxy<bool, std::shared_ptr<JS::ArrayBuffer>&, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::compareArrayBuffer>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "compareArrayBuffer"_sv);
 					// to_apng
-					// TODO : Rework to_apng
-					runtime.add_proxy(Script::Miscellaneous::to_apng, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "to_apng"_sv);
+					runtime.add_proxy(FunctionProxy<void, List<std::string>&, std::string&, Pointer<Kernel::APNGMakerSetting>&>::as_function<Interface::API::Miscellaneous::to_apng>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "to_apng"_sv);
 				}
 				// DataStreamView
 				runtime.register_object(Script::Class::DataStreamView::register_class<false>);
 				// ImageView
-				runtime.register_object(Script::Class::ImageView::register_class);
+				runtime.register_object<2>(Interface::API::ImageView::register_class<2>, std::to_array<std::string_view>({ "Sen", "Kernel" }));
 				// Canvas
 				runtime.register_object<2>(Interface::API::Canvas::register_class<2>, std::to_array<std::string_view>({ "Sen", "Kernel" }));
 				// JsonWriter
 				runtime.register_object<2>(Interface::API::JsonWriter::register_class<2>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 				// APNGMakerSetting
-				runtime.register_object(Script::Class::APNGMakerSetting::register_class);
+				runtime.register_object<2>(Interface::API::APNGMakerSetting::register_class<2>, std::to_array<std::string_view>({ "Sen", "Kernel" }));
 				// Image
-				runtime.register_object(Script::Class::Image::register_class);
+				runtime.register_object<6>(Interface::API::Support::PopCap::Animation::Miscellaneous::Image::register_class<6>, std::to_array<std::string_view>({"Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous"}));
 				// Sprite
-				runtime.register_object(Script::Class::Sprite::register_class);
+				runtime.register_object<6>(Interface::API::Support::PopCap::Animation::Miscellaneous::Sprite::register_class<6>, std::to_array<std::string_view>({ "Sen", "Kernel", "Support", "PopCap", "Animation", "Miscellaneous" }));
 				// Clock
 				runtime.register_object<2>(Interface::API::Clock::register_class<2>, std::to_array<std::string_view>({"Sen", "Kernel"}));
 				// execute the script

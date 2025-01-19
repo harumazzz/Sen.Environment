@@ -13,6 +13,18 @@ namespace Sen::Kernel::JavaScript {
 
 	using Value = JavaScript::Value;
 
+	template <typename T> requires (std::is_pointer<T>::value && std::is_class_v<std::remove_pointer_t<T>>)
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue;
+
+	template <typename T> requires (std::is_pointer<T>::value && std::is_class_v<std::remove_pointer_t<T>>)
+	inline auto from_value(
+		JSContext* context, 
+		JSValue value
+	) -> T;
+
 	template <typename... Args, size_t... Indices>
 	auto _parse_arguments(JSContext* ctx, JSValueConst* argv, std::index_sequence<Indices...>) -> std::tuple<std::decay_t<Args>...> {
 		return std::make_tuple(from_value<std::decay_t<Args>>(ctx, argv[Indices])...);
@@ -340,6 +352,7 @@ namespace Sen::Kernel::JavaScript {
 		JSContext* context, 
 		const T& value
 	) -> JSValue {
+		static_assert(std::is_pointer<T>::value, "T must be a pointer type");
 		using NativeClass = std::remove_pointer_t<T>;
 		assert_conditional(ClassBuilder<NativeClass>::class_id.value != 0, fmt::format("Class ID for class {} is missing, the class is not registered", typeid(NativeClass).name()), "to_value");
 		auto object = JS_NewObjectClass(context, ClassBuilder<NativeClass>::class_id.value);

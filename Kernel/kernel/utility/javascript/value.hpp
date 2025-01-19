@@ -52,7 +52,7 @@ namespace Sen::Kernel::JavaScript {
 
 			auto operator=(
 				Value &&other
-			) -> Value& 
+			) -> Value&
 			{
 				if (this != &other) { 
 					thiz.reset_value();
@@ -103,6 +103,13 @@ namespace Sen::Kernel::JavaScript {
 			) -> bool
 			{
 				return static_cast<bool>(JS_IsUndefined(value));
+			}
+
+			auto is_array_buffer(
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsArrayBuffer(value));
 			}
 
 			auto is_null(
@@ -480,6 +487,17 @@ namespace Sen::Kernel::JavaScript {
 				auto result = int64_t{};
 				JS_ToInt64(thiz.context, &result, thiz.value);
 				return static_cast<T>(result);
+			}
+
+			template <typename T>
+			auto get_array_bufffer(
+
+			) -> std::shared_ptr<T>
+			{
+				assert_conditional(thiz.is_array_buffer(), "Value is not an ArrayBuffer", "get");
+				auto size = std::size_t{};
+				auto value = JS_GetArrayBuffer(thiz.context, &size, thiz.value);
+				return std::make_shared<T>(value, size);
 			}
 
 			template <typename T> requires (!std::is_floating_point<T>::value) and std::is_integral<T>::value and (!std::is_unsigned<T>::value)

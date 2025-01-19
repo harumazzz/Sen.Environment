@@ -198,7 +198,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			detail: Detail.Data,
 		): [
 			Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-			...Array<Kernel.Dimension.Image>,
+			...Array<Kernel.ImageAdapter.Image>,
 		] {
 			const json_source: string = Kernel.Path.resolve(Kernel.Path.join(source, 'atlas.json'));
 			const media_path: string = Kernel.Path.resolve(Kernel.Path.join(source, 'media'));
@@ -206,7 +206,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [
 				Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-				...Array<Kernel.Dimension.Image>,
+				...Array<Kernel.ImageAdapter.Image>,
 			] = [
 				{
 					id: definition.subgroup,
@@ -219,9 +219,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			const is_path: boolean = definition.method === 'path';
 			const prepare: Array<Detail.MaxRectsPackableData<number>> =
 				Algorithm.to_packable(definition);
-			const images: Map<string, Kernel.Dimension.Image> = new Map<
+			const images: Map<string, Kernel.ImageAdapter.Image> = new Map<
 				string,
-				Kernel.Dimension.Image
+				Kernel.ImageAdapter.Image
 			>();
 			for (const data of prepare) {
 				let source_file: string = undefined!;
@@ -234,7 +234,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 						Kernel.Path.join(media_path, `${data.id}.png`),
 					);
 				}
-				const image: Kernel.Dimension.Image = Kernel.Image.open(source_file);
+				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
@@ -325,7 +325,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					e.width = BigInt(e.width);
 					e.height = BigInt(e.height);
 				});
-				const image: Kernel.Dimension.Image = Kernel.Image.join(
+				const image: Kernel.ImageAdapter.Image = Kernel.Image.join(
 					Kernel.Image.instance(
 						BigInt(destination_size.width),
 						BigInt(destination_size.height),
@@ -358,7 +358,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 		): void {
 			const [definition, ...images]: [
 				Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
-				...Array<Kernel.Dimension.Image>,
+				...Array<Kernel.ImageAdapter.Image>,
 			] = ResourceGroup.process(source, size, detail);
 			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup>(
 				Kernel.Path.join(destination, `${definition.id}.json`),
@@ -366,7 +366,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				1n,
 				false,
 			);
-			images.forEach((image: Kernel.Dimension.Image) =>
+			images.forEach((image: Kernel.ImageAdapter.Image) =>
 				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
 		}
@@ -399,12 +399,12 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			source: string,
 			size: Detail.SizeRange<number>,
 			detail: Detail.Data,
-		): [Wrapper, ...Array<Kernel.Dimension.Image>] {
+		): [Wrapper, ...Array<Kernel.ImageAdapter.Image>] {
 			const json_source: string = Kernel.Path.resolve(Kernel.Path.join(source, 'atlas.json'));
 			const media_path: string = Kernel.Path.resolve(Kernel.Path.join(source, 'media'));
 			const definition: Structure.Definition =
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
-			const destination: [Wrapper, ...Array<Kernel.Dimension.Image>] = [
+			const destination: [Wrapper, ...Array<Kernel.ImageAdapter.Image>] = [
 				{
 					id: definition.subgroup,
 					value: {
@@ -416,9 +416,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			const is_path: boolean = definition.method === 'path';
 			const prepare: Array<Detail.MaxRectsPackableData<number>> =
 				Algorithm.to_packable(definition);
-			const images: Map<string, Kernel.Dimension.Image> = new Map<
+			const images: Map<string, Kernel.ImageAdapter.Image> = new Map<
 				string,
-				Kernel.Dimension.Image
+				Kernel.ImageAdapter.Image
 			>();
 			for (const data of prepare) {
 				let source_file: string = undefined!;
@@ -431,7 +431,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 						Kernel.Path.join(media_path, `${data.id}.png`),
 					);
 				}
-				const image: Kernel.Dimension.Image = Kernel.Image.open(source_file);
+				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
@@ -518,7 +518,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 					e.width = BigInt(e.width);
 					e.height = BigInt(e.height);
 				});
-				const image: Kernel.Dimension.Image = Kernel.Image.join_extend(
+				const image: Kernel.ImageAdapter.Image = Kernel.Image.join_extend(
 					Kernel.Image.instance(
 						BigInt(destination_size.width),
 						BigInt(destination_size.height),
@@ -549,7 +549,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			detail: Detail.Data,
 			destination: string,
 		): void {
-			const [wrapper, ...images]: [Wrapper, ...Array<Kernel.Dimension.Image>] = process(
+			const [wrapper, ...images]: [Wrapper, ...Array<Kernel.ImageAdapter.Image>] = process(
 				source,
 				size,
 				detail,
@@ -560,7 +560,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				1n,
 				false,
 			);
-			images.forEach((image: Kernel.Dimension.Image) =>
+			images.forEach((image: Kernel.ImageAdapter.Image) =>
 				Kernel.Image.write(Kernel.Path.join(destination, image.source_file!), image),
 			);
 		}

@@ -72,7 +72,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
     */
 
 	export function exchange_frame(
-		image: Kernel.Dimension.Image,
+		image: Kernel.ImageAdapter.Image,
 		frame: AnimationFrame,
 		frame_helper: FrameHelper,
 		source_list: Array<ImageInfo>,

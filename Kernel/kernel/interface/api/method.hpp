@@ -545,7 +545,14 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Image {
 
-
+		inline static auto scale_fs(
+			std::string& source,
+			std::string& destination,
+			float& percentage
+		) -> void
+		{
+			return Kernel::ImageIO::scale_png(source, destination, percentage);
+		}
 
 	}
 
@@ -607,7 +614,7 @@ namespace Sen::Kernel::Interface::API {
 				auto buffer = List<unsigned char>{};
 				buffer.assign(source->value, source->value + source->size);
 				auto result = Kernel::Compression::Zlib::uncompress(buffer);
-				return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(result.data()), result.size());
+				return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(result.data()), result.size());
 			}
 
 		}
@@ -1243,6 +1250,51 @@ namespace Sen::Kernel::Interface::API {
 						return Kernel::Support::PopCap::Animation::Convert::Resize::process_fs(source, static_cast<int>(resolution));
 					}
 
+					using VImage = Kernel::Support::PopCap::Animation::Miscellaneous::Image;
+
+					using VSprite = Kernel::Support::PopCap::Animation::Miscellaneous::Sprite;
+
+					using VDocument = Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument;
+
+					inline static auto dump_document(
+						JSContext* context,
+						std::string& source,
+						JSValue& destination
+					) -> void
+					{
+						auto doc = VDocument{};
+						Kernel::Support::PopCap::Animation::Miscellaneous::Dump::process_fs(source, doc);
+						auto value = JavaScript::Value::as_new_reference(context, destination);
+						value.define_property("sprite", JavaScript::to_value<List<std::string>>(context, doc.sprite));
+						value.define_property("image", JavaScript::to_value<List<std::string>>(context, doc.image));
+						value.define_property("media", JavaScript::to_value<List<std::string>>(context, doc.media));
+						value.define_property("action", JavaScript::to_value<List<std::string>>(context, doc.action));
+					}
+
+					inline static auto generate_document(
+						std::string& destination,
+						std::shared_ptr<VDocument>& document
+					) -> void
+					{
+						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, document.get());
+					}
+
+					inline static auto generate_image(
+						std::string& destination,
+						Pointer<VImage>& source
+					) -> void
+					{
+						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
+					}
+
+					inline static auto generate_sprite(
+						std::string& destination,
+						Pointer<VSprite>& source
+					) -> void
+					{
+						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
+					}
+
 				}
 
 				#pragma endregion
@@ -1590,14 +1642,14 @@ namespace Sen::Kernel::Interface::API {
 			std::string& data
 		) -> std::shared_ptr<JavaScript::ArrayBuffer>
 		{
-			return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data.data()), data.size());
+			return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data.data()), data.size());
 		}
 
 		inline static auto copyArrayBuffer(
 			std::shared_ptr<JavaScript::ArrayBuffer>& data
 		) -> std::shared_ptr<JavaScript::ArrayBuffer>
 		{
-			return std::make_unique<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data->value), data->size);
+			return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data->value), data->size);
 		}
 
 		inline static auto compareArrayBuffer(
@@ -1625,6 +1677,15 @@ namespace Sen::Kernel::Interface::API {
 			auto utf16 = std::wstring(reinterpret_cast<wchar_t*>(source->value), source->size / sizeof(wchar_t));
 			auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
 			return converter.to_bytes(utf16);
+		}
+
+		inline static auto to_apng(
+			List<std::string>& image_path_list,
+			std::string& destination,
+			Pointer<Kernel::APNGMakerSetting>& setting
+		) -> void
+		{
+			return Kernel::APNGMaker::process_fs(image_path_list, destination, setting);
 		}
 
 	}

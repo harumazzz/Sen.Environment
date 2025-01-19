@@ -551,7 +551,7 @@ namespace Sen.Script.Executor {
 
 	export function print_argument(e: string): void {
 		if (Shell.is_gui()) {
-			Kernel.Console.print(e);
+			Kernel.Console.print(e.toString());
 		} else {
 			Kernel.Console.print(`    ${e}`);
 		}

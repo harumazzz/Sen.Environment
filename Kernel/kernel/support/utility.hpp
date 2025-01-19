@@ -54,6 +54,7 @@
 #include "kernel/support/popcap/animation/convert/common.hpp"
 #include "kernel/support/popcap/animation/convert/instance.hpp"
 #include "kernel/support/popcap/animation/convert/resize.hpp"
+#include "kernel/support/popcap/animation/miscellaneous/convert.hpp"
 #include "kernel/support/popcap/animation/miscellaneous/dump.hpp"
 #include "kernel/support/popcap/re_animation/decode.hpp"
 #include "kernel/support/popcap/re_animation/encode.hpp"

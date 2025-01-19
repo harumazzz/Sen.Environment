@@ -117,4 +117,13 @@ namespace Sen::Kernel {
 	template <typename Container>
 	using container_value_t = typename container_traits<Container>::value_type;
 
+	template <typename T>
+	struct is_std_array : std::false_type {};
+
+	template <typename T, std::size_t Size>
+	struct is_std_array<std::array<T, Size>> : std::true_type {};
+
+	template <typename T>
+	constexpr auto is_std_array_v = is_std_array<T>::value;
+
 }

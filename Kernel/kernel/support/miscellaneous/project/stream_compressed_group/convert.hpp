@@ -5,7 +5,7 @@
 namespace Sen::Kernel::JavaScript {
 
 	template <>
-    auto from_value<std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>>(
+    inline auto from_value<std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>>(
         JSContext* context,
         JSValue val
     ) -> std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>

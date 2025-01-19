@@ -55,7 +55,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 	export interface MediaSource {
 		size: AnimationSize;
 		matrix: Matrix;
-		image: Kernel.Dimension.Image;
+		image: Kernel.ImageAdapter.Image;
 	}
 
 	export interface VisualLayer {
@@ -112,7 +112,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 	export function load_bigint(rule: any): bigint {
 		const new_rule: Array<bigint> = [];
 		rule.forEach((e: [bigint, string] & any) => {
-			Executor.print_statement(e[1], e[0]);
+			Executor.print_statement(`${e[1]}`, e[0]);
 			new_rule.push(e[0]);
 		});
 		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
@@ -275,7 +275,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 		] as Color;
 	}
 
-	export function scale_image(image: Kernel.Dimension.Image, percent: number) {
+	export function scale_image(image: Kernel.ImageAdapter.Image, percent: number) {
 		if (percent !== 1) {
 			const new_width = BigInt(Math.round(Number(image.width) * percent));
 			const new_height = BigInt(Math.round(Number(image.height) * percent));
@@ -465,7 +465,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				Number(frame_index) + 1
 			}.png`;
 			const image_data = new ArrayBuffer(Number(width * height * 4n));
-			canvas.get_image_data(image_data, width, height, width * 4n, 0n, 0n);
+			canvas.get_image_data(image_data, width, height, width * 4n, 0, 0);
 			Kernel.ImageView.write_fs(
 				image_path,
 				Kernel.ImageView.instance(width, height, image_data),

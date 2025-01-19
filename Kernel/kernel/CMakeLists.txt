@@ -159,6 +159,7 @@ add_library(
 	./support/popcap/animation/convert/resize.hpp
 	./support/popcap/animation/convert/to_flash.hpp
 	./support/popcap/animation/miscellaneous/common.hpp
+	./support/popcap/animation/miscellaneous/convert.hpp
 	./support/popcap/animation/miscellaneous/dump.hpp
 	./support/popcap/resource_stream_bundle/miscellaneous/unpack_cipher.hpp
 	./support/popcap/re_animation/convert/from_flash.hpp

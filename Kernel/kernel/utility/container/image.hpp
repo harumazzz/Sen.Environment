@@ -180,16 +180,10 @@ namespace Sen::Kernel {
 			) = default;
 	};
 
-	/**
-	 * Image struct
-	*/
-
 	template <typename T> requires IsCategoryOfInteger && Integral<T>
 	struct Image : public Rectangle<T> {
 
 		private:
-
-			// pixel data should not be accessible
 			
 			List<unsigned char> mutable _data{};
 
@@ -201,10 +195,6 @@ namespace Sen::Kernel {
 			T interlace_type{};
 			T channels{};
 			T rowbytes{};
-
-			/**
-			 * constructor
-			*/
 
 			explicit constexpr Image(
 				T x,
@@ -266,10 +256,6 @@ namespace Sen::Kernel {
 
 			}
 
-			/**
-			 * constructor
-			*/
-
 			explicit constexpr Image(
 				const Image &that
 			) : Image<T>{that.x, that.y, that.width, that.height, that.bit_depth, that.color_type, that.interlace_type, that.channels, that.rowbytes, that.data()}
@@ -293,20 +279,12 @@ namespace Sen::Kernel {
 				return *this;
 			}
 
-			/**
-			 * get pixel data
-			*/
-
 			inline auto data(
 
 			) const -> const List<unsigned char> & 
 			{
 				return thiz._data;
 			}
-
-			/**
-			 * set pixel data
-			*/
 
 			inline auto set_data(
 				List<unsigned char> && data
@@ -316,10 +294,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * set pixel data
-			*/
-
 			inline auto copy_data(
 				const List<unsigned char> & data
 			) const -> void
@@ -327,12 +301,6 @@ namespace Sen::Kernel {
 				thiz._data = std::move(data);
 				return;
 			}
-
-			/**
-			 *
-			 * get color
-			 * return: must be RGBA vector of Struct
-			 */
 
 			inline auto color(
 
@@ -361,10 +329,6 @@ namespace Sen::Kernel {
 				return thiz.channels == 3;
 			}
 
-			/**
-			 * default constructor
-			*/
-
 			Image(
 				T x,
 				T y,
@@ -375,17 +339,9 @@ namespace Sen::Kernel {
 			{
 			}
 
-			/**
-			 * init blank
-			*/
-
 			explicit Image(
 
 			) = default;
-
-			/**
-			 * destructor
-			*/
 
 			~Image(
 
@@ -393,23 +349,12 @@ namespace Sen::Kernel {
 
 			using ZList = List<uint8_t>;
 
-			/**
-			 * get the image dimension
-			*/
-
 			inline auto dimension(
 
-			) const -> Dimension<T>
+			) const -> Dimension<T>&
 			{
-				return Dimension<T>(thiz.width, thiz.height);
+				return thiz;
 			}
-
-			/**
-			 * composite image by copying pixel
-			 * image: this struct
-			 * rectangle: area to cut
-			 * return: newly struct with other data 
-			*/
 
 			inline static auto cut(
 				const Image<int>& image,
@@ -418,33 +363,21 @@ namespace Sen::Kernel {
 			{
 				auto data = ZList{};
 				data.reserve(static_cast<ZList::size_type>(rectangle.area()) * 4);
-				for (auto j : Range<int>(rectangle.y, rectangle.y + rectangle.height, 1)) {
-					for (auto i : Range<int>(rectangle.x, rectangle.x + rectangle.width, 1)) {
+				for (auto j : Range{ rectangle.y, rectangle.y + rectangle.height, 1 }) {
+					for (auto i : Range{ rectangle.x, rectangle.x + rectangle.width, 1 }) {
 						auto index = (j * image.width + i) * 4;
 						data.insert(data.end(), &image.data()[index], &image.data()[static_cast<List<uint8_t>::size_type>(index) + 4]);
 					}
 				}
-				return Image<int>(0, 0, rectangle.width, rectangle.height, std::move(data));
+				return Image<int>{0, 0, rectangle.width, rectangle.height, std::move(data)};
 			}
-
-			/**
-			 * Dimension: dimension (width and height)
-			 * return: transparent image
-			*/
 
 			inline static auto transparent(
 				const Dimension<T>& dimension
 			) -> Image<T>
 			{
-				return Image<T>(0, 0, dimension.width, dimension.height, List<unsigned char>(dimension.area() * 4, 0x00));
+				return Image<T>{0, 0, dimension.width, dimension.height, List<unsigned char>(dimension.area() * 4, 0x00)};
 			}
-
-			/**
-			 * Algorithm to join image - Reverse from split
-			 * source: source image
-			 * data: data to join
-			 * return: the new source
-			 */
 
 			inline static auto join(
 				Image<T>& source,
@@ -452,13 +385,13 @@ namespace Sen::Kernel {
 			) -> void
 			{
 				auto source_data = source.data();
-				for (const auto& img : data) {
+				for (auto& img : data) {
 					if (!(img.width + img.x <= source.width and img.height + img.y <= source.height)) {
 						throw Exception(fmt::format("{}", Language::get("image.does_not_fit_current_image")), std::source_location::current(), "join");
 					}
 					auto& image_data = img.data();
-					for (auto j : Range<T>(img.height)) {
-						for (auto i : Range<T>(img.width)) {
+					for (auto j : Range<T>{ img.height }) {
+						for (auto i : Range<T>{ img.width }) {
 							auto source_index = ((j + img.y) * source.width + (i + img.x)) * 4;
 							auto img_index = (j * img.width + i) * 4;
 							source_data[source_index] = image_data[img_index];
@@ -542,13 +475,6 @@ namespace Sen::Kernel {
 				return thiz.channels == 4;
 			}
 
-			/**
-			 * Algorithm to join image - Reverse from split
-			 * source: source image
-			 * data: data to join
-			 * return: the new source
-			 */
-
 			inline static auto join_extend(
 				Image<T>& source,
 				List<Image<T>>& data
@@ -562,8 +488,8 @@ namespace Sen::Kernel {
 					auto& image_data = img.data();
 					auto extend_image = resize(img, img.width + 2, img.height + 2);
 					auto &extend_data = extend_image.data();
-					for (auto j : Range<T>(extend_image.height)) {
-						for (auto i : Range<T>(extend_image.width)) {
+					for (auto j : Range<T>{ extend_image.height }) {
+						for (auto i : Range<T>{ extend_image.width }) {
 							auto source_index = ((j + img.y - 1) * source.width + (i + img.x - 1)) * 4;
 							auto img_index = (j * extend_image.width + i) * 4;
 							source_data[source_index] = extend_data[img_index];
@@ -572,8 +498,8 @@ namespace Sen::Kernel {
 							source_data[source_index + 3] = extend_data[img_index + 3];
 						}
 					}
-					for (auto j : Range<T>(img.height)) {
-						for (auto i : Range<T>(img.width)) {
+					for (auto j : Range<T>{ img.height }) {
+						for (auto i : Range<T>{ img.width }) {
 							auto source_index = ((j + img.y) * source.width + (i + img.x)) * 4;
 							auto img_index = (j * img.width + i) * 4;
 							source_data[source_index] = image_data[img_index];
@@ -587,14 +513,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-
-			/**
-			 * Resize image algorithm
-			 * source: source image
-			 * percent: the new image percent to resize
-			 * return: the newly image
-			*/
-
 			inline static auto resize(
 				const Image<T>& source,
 				float percent
@@ -602,9 +520,9 @@ namespace Sen::Kernel {
 			{
 				auto new_width = static_cast<int>(Math::ceil(source.width * percent));
 				auto new_height = static_cast<int>(Math::ceil(source.height * percent));
-				auto resized_image_data = List<unsigned char>(new_width * new_height * 4);
-				for (auto j : Range<int>(new_height)) {
-					for (auto i : Range<int>(new_width)) {
+				auto resized_image_data = List<unsigned char>(static_cast<size_t>(new_width * new_height * 4));
+				for (auto j : Range{ new_height }) {
+					for (auto i : Range{ new_width }) {
 						auto old_i = static_cast<int>(i / percent);
 						auto old_j = static_cast<int>(j / percent);
 						auto old_index = (old_j * source.width + old_i) * 4;
@@ -612,16 +530,8 @@ namespace Sen::Kernel {
 						std::copy(&source.data()[old_index], &source.data()[old_index + 4], &resized_image_data[new_index]);
 					}
 				}
-				return Image<T>(0, 0, new_width, new_height, std::move(resized_image_data));
+				return Image<T>{0, 0, new_width, new_height, std::move(resized_image_data)};
 			}
-
-			/**
-			 * Resize image algorithm
-			 * source: source image
-			 * new_width: the new image width to resize
-			 * new_height: the new image height to resize
-			 * return: the newly image
-			*/
 
 			inline static auto resize(
 				const Image<T>& source,
@@ -631,9 +541,9 @@ namespace Sen::Kernel {
 			{
 				auto width_percent = static_cast<float>(new_width) / static_cast<float>(source.width);
 				auto height_percent = static_cast<float>(new_height) / static_cast<float>(source.height);
-				auto resized_image_data = List<unsigned char>(new_width * new_height * 4);
-				for (auto j : Range<int>(new_height)) {
-					for (auto i : Range<int>(new_width)) {
+				auto resized_image_data = List<unsigned char>(static_cast<size_t>(new_width * new_height * 4));
+				for (auto j : Range{ new_height }) {
+					for (auto i : Range{ new_width }) {
 						auto old_i = static_cast<int>(i / width_percent);
 						auto old_j = static_cast<int>(j / height_percent);
 						auto old_index = (old_j * source.width + old_i) * 4;
@@ -641,15 +551,8 @@ namespace Sen::Kernel {
 						std::copy(&source.data()[old_index], &source.data()[old_index + 4], &resized_image_data[new_index]);
 					}
 				}
-				return Image<T>(0, 0, new_width, new_height, std::move(resized_image_data));
+				return Image<T>{0, 0, new_width, new_height, std::move(resized_image_data)};
 			}
-
-			/**
-			 * Rotate image algorithm
-			 * Image: current image
-			 * angle: angle to rotate
-			 * return: newly image after rotate
-			*/
 
 			inline static auto rotate(
 				const Image<T>& image, 
@@ -658,11 +561,11 @@ namespace Sen::Kernel {
 			{
 				auto new_width = static_cast<int>(std::abs(image.width * std::cos(angle)) + std::abs(image.height * std::sin(angle)));
 				auto new_height = static_cast<int>(std::abs(image.height * std::cos(angle)) + std::abs(image.width * std::sin(angle)));
-				auto data = List<unsigned char>(new_width * new_height * 4, 0);
+				auto data = List<unsigned char>(static_cast<size_t>(new_width * new_height * 4, 0));
 				auto center_x = static_cast<double>(image.width) / 2.0;
 				auto center_y = static_cast<double>(image.height) / 2.0;
-				for (auto j : Range<int>(new_height)) {
-					for (auto i : Range<int>(new_width)) {
+				for (auto j : Range{ new_height }) {
+					for (auto i : Range{ new_width }) {
 						auto old_i = static_cast<int>((i - new_width / 2.0) * std::cos(angle) + (j - new_height / 2.0) * std::sin(angle) + center_x);
 						auto old_j = static_cast<int>((j - new_height / 2.0) * std::cos(angle) - (i - new_width / 2.0) * std::sin(angle) + center_y);
 						if (old_i >= 0 && old_i < image.width && old_j >= 0 && old_j < image.height) {
@@ -672,15 +575,8 @@ namespace Sen::Kernel {
 						}
 					}
 				}
-				return Image<T>(0, 0, new_width, new_height, std::move(data));
+				return Image<T>{0, 0, new_width, new_height, std::move(data)};
 			}
-
-			/**
-			 * Scale image using avir.h
-			 * source: image source
-			 * percentage: percentage to upscale
-			 * return: new image 
-			*/
 
 			inline static auto scale(
 				const Image<int> & source,
@@ -689,7 +585,7 @@ namespace Sen::Kernel {
 			{
 				auto new_width = static_cast<int>(source.width * percentage);
 				auto new_height = static_cast<int>(source.height * percentage);
-				const auto area = (new_width * new_height * 4);
+				auto area = (new_width * new_height * 4);
 				auto data = std::make_unique<uint8_t[]>(area);
 				avir::CImageResizer<>{8}.resizeImage(
 					source.data().data(), 
@@ -703,14 +599,10 @@ namespace Sen::Kernel {
 					0.0, 
 					nullptr
 				);
-				auto vec = List<uint8_t>(data.get(), data.get() + area);
-				return Image<int>(0, 0, new_width, new_height, std::move(vec));
+				auto vec = List<uint8_t>{ data.get(), data.get() + area };
+				return Image<int>{0, 0, new_width, new_height, std::move(vec)};
 			}
 	};
-
-	/**
-	 * Rectangle with destination path
-	*/
 
 	template <typename T> requires Integral<T>
 
@@ -718,16 +610,13 @@ namespace Sen::Kernel {
 		
 		public:
 
-			// destination file
 			std::string destination;
 
-			// constructor
 
 			RectangleFileIO(
 
 			) = default;
 
-			// constructor
 
 			RectangleFileIO(
 				T x,
@@ -738,7 +627,6 @@ namespace Sen::Kernel {
 			{
 			}
 
-			// constructor
 
 			RectangleFileIO(
 				T x,
@@ -750,17 +638,11 @@ namespace Sen::Kernel {
 			{
 			}
 
-			/**
-			 * constructor
-			*/
-
 			RectangleFileIO(
 				const RectangleFileIO& that
 			) : Rectangle<T>(that.x, that.y, that.width, that.height), destination(that.destination)
 			{
 			}
-
-			// constructor
 
 			RectangleFileIO(
 				const Rectangle<T> &that,
@@ -769,61 +651,53 @@ namespace Sen::Kernel {
 			{
 			}
 
-			// destructor
-
 			~RectangleFileIO(
 
 			) = default;
 	};
-
-	template <typename T> requires Integral<T>
-	struct RectangleFileIOList : RectangleFileIO<T> {
-		public:
-			std::string source;
-			List<RectangleFileIO<T>> data;
-			RectangleFileIOList(
-				const std::string& source,
-				List<RectangleFileIO<T>> data
-			) : source(source), data(std::move(data))
-			{
-
-			}
-	};
-
-	/**
-	 * File System Image
-	 * In/Out Image struct
-	*/
 
 
 	struct ImageIO {
 
 		public:
 
-			/**
-			 * libpng readpng adapation -> C++ implementation
-			 * file path: provide file path to read
-			 * return: image data
-			*/
-			
+			inline static auto png_error(
+				png_structp png_ptr,
+				png_const_charp error_message
+			) -> void {
+				// TODO : improve this
+				assert_conditional(false, fmt::format("png has error: {}", error_message), "png_error");
+				return;
+			}
+
+			inline static auto png_warning(
+				png_structp png_ptr,
+				png_const_charp error_message
+			) -> void {
+				assert_conditional(false, fmt::format("png has error: {}", error_message), "png_warning");
+				return;
+			}
+
 			inline static auto read_png(
 				std::string_view source
 			) -> Image<int> 
 			{
+				auto open_file = [](std::string_view path) -> std::unique_ptr<FILE, decltype(Language::close_file)> {
 				#if WINDOWS
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data(), L"rb"), Language::close_file);
+					auto windows_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data())));
+					return { _wfopen(windows_path.data(), L"rb"), Language::close_file };
 				#else
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(source.data(), "rb"), Language::close_file);
+					return { std::fopen(path.data(), "rb"), Language::close_file };
 				#endif
-				if(fp == nullptr){
-					#if WINDOWS
-					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{source.data(), source.size()})), std::source_location::current(), "read_png");
-					#else
-					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), source), std::source_location::current(), "read_png");
-					#endif
-				}
+				};
+				auto file = open_file(source);
+				#if WINDOWS
+				assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_png");
+				#else
+				assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("image.open_png_failed"), source), "read_png");
+				#endif
 				auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+				png_set_error_fn(png_ptr, nullptr, &png_error, &png_warning);
 				if(png_ptr == nullptr){
 					throw Exception(fmt::format("{}: {}", Language::get("image.png_pointer_init_failed"), source), std::source_location::current(), "read_png");
 				}
@@ -836,17 +710,21 @@ namespace Sen::Kernel {
 					png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 					throw Exception(fmt::format("{}: {}", Language::get("image.unknown_error"), source), std::source_location::current(), "read_png");
 				}
-				png_init_io(png_ptr, fp.get());
+				png_init_io(png_ptr, file.get());
 				png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
 				auto row_pointers = png_get_rows(png_ptr, info_ptr);
-				auto data = List<unsigned char>();
+				auto data = List<unsigned char>{};
 				auto width = static_cast<int>(png_get_image_width(png_ptr, info_ptr));
 				auto height = static_cast<int>(png_get_image_height(png_ptr, info_ptr));
 				auto bit_depth = static_cast<int>(png_get_bit_depth(png_ptr, info_ptr));
 				auto channels = static_cast<int>(png_get_channels(png_ptr, info_ptr));
-				for (auto y : Range<int>(height)) {
-					for (auto x : Range<int>(width * bit_depth * channels / 8)) {
-						data.push_back(row_pointers[y][x]);
+				{
+					auto row_size = width * bit_depth * channels / 8;
+					data.reserve(height * row_size);
+				}
+				for (auto y : Range{height}) {
+					for (auto x : Range{width * bit_depth * channels / 8}) {
+						data.emplace_back(row_pointers[y][x]);
 					}
 				};
 				auto color_type = static_cast<int>(png_get_color_type(png_ptr, info_ptr));
@@ -869,48 +747,34 @@ namespace Sen::Kernel {
 				return image;
 			}
 
-			/**
-			 * libpng write png adaptation
-			 * file path: output path to write
-			 * data: the image data
-			 * return: written image
-			*/
-
 			inline static auto write_png(
-				std::string_view filepath, 
+				std::string_view destination, 
 				const Image<int> &data
 			) -> void
 			{
+				auto open_file = [](std::string_view path) -> std::unique_ptr<FILE, decltype(Language::close_file)> {
 				#if WINDOWS
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(_wfopen(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style({filepath.data(), filepath.size()}))).data(), L"wb"), Language::close_file);
+					auto windows_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data())));
+					return { _wfopen(windows_path.data(), L"wb"), Language::close_file };
 				#else
-				auto fp = std::unique_ptr<FILE, decltype(Language::close_file)>(std::fopen(filepath.data(), "wb"), Language::close_file);
+					return { std::fopen(path.data(), "wb"), Language::close_file };
 				#endif
-				if(fp == nullptr){
-					#if WINDOWS
-					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), std::source_location::current(), "write_png");
-					#else
-					throw Exception(fmt::format("{}: {}", Language::get("image.open_png_failed"), filepath), std::source_location::current(), "write_png");
-					#endif
-				}
+				};
+				auto file = open_file(destination);
 				auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 				if(png_ptr == nullptr){
-					throw Exception(fmt::format("{}: {}", Language::get("image.png_pointer_init_failed"), filepath), std::source_location::current(), "write_png");
+					throw Exception(fmt::format("{}: {}", Language::get("image.png_pointer_init_failed"), destination), std::source_location::current(), "write_png");
 				}
 				auto info_ptr = png_create_info_struct(png_ptr);
 				if (info_ptr == nullptr) {
 					png_destroy_write_struct(&png_ptr, nullptr);
-					throw Exception(fmt::format("{}: {}", Language::get("image.info_pointer_init_failed"), filepath), std::source_location::current(), "write_png");
+					throw Exception(fmt::format("{}: {}", Language::get("image.info_pointer_init_failed"), destination), std::source_location::current(), "write_png");
 				}
-				#define PNG_WRITE_SETJMP(png_ptr, info_ptr, fp) \
-				if (setjmp(png_jmpbuf(png_ptr)))  \
-				{ \
-					png_destroy_write_struct(&png_ptr, &info_ptr);   \
-					std::fclose(fp);     \
-					throw Exception(fmt::format("{}: {}", Language::get("image.unknown_error"), filepath), std::source_location::current(), "write_png");\
-				}
-				PNG_WRITE_SETJMP(png_ptr, info_ptr, fp.get());
-				png_init_io(png_ptr, fp.get());
+				if (_setjmp((*png_set_longjmp_fn((png_ptr), longjmp, (sizeof(jmp_buf)))))) {
+					png_destroy_write_struct(&png_ptr, &info_ptr); 
+					throw Exception(fmt::format("{}: {}", Language::get("image.unknown_error"), destination), std::source_location::current(), "write_png");
+				};
+				png_init_io(png_ptr, file.get());
 				png_set_IHDR(
 					png_ptr,
 					info_ptr,
@@ -923,8 +787,8 @@ namespace Sen::Kernel {
 					PNG_FILTER_TYPE_DEFAULT
 				);
 				auto row_pointers = List<png_bytep>(data.height);
-				for (auto y : Range<int>(data.height)) {
-					row_pointers[y] = const_cast<unsigned char*>(&data.data()[y * data.width * 4]);
+				for (auto y : Range{ data.height }) {
+					row_pointers[y] = const_cast<unsigned char*>(&data.data()[static_cast<std::vector<uint8_t, std::allocator<uint8_t>>::size_type>(y) * data.width * 4]);
 				}
 				png_write_info(png_ptr, info_ptr);
 				png_write_image(png_ptr, row_pointers.data());
@@ -935,14 +799,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * Should use to split one image
-			 * source: source file
-			 * destination: destination file
-			 * rectangle: the area to cut
-			 * return: the new image
-			*/
-
 			inline static auto cut_fs(
 				std::string_view source,
 				std::string_view destination,
@@ -952,13 +808,6 @@ namespace Sen::Kernel {
 				ImageIO::write_png(destination, Image<int>::cut(ImageIO::read_png(source), rectangle));
 				return;
 			}
-
-			/**
-			 * Should be used to split images
-			 * source: source file
-			 * data: list of rectangle file
-			 * return: the cut 
-			*/
 
 			inline static auto cut_pngs(
 				std::string_view source,
@@ -973,13 +822,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * Should be used to split images if id are unique
-			 * source: source file
-			 * data: list of rectangle file
-			 * return: the cut 
-			*/
-
 			inline static auto cut_pngs_asynchronous(
 				std::string_view source,
 				const List<RectangleFileIO<int>> & data
@@ -987,8 +829,9 @@ namespace Sen::Kernel {
 			{
 				auto image = ImageIO::read_png(source);
 				auto process = List<std::future<void>>{};
+				process.reserve(data.size());
 				for (auto &c : data) {
-					process.push_back(std::async(std::launch::async, [&]{
+					process.emplace_back(std::async(std::launch::async, [&]{
 						ImageIO::write_png(c.destination, Image<int>::cut(image, c));
 					}));
 				}
@@ -998,14 +841,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * TEST FUNCTION : THIS IS A TEST METHOD THAT SHOULD NOT BE USED
-			 * destination: the destination of file to write
-			 * width: image width
-			 * height: image height
-			 * pixel data: all filled with 0x00
-			 * return: the written transparent png
-			*/
 
 			inline static auto transparent_png(
 				std::string_view destination,
@@ -1016,14 +851,6 @@ namespace Sen::Kernel {
 				ImageIO::write_png(destination, Image<int>::transparent(Dimension<int>(width, height)));
 				return;
 			}
-
-			/**
-			 * Should be used to join image
-			 * destination: the file output destination
-			 * dimension: output file dimension
-			 * data: the image data
-			 * return: the file output png
-			 */
 
 			inline static auto join_png(
 				std::string_view destination,
@@ -1037,14 +864,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * Should be used to join image
-			 * destination: the file output destination
-			 * dimension: output file dimension
-			 * data: the image data
-			 * return: the file output png
-			 */
-
 			inline static auto join(
 				Image<int> & destination,
 				const List<Image<int>>& data
@@ -1054,14 +873,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * Should be used to join image
-			 * destination: the file output destination
-			 * dimension: output file dimension
-			 * data: the image data
-			 * return: the file output png
-			 */
-
 			inline static auto join_extend(
 				Image<int> & destination,
 				List<Image<int>>& data
@@ -1070,14 +881,6 @@ namespace Sen::Kernel {
 				Image<int>::join_extend(destination, data);
 				return;
 			}
-
-			/**
-			 * Resize image method
-			 * @param source : image source
-			 * @param destination : output file destination
-			 * @param percent: percentage to resize
-			 * @return the newly image
-			 */
 
 			inline static auto resize_png(
 				std::string_view source,
@@ -1089,14 +892,6 @@ namespace Sen::Kernel {
 				return;
 			}
 
-			/**
-			 * Rotate image
-			 * @param source: image input source
-			 * @param destination: image output destination
-			 * @param angle: angle to rotate
-			 * return: the newly image after rotate
-			*/
-
 			inline static auto rotate_png(
 				std::string_view source,
 				std::string_view destination,
@@ -1106,14 +901,6 @@ namespace Sen::Kernel {
 				ImageIO::write_png(destination, Image<int>::rotate(ImageIO::read_png(source), angle));
 				return;
 			}
-
-			/**
-			 * Scale image
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @param percent: upscale percentage
-			 * @return: written file to destination
-			*/
 
 			inline static auto scale_png(
 				std::string_view source,

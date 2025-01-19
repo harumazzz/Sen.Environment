@@ -83,7 +83,7 @@ namespace Sen::Kernel::JavaScript {
 		JSContext* context, 
 		const T& value
 	) -> JSValue {
-		static_assert(false, "Case not implemented");
+		static_assert(false, "Base case of to_value is not implemented");
 	}
 
 	template <>
@@ -150,7 +150,7 @@ namespace Sen::Kernel::JavaScript {
 		JSValue value
 	) -> T
 	{
-		static_assert(false, "Base case need to be implemented!");
+		static_assert(false, "Base case of from_value need to be implemented!");
 	}
 
 	template <>
@@ -186,7 +186,7 @@ namespace Sen::Kernel::JavaScript {
 		JSValue value
 	) -> T
 	{
-		return Converter::get_bigint64(context, value);
+		return static_cast<T>(Converter::get_bigint64(context, value));
 	}
 
 	template <typename T> requires (std::is_integral_v<T> && std::is_unsigned<T>::value && !std::is_same<T, bool>::value)
@@ -195,7 +195,7 @@ namespace Sen::Kernel::JavaScript {
 		JSValue value
 	) -> T
 	{
-		return Converter::get_uint64(context, value);
+		return static_cast<T>(Converter::get_uint64(context, value));
 	}
 
 	template <typename T> requires (!std::is_integral_v<T> && std::is_floating_point<T>::value && !std::is_same<T, bool>::value)
@@ -234,14 +234,14 @@ namespace Sen::Kernel::JavaScript {
 		return JS_NewArrayBufferCopy(context, value->value, value->size);
 	}
 
-	template <typename T> requires is_container<T>::value
+	template <typename T> requires std::is_same<T, List<container_value_t<T>>>::value
 	inline auto from_value(
 		JSContext* context,
 		JSValue value
 	) -> T
 	{
 		assert_conditional(static_cast<bool>(JS_IsArray(context, value)), "Value must be Array, but it isn't", "from_value");
-		auto destination = List<container_value_t<T>>{};
+		auto destination = T{};
 		auto atom = JS_NewAtomLen(context, "length", std::strlen("length"));
 		auto length = Converter::get_property_uint32(context, value, atom);
 		JS_FreeAtom(context, atom);
@@ -252,6 +252,80 @@ namespace Sen::Kernel::JavaScript {
 			destination.emplace_back(from_value<container_value_t<T>>(context, current_value));
 			JS_FreeAtom(context, atom);
 		}
+		return destination;
+	}
+
+	template <typename T> requires is_std_array_v<T>
+	inline auto from_value(
+		JSContext* context,
+		JSValue value
+	) -> T
+	{
+		using ElementType = typename T::value_type;
+		constexpr auto Size = std::tuple_size_v<T>;
+		assert_conditional(static_cast<bool>(JS_IsArray(context, value)), "Value must be Array, but it isn't", "from_value");
+		auto destination = T{};
+		auto atom = JS_NewAtomLen(context, "length", std::strlen("length"));
+		auto length = Converter::get_property_uint32(context, value, atom);
+		JS_FreeAtom(context, atom);
+		assert_conditional(length == Size, fmt::format("Expected array size: {} but got {}", Size, length), "from_value");
+		for (auto index : Range{length}) {
+			auto atom = JS_NewAtomUInt32(context, index);
+			auto current_value = JS_GetProperty(context, value, atom);
+			destination[index] = from_value<ElementType>(context, current_value);
+			JS_FreeAtom(context, atom);
+		}
+		return destination;
+	}
+
+	struct ImageView {
+		int width{};
+		int height{};
+		int bit_depth{};
+		int color_type{};
+		int interlace_type{};
+		int channels{};
+		int rowbytes{};
+		ArrayBuffer data{};
+	};
+
+	template <>
+	inline auto from_value<std::shared_ptr<ImageView>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<ImageView>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<ImageView>();
+		destination->width = current_value.get_property("width").template get_bigint<int>();
+		destination->height = current_value.get_property("height").template get_bigint<int>();
+		destination->bit_depth = current_value.get_property("bit_depth").template get_bigint<int>();
+		destination->color_type = current_value.get_property("color_type").template get_bigint<int>();
+		destination->interlace_type = current_value.get_property("interlace_type").template get_bigint<int>();
+		destination->channels = current_value.get_property("channels").template get_bigint<int>();
+		destination->rowbytes = current_value.get_property("rowbytes").template get_bigint<int>();
+		auto data = current_value.get_property("data").value;
+		assert_conditional(static_cast<bool>(JS_IsArrayBuffer(data)), "Value must be ArrayBuffer, but it isn't", "from_value");
+		destination->data.value = JS_GetArrayBuffer(context, &destination->data.size, data);
+		return destination;
+	}
+
+	using Rectangle = Kernel::Rectangle<int32_t>;
+
+	template <>
+	inline auto from_value<std::shared_ptr<Rectangle>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<Rectangle>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<Rectangle>();
+		destination->width = current_value.get_property("width").template get_bigint<int>();
+		destination->height = current_value.get_property("height").template get_bigint<int>();
+		destination->x = current_value.get_property("x").template get_bigint<int>();
+		destination->y = current_value.get_property("y").template get_bigint<int>();
 		return destination;
 	}
 

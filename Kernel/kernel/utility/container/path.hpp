@@ -112,7 +112,7 @@ namespace Sen::Kernel::Path
 		}
 		return String::utf16_to_utf8(path.wstring());
 		#else
-		auto path = fs::path{ std::string{};
+		auto path = fs::path{std::string{}};
 		for(auto & element : list){
 			path.append(element);
 		}

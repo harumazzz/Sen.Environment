@@ -326,7 +326,7 @@ declare namespace Sen {
 			 * @param source The path to the image file to load.
 			 * @returns An image object representing the loaded image.
 			 */
-			export function open(source: string): Sen.Kernel.Dimension.Image;
+			export function open(source: string): Kernel.ImageAdapter.Image;
 
 			/**
 			 * Writes an image object to a file.
@@ -338,7 +338,7 @@ declare namespace Sen {
 			 * @param destination The path to the destination file for the image.
 			 * @param image The image object representing the image to save.
 			 */
-			export function write(destination: string, image: Sen.Kernel.Dimension.Image): void;
+			export function write(destination: string, image: Kernel.ImageAdapter.Image): void;
 
 			/**
 			 * Joins multiple image objects into a single image and saves the result to a file.
@@ -352,8 +352,8 @@ declare namespace Sen {
 			 */
 			export function join_png(
 				destination: string,
-				dimension: Kernel.Dimension.Structure,
-				data: Array<Sen.Kernel.Dimension.Image>,
+				dimension: Kernel.ImageAdapter.Structure,
+				data: Array<Kernel.ImageAdapter.Image>,
 			): void;
 
 			/**
@@ -367,9 +367,9 @@ declare namespace Sen {
 			 * @returns A new image object representing the joined image.
 			 */
 			export function join(
-				dimension: Kernel.Dimension.Structure,
-				data: Array<Sen.Kernel.Dimension.Image>,
-			): Kernel.Dimension.Image;
+				dimension: Kernel.ImageAdapter.Structure,
+				data: Array<Kernel.ImageAdapter.Image>,
+			): Kernel.ImageAdapter.Image;
 
 			/**
 			 * Joins multiple image objects into a single image object.
@@ -382,18 +382,18 @@ declare namespace Sen {
 			 * @returns A new image object representing the joined image.
 			 */
 			export function join_extend(
-				dimension: Kernel.Dimension.Structure,
-				data: Array<Kernel.Dimension.Image>,
-			): Kernel.Dimension.Image;
+				dimension: Kernel.ImageAdapter.Structure,
+				data: Array<Kernel.ImageAdapter.Image>,
+			): Kernel.ImageAdapter.Image;
 
 			/**
 			 * Function to create an instance of the Structure interface
 			 *
 			 * @param {bigint} width - The width of the structure.
 			 * @param {bigint} height - The height of the structure.
-			 * @returns {Sen.Kernel.Dimension.Structure} - An instance of the Structure interface with the provided dimensions.
+			 * @returns {Kernel.ImageAdapter.Structure} - An instance of the Structure interface with the provided dimensions.
 			 */
-			export function instance(width: bigint, height: bigint): Sen.Kernel.Dimension.Structure;
+			export function instance(width: bigint, height: bigint): Kernel.ImageAdapter.Structure;
 		}
 
 		/**
@@ -2540,14 +2540,14 @@ declare namespace Sen {
 		}
 
 		/**
-		 * Dimension Support
+		 * ImageAdapter Support
 		 */
 
-		declare namespace Dimension {
+		declare namespace ImageAdapter {
 			/**
 			 * Interface for a basic view with width and height properties
 			 *
-			 * Extends the Record<string, unknown> to allow for additional properties specific to basic dimensions.
+			 * Extends the Record<string, unknown> to allow for additional properties specific to basic ImageAdapter.
 			 */
 			export interface BasicView extends Record<string, unknown> {
 				/**
@@ -2819,9 +2819,9 @@ declare namespace Sen {
 			/**
 			 * Constructor for the ImageView class
 			 *
-			 * @param {Kernel.Dimension.Image} value - The initial image data for the ImageView object.
+			 * @param {Kernel.ImageAdapter.Image} value - The initial image data for the ImageView object.
 			 */
-			public constructor(value: Kernel.Dimension.Image);
+			public constructor(value: Kernel.ImageAdapter.Image);
 
 			/**
 			 * Getter for the image bit depth property
@@ -3277,21 +3277,10 @@ declare namespace Sen {
 			public fromString(value: string): void;
 
 			/**
-			 * cast current DataView to JS Uint8Array
-			 */
-
-			public toUint8Array(): Uint8Array;
-
-			/**
 			 * cast current DataView to JS ArrayBuffer
 			 */
 
 			public toArrayBuffer(): ArrayBuffer;
-
-			/**
-			 * cast current DataView to JS Uint8Array
-			 */
-			public getUint8Array(from: bigint, to: bigint): Uint8Array;
 
 			/**
 			 * cast current DataView to JS ArrayBuffer
@@ -4850,8 +4839,8 @@ declare namespace Sen {
 				width: bigint,
 				height: bigint,
 				stride: bigint,
-				x: bigint,
-				y: bigint,
+				x: number,
+				y: number,
 			): void;
 
 			/**
