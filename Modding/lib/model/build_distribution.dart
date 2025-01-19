@@ -1,5 +1,5 @@
 class BuildDistribution {
   static const String kApplicationName = 'Sen: Environment';
 
-  static const int version = 4;
+  static const int version = 5;
 }

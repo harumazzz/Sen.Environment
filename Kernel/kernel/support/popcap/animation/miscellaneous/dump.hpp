@@ -4,51 +4,81 @@
 
 namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 
-	class Dump {
+	struct Dump {
 
 		protected:
 
-			inline auto read_symbols_include(
+			inline static auto read_symbols_include(
 				XMLElement* document,
 				BasicDocument& doc
 			) -> void
 			{
 				assert_conditional(document != nullptr, fmt::format("{}", Language::get("popcap.animation.miscellaneous.symbols_is_null")), "read_symbols_include");
-				for (auto child = document->FirstChildElement("Include"); child != nullptr; child = child->NextSiblingElement("Include"))
 				{
-					assert_conditional(child != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_symbols_include")), "read_symbols_include");
-					auto item = std::string{child->FirstAttribute()->Value()};
-					if (item.starts_with("image"))
-					{
-						doc.image.emplace_back(item.substr(6, item.size() - 10));
+					auto image_count = std::size_t{0};
+					auto sprite_count = std::size_t{0};
+					auto action_count = std::size_t{0};
+					for (auto child = document->FirstChildElement("Include"); child != nullptr; child = child->NextSiblingElement("Include")) {
+						assert_conditional(child != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_symbols_include")), "read_symbols_include");
+						auto item = std::string{ child->FirstAttribute()->Value() };
+						if (item.starts_with("image")) {
+							++image_count;
+						}
+						else if (item.starts_with("sprite")) {
+							++sprite_count;
+						}
+						else if (item.starts_with("action")) {
+							++action_count;
+						}
 					}
-					if (item.starts_with("sprite"))
-					{
-						doc.sprite.emplace_back(item.substr(7, item.size() - 11));
-					}
-					if (item.starts_with("action"))
-					{
-						doc.action.emplace_back(item.substr(7, item.size() - 11));
+					doc.image.reserve(image_count);
+					doc.sprite.reserve(sprite_count);
+					doc.action.reserve(action_count);
+				}
+				{
+					for (auto child = document->FirstChildElement("Include"); child != nullptr; child = child->NextSiblingElement("Include")) {
+						assert_conditional(child != nullptr, fmt::format("{}", Language::get("popcap.animation.from_flash.invalid_symbols_include")), "read_symbols_include");
+						auto item = std::string{ child->FirstAttribute()->Value() };
+						if (item.starts_with("image")) {
+							doc.image.emplace_back(item.substr(6, item.size() - 10));
+						}
+						else if (item.starts_with("sprite")) {
+							doc.sprite.emplace_back(item.substr(7, item.size() - 11));
+						}
+						else if (item.starts_with("action")) {
+							doc.action.emplace_back(item.substr(7, item.size() - 11));
+						}
 					}
 				}
 				return;
 			}
 
-			inline auto read_media(
+			inline static auto read_media(
 				XMLElement* document,
 				BasicDocument& doc
 			) -> void
 			{
 				assert_conditional(document != nullptr, fmt::format("{}", Language::get("popcap.animation.miscellaneous.media_is_null")), "read_media");
-				for (auto child = document->FirstChildElement("DOMBitmapItem"); child != nullptr; child = child->NextSiblingElement("DOMBitmapItem"))
 				{
-					assert_conditional(child != nullptr, fmt::format("{}", Language::get("popcap.animation.miscellaneous.invalid_media")), "read_media");
-					doc.media.emplace_back(child->FindAttribute("name")->Value());
+					auto media_count = 0_size;
+					for (auto child = document->FirstChildElement("DOMBitmapItem"); child != nullptr; child = child->NextSiblingElement("DOMBitmapItem")) {
+						++media_count;
+					}
+					doc.media.reserve(media_count);
+				}
+				{
+					for (auto child = document->FirstChildElement("DOMBitmapItem"); child != nullptr; child = child->NextSiblingElement("DOMBitmapItem")) {
+						assert_conditional(child != nullptr, fmt::format("{}", Language::get("popcap.animation.miscellaneous.invalid_media")), "read_media");
+						auto attribute = child->FindAttribute("name");
+						assert_conditional(attribute != nullptr, fmt::format("{}", Language::get("popcap.animation.miscellaneous.missing_media_name")), "read_media");
+						doc.media.emplace_back(attribute->Value());
+					}
 				}
 				return;
 			}
 
-			inline auto process(
+
+			inline static auto process(
 				std::string_view source,
 				BasicDocument& doc
 			) -> void
@@ -63,11 +93,11 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 			}
 
 		public:
-			explicit Dump(
+			constexpr explicit Dump(
 
 			) = default;
 
-			~Dump(
+			constexpr ~Dump(
 
 			) = default;
 
@@ -84,23 +114,23 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				BasicDocument& document
 			) -> void
 			{
-				auto dump = Dump{};
-				dump.process(fmt::format("{}/DomDocument.xml", source), document);
+				Dump::process(fmt::format("{}/DomDocument.xml", source), document);
 				return;
 			}
 	};
 
-	class Generator {
+	struct Generator {
 		protected:
 			using Image = Miscellaneous::Image;
 
 			using Sprite = Miscellaneous::Sprite;
 		public:
-			explicit Generator(
+
+			constexpr explicit Generator(
 
 			) = default;
 
-			~Generator(
+			constexpr ~Generator(
 
 			) = default;
 
@@ -113,7 +143,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 			) = delete;
 		protected:
 
-			inline auto make_image(
+			inline static auto make_image(
 				XMLDocument* document,
 				Image* image
 			) -> void
@@ -156,7 +186,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				return;
 			}
 
-			inline auto make_sprite(
+			inline static auto make_sprite(
 				XMLDocument* document,
 				Sprite* sprite
 			) -> void
@@ -211,7 +241,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				return;
 			}
 
-			inline auto make_dom (
+			inline static auto make_dom (
 				XMLDocument* doc,
 				BasicDocument* newData
 			) -> void
@@ -251,9 +281,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				Image* image
 			) -> void
 			{
-				auto generator = Generator{};
 				auto xml = XMLDocument{};
-				generator.make_image(&xml, image);
+				Generator::make_image(&xml, image);
 				FileSystem::write_xml(destination, &xml);
 				return;
 			}
@@ -263,10 +292,9 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				BasicDocument* document
 			) -> void
 			{
-				auto generator = Generator{};
 				auto xml = XMLDocument{};
 				FileSystem::read_xml(destination, &xml);
-				generator.make_dom(&xml, document);
+				Generator::make_dom(&xml, document);
 				FileSystem::write_xml(destination, &xml);
 				return;
 			}
@@ -276,9 +304,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 				Sprite* sprite
 			) -> void
 			{
-				auto generator = Generator{};
 				auto xml = XMLDocument{};
-				generator.make_sprite(&xml, sprite);
+				Generator::make_sprite(&xml, sprite);
 				FileSystem::write_xml(destination, &xml);
 				return;
 			}

@@ -1,17 +1,5 @@
 namespace Sen.Script {
 	/**
-	 * Color provided in Sen
-	 */
-
-	export enum Color {
-		GREEN = 10,
-		CYAN = 11,
-		RED = 12,
-		YELLOW = 14,
-		DEFAULT = 7,
-	}
-
-	/**
 	 * Console namespace of Script
 	 */
 
@@ -26,16 +14,20 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function display(title: string, message: any, color: Color = Color.DEFAULT): void {
+		export function display(
+			title: string,
+			message?: string,
+			color: Kernel.Color = 'default',
+		): void {
 			const is_gui = Shell.is_gui();
 			const prefix = is_gui ? '' : '● ';
 			const new_tille = `${prefix}${title}`;
 			let msg = message ? message : '';
 			if (!is_gui && msg !== '') msg = `    ${msg}`;
-			return Kernel.Console.print(new_tille, msg, color);
+			return Kernel.Console.print([new_tille, msg, color]);
 		}
 
-		export function send(message: any, color: Color = Color.DEFAULT): void {
+		export function send(message: any, color: Kernel.Color = 'default'): void {
 			return display(message, '', color);
 		}
 
@@ -49,7 +41,7 @@ namespace Sen.Script {
 
 		export function error(str: string | undefined): void {
 			if (str === undefined) return;
-			return Console.display(`${Kernel.Language.get('runtime_error')}:`, str, Color.RED);
+			return Console.display(`${Kernel.Language.get('runtime_error')}:`, str, 'red');
 		}
 
 		/**
@@ -65,7 +57,7 @@ namespace Sen.Script {
 				? `${Kernel.Language.get('execution_argument')}:`
 				: `${Kernel.Language.get('execution_argument')}: ${str}`;
 			const message = Shell.is_gui() ? str : '';
-			return display(title, message, Color.CYAN);
+			return display(title, message, 'cyan');
 		}
 
 		/**
@@ -81,7 +73,7 @@ namespace Sen.Script {
 			return display(
 				`${Kernel.Language.get('execution_finished')}: ${subtitle}`,
 				message,
-				Color.GREEN,
+				'green',
 			);
 		}
 
@@ -94,7 +86,7 @@ namespace Sen.Script {
 		 */
 
 		export function obtained(source: string): void {
-			return display(`${Kernel.Language.get('input_argument')}:`, source, Color.CYAN);
+			return display(`${Kernel.Language.get('input_argument')}:`, source, 'cyan');
 		}
 
 		/**
@@ -106,7 +98,7 @@ namespace Sen.Script {
 		 */
 
 		export function output(source: string): void {
-			return display(`${Kernel.Language.get('output_argument')}:`, source, Color.GREEN);
+			return display(`${Kernel.Language.get('output_argument')}:`, source, 'green');
 		}
 
 		/**
@@ -121,7 +113,7 @@ namespace Sen.Script {
 			return Console.display(
 				`${Kernel.Language.get('execution_warning')}:`,
 				source,
-				Color.YELLOW,
+				'yellow',
 			);
 		}
 
@@ -270,7 +262,7 @@ namespace Sen.Script {
 				Console.display(
 					`${Kernel.Language.get('stack')}:`,
 					make_stack(e.stack!).replace(/\n$/, ''),
-					Color.RED,
+					'red',
 				);
 				return undefined!;
 			}
@@ -284,7 +276,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 11 as const;
+	export const version = 12 as const;
 
 	/**
 	 * --------------------------------------------------

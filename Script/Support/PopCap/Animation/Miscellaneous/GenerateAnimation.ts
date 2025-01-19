@@ -127,7 +127,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 		if (sprite_list.length >= 0) {
 			Console.finished(Kernel.Language.get('popcap.animation.to_apng.all_sprite_loaded'));
 			sprite_list.map((e, i) => {
-				Kernel.Console.print(`    ${i + 1}: ${e}`);
+				Kernel.Console.print([`    ${i + 1}: ${e}`]);
 			});
 			Console.argument(
 				Kernel.Language.get('popcap.animation.miscellaneous.to_apng.disable_sprite'),

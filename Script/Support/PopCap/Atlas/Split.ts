@@ -27,18 +27,18 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 		 * @returns
 		 */
 
-		export function destination(
+		export function home(
 			destination: string,
 			resource: Kernel.Support.PopCap.ResourceGroup.ResourceContainsSprite,
 			is_path: boolean,
 		): string {
 			if (is_path) {
-				return `${Kernel.Path.join(
+				return `${Kernel.Path.join([
 					destination,
 					(resource.path as string).split('/').at(-1)!,
-				)}.png`;
+				])}.png`;
 			}
-			return `${Kernel.Path.join(destination, resource.id)}.png`;
+			return `${Kernel.Path.join([destination, resource.id])}.png`;
 		}
 
 		/**
@@ -124,7 +124,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				...resource,
 				resources: [],
 			};
-			const sprite_destination: string = Kernel.Path.join(destination, 'media');
+			const sprite_destination: string = Kernel.Path.join([destination, 'media']);
 			const by_path: boolean = method === 'path';
 			const style_use_string: boolean = style === 'string';
 			Kernel.FileSystem.create_directory(sprite_destination);
@@ -153,15 +153,11 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 								).join('/');
 							}
 							image_wrapper.get(png)!.push({
-								x: Number(current_resource.ax),
-								y: Number(current_resource.ay),
-								width: Number(current_resource.aw),
-								height: Number(current_resource.ah),
-								destination: ResourceGroup.destination(
-									sprite_destination,
-									current_resource,
-									by_path,
-								),
+								x: current_resource.ax,
+								y: current_resource.ay,
+								width: current_resource.aw,
+								height: current_resource.ah,
+								destination: home(sprite_destination, current_resource, by_path),
 							});
 							resources_used.resources.push(current_resource);
 							break;
@@ -206,7 +202,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				destination,
 			);
 			Kernel.JSON.serialize_fs<Structure.Definition>(
-				Kernel.Path.join(destination, 'atlas.json'),
+				Kernel.Path.join([destination, 'atlas.json']),
 				definition,
 				1n,
 				false,
@@ -242,18 +238,18 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 		 * @returns
 		 */
 
-		export function destination(
+		export function home(
 			destination: string,
 			resource: Kernel.Support.PopCap.ResInfo.Sprite,
 			id: string | undefined,
 		): string {
 			if (id === undefined) {
-				return `${Kernel.Path.join(
+				return `${Kernel.Path.join([
 					destination,
 					(resource.path as string).split('/').at(-1)!,
-				)}.png`;
+				])}.png`;
 			}
-			return `${Kernel.Path.join(destination, id)}.png`;
+			return `${Kernel.Path.join([destination, id])}.png`;
 		}
 
 		export function make_definition(
@@ -313,7 +309,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			};
 			const parents: Array<string> = Object.keys(resource.packet);
 			Kernel.FileSystem.create_directory(destination);
-			const sprite_destination: string = Kernel.Path.join(destination, 'media');
+			const sprite_destination: string = Kernel.Path.join([destination, 'media']);
 			Kernel.FileSystem.create_directory(sprite_destination);
 			const image_wrapper: Map<string, Array<Kernel.Image.RectangleFileIO>> = new Map<
 				string,
@@ -336,11 +332,11 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 							const current_parent = png.replaceAll(/\.png$/gi, '').toUpperCase();
 							if (current_parent.endsWith(parent.replace('ATLASIMAGE_ATLAS_', ''))) {
 								image_wrapper.get(png)!.push({
-									x: Number(default_subinfo.ax),
-									y: Number(default_subinfo.ay),
-									width: Number(default_subinfo.aw),
-									height: Number(default_subinfo.ah),
-									destination: ResInfo.destination(
+									x: default_subinfo.ax,
+									y: default_subinfo.ay,
+									width: default_subinfo.aw,
+									height: default_subinfo.ah,
+									destination: home(
 										sprite_destination,
 										group,
 										by_path ? undefined : id,
@@ -394,7 +390,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				style,
 			);
 			Kernel.JSON.serialize_fs<Structure.Definition>(
-				Kernel.Path.join(destination, 'atlas.json'),
+				Kernel.Path.join([destination, 'atlas.json']),
 				definition,
 				1n,
 				false,

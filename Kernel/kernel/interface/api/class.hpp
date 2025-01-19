@@ -506,7 +506,7 @@ namespace Sen::Kernel::Interface::API {
 
 				namespace Miscellaneous {
 
-					#pragma reigon Image 
+					#pragma region Image 
 
 					namespace Image {
 
@@ -544,7 +544,7 @@ namespace Sen::Kernel::Interface::API {
 
 					#pragma endregion
 
-					#pragma reigon Sprite 
+					#pragma region Sprite 
 
 					namespace Sprite {
 

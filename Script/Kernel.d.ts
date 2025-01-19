@@ -250,36 +250,14 @@ declare namespace Sen {
 			): void;
 
 			/**
-			 * Rotates an image by a specified angle and saves the result to a new file.
-			 *
-			 * @param source The path to the source image file.
-			 * @param destination The path to the destination file for the rotated image.
-			 * @param angle The angle to rotate the image by (degrees, positive for clockwise).
-			 */
-			export function rotate_fs(source: string, destination: string, angle: number): void;
-
-			/**
-			 * Creates a new transparent image file with specified dimensions.
-			 *
-			 * @param destination The path to the destination file for the transparent image.
-			 * @param width The width of the image in pixels.
-			 * @param height The height of the image in pixels.
-			 */
-			export function transparent_fs(
-				destination: string,
-				width: number,
-				height: number,
-			): void;
-
-			/**
 			 * Interface defining a rectangle with position and dimensions.
 			 * Used for specifying regions to cut from an image.
 			 */
 			export interface Rectangle {
-				x: number;
-				y: number;
-				width: number;
-				height: number;
+				x: bigint;
+				y: bigint;
+				width: bigint;
+				height: bigint;
 			}
 
 			/**
@@ -288,15 +266,6 @@ declare namespace Sen {
 			export interface RectangleFileIO extends Rectangle {
 				destination: string;
 			}
-
-			/**
-			 * Cuts a rectangular region from an image and saves it to a new file.
-			 *
-			 * @param source The path to the source image file.
-			 * @param destination The path to the destination file for the cut image.
-			 * @param rectangle The rectangle defining the region to cut.
-			 */
-			export function cut_fs(source: string, destination: string, rectangle: Rectangle): void;
 
 			/**
 			 * Cuts multiple rectangular regions from an image and saves them to new files.
@@ -341,22 +310,6 @@ declare namespace Sen {
 			export function write(destination: string, image: Kernel.ImageAdapter.Image): void;
 
 			/**
-			 * Joins multiple image objects into a single image and saves the result to a file.
-			 *
-			 * This function assumes the image objects have compatible dimensions
-			 * (e.g., same width and height) for proper joining.
-			 *
-			 * @param destination The path to the destination file for the joined image.
-			 * @param dimension An object defining the dimensions (width and height) of the joined image.
-			 * @param data An array of image objects to be joined together.
-			 */
-			export function join_png(
-				destination: string,
-				dimension: Kernel.ImageAdapter.Structure,
-				data: Array<Kernel.ImageAdapter.Image>,
-			): void;
-
-			/**
 			 * Joins multiple image objects into a single image object.
 			 *
 			 * This function assumes the image objects have compatible dimensions
@@ -367,7 +320,7 @@ declare namespace Sen {
 			 * @returns A new image object representing the joined image.
 			 */
 			export function join(
-				dimension: Kernel.ImageAdapter.Structure,
+				dimension: Kernel.ImageAdapter.BasicView,
 				data: Array<Kernel.ImageAdapter.Image>,
 			): Kernel.ImageAdapter.Image;
 
@@ -382,18 +335,9 @@ declare namespace Sen {
 			 * @returns A new image object representing the joined image.
 			 */
 			export function join_extend(
-				dimension: Kernel.ImageAdapter.Structure,
+				dimension: Kernel.ImageAdapter.BasicView,
 				data: Array<Kernel.ImageAdapter.Image>,
 			): Kernel.ImageAdapter.Image;
-
-			/**
-			 * Function to create an instance of the Structure interface
-			 *
-			 * @param {bigint} width - The width of the structure.
-			 * @param {bigint} height - The height of the structure.
-			 * @returns {Kernel.ImageAdapter.Structure} - An instance of the Structure interface with the provided dimensions.
-			 */
-			export function instance(width: bigint, height: bigint): Kernel.ImageAdapter.Structure;
 		}
 
 		/**
@@ -442,7 +386,7 @@ declare namespace Sen {
 			 * @param args - An array of path segments to join
 			 * @returns The joined path
 			 */
-			export function join(...args: Array<string>): string;
+			export function join(args: Array<string>): string;
 
 			/**
 			 * Get the last portion of a path.
@@ -516,6 +460,12 @@ declare namespace Sen {
 		}
 
 		/**
+		 * Color for printing
+		 */
+
+		export type Color = 'red' | 'green' | 'cyan' | 'yellow' | 'default';
+
+		/**
 		 * Declarations for console methods
 		 */
 		declare namespace Console {
@@ -525,13 +475,7 @@ declare namespace Sen {
 			 * @param message - The content of the message (optional)
 			 * @param color - The color of the message (optional)
 			 */
-			export function print(title: string, message?: string, color?: Script.Color): void;
-
-			/**
-			 * Print a message to the debug console without any additional options.
-			 * @param title - The title of the message
-			 */
-			export function print(title: string): void;
+			export function print(data: [string, string?, Color?]): void;
 
 			/**
 			 * Read a line of input from the console.
@@ -2561,31 +2505,11 @@ declare namespace Sen {
 			}
 
 			/**
-			 * Interface for a 2D dimensional structure
-			 *
-			 * Extends the BasicView interface to include methods for calculating area and circumference.
-			 */
-			export interface Structure extends BasicView {
-				/**
-				 * Calculates the area of the structure (width * height)
-				 *
-				 * @returns {bigint} - The calculated area of the structure.
-				 */
-				area(): bigint;
-				/**
-				 * Calculates the circumference of the structure (2 * (width + height))
-				 *
-				 * @returns {bigint} - The calculated circumference of the structure.
-				 */
-				circumference(): bigint;
-			}
-
-			/**
 			 * Interface for an image dimension with additional properties
 			 *
 			 * Extends the Structure interface to include image specific properties.
 			 */
-			export interface Image extends Structure {
+			export interface Image extends BasicView {
 				/**
 				 * Optional path to the source image file (if applicable).
 				 */

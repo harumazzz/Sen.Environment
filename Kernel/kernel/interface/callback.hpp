@@ -145,7 +145,7 @@ namespace Sen::Kernel::Interface {
 				// console
 				{
 					// print
-					runtime.add_proxy(Interface::API::Console::print, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "print"_sv);
+					runtime.add_proxy(FunctionProxy<void, List<std::string>&>::as_function<Interface::API::Console::print>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "print"_sv);
 					// readline
 					runtime.add_proxy(SpecialFunctionProxy<JSValue>::as_function<Interface::API::Console::readline>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Console"_sv}), "readline"_sv);
 				}
@@ -187,32 +187,20 @@ namespace Sen::Kernel::Interface {
 				// image
 				// TODO : Rework : Finish this later
 				{
-					// scale_fs
-					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&, float&>::as_function<Interface::API::Image::scale_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "scale_fs"_sv);
-					// join_png
-					runtime.add_proxy(Script::Image::join_png, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join_png"_sv);
 					// join
-					runtime.add_proxy(Script::Image::join, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join"_sv);
+					runtime.add_proxy(FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::shared_ptr<JavaScript::Dimension>&, List<std::shared_ptr<JavaScript::VImageView>>&>::as_function<Interface::API::Image::join>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join"_sv);
 					// join_extend
-					runtime.add_proxy(Script::Image::join_extend, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join_extend"_sv);
-					// transparent_fs
-					runtime.add_proxy(Script::Image::transparent_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "transparent_fs"_sv);
+					runtime.add_proxy(FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::shared_ptr<JavaScript::Dimension>&, List<std::shared_ptr<JavaScript::VImageView>>&>::as_function<Interface::API::Image::join_extend>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "join_extend"_sv);
 					// resize_fs
-					runtime.add_proxy(Script::Image::resize_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "resize_fs"_sv);
-					// rotate_fs
-					runtime.add_proxy(Script::Image::rotate_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "rotate_fs"_sv);
-					// cut_fs
-					runtime.add_proxy(Script::Image::cut_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_fs"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::string&, float&>::as_function<Interface::API::Image::resize_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "resize_fs"_sv);
 					// cut_multiple_fs
-					runtime.add_proxy(Script::Image::cut_multiple_fs, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, List<std::shared_ptr<JavaScript::ExtendedRectangle>>&>::as_function<Interface::API::Image::cut_multiple_fs>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs"_sv);
 					// cut_multiple_fs_asynchronous
-					runtime.add_proxy(Script::Image::cut_multiple_fs_asynchronous, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs_asynchronous"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, List<std::shared_ptr<JavaScript::ExtendedRectangle>>&>::as_function<Interface::API::Image::cut_multiple_fs_asynchronous>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Image"_sv}), "cut_multiple_fs_asynchronous"_sv);
 					// open
-					runtime.add_proxy(Script::Image::open, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "open"_sv);
+					runtime.add_proxy(FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::string&>::as_function<Interface::API::Image::open>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "open"_sv);
 					// write
-					runtime.add_proxy(Script::Image::write, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "write"_sv);
-					// instance
-					runtime.add_proxy(Script::Image::instance, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "instance"_sv);
+					runtime.add_proxy(FunctionProxy<void, std::string&, std::shared_ptr<JavaScript::ImageView>&>::as_function<Interface::API::Image::write>, std::to_array<std::string_view>({ "Sen"_sv, "Kernel"_sv, "Image"_sv }), "write"_sv);
 				}
 				// runtime
 				{
@@ -438,9 +426,8 @@ namespace Sen::Kernel::Interface {
 				}
 				// miscellaneous
 				{
-					// TODO : Rework make_copy
 					// make_copy
-					runtime.add_proxy(Script::Miscellaneous::make_copy, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "make_copy"_sv);
+					runtime.add_proxy(SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "make_copy"_sv);
 					// cast_ArrayBuffer_to_JS_String
 					runtime.add_proxy(FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_String>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv, "Miscellaneous"_sv}), "cast_ArrayBuffer_to_JS_String"_sv);
 					// cast_ArrayBuffer_to_JS_WideString

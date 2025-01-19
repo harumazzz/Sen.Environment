@@ -469,7 +469,7 @@ namespace Sen.Script.Executor {
 		Console.display(
 			`${Kernel.Language.get('method_loaded')}:`,
 			`${Kernel.Language.get(id)} | ${id}`,
-			Color.GREEN,
+			'green',
 		);
 		switch (forward_type) {
 			case Forward.BATCH:
@@ -499,14 +499,14 @@ namespace Sen.Script.Executor {
 				`${Kernel.Language.get('execution_time')}: ${clock
 					.duration_as_seconds()
 					.toFixed(3)}s`,
-				Color.GREEN,
+				'green',
 			);
 		}
 	}
 
 	export function display_argument(argument: string | string[]): void {
 		const title = `${Kernel.Language.get('execution_argument')}:`;
-		const color = Color.CYAN;
+		const color: Kernel.Color = 'cyan';
 		if (typeof argument === 'string') {
 			Console.display(title, argument, color);
 		} else {
@@ -551,9 +551,9 @@ namespace Sen.Script.Executor {
 
 	export function print_argument(e: string): void {
 		if (Shell.is_gui()) {
-			Kernel.Console.print(e.toString());
+			Kernel.Console.print([e.toString()]);
 		} else {
-			Kernel.Console.print(`    ${e}`);
+			Kernel.Console.print([`    ${e}`]);
 		}
 	}
 
@@ -791,13 +791,10 @@ namespace Sen.Script.Executor {
 				Console.display(
 					`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
 					(argument.source as Array<string>).map((e, i) => `${i + 1}. ${e}`).join('\n'),
-					Color.CYAN,
+					'cyan',
 				);
 			} else {
-				Console.send(
-					`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
-					Color.CYAN,
-				);
+				Console.send(`${Kernel.Language.get('js.make_host.argument_obtained')}:`, 'cyan');
 				(argument.source as Array<string>).forEach((e, i) =>
 					print_statement(e, BigInt(i + 1)),
 				);

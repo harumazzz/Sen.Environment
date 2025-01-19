@@ -350,58 +350,33 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Console {
 
-		using Color = Kernel::Interface::Color;
-
-		inline static auto exchange_color(
-			Color color
-		) -> std::string
-		{
-			switch (color) {
-			case Color::RED:
-				return "red";
-			case Color::GREEN:
-				return "green";
-			case Color::CYAN:
-				return "cyan";
-			case Color::YELLOW:
-				return "yellow";
-			default:
-				return "default";
-			}
-		}
 
 		inline static auto print(
-			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue
+			List<std::string>& data
+		) -> void
 		{
-			return proxy_wrapper(context, "print", [&]() {
-				assert_conditional(argc >= 1, fmt::format("argument expected greater than {} but received {}", "1", argc), "print");
-				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				switch (argc)
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			switch (data.size())
+			{
+				case 1:
 				{
-					case 1:
-					{
-						construct_string_list(std::to_array<std::string>({ std::string{ "display" }, JavaScript::Converter::get_string(context, argv[0]) }), parameters.operator*());
-						Interface::Shell::callback(parameters.get(), nullptr);
-						break;
-					}
-					case 2:
-					{
-						construct_string_list(std::to_array<std::string>({ std::string{ "display" }, JavaScript::Converter::get_string(context, argv[0]), JavaScript::Converter::get_string(context, argv[1]) }), parameters.operator*());
-						Interface::Shell::callback(parameters.get(), nullptr);
-						break;
-					}
-					default:
-					{
-						construct_string_list(std::to_array<std::string>({ std::string{ "display" }, JavaScript::Converter::get_string(context, argv[0]), JavaScript::Converter::get_string(context, argv[1]), exchange_color(static_cast<Color>(JavaScript::Converter::get_int32(context, argv[2]))) }), parameters.operator*());
-						Interface::Shell::callback(parameters.get(), nullptr);
-						break;
-					}
+					construct_string_list(std::to_array<std::string>({ std::string{ "display" }, data[0]}), parameters.operator*());
+					Interface::Shell::callback(parameters.get(), nullptr);
+					break;
 				}
-			});
+				case 2:
+				{
+					construct_string_list(std::to_array<std::string>({ std::string{ "display" }, data[0], data[1] }), parameters.operator*());
+					Interface::Shell::callback(parameters.get(), nullptr);
+					break;
+				}
+				default:
+				{
+					construct_string_list(std::to_array<std::string>({ std::string{ "display" }, data[0], data[1], data[2]}), parameters.operator*());
+					Interface::Shell::callback(parameters.get(), nullptr);
+					break;
+				}
+			}
 		}
 
 		inline static auto readline(
@@ -506,7 +481,7 @@ namespace Sen::Kernel::Interface::API {
 			auto rd = std::random_device{};
 			auto gen = std::mt19937{ rd() };
 			auto dist = std::uniform_int_distribution<unsigned int>(0, 255);
-			for (auto i : Range<std::size_t>(data->size)) {
+			for (auto i : Range<std::size_t>{ data->size }) {
 				data->value[i] = static_cast<uint8_t>(dist(gen));
 			}
 		}
@@ -545,15 +520,118 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Image {
 
-		inline static auto scale_fs(
+		inline static auto resize_fs(
 			std::string& source,
 			std::string& destination,
 			float& percentage
 		) -> void
 		{
-			return Kernel::ImageIO::scale_png(source, destination, percentage);
+			return Kernel::ImageIO::resize_png(source, destination, percentage);
 		}
 
+		inline static auto open(
+			std::string& source
+		) -> std::shared_ptr<JavaScript::ImageView>
+		{
+			auto image = Kernel::ImageIO::read_png(source);
+			return std::make_unique<JavaScript::ImageView>(
+				image.width, 
+				image.height,
+				image.bit_depth,
+				image.color_type,
+				image.interlace_type,
+				image.channels,
+				image.rowbytes,
+				JavaScript::ArrayBuffer {
+					.value = const_cast<uint8_t*>(image.data().data()),
+					.size = image.data().size(),
+				}
+			);
+		}
+
+		inline static auto write(
+			std::string& destination,
+			std::shared_ptr<JavaScript::ImageView>& object
+		) -> void
+		{
+			using Image = Kernel::Image<int>;
+			auto image = Image{ 0, 0, static_cast<int>(object->width), static_cast<int>(object->height), static_cast<int>(object->bit_depth), static_cast<int>(object->color_type), static_cast<int>(object->interlace_type), static_cast<int>(object->channels), static_cast<int>(object->rowbytes), std::move(Kernel::make_list(object->data.value, object->data.size)) };
+			return Kernel::ImageIO::write_png(destination, image);
+		}
+
+		inline static auto join (
+			std::shared_ptr<JavaScript::Dimension>& dimension,
+			List<std::shared_ptr<JavaScript::VImageView>>& images
+		) -> std::shared_ptr<JavaScript::ImageView>
+		{
+			using Image = Kernel::Image<int>;
+			auto images_list = List<Image>{};
+			images_list.reserve(images.size());
+			for (auto & image : images) {
+				images_list.emplace_back(Image{ image->x, image->y, image->width, image->height, std::move(Kernel::make_list(image->data.value, image->data.size))});
+			}
+			auto temporary_image = Image::transparent(dimension.operator*());
+			Kernel::ImageIO::join(temporary_image, images_list);
+			auto destination = std::make_shared<JavaScript::ImageView>(
+				temporary_image.width,
+				temporary_image.height,
+				temporary_image.bit_depth,
+				temporary_image.color_type,
+				temporary_image.interlace_type,
+				temporary_image.channels,
+				temporary_image.rowbytes,
+				JavaScript::ArrayBuffer {
+					.value = const_cast<uint8_t*>(temporary_image.data().data()),
+					.size = temporary_image.data().size(),
+				}
+			);
+			return destination;
+		}
+
+		inline static auto join_extend (
+			std::shared_ptr<JavaScript::Dimension>& dimension,
+			List<std::shared_ptr<JavaScript::VImageView>>& images
+		) -> std::shared_ptr<JavaScript::ImageView>
+		{
+			using Image = Kernel::Image<int>;
+			auto images_list = List<Image>{};
+			images_list.reserve(images.size());
+			for (auto& image : images) {
+				images_list.emplace_back(Image{ image->x, image->y, image->width, image->height, std::move(Kernel::make_list(image->data.value, image->data.size)) });
+			}
+			auto temporary_image = Image::transparent(dimension.operator*());
+			Kernel::ImageIO::join_extend(temporary_image, images_list);
+			auto destination = std::make_shared<JavaScript::ImageView>(
+				temporary_image.width,
+				temporary_image.height,
+				temporary_image.bit_depth,
+				temporary_image.color_type,
+				temporary_image.interlace_type,
+				temporary_image.channels,
+				temporary_image.rowbytes,
+				JavaScript::ArrayBuffer{
+					.value = const_cast<uint8_t*>(temporary_image.data().data()),
+					.size = temporary_image.data().size(),
+				}
+			);
+			return destination;
+		}
+
+		inline static auto cut_multiple_fs(
+			std::string& source,
+			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
+		) -> void
+		{
+			return Kernel::ImageIO::cut_pngs(source, positions);
+		}
+
+		inline static auto cut_multiple_fs_asynchronous(
+			std::string& source,
+			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
+		) -> void
+		{
+			return Kernel::ImageIO::cut_pngs_asynchronous(source, positions);
+		}
 	}
 
 	#pragma endregion
@@ -1686,6 +1764,14 @@ namespace Sen::Kernel::Interface::API {
 		) -> void
 		{
 			return Kernel::APNGMaker::process_fs(image_path_list, destination, setting);
+		}
+
+		inline static auto make_copy(
+			JSContext* context,
+			JSValue& value
+		) -> JSValue
+		{
+			return JavaScript::VariableDuplicator::deep_clone(context, value);
 		}
 
 	}

@@ -34,7 +34,7 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 			Kernel.Language.get(
 				'script.helper.pvz2.animation.generate_atlas_from_data.input_subgroup_name',
 			),
-			Color.CYAN,
+			'cyan',
 		);
 		const subgroup = Kernel.Console.readline().trim();
 		const resolutions = get_resolution();

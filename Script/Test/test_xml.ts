@@ -6,7 +6,7 @@ namespace Sen.Script.Test.XML {
 				Console.display(
 					`Execution argument: Running ${propertyKey}`,
 					`arguments: [${args}]`,
-					Color.CYAN,
+					'cyan',
 				);
 				try {
 					originalMethod.apply(this, args);

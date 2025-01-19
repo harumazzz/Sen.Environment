@@ -289,6 +289,75 @@ namespace Sen::Kernel::JavaScript {
 		ArrayBuffer data{};
 	};
 
+	struct VImageView : ImageView {
+		int x{};
+		int y{};
+	};
+
+	using Dimension = Kernel::Dimension<int32_t>;
+
+	using ExtendedRectangle = Kernel::RectangleFileIO<int32_t>;
+
+	template <>
+	inline auto from_value<std::shared_ptr<Dimension>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<Dimension>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<Dimension>();
+		destination->width = current_value.get_property("width").template get_bigint<int>();
+		destination->height = current_value.get_property("height").template get_bigint<int>();
+		return destination;
+	}
+
+	template <>
+	inline auto from_value<std::shared_ptr<ExtendedRectangle>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<ExtendedRectangle>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<ExtendedRectangle>();
+		destination->width = current_value.get_property("width").template get_bigint<int>();
+		destination->height = current_value.get_property("height").template get_bigint<int>();
+		destination->x = current_value.get_property("x").template get_bigint<int>();
+		destination->y = current_value.get_property("y").template get_bigint<int>();
+		destination->destination = current_value.get_property("destination").template get<std::string>();
+		return destination;
+	}
+
+	template <>
+	inline auto to_value<std::shared_ptr<ExtendedRectangle>>(
+		JSContext* context,
+		const std::shared_ptr<ExtendedRectangle>& rectangle
+	) -> JSValue
+	{
+		auto destination = Value::as_new_instance(context, JS_UNINITIALIZED);
+		destination.set_object();
+		destination.define_property("width", to_value<int64_t>(context, static_cast<int64_t>(rectangle->width)));
+		destination.define_property("height", to_value<int64_t>(context, static_cast<int64_t>(rectangle->height)));
+		destination.define_property("x", to_value<int64_t>(context, static_cast<int64_t>(rectangle->x)));
+		destination.define_property("y", to_value<int64_t>(context, static_cast<int64_t>(rectangle->y)));
+		destination.define_property("destination", to_value<std::string>(context, rectangle->destination));
+		return destination.release();
+	}
+
+	template <>
+	inline auto to_value<std::shared_ptr<Dimension>>(
+		JSContext* context,
+		const std::shared_ptr<Dimension>& image
+	) -> JSValue
+	{
+		auto destination = Value::as_new_instance(context, JS_UNINITIALIZED);
+		destination.set_object();
+		destination.define_property("width", to_value<int64_t>(context, static_cast<int64_t>(image->width)));
+		destination.define_property("height", to_value<int64_t>(context, static_cast<int64_t>(image->height)));
+		return destination.release();
+	}
+
 	template <>
 	inline auto from_value<std::shared_ptr<ImageView>>(
 		JSContext* context,
@@ -309,6 +378,70 @@ namespace Sen::Kernel::JavaScript {
 		assert_conditional(static_cast<bool>(JS_IsArrayBuffer(data)), "Value must be ArrayBuffer, but it isn't", "from_value");
 		destination->data.value = JS_GetArrayBuffer(context, &destination->data.size, data);
 		return destination;
+	}
+
+	template <>
+	inline auto to_value<std::shared_ptr<ImageView>>(
+		JSContext* context,
+		const std::shared_ptr<ImageView>& image
+	) -> JSValue
+	{
+		auto destination = Value::as_new_instance(context, JS_UNINITIALIZED);
+		destination.set_object();
+		destination.define_property("width", to_value<int64_t>(context, static_cast<int64_t>(image->width)));
+		destination.define_property("height", to_value<int64_t>(context, static_cast<int64_t>(image->height)));
+		destination.define_property("bit_depth", to_value<int64_t>(context, static_cast<int64_t>(image->bit_depth)));
+		destination.define_property("color_type", to_value<int64_t>(context, static_cast<int64_t>(image->color_type)));
+		destination.define_property("interlace_type", to_value<int64_t>(context, static_cast<int64_t>(image->interlace_type)));
+		destination.define_property("channels", to_value<int64_t>(context, static_cast<int64_t>(image->channels)));
+		destination.define_property("rowbytes", to_value<int64_t>(context, static_cast<int64_t>(image->rowbytes)));
+		destination.define_property("data", JS_NewArrayBufferCopy(context, image->data.value, image->data.size));
+		return destination.release();
+	}
+
+	template <>
+	inline auto from_value<std::shared_ptr<VImageView>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<VImageView>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<VImageView>();
+		destination->width = current_value.get_property("width").template get_bigint<int>();
+		destination->height = current_value.get_property("height").template get_bigint<int>();
+		destination->bit_depth = current_value.get_property("bit_depth").template get_bigint<int>();
+		destination->color_type = current_value.get_property("color_type").template get_bigint<int>();
+		destination->interlace_type = current_value.get_property("interlace_type").template get_bigint<int>();
+		destination->channels = current_value.get_property("channels").template get_bigint<int>();
+		destination->rowbytes = current_value.get_property("rowbytes").template get_bigint<int>();
+		destination->x = current_value.get_property("x").template get_bigint<int>();
+		destination->y = current_value.get_property("y").template get_bigint<int>();
+		auto data = current_value.get_property("data").value;
+		assert_conditional(static_cast<bool>(JS_IsArrayBuffer(data)), "Value must be ArrayBuffer, but it isn't", "from_value");
+		destination->data.value = JS_GetArrayBuffer(context, &destination->data.size, data);
+		return destination;
+	}
+
+	template <>
+	inline auto to_value<std::shared_ptr<VImageView>>(
+		JSContext* context,
+		const std::shared_ptr<VImageView>& image
+	) -> JSValue
+	{
+		auto destination = Value::as_new_instance(context, JS_UNINITIALIZED);
+		destination.set_object();
+		destination.define_property("width", to_value<int64_t>(context, static_cast<int64_t>(image->width)));
+		destination.define_property("height", to_value<int64_t>(context, static_cast<int64_t>(image->height)));
+		destination.define_property("x", to_value<int64_t>(context, static_cast<int64_t>(image->x)));
+		destination.define_property("y", to_value<int64_t>(context, static_cast<int64_t>(image->y)));
+		destination.define_property("bit_depth", to_value<int64_t>(context, static_cast<int64_t>(image->bit_depth)));
+		destination.define_property("color_type", to_value<int64_t>(context, static_cast<int64_t>(image->color_type)));
+		destination.define_property("interlace_type", to_value<int64_t>(context, static_cast<int64_t>(image->interlace_type)));
+		destination.define_property("channels", to_value<int64_t>(context, static_cast<int64_t>(image->channels)));
+		destination.define_property("rowbytes", to_value<int64_t>(context, static_cast<int64_t>(image->rowbytes)));
+		destination.define_property("data", JS_NewArrayBufferCopy(context, image->data.value, image->data.size));
+		return destination.release();
 	}
 
 	using Rectangle = Kernel::Rectangle<int32_t>;

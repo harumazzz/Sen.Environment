@@ -14,19 +14,13 @@ namespace Sen::Kernel {
 
 		public:
 
-			// width and height
-
 			T width{};
 
 			T height{};
 
-			// constructor
-
-			explicit Dimension(
+			constexpr explicit Dimension(
 
 			) = default;
-
-			// constructor
 
 			Dimension(
 				T width,
@@ -36,13 +30,10 @@ namespace Sen::Kernel {
 
 			}
 
-			// destructor
-
-			~Dimension(
+			constexpr ~Dimension(
 
 			) = default;
 
-			// get circumference
 
 			inline auto circumference(
 
@@ -50,8 +41,6 @@ namespace Sen::Kernel {
 			{
 				return (thiz.width + thiz.height) * 2;
 			}
-			
-			// get area
 
 			inline auto area(
 
@@ -60,10 +49,6 @@ namespace Sen::Kernel {
 				return thiz.width * thiz.height;
 			}
 	};
-
-	/**
-	 * Rectangle Struct
-	*/
 
 	template <typename T> requires IsCategoryOfInteger and Integral<T>
 
@@ -623,7 +608,7 @@ namespace Sen::Kernel {
 				T y,
 				T width,
 				T height
-			) : Rectangle<T>(x, y, width, height)
+			) : Rectangle<T>{ x, y, width, height }
 			{
 			}
 
@@ -634,20 +619,20 @@ namespace Sen::Kernel {
 				T width,
 				T height,
 				const std::string& destination
-			) : Rectangle<T>(x, y, width, height), destination(destination)
+			) : Rectangle<T>{ x, y, width, height }, destination{ destination }
 			{
 			}
 
 			RectangleFileIO(
 				const RectangleFileIO& that
-			) : Rectangle<T>(that.x, that.y, that.width, that.height), destination(that.destination)
+			) : Rectangle<T>{ that.x, that.y, that.width, that.height }, destination{ that.destination }
 			{
 			}
 
 			RectangleFileIO(
 				const Rectangle<T> &that,
 				const std::string& destination
-			) : Rectangle<T>(that), destination(destination)
+			) : Rectangle<T>{ that }, destination{destination}
 			{
 			}
 
@@ -822,6 +807,19 @@ namespace Sen::Kernel {
 				return;
 			}
 
+			inline static auto cut_pngs(
+				std::string_view source,
+				const List<std::shared_ptr<RectangleFileIO<int>>>& data
+			) -> void
+			{
+				auto image = ImageIO::read_png(source);
+				std::for_each(data.begin(), data.end(), [&](auto c)
+					{
+						ImageIO::write_png(c->destination, Image<int>::cut(image, c.operator*()));
+					});
+				return;
+			}
+
 			inline static auto cut_pngs_asynchronous(
 				std::string_view source,
 				const List<RectangleFileIO<int>> & data
@@ -836,6 +834,25 @@ namespace Sen::Kernel {
 					}));
 				}
 				for(auto &f : process) {
+					f.get();
+				}
+				return;
+			}
+
+			inline static auto cut_pngs_asynchronous(
+				std::string_view source,
+				const List<std::shared_ptr<RectangleFileIO<int>>>& data
+			) -> void
+			{
+				auto image = ImageIO::read_png(source);
+				auto process = List<std::future<void>>{};
+				process.reserve(data.size());
+				for (auto& c : data) {
+					process.emplace_back(std::async(std::launch::async, [&] {
+						ImageIO::write_png(c->destination, Image<int>::cut(image, c.operator*()));
+						}));
+				}
+				for (auto& f : process) {
 					f.get();
 				}
 				return;

@@ -55,7 +55,7 @@ namespace Sen.Script.Executor.Methods.JS.Evaluate {
 				const result: string | undefined = Kernel.JavaScript.evaluate_fs(
 					argument.source,
 				) as unknown & string;
-				Console.display(Kernel.Language.get('js.process.done'), result, Color.GREEN);
+				Console.display(Kernel.Language.get('js.process.done'), result, 'green');
 				clock.stop_safe();
 			},
 			batch_forward(argument: BatchArgument): void {

@@ -694,7 +694,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 	): void {
 		Kernel.FileSystem.create_directory(`${dest}/library`);
 		const dom_document: Kernel.XML.XMLDocument = Kernel.XML.deserialize_fs(
-			Kernel.Path.join(source, 'DomDocument.xml'),
+			Kernel.Path.join([source, 'DomDocument.xml']),
 		);
 		const container: Container = new Container();
 		exchange_sprite(source, container, dom_document, 'main_sprite');
