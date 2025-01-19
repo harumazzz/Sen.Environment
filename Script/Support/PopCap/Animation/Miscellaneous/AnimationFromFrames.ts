@@ -233,11 +233,11 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
 			);
 		}
 		animation.main_sprite.work_area.duration = BigInt(animation.main_sprite.frame.length);
-		Kernel.JSON.serialize_fs(`${destination}/${animation_name}.pam.json`, animation, 1, true);
+		Kernel.JSON.serialize_fs(`${destination}/${animation_name}.pam.json`, animation, 1n, true);
 		Kernel.JSON.serialize_fs(
 			`${destination}/${animation_name}.sprite/atlas.json`,
 			atlases,
-			1,
+			1n,
 			true,
 		);
 		const atlas_size: Atlas.Pack.Detail.SizeRange<number> = {

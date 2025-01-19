@@ -35,7 +35,7 @@ namespace Sen.Script.Helper.PvZO.DecodeBBone {
 		const [view, data] = process(source_file);
 		const directory = `${Kernel.Path.except_extension(source_file)}.data`;
 		Kernel.FileSystem.create_directory(directory);
-		Kernel.JSON.serialize_fs(`${directory}/data.json`, data, 1, false);
+		Kernel.JSON.serialize_fs(`${directory}/data.json`, data, 1n, false);
 		view.out_file(`${directory}/data.bin`);
 	}
 }

@@ -79,37 +79,73 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename T>
-	static auto to_value(JSContext* context, const T& value) -> JSValue {
-		if constexpr (std::is_same<T, bool>::value) {
-			return Converter::to_bool(context, value);
-		} 
-		else if constexpr (std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_pointer<T>::value && !std::is_same<T, bool>::value) {
-			static_assert(sizeof(T) != sizeof(bool), "value cannot be bool");
-			return Converter::to_bigint<T>(context, value);
-		} 
-		else if constexpr (std::is_floating_point<T>::value && !std::is_same<T, bool>::value) {
-			return Converter::to_number(context, value);
-		} 
-		else if constexpr (std::is_same<T, std::string>::value || std::is_same<T, std::string_view>::value) {
-			return Converter::to_string(context, value);
-		} 
-		else if constexpr (is_map<T>::value) {
-			return make_object<T>(context, value);
-		} 
-		else if constexpr (is_container<T>::value) {
-			return make_array<T>(context, value);
-		} 
-		else if constexpr (std::is_same<T, JSValue>::value) {
-			return value;
-		} 
-		else {
-			static_assert(false, "to_value case not implemented for this type");
-		}
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		static_assert(false, "Case not implemented");
 	}
 
+	template <>
+	inline auto to_value<bool>(
+		JSContext* context, 
+		const bool& value
+	) -> JSValue {
+		return Converter::to_bool(context, value);
+	}
+
+	template <typename T> requires (std::is_integral_v<T> && !std::is_floating_point_v<T> && !std::is_same_v<T, bool>)
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		static_assert(sizeof(T) != sizeof(bool), "value cannot be bool");
+		return Converter::to_bigint<T>(context, value);
+	}
+
+	template <typename T> requires (std::is_floating_point_v<T> && !std::is_integral_v<T> && !std::is_same_v<T, bool>)
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		static_assert(sizeof(T) != sizeof(bool), "value cannot be bool");
+		return Converter::to_number(context, value);
+	}
+
+	template <typename T> requires std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		return Converter::to_string(context, value);
+	}
+
+	template <typename T> requires is_map<T>::value
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		return make_object<T>(context, value);
+	}
+
+	template <typename T> requires is_container<T>::value
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		return make_array<T>(context, value);
+	}
+
+	template <>
+	inline auto to_value<JSValue>(
+		JSContext* context, 
+		const JSValue& value
+	) -> JSValue {
+		return value;
+	}
 
 	template <typename T>
-	auto from_value(
+	inline auto from_value(
 		JSContext* context,
 		JSValue value
 	) -> T
@@ -118,7 +154,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <>
-	auto from_value<std::string>(
+	inline auto from_value<std::string>(
 		JSContext* context,
 		JSValue value
 	) -> std::string
@@ -127,7 +163,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <>
-	auto from_value<bool>(
+	inline auto from_value<bool>(
 		JSContext* context,
 		JSValue value
 	) -> bool
@@ -136,7 +172,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <>
-	auto from_value<JSValue>(
+	inline auto from_value<JSValue>(
 		JSContext* context,
 		JSValue value
 	) -> JSValue
@@ -145,7 +181,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename T> requires (std::is_integral_v<T> && !std::is_unsigned<T>::value && !std::is_same<T, bool>::value)
-	auto from_value(
+	inline auto from_value(
 		JSContext* context,
 		JSValue value
 	) -> T
@@ -154,7 +190,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename T> requires (std::is_integral_v<T> && std::is_unsigned<T>::value && !std::is_same<T, bool>::value)
-	auto from_value(
+	inline auto from_value(
 		JSContext* context,
 		JSValue value
 	) -> T
@@ -163,7 +199,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename T> requires (!std::is_integral_v<T> && std::is_floating_point<T>::value && !std::is_same<T, bool>::value)
-	auto from_value(
+	inline auto from_value(
 		JSContext* context,
 		JSValue value
 	) -> T
@@ -178,11 +214,12 @@ namespace Sen::Kernel::JavaScript {
 
 	// ArrayBuffer
 	template <>
-	auto from_value<std::shared_ptr<ArrayBuffer>>(
+	inline auto from_value<std::shared_ptr<ArrayBuffer>>(
 		JSContext* context,
 		JSValue value
 	) -> std::shared_ptr<ArrayBuffer>
 	{
+		assert_conditional(static_cast<bool>(JS_IsArrayBuffer(value)), "Value must be ArrayBuffer, but it isn't", "from_value");
 		auto destination = std::make_shared<ArrayBuffer>();
 		destination->value = Converter::get_array_buffer(context, &destination->size, value);
 		return destination;
@@ -190,11 +227,32 @@ namespace Sen::Kernel::JavaScript {
 
 
 	template <>
-	static auto to_value<std::shared_ptr<ArrayBuffer>>(
+	inline auto to_value<std::shared_ptr<ArrayBuffer>>(
 		JSContext* context, 
 		const std::shared_ptr<ArrayBuffer>& value
 	) -> JSValue {
 		return JS_NewArrayBufferCopy(context, value->value, value->size);
+	}
+
+	template <typename T> requires is_container<T>::value
+	inline auto from_value(
+		JSContext* context,
+		JSValue value
+	) -> T
+	{
+		assert_conditional(static_cast<bool>(JS_IsArray(context, value)), "Value must be Array, but it isn't", "from_value");
+		auto destination = List<container_value_t<T>>{};
+		auto atom = JS_NewAtomLen(context, "length", std::strlen("length"));
+		auto length = Converter::get_property_uint32(context, value, atom);
+		JS_FreeAtom(context, atom);
+		destination.reserve(length);
+		for (auto index : Range{length}) {
+			auto atom = JS_NewAtomUInt32(context, index);
+			auto current_value = JS_GetProperty(context, value, atom);
+			destination.emplace_back(from_value<container_value_t<T>>(context, current_value));
+			JS_FreeAtom(context, atom);
+		}
+		return destination;
 	}
 
 }

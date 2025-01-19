@@ -613,7 +613,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 			label: {},
 		};
 		exchange_label(animation.main_sprite, definition);
-		Kernel.JSON.serialize_fs(`${destination}/data.json`, definition, 1, true);
+		Kernel.JSON.serialize_fs(`${destination}/data.json`, definition, 1n, true);
 		if (setting.apng_setting.make_apng) {
 			const write_apng = (
 				path_list: Array<string>,

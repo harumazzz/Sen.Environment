@@ -348,7 +348,7 @@ namespace Sen.Script.Support.PopCap.LawnStrings.Convert {
 
 			case 'map':
 			case 'array':
-				Kernel.JSON.serialize_fs(destination, destination_data, 1, false);
+				Kernel.JSON.serialize_fs(destination, destination_data, 1n, false);
 				break;
 
 			default:

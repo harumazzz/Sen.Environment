@@ -363,7 +363,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup>(
 				Kernel.Path.join(destination, `${definition.id}.json`),
 				definition,
-				1,
+				1n,
 				false,
 			);
 			images.forEach((image: Kernel.Dimension.Image) =>
@@ -557,7 +557,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResInfo.Atlas>(
 				Kernel.Path.join(destination, `${wrapper.id}.json`),
 				wrapper.value,
-				1,
+				1n,
 				false,
 			);
 			images.forEach((image: Kernel.Dimension.Image) =>

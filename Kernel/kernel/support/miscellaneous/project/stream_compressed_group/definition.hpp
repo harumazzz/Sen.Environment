@@ -32,6 +32,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         { v.get_property(x) } -> std::same_as<Value>;
         { v.template get_bigint<int64_t>() } -> std::same_as<int64_t>;
         { v.template get<bool>() } -> std::same_as<bool>;
+        {v.is_object() } -> std::same_as<bool>;
     } 
     inline static auto from_object (
         Value& value,

@@ -39,6 +39,9 @@ namespace Sen::Kernel::Interface::API {
 			.template add_member_function <[](Clock* clock) {
 			return clock->is_stopped();
 			}, bool > ("is_stopped")
+			.template add_member_function <[](Clock* clock) {
+			return static_cast<double>(clock->get_duration() / 1000.0);
+			}, double> ("duration_as_seconds")
 			.build(instance_names);
 			return;
 		}
@@ -63,7 +66,7 @@ namespace Sen::Kernel::Interface::API {
 				return new JsonWriter{};
 			}>()
 			.template add_member_function<[](JsonWriter* writer){
-			return writer->Clear();
+				return writer->Clear();
 			}, void> ("clear")
 			.template add_member_function<[](JsonWriter* writer) {
 				return writer->ToString();

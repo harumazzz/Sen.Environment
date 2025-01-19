@@ -55,19 +55,13 @@ namespace Sen::Kernel::Interface::API {
 
 		inline static auto callback(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
+			JSValue& value
 		) -> JSValue {
-			return proxy_wrapper(context, "callback"_sv, [&]() {
-				assert_conditional(argc == 1, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), 1, Kernel::Language::get("kernel.argument_received"), argc), "callback");
-				auto destination = std::unique_ptr<CStringView, StringFinalizer>{ new CStringView(nullptr, 0), finalizer<CStringView> };
-				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>{ new CStringList(nullptr, 0), finalizer<CStringList> };
-				JavaScript::to_string_list<CStringList, CStringView>(context, argv[0], parameters.operator*());
-				Interface::Shell::callback(parameters.get(), destination.get());
-				auto result = JavaScript::to_string<CStringView>(context, destination.get());
-				return result;
-			});
+			auto destination = std::unique_ptr<CStringView, StringFinalizer>{ new CStringView(nullptr, 0), finalizer<CStringView> };
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>{ new CStringList(nullptr, 0), finalizer<CStringList> };
+			JavaScript::to_string_list<CStringList, CStringView>(context, value, parameters.operator*());
+			Interface::Shell::callback(parameters.get(), destination.get());
+			return JavaScript::to_string<CStringView>(context, destination.get());
 		}
 			
 	}
@@ -83,10 +77,7 @@ namespace Sen::Kernel::Interface::API {
 	}
 
 	inline static auto arguments(
-		JSContext* context,
-		JSValue value,
-		int argc,
-		JSValue* argv
+		JSContext* context
 	) -> JSValue {
 		return JavaScript::to_array_of_string<CStringList, CStringView>(context, Executor::arguments);
 	}
@@ -105,105 +96,45 @@ namespace Sen::Kernel::Interface::API {
 
 		inline static auto deserialize(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
+			std::string& source
 		) -> JSValue {
-			return proxy_wrapper(context, "deserialize", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} 1, {}: {}", Kernel::Language::get("kernel.argument_expected"), Kernel::Language::get("kernel.argument_received"), argc), "deserialize");
-				auto source = JavaScript::Converter::get_string(context, argv[0]);
-				auto json = nlohmann::ordered_json::parse(source);
-				auto object = JavaScript::to(context, json);
-				return object;
-			});
+			auto json = nlohmann::ordered_json::parse(source);
+			auto object = JavaScript::to(context, json);
+			return object;
 		}
 
 		inline static auto deserialize_fs(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
+			std::string& source
 		) -> JSValue {
-			return proxy_wrapper(context, "deserialize_fs", [&]() {
-				assert_conditional(argc == 1, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), 1, Kernel::Language::get("kernel.argument_received"), argc), "deserialize_fs");
-				auto source = JavaScript::Converter::get_string(context, argv[0]);
-				auto json = Kernel::FileSystem::read_json(source);
-				auto object = JavaScript::to(context, json);
-				return object;
-			});
+			auto json = Kernel::FileSystem::read_json(source);
+			auto object = JavaScript::to(context, json);
+			return object;
 		}
 
 		inline static auto serialize(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue {
-			return proxy_wrapper(context, "serialize", [&]() {
-				assert_conditional(argc == 3, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), 3, Kernel::Language::get("kernel.argument_received"), argc), "serialize");
-				auto value = JavaScript::Value::as_new_reference(context, argv[0]);
-				auto json = JavaScript::from(value);
-				auto indent = JavaScript::Converter::get_int32(context, argv[1]);
-				auto ensure_ascii = JavaScript::Converter::get_bool(context, argv[2]);
-				return json.dump(indent, '\t', ensure_ascii);
-			});
+			JSValue& value,
+			int64_t& indent,
+			bool ensure_ascii
+		) -> std::string {
+			auto reference_value = JavaScript::Value::as_new_reference(context, value);
+			auto json = JavaScript::from(reference_value);
+			return json.dump(indent, '\t', ensure_ascii);
 		}
 
 		inline static auto serialize_fs(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
-		) -> JSValue {
-			return proxy_wrapper(context, "serialize_fs", [&]() -> void {
-				assert_conditional(argc == 4, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), 4, Kernel::Language::get("kernel.argument_received"), argc), "serialize_fs");
-				auto destination = JavaScript::Converter::get_string(context, argv[0]);
-				auto value = JavaScript::Value::as_new_reference(context, argv[1]);
-				auto json = JavaScript::from(value);
-				auto indent = JavaScript::Converter::get_int32(context, argv[2]);
-				auto ensure_ascii = JavaScript::Converter::get_bool(context, argv[3]);
-				auto result = json.dump(indent, '\t', ensure_ascii);
-				Kernel::FileSystem::write_file(destination, result);
-			});
+			std::string& destination,
+			JSValue& value,
+			int64_t& indent,
+			bool ensure_ascii
+		) -> void {
+			auto reference_value = JavaScript::Value::as_new_reference(context, value);
+			auto json = JavaScript::from(reference_value);
+			auto result = json.dump(indent, '\t', ensure_ascii);
+			return Kernel::FileSystem::write_file(destination, result);
 		}
-
-	}
-
-	#pragma endregion
-
-	#pragma region diff
-
-	namespace Diff {
-
-		#pragma region vcdiff
-
-		namespace VCDiff {
-
-			inline static auto encode_fs(
-				std::string& before_file,
-				std::string& after_file,
-				std::string& patch_file,
-				int32_t& flag
-			) -> void {
-				return Kernel::Diff::VCDiff::encode_fs(
-					before_file,
-					after_file,
-					patch_file,
-					static_cast<Kernel::Diff::VCDiff::Flag>(flag)
-				);
-			}
-
-			inline static auto decode_fs(
-				std::string& before_file,
-				std::string& patch_file,
-				std::string& after_file
-			) -> void {
-				return Kernel::Diff::VCDiff::decode_fs(before_file, patch_file, after_file);
-			}
-
-		}
-
-		#pragma endregion
 
 	}
 
@@ -334,6 +265,83 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Path {
 
+		inline static auto join(
+			List<std::string>& source
+		) -> std::string
+		{
+			return Kernel::Path::join(source);
+		}
+
+		inline static auto basename(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::basename(source);
+		}
+
+		inline static auto delimiter(
+		) -> std::string
+		{
+			return Kernel::Path::delimiter();
+		}
+
+		inline static auto dirname(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::dirname(source);
+		}
+
+		inline static auto normalize(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::normalize(source);
+		}
+
+		inline static auto base_without_extension(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::base_without_extension(source);
+		}
+
+		inline static auto except_extension(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::except_extension(source);
+		}
+
+		inline static auto resolve(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::resolve(source);
+		}
+
+		inline static auto extname(
+			std::string& source
+		) -> std::string
+		{
+			return Kernel::Path::extname(source);
+		}
+
+		inline static auto is_absolute(
+			std::string& source
+		) -> bool
+		{
+			return Kernel::Path::is_absolute(source);
+		}
+
+		inline static auto relative(
+			std::string& from,
+			std::string& to
+		) -> std::string
+		{
+			return Kernel::Path::relative(from, to);
+		}
+
 	}
 
 	#pragma endregion
@@ -397,22 +405,17 @@ namespace Sen::Kernel::Interface::API {
 		}
 
 		inline static auto readline(
-			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
+			JSContext* context
 		) -> JSValue
 		{
-			return proxy_wrapper(context, "readline", [&]() {
-				auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				construct_string_list(std::to_array<std::string>({ std::string{ "wait" } }), wait_parameters.operator*());
-				Interface::Shell::callback(wait_parameters.get(), nullptr);
-				auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-				auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
-				construct_string_list(std::array<std::string, 1>{std::string{ "input" }}, parameters.operator*());
-				Interface::Shell::callback(parameters.get(), destination.get());
-				return JavaScript::to_string<CStringView>(context, destination.get());
-			});
+			auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			construct_string_list(std::to_array<std::string>({ std::string{ "wait" } }), wait_parameters.operator*());
+			Interface::Shell::callback(wait_parameters.get(), nullptr);
+			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			construct_string_list(std::array<std::string, 1>{std::string{ "input" }}, parameters.operator*());
+			Interface::Shell::callback(parameters.get(), destination.get());
+			return JavaScript::to_string<CStringView>(context, destination.get());
 		}
 
 	}
@@ -554,16 +557,11 @@ namespace Sen::Kernel::Interface::API {
 
 		inline static auto evaluate_fs(
 			JSContext* context,
-			JSValue value,
-			int argc,
-			JSValue* argv
+			std::string& source
 		) -> JSValue
 		{
-			return proxy_wrapper(context, "evaluate_fs", [&]() {
-				auto source = JavaScript::Converter::get_string(context, argv[0]);
-				auto js_source = Kernel::FileSystem::read_quick_file(source);
-				return JS_Eval(context, js_source.data(), js_source.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
-			});
+			auto data = Kernel::FileSystem::read_quick_file(source);
+			return JS_Eval(context, data.data(), data.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 		}
 
 	}

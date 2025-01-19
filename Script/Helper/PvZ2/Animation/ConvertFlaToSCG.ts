@@ -749,7 +749,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		Kernel.JSON.serialize_fs(
 			`${dest}/${type}${animation_name}.package/data.json`,
 			data,
-			1,
+			1n,
 			true,
 		);
 	}

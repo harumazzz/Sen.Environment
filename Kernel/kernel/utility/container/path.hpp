@@ -7,13 +7,7 @@
 namespace Sen::Kernel::Path 
 {
 
-	// file system C++
-
 	namespace fs = std::filesystem;
-
-	/**
-	 * Convert to: "a\\b\\c" if it's "a/b/c"
-	*/
 	
 	inline auto to_windows_style(
 		const std::string & source
@@ -22,22 +16,12 @@ namespace Sen::Kernel::Path
 		return String::to_windows_style(source);
 	}
 
-	
-	/**
-	 * Convert to: "a/b/c" if it's "a\\b\\c"
-	*/
-
 	inline auto to_posix_style(
 		const std::string & source
 	) -> std::string const
 	{
 		return String::to_posix_style(source);
 	}
-
-	/**
-	 * Return the absolute path
-	 * Example: "./test.js" -> "{DISK CONTAIN}/what/test.js"
-	*/
 
 	inline auto absolute(
 		const std::string & source
@@ -50,11 +34,6 @@ namespace Sen::Kernel::Path
 		#endif
 	}
 
-	/**
-	 * Get all the parent directory: 
-	 * Example: "{DISK_CONTAIN}/what/hello/main.js" -> "{DISK_CONTAIN}/what/hello"
-	*/
-
 	inline auto getParents(
 		const std::string &source
 	) -> std::string const
@@ -65,11 +44,6 @@ namespace Sen::Kernel::Path
 		return fs::path(source).parent_path().string();
 		#endif
 	}
-
-	/**
-	 * Get the file name of the path
-	 * Example: "{DISK_CONTAIN}/what/hello/main.js" -> "main.js"
-	*/
 
 
 	inline auto getFileName(
@@ -83,11 +57,6 @@ namespace Sen::Kernel::Path
 		#endif
 	}
 
-	/**
-	 * Get the file name of the path
-	 * Example: "{DISK_CONTAIN}/what/hello/main.js" -> "hello"
-	*/
-
 	inline auto getNearestParent(
 		const std::string &source
 	) -> std::string const
@@ -98,11 +67,6 @@ namespace Sen::Kernel::Path
 		return fs::path(source).parent_path().filename().string();
 		#endif
 	}
-
-	/**
-	 * Get extension only
-	 * Example: "{DISK_CONTAIN}/what/hello/main.js" -> "js"
-	*/
 
 	inline auto getExtension(
 		const std::string &source
@@ -115,11 +79,6 @@ namespace Sen::Kernel::Path
 		#endif
 	}
 
-	/**
-	 * Get file name only
-	 * Example: "{DISK_CONTAIN}/what/hello/main.js" -> "main"
-	*/
-
 	inline auto getFileNameWithoutExtension(
 		const std::string &source
 	) -> std::string const
@@ -130,26 +89,6 @@ namespace Sen::Kernel::Path
 		return fs::path(source).stem().string();
 		#endif
 	}
-
-
-	/**
-	 * Convert to posix type
-	*/
-
-	inline auto normalize(
-		const std::string &source
-	) -> std::string const
-	{
-		#if WINDOWS
-			return Path::to_windows_style(Path::absolute(source));
-		#else
-			return Path::absolute(Path::to_posix_style(source));
-		#endif
-	}
-
-	/**
-	 * Convert list of path to path
-	*/
 
 	inline auto join(
 		const std::string & source
@@ -162,22 +101,18 @@ namespace Sen::Kernel::Path
 		#endif
 	}
 
-	/**
-	 * Convert list of path to path
-	*/
-
 	inline auto join(
-		std::initializer_list<std::string> list
+		std::initializer_list<std::string>& list
 	) -> std::string
 	{
 		#if WINDOWS
-		auto path = fs::path(std::wstring{});
+		auto path = fs::path{ std::wstring{} };
 		for(auto & element : list){
 			path.append(String::utf8_to_utf16(element));
 		}
 		return String::utf16_to_utf8(path.wstring());
 		#else
-		auto path = fs::path(std::string{});
+		auto path = fs::path{ std::string{};
 		for(auto & element : list){
 			path.append(element);
 		}
@@ -185,235 +120,153 @@ namespace Sen::Kernel::Path
 		#endif
 	}
 
-	struct Format {
+	template<typename... Args>
+	inline static auto join(
+		const Args&... args
+	) -> std::string
+	{
+		#if WINDOWS && !defined MSVC_COMPILER
+		static_assert(false, "msvc compiler is required on windows");
+		#endif
+		auto result = std::filesystem::path{};
+		(result /= ... /= args);
+		#if WINDOWS
+		return String::utf16_to_utf8(result.wstring());
+		#else
+		return result.string();
+		#endif
+	}
 
-		public:
+	inline static auto join(
+		const List<std::string>& args
+	) -> std::string
+	{
+		auto result = std::filesystem::path{};
+		for (auto& arg : args) {
+			result /= String::utf8_to_utf16(arg);
+		}
+		#if WINDOWS
+		auto posix_string = result.wstring();
+		std::replace(posix_string.begin(), posix_string.end(), L'\\', L'/');
+		#else
+		auto posix_string = result.string();
+		std::replace(posix_string.begin(), posix_string.end(), '\\', '/');
+		#endif
+		#if WINDOWS
+		return String::utf16_to_utf8(result.wstring());
+		#else
+		return result.string();
+		#endif
+	}
 
-			std::string dir;
+	inline static auto basename(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.filename().wstring());
+		#else
+		return std::filesystem::path{ source }.filename().string();
+		#endif
+	}
 
-			std::string base;
+	inline static auto base_without_extension(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.stem().wstring());
+		#else
+		return std::filesystem::path{ source }.stem().string();
+		#endif
+	}
 
-			explicit Format(
-				const std::string & dir,
-				const std::string & base
-			) : dir(dir), base(base)
-			{
+	inline static auto dirname(
+		const std::string& source
+	) -> std::string;
 
-			}
+	inline static auto except_extension(
+		const std::string& source
+	) -> std::string
+	{
+		return fmt::format("{}/{}", dirname(source), base_without_extension(source));
+	}
 
-			~Format(
+	inline static auto delimiter(
 
-			) = default;
-	};
+	) -> std::string
+	{
+		#if WINDOWS
+		return std::string{ "\\" };
+		#else
+		return std::string{ "/" };
+		#endif
+	}
 
-	// JS Methods
-	
-	struct Script {
+	inline static auto dirname(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.parent_path().wstring());
+		#else
+		return std::filesystem::path{ source }.parent_path().string();
+		#endif
+	}
 
-		public:
+	inline static auto normalize(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.lexically_normal().wstring());
+		#else
+		return std::filesystem::path{ source }.lexically_normal().string();
+		#endif
+	}
 
-			/**
-			 * Provide arguments
-			*/
+	inline static auto resolve(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::absolute(String::utf8_to_utf16(source)).wstring());
+		#else
+		return std::filesystem::absolute(source).string();
+		#endif
+	}
 
-			template<typename... Args>
-			inline static auto join(
-				const Args&... args
-			) -> std::string
-			{
-				#if WINDOWS && !defined MSVC_COMPILER
-                    static_assert(false, "msvc compiler is required on windows");
-				#endif
-				auto result = std::filesystem::path{};
-				(result /= ... /= args);
-				#if WINDOWS
-					return String::utf16_to_utf8(result.wstring());
-				#else
-					return result.string();
-				#endif
-			}
+	inline static auto extname(
+		const std::string& source
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.extension().wstring());
+		#else
+		return std::filesystem::path{ source }.extension().string();
+		#endif
+	}
 
-			inline static auto join(
-				const List<std::string> & args
-			) -> std::string
-			{
-				auto result = std::filesystem::path{};
-				for(auto & arg : args) {
-					result /= String::utf8_to_utf16(arg);
-				}
-				#if WINDOWS
-					auto posix_string = result.wstring();
-					std::replace(posix_string.begin(), posix_string.end(), L'\\', L'/');
-				#else
-					auto posix_string = result.string();
-					std::replace(posix_string.begin(), posix_string.end(), '\\', '/');
-				#endif
-				#if WINDOWS
-					return String::utf16_to_utf8(result.wstring());
-				#else
-					return result.string();
-				#endif
-			}
+	inline static auto is_absolute(
+		const std::string& source
+	) -> bool
+	{
+		#if WINDOWS
+		return source == String::utf16_to_utf8(std::filesystem::path(String::utf8_to_utf16(source)).extension().wstring());
+		#else
+		return source == std::filesystem::path(source).string();
+		#endif
+	}
 
-
-			/**
-			 * Get basename of a file
-			*/
-
-			inline static auto basename(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::path{String::utf8_to_utf16(source)}.filename().wstring());
-				#else
-					return std::filesystem::path{source}.filename().string();
-				#endif
-			}
-
-			/**
-			 * Without extension
-			*/
-
-			inline static auto base_without_extension(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::path{String::utf8_to_utf16(source)}.stem().wstring());
-				#else
-					return std::filesystem::path{source}.stem().string();
-				#endif
-			}
-
-			/**
-			 * Without extension
-			*/
-
-			inline static auto except_extension(
-				const std::string & source
-			) -> std::string
-			{
-				return fmt::format("{}/{}", dirname(source), base_without_extension(source));
-			}
-
-			/**
-			 * Return current platform delimiter
-			*/
-
-			inline static auto delimiter(
-
-			) -> std::string
-			{
-				#if WINDOWS
-					return std::string{"\\"};
-				#else
-					return std::string{"/"};
-				#endif
-			}
-
-			/**
-			 * Return parent directory
-			*/
-
-			inline static auto dirname(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::path{String::utf8_to_utf16(source)}.parent_path().wstring());
-				#else
-					return std::filesystem::path{source}.parent_path().string();
-				#endif
-			}
-
-			/**
-			 * Join the format
-			*/
-
-			inline static auto format(
-				const Format & that
-			) -> std::string
-			{
-				return join(that.dir, that.base);
-			}
-
-			/**
-			 * Normalize the path
-			*/
-
-			inline static auto normalize(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::path{String::utf8_to_utf16(source)}.lexically_normal().wstring());
-				#else
-					return std::filesystem::path{source}.lexically_normal().string();
-				#endif
-			}
-
-			/**
-			 * Get full path
-			*/
-			
-			inline static auto resolve(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::absolute(String::utf8_to_utf16(source)).wstring());
-				#else
-					return std::filesystem::absolute(source).string();
-				#endif
-			}
-
-			/**
-			 * Get extension name
-			*/
-			
-			inline static auto extname(
-				const std::string & source
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::path{String::utf8_to_utf16(source)}.extension().wstring());
-				#else
-					return std::filesystem::path{source}.extension().string();
-				#endif
-			}
-
-			/**
-			 * if path is absolute path
-			*/
-			
-			inline static auto is_absolute(
-				const std::string & source
-			) -> bool
-			{
-				#if WINDOWS
-					return source == String::utf16_to_utf8(std::filesystem::path(String::utf8_to_utf16(source)).extension().wstring());
-				#else
-					return source == std::filesystem::path(source).string();
-				#endif
-			}
-
-			/**
-			 * Get relative path
-			*/
-			
-			inline static auto relative(
-				const std::string & from,
-				const std::string & to
-			) -> std::string
-			{
-				#if WINDOWS
-					return String::utf16_to_utf8(std::filesystem::relative(String::utf8_to_utf16(to), String::utf8_to_utf16(from)).wstring());
-				#else
-					return std::filesystem::relative(to, from).string();
-				#endif
-			}
-
-			
-	};
+	inline static auto relative(
+		const std::string& from,
+		const std::string& to
+	) -> std::string
+	{
+		#if WINDOWS
+		return String::utf16_to_utf8(std::filesystem::relative(String::utf8_to_utf16(to), String::utf8_to_utf16(from)).wstring());
+		#else
+		return std::filesystem::relative(to, from).string();
+		#endif
+	}
 }

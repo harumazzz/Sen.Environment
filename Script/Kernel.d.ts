@@ -465,13 +465,6 @@ declare namespace Sen {
 			export function dirname(source: string): string;
 
 			/**
-			 * Format a path object into a string path.
-			 * @param format - The format object containing base and dir properties
-			 * @returns The formatted path
-			 */
-			export function format(format: Format): string;
-
-			/**
 			 * Normalize a path by resolving '..' and '.' segments.
 			 * @param source - The path to normalize
 			 * @returns The normalized path
@@ -591,7 +584,7 @@ declare namespace Sen {
 			 * @param ensure_ascii Whether to ensure ASCII characters only (optional, defaults to false).
 			 * @returns The serialized JSON string.
 			 */
-			export function serialize<T>(obj: T, indent?: number, ensure_ascii?: boolean): string;
+			export function serialize<T>(obj: T, indent?: bigint, ensure_ascii?: boolean): string;
 
 			/**
 			 * Serializes a JavaScript object into a JSON file.
@@ -607,7 +600,7 @@ declare namespace Sen {
 			export function serialize_fs<T>(
 				destination: string,
 				obj: T,
-				indent: number,
+				indent: bigint,
 				ensure_ascii: boolean,
 			): void;
 		}

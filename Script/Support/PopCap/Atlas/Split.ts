@@ -208,7 +208,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			Kernel.JSON.serialize_fs<Structure.Definition>(
 				Kernel.Path.join(destination, 'atlas.json'),
 				definition,
-				1,
+				1n,
 				false,
 			);
 		}
@@ -396,7 +396,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			Kernel.JSON.serialize_fs<Structure.Definition>(
 				Kernel.Path.join(destination, 'atlas.json'),
 				definition,
-				1,
+				1n,
 				false,
 			);
 		}

@@ -66,7 +66,7 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 			Kernel.JSON.serialize_fs(
 				`${destination}/${subgroup}_${resolution}.json`,
 				atlas,
-				1,
+				1n,
 				false,
 			);
 		});

@@ -51,12 +51,14 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
         {v.template get<std::string>()} -> std::same_as<std::string>;
         {v.template get_bigint<int64_t>()} -> std::same_as<int64_t>;
         {v.get_property(x) } -> std::same_as<Value>;
+        {v.is_object() } -> std::same_as<bool>;
     }
     inline static auto from_object (
         Value& value,
         PackagesSetting& setting
     ) -> void
     {
+        assert_conditional(value.is_object(), "Value must be object", "from_object");
         setting.iv = value.get_property("iv").template get<std::string>();
         setting.key = value.get_property("key").template get<std::string>();
         setting.rton_count = static_cast<int>(value.get_property("rton_count").template get_bigint<int64_t>());
@@ -70,12 +72,14 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
         {v.get_property(x) } -> std::same_as<Value>;
         {v.template get<bool>() } -> std::same_as<bool>;
         {v.release() } -> std::same_as<JSValue>;
+        {v.is_object() } -> std::same_as<bool>;
     }
     inline static auto from_object (
         Value& value,
         Setting& setting
     ) -> void
     {
+        assert_conditional(value.is_object(), "Value must be object", "from_object");
         setting.texture_format_category = static_cast<TextureFormatCategory>(value.get_property("texture_format_category").template get_bigint<int64_t>());
         setting.only_high_resolution = value.get_property("only_high_resolution").template get<bool>();
         setting.unpack_packages = value.get_property("unpack_packages").template get<bool>();
@@ -144,9 +148,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
         const nlohmann::ordered_json &nlohmann_json_j,
         ManifestGroupInfo &nlohmann_json_t) -> void
     {
-       // auto expand_path_string = nlohmann_json_j["expand_path"].get<std::string>();
-       // assert_conditional(!(expand_path_string != "string" && expand_path_string != "array"), String::format(fmt::format("{}", Language::get("pvz2.rsb.modding.invalid_expand_path")), expand_path_string), "from_json");
-       // nlohmann_json_t.expand_path = nlohmann_json_t.allow_new_type_resource ? ExpandPath::String : ExpandPath::Array;
         nlohmann_json_j.at("compression").get_to(nlohmann_json_t.compression);
         nlohmann_json_j.at("allow_new_type_resource").get_to(nlohmann_json_t.allow_new_type_resource);
         if (nlohmann_json_j["resource_additional_name"] != nullptr)

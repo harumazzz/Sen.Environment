@@ -55,7 +55,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.RemoveSubgroupFromResources {
 			}
 		}
 		rewrite_slot_count(resources);
-		Kernel.JSON.serialize_fs(destination, resources, 1, true);
+		Kernel.JSON.serialize_fs(destination, resources, 1n, true);
 	}
 
 	/**

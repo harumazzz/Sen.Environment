@@ -61,7 +61,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateData {
 		image_posix: string,
 	): void {
 		const data = process(resolution, source, image_posix);
-		Kernel.JSON.serialize_fs(destination, data, 1, false);
+		Kernel.JSON.serialize_fs(destination, data, 1n, false);
 	}
 
 	export function execute(): void {

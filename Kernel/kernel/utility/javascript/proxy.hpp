@@ -24,7 +24,7 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <typename ReturnType, typename... Args>
-	struct Proxy {
+	struct FunctionProxy {
 
 		using NativeFunction = ReturnType (*)(Args...);
 
@@ -47,6 +47,43 @@ namespace Sen::Kernel::JavaScript {
 					return JS_UNDEFINED;
 				} else {
 					auto result = std::apply(function, arguments);
+					return to_value<ReturnType>(context, result);
+				}
+			} catch (...) {
+				auto exception = parse_exception();
+				return throw_exception(context, exception.message(), exception.source, exception.function_name);
+			}
+		}
+	};
+
+	template <typename ReturnType, typename... Args>
+	struct SpecialFunctionProxy {
+
+		using NativeFunction = ReturnType (*)(JSContext*, Args...);
+
+		template <NativeFunction function>
+		static auto as_function(
+			JSContext* context, 
+			JSValue value,
+			int argc, 
+			JSValue* argv
+		) -> JSValue
+		{
+			try {
+				auto constexpr expected_args = sizeof...(Args);
+				if constexpr (expected_args != 0) {
+					assert_conditional(argc == expected_args, fmt::format("{} {}, {}: {}", Kernel::Language::get("kernel.argument_expected"), expected_args, Kernel::Language::get("kernel.argument_received"), argc), "assert_conditional");
+				}
+				auto arguments = parse_arguments<Args...>(context, argv);
+				if constexpr (std::is_void_v<ReturnType>) {
+					std::apply([&](auto&&... params) { 
+						function(context, std::forward<decltype(params)>(params)...); 
+					}, arguments);
+					return JS_UNDEFINED;
+				} else {
+					auto result = std::apply([&](auto&&... params) { 
+						return function(context, std::forward<decltype(params)>(params)...); 
+					}, arguments);
 					return to_value<ReturnType>(context, result);
 				}
 			} catch (...) {
@@ -254,7 +291,7 @@ namespace Sen::Kernel::JavaScript {
 		{
 			assert_conditional(thiz.constructor.has_value(), fmt::format("Class {} must have a constructor first before adding static methods", class_name), "add_static_function");
 			auto atom = JS_NewAtomLen(context, function_name.data(), function_name.size());
-			auto function = JS_NewCFunction2(context, Proxy<ReturnType, Args...>::template as_function<Function>, function_name.data(), 0, JS_CFUNC_generic, 0);
+			auto function = JS_NewCFunction2(context, FunctionProxy<ReturnType, Args...>::template as_function<Function>, function_name.data(), 0, JS_CFUNC_generic, 0);
 			JS_DefinePropertyValue(context, thiz.constructor.value(), atom, function, int{JS_PROP_C_W_E});
 			JS_FreeAtom(context, atom);
 			return thiz;
@@ -289,9 +326,25 @@ namespace Sen::Kernel::JavaScript {
 	};
 
 	template <typename T> requires (std::is_pointer<T>::value && std::is_class_v<std::remove_pointer_t<T>>)
-	auto from_value(JSContext* context, JSValue value) -> T {
+	inline auto from_value(
+		JSContext* context, 
+		JSValue value
+	) -> T {
 		using NativeClass = std::remove_pointer_t<T>;
+		assert_conditional(ClassBuilder<NativeClass>::class_id.value != 0, fmt::format("Class ID for class {} is missing, the class is not registered", typeid(NativeClass).name()), "from_value");
 		return get_opaque_value<NativeClass>(context, value, ClassBuilder<NativeClass>::class_id.value);
+	}
+
+	template <typename T> requires (std::is_pointer<T>::value && std::is_class_v<std::remove_pointer_t<T>>)
+	inline auto to_value(
+		JSContext* context, 
+		const T& value
+	) -> JSValue {
+		using NativeClass = std::remove_pointer_t<T>;
+		assert_conditional(ClassBuilder<NativeClass>::class_id.value != 0, fmt::format("Class ID for class {} is missing, the class is not registered", typeid(NativeClass).name()), "to_value");
+		auto object = JS_NewObjectClass(context, ClassBuilder<NativeClass>::class_id.value);
+		JS_SetOpaque(object, value);
+		return object;
 	}
 
 

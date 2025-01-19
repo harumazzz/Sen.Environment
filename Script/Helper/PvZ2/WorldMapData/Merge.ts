@@ -38,7 +38,7 @@ namespace Sen.Script.Helper.PvZ2.WorldMapData.Merge {
 		Kernel.JSON.serialize_fs<Split.WorldMapData>(
 			`${source}/WorldMapData.json`,
 			process(source),
-			1,
+			1n,
 			false,
 		);
 	}

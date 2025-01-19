@@ -22,7 +22,7 @@ namespace Sen.Script {
 	 */
 
 	export function debug(value: unknown): void {
-		if (typeof value === 'object') return Console.send(Kernel.JSON.serialize(value, 1, false));
+		if (typeof value === 'object') return Console.send(Kernel.JSON.serialize(value, 1n, false));
 		Console.send(value);
 	}
 

@@ -14,7 +14,7 @@ namespace Sen.Script.Helper.Debugger.RemoveResolutionRSB {
 				}
 			}
 		}
-		Kernel.JSON.serialize_fs(`${source}/data.json`, bundle, 1, true);
+		Kernel.JSON.serialize_fs(`${source}/data.json`, bundle, 1n, true);
 		const mainfest = `${source}/packet/__MANIFESTGROUP__.rsg`;
 		Kernel.Support.PopCap.ResourceStreamGroup.unpack_fs(mainfest, mainfest + '.temp');
 		Kernel.Support.PopCap.ReflectionObjectNotation.decode_fs(
@@ -43,7 +43,7 @@ namespace Sen.Script.Helper.Debugger.RemoveResolutionRSB {
 		Kernel.JSON.serialize_fs(
 			`${mainfest}.temp/resource/PROPERTIES/RESOURCES.split/data.json`,
 			data,
-			1,
+			1n,
 			true,
 		);
 		Kernel.Support.PopCap.ResourceGroup.merge_fs(

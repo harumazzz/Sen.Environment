@@ -45,7 +45,7 @@ inline static auto print(
 
 ```cpp
 // the proxy need to take return type and the rest are the required arguments type
-runtime.add_proxy(Proxy<void, std::string&>::as_function<Interface::API::print>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "print_test"_sv);
+runtime.add_proxy(FunctionProxy<void, std::string&>::as_function<Interface::API::print>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "print_test"_sv);
 ```
 
 -   You need to add a custom define, example:
@@ -90,6 +90,8 @@ auto from_value<std::shared_ptr<Point>>(
 	auto destination = std::make_shared<Point>();
 	// Make a new reference count, if you don't make a new reference count, the quickjs engine will make an undefined behavior
 	auto value = Value::as_new_reference(context, val);
+	// test if value is object
+	assert_conditional(value.is_object(), "Value must be object", "from_value");
 	// accessing x property inside object and cast it's value to int64
 	destination->x = value.get_property("x").get_bigint64();
 	// accessing y property inside object and cast it's value to int64
@@ -104,7 +106,7 @@ inline static auto print_point(
 	std::shared_ptr<Point>& data
 ) -> void
 {
-	std::cout << data.x << data.y << std::flush << '\n';
+	std::cout << data->x << '\t' << data->y << std::flush << '\n';
 }
 ```
 
@@ -178,7 +180,7 @@ inline static auto return_point(
 
 ```cpp
 // the proxy need to take return type and the rest are the required arguments type
-runtime.add_proxy(Proxy<std::shared_ptr<Point>>::as_function<Interface::API::return_point>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "return_point"_sv);
+runtime.add_proxy(FunctionProxy<std::shared_ptr<Point>>::as_function<Interface::API::return_point>, std::to_array<std::string_view>({"Sen"_sv, "Kernel"_sv}), "return_point"_sv);
 ```
 
 -   You need to add a custom define, example:

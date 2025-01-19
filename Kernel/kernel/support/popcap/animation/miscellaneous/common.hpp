@@ -28,12 +28,13 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 	struct Image;
 
 	struct BasicDocument {
+
 		List<String> media{};
 		List<String> image{};
 		List<String> sprite{};
 		List<String> action{};
 
-		BasicDocument(
+		explicit BasicDocument(
 
 		) = default;
 
@@ -88,7 +89,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 		String id{};
 		Matrix transform{};
 
-		Image(
+		explicit Image(
 			String& name,
 			String& id,
 			Matrix& transform
@@ -97,7 +98,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 
 		}
 
-		Image(
+		explicit Image(
 
 		) = default;
 
@@ -114,8 +115,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Miscellaneous {
 		) = delete;
 	};
 
-	template <auto point, typename T> 
-			requires std::is_integral<T>::value or std::is_floating_point<T>::value
+	template <auto point, typename T> requires std::is_integral<T>::value or std::is_floating_point<T>::value
 	inline static auto to_fixed(
 		const T& number
 	) -> std::string

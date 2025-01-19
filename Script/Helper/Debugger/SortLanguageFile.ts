@@ -32,7 +32,7 @@ namespace Sen.Script.Helper.Debugger.SortLanguageFile {
 		Kernel.JSON.serialize_fs(
 			source,
 			process(Kernel.JSON.deserialize_fs<LanguageFile>(source)),
-			1,
+			1n,
 			false,
 		);
 	}

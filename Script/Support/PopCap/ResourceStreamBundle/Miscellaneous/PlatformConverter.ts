@@ -51,7 +51,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 				Kernel.JSON.serialize_fs(
 					`${destination}/packet/${e}.scg.package/data.json`,
 					scg_data,
-					1,
+					1n,
 					true,
 				);
 				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
@@ -111,7 +111,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					Kernel.JSON.serialize_fs(
 						`${destination}/packet/Global_Data.scg.package/data.json`,
 						wave_data,
-						1,
+						1n,
 						true,
 					);
 					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
@@ -172,7 +172,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					Kernel.JSON.serialize_fs(
 						`${destination}/packet/StreamingWave.scg.package/data.json`,
 						wave_data,
-						1,
+						1n,
 						true,
 					);
 					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
@@ -195,7 +195,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 			streaming_wave_processed,
 			Kernel.Language.get('popcap.rsb.cannot_find_streaming_wave'),
 		);
-		Kernel.JSON.serialize_fs(`${destination}/data.json`, data_info, 1, true);
+		Kernel.JSON.serialize_fs(`${destination}/data.json`, data_info, 1n, true);
 		setting['texture_format_category'] = to_ios ? 1n : 0n;
 		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
 			destination,

@@ -99,4 +99,22 @@ namespace Sen::Kernel {
 	template <typename T>
 	concept IsClass = (std::is_class<T>::value && !std::is_pointer<T>::value);
 
+	template <typename Container>
+	struct container_traits {
+		using value_type = void;
+	};
+
+	template <typename T, typename Alloc>
+	struct container_traits<std::vector<T, Alloc>> {
+		using value_type = T;
+	};
+
+	template <typename T, std::size_t N>
+	struct container_traits<std::array<T, N>> {
+		using value_type = T;
+	};
+
+	template <typename Container>
+	using container_value_t = typename container_traits<Container>::value_type;
+
 }
