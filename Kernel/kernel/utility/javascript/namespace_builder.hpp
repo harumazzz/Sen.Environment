@@ -63,6 +63,16 @@ namespace Sen::Kernel::JavaScript {
 				return;
 			}
 
+			inline auto delete_proxy (
+				std::string_view name
+			) -> void
+			{
+				auto atom = JS_NewAtomLen(thiz.context, name.data(), name.size());
+				JS_DeleteProperty(thiz.context, thiz.current, atom, JS_PROP_THROW);
+				JS_FreeAtom(context, atom);
+				return;
+			}
+
 			inline auto add_proxy (
 				JSAtom atom,
 				JSValue value

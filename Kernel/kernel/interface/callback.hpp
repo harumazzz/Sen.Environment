@@ -16,6 +16,8 @@ namespace Sen::Kernel::Interface {
 	template <typename ReturnType, typename... Args>
 	using SpecialFunctionProxy = JS::SpecialFunctionProxy<ReturnType, Args...>;
 
+	using Integer = int;
+
 	class Runtime {
 
 		private:
@@ -303,14 +305,23 @@ namespace Sen::Kernel::Interface {
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
 					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, Pointer<Kernel::APNGMakerSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
-				Interface::API::DataStreamView::register_class(runtime.context().value, kernel);
-				Interface::API::ImageView::register_class(runtime.context().value, kernel);
-				Interface::API::Canvas::register_class(runtime.context().value, kernel);
-				Interface::API::JsonWriter::register_class(runtime.context().value, kernel);
-				Interface::API::APNGMakerSetting::register_class(runtime.context().value, kernel);
-				Interface::API::Support::PopCap::Animation::Miscellaneous::Image::register_class(runtime.context().value, aMiscellaneous);
-				Interface::API::Support::PopCap::Animation::Miscellaneous::Sprite::register_class(runtime.context().value, aMiscellaneous);
-				Interface::API::Clock::register_class(runtime.context().value, kernel);
+				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ runtime.context().value, "DataStreamView" };
+				Interface::API::DataStreamView::register_class(DataStreamView, kernel);
+				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ runtime.context().value, "Clock" };
+				auto ImageView = JavaScript::ClassBuilder<Kernel::Image<Integer>>{ runtime.context().value, "ImageView" };
+				Interface::API::ImageView::register_class(ImageView, kernel);
+				auto Canvas = JavaScript::ClassBuilder<canvas_ity::canvas>{ runtime.context().value, "Canvas" };
+				Interface::API::Canvas::register_class(Canvas, kernel);
+				auto JsonWriter = JavaScript::ClassBuilder<Kernel::JsonWriter>{ runtime.context().value, "JsonWriter" };
+				Interface::API::JsonWriter::register_class(JsonWriter, kernel);
+				// TODO : Change to Object
+				auto APNGMakerSetting = JavaScript::ClassBuilder<Kernel::APNGMakerSetting>{ runtime.context().value, "APNGMakerSetting" };
+				Interface::API::APNGMakerSetting::register_class(APNGMakerSetting, kernel);
+				// TODO : Change to object
+				// Interface::API::Support::PopCap::Animation::Miscellaneous::Image::register_class(runtime.context().value, aMiscellaneous);
+				// TODO : Change to Object
+				// Interface::API::Support::PopCap::Animation::Miscellaneous::Sprite::register_class(runtime.context().value, aMiscellaneous);
+				Interface::API::Clock::register_class(Clock, kernel);
 				// execute the script
 				runtime.evaluate_fs(construct_string(Executor::script));
 				// call main

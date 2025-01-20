@@ -26,12 +26,11 @@ namespace Sen::Kernel::Interface::API {
 		}
 
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<Kernel::DataStreamView>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using DataStreamView = Kernel::DataStreamView;
-			auto builder = JavaScript::ClassBuilder<DataStreamView>{ context, "DataStreamView" };
 			builder.add_constructor<[](std::string& source) -> Pointer<DataStreamView> {
 				return new DataStreamView{source};
 			}, std::string&>()
@@ -86,12 +85,11 @@ namespace Sen::Kernel::Interface::API {
 	namespace Clock {
 
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<Kernel::Clock>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using Clock = Kernel::Clock;
-			auto builder = JavaScript::ClassBuilder<Clock>{ context, "Clock" };
 			builder.add_constructor<[]() -> Pointer<Clock> {
 				return new Clock{};
 			}>()
@@ -128,12 +126,11 @@ namespace Sen::Kernel::Interface::API {
 	namespace JsonWriter {
 
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<Kernel::JsonWriter>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using JsonWriter = Kernel::JsonWriter;
-			auto builder = JavaScript::ClassBuilder<JsonWriter>{ context, "JsonWriter" };
 			builder.add_constructor<[]() -> Pointer<JsonWriter> {
 				return new JsonWriter{};
 			}>()
@@ -190,13 +187,12 @@ namespace Sen::Kernel::Interface::API {
 	namespace Canvas {
 
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<canvas_ity::canvas>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using Canvas = canvas_ity::canvas;
 			using BrushType = canvas_ity::brush_type;
-			auto builder = JavaScript::ClassBuilder<Canvas>{ context, "Canvas" };
 			builder.add_constructor<[](int64_t& width, int64_t& height) -> Pointer<Canvas> {
 				return new Canvas{ static_cast<int>(width), static_cast<int>(height) };
 			}, int64_t&, int64_t&>()
@@ -456,12 +452,11 @@ namespace Sen::Kernel::Interface::API {
 		}
 
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<Image>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using ImageView = Image;
-			auto builder = JavaScript::ClassBuilder<ImageView>{ context, "ImageView" };
 			builder.add_constructor<constructor, std::shared_ptr<JavaScript::ImageView>&>()
 			.template add_getter_setter<int, [](Pointer<ImageView> image){
 				return image->width;
@@ -517,13 +512,13 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace APNGMakerSetting {
 
+		// TODO : Change this to object
 		inline auto register_class(
-			Pointer<JSContext> context,
+			JavaScript::ClassBuilder<Kernel::APNGMakerSetting>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using APNGMakerSetting = Kernel::APNGMakerSetting;
-			auto builder = JavaScript::ClassBuilder<Kernel::APNGMakerSetting>{ context, "APNGMakerSetting" };
 			builder.add_constructor<[](List<uint32_t>& delay_frames_list, uint32_t& loop, uint32_t& width, uint32_t& height, bool trim){
 				return new APNGMakerSetting{ delay_frames_list , loop, width, height, trim };
 			}, List<uint32_t>&, uint32_t&, uint32_t&, uint32_t&, bool>()

@@ -129,6 +129,7 @@ namespace Sen::Kernel::JavaScript {
 				auto proto = get_prototype_from_object(context, value);
 				auto object = make_instance_of_class(context, proto, ClassBuilder<T>::class_id.value);
 				JS_SetOpaque(object, class_pointer);
+				ClassBuilder<T>::add_reference();
 				return object;
 			}
 			catch (...) {
@@ -239,6 +240,21 @@ namespace Sen::Kernel::JavaScript {
 
 		std::optional<JSValue> constructor;
 
+		inline static auto counter{0_size};
+
+		inline auto static finalizer(
+			Pointer<JSRuntime> runtime, 
+			JSValue object
+		) -> void
+		{
+			auto ptr = static_cast<Pointer<T>>(JS_GetOpaque(object, class_id.value));
+			delete ptr;
+		}
+
+		Pointer<NamespaceBuilder> builder{nullptr};
+
+		JSValue class_proto;
+
 	public:
 
 		Pointer<JSContext> context;
@@ -246,8 +262,6 @@ namespace Sen::Kernel::JavaScript {
 		inline static ClassID class_id{};
 
 		Atom atom;
-
-		JSValue class_proto;
 		
 		String class_name;
 
@@ -257,8 +271,14 @@ namespace Sen::Kernel::JavaScript {
 		) : context{ context }, atom{context, name}, class_proto{JS_NewObject(thiz.context)}, class_name{name.data(), name.size()}, constructor{std::nullopt}
 		{
 			class_id.allocate_new(thiz.context);
-			auto class_definition = make_class_definition<T>(name, class_id.value);
-			assert_conditional(JS_NewClass(JS_GetRuntime(thiz.context), class_id.value, &class_definition) == 0, fmt::format("{} class register failed", name), "ClassBuilder");
+			auto definition = JSClassDef {
+				.class_name = class_name.data(),
+				.finalizer = &finalizer, 
+				.gc_mark = nullptr,
+				.call = nullptr,
+				.exotic = nullptr,
+			};
+			assert_conditional(JS_NewClass(JS_GetRuntime(thiz.context), class_id.value, &definition) == 0, fmt::format("{} class register failed", name), "ClassBuilder");
 		}
 
 		template <auto Function, typename ReturnType, typename... Args>
@@ -316,14 +336,27 @@ namespace Sen::Kernel::JavaScript {
 		{
 			assert_conditional(thiz.constructor.has_value(), fmt::format("Class {} must have a constructor", class_name), "build");
 			builder.add_proxy(atom.value, thiz.constructor.value());
+			thiz.builder = &builder;
 			return;
+		}
+
+		inline auto static add_reference (
+
+		) -> void
+		{
+			++counter;
 		}
 
 		~ClassBuilder(
 
-		)
+		) 
 		{
-			JS_FreeValue(context, thiz.class_proto);
+			if (thiz.builder != nullptr) {
+				thiz.builder->delete_proxy(thiz.class_name);
+				while (counter--) {
+					JS_FreeValue(thiz.context, thiz.class_proto);
+				}
+			}
 		}
 
 	};

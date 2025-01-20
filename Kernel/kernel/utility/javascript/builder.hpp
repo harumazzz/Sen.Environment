@@ -11,16 +11,16 @@ namespace Sen::Kernel::JavaScript {
 		std::string_view function_name
 	) -> JSValue
 	{
-		auto evaluate_context = fmt::format(
-			R"(function {0}() {{
+		auto func_name = function_name.empty() ? "internal" : function_name;
+		auto command = fmt::format(
+			R"((function {0}() {{
 				let e = new Error(`{1}`); 
 				e.source = `{2}`;
 				throw e;
-			}}
-			{0}();)",
-			function_name, error, source
+			}}()))",
+			func_name, error, source
 		);
-		auto value = JS_Eval(context, evaluate_context.data(), evaluate_context.length(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
+		auto value = JS_Eval(context, command.data(), command.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
 		JS_FreeValue(context, value);
 		return JS_EXCEPTION;
 	}
@@ -32,19 +32,6 @@ namespace Sen::Kernel::JavaScript {
 	using JSFunction = JSValue(*)(JSContext* context, JSValue value, int argc, JSValue* argv);
 
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto make_finalizer(
-		JSClassID class_id
-	) -> std::function<void(JSRuntime*, JSValue)>
-	{
-		return [class_id](JSRuntime* rt, JSValue value) {
-			auto object_class = static_cast<T*>(JS_GetOpaque(value, class_id));
-			if (object_class != nullptr) {
-				delete object_class;
-			}
-		};
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline static auto get_opaque_value(
 		JSContext* context,
 		JSValue value,
@@ -54,31 +41,6 @@ namespace Sen::Kernel::JavaScript {
 		auto obj = static_cast<T*>(JS_GetOpaque2(context, value, class_id));
 		assert_conditional(obj != nullptr, fmt::format("Cannot get instance of class, class id: {}", class_id), "get_opaque_value");
 		return obj;
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr make_class_definition(
-		std::string_view class_name,
-		JSClassID class_id
-	) -> JSClassDef
-	{
-		return JSClassDef{
-			.class_name = class_name.data(),
-			.finalizer = make_finalizer<T>(class_id).template target<JSClassFinalizer>(),
-			.gc_mark = nullptr,
-			.call = nullptr,
-			.exotic = nullptr,
-		};
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr make_deleter(
-
-	) 
-	{
-		return [](T* obj) {
-			delete obj;
-		};
 	}
 
 	template <typename T> requires std::is_same<T, uint32_t>::value || std::is_same<T, std::string_view>::value

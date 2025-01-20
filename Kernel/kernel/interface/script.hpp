@@ -10,49 +10,7 @@ namespace Sen::Kernel::Interface::Script
 
 	namespace JS = Kernel::JavaScript;
 
-	inline auto constexpr get_property_string = JS::Converter::get_property_string;
-
-	inline auto constexpr get_property_int32 = JS::Converter::get_property_int32;
-
-	inline auto constexpr get_property_uint32 = JS::Converter::get_property_uint32;
-
-	inline auto constexpr get_property_float64 = JS::Converter::get_property_float64;
-
-	inline auto constexpr get_property_float32 = JS::Converter::get_property_float32;
-
-	inline auto constexpr get_property_bigint64 = JS::Converter::get_property_bigint64;
-
-	inline auto constexpr get_property_uint64 = JS::Converter::get_property_uint64;
-
-	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr make_class_definition = JS::make_class_definition<T>;
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline static auto get_opaque_value = JS::get_opaque_value<T>;
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr make_deleter = JS::make_deleter<T>;
-
-	template <typename T> requires std::is_same<T, uint32_t>::value || std::is_same<T, std::string_view>::value
-	inline auto constexpr get_value_from_object = JS::get_value_from_object<T>;
-
-	inline auto constexpr get_prototype_from_object = JS::get_prototype_from_object;
-
-	inline auto constexpr make_instance_of_class = JS::make_instance_of_class;
-
-	inline auto constexpr get_array_buffer = JS::Converter::get_array_buffer;
-
-	inline auto constexpr get_global_object = JS_GetGlobalObject;
-
-	using Atom = JS::Atom;
-
-	using ClassID = JS::ClassID;
-
 	using Value = JS::Value;
-
-	using JavaScriptNativeMethod = JSValue(*)(JSContext *, JSValue, int, JSValue *);
 
 	template <typename Callable> requires std::is_invocable<Callable>::value
 	inline static auto proxy_wrapper(
@@ -73,24 +31,6 @@ namespace Sen::Kernel::Interface::Script
 			result = JS::throw_exception(context, exception.message(), exception.source, exception.function_name);
 		}
 		return result;
-	}
-
-	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline static auto make_handle(
-		JSContext* context,
-		JSValue value,
-		int argc,
-		JSValue* argv,
-		std::string_view method_name,
-		std::function<JSValue(T*)> method,
-		JSClassID class_id
-	) -> JSValue
-	{
-		auto normalized_lambda = [&](){
-			auto class_pointer = get_opaque_value<T>(context, value, class_id);
-			return method(class_pointer);
-		};
-		return proxy_wrapper<decltype(normalized_lambda)>(context, method_name, std::move(normalized_lambda));
 	}
 
 	//namespace Class
@@ -339,17 +279,6 @@ namespace Sen::Kernel::Interface::Script
 	//			auto size = size_t{};
 	//			auto data = get_array_buffer(context, &size, array_buffer);
 	//			return make_list(data, size);
-	//		}
-
-	//		inline static auto from_uint8array (
-	//			JSContext *context,
-	//			JSValue uint8array
-	//		) -> List<uint8_t>
-	//		{
-	//			auto array_buffer = get_value_from_object<std::string_view>(context, uint8array, "buffer");
-	//			auto vec = from_arraybuffer(context, array_buffer);
-	//			JS_FreeValue(context, array_buffer);
-	//			return vec;
 	//		}
 
 	//		#pragma endregion
