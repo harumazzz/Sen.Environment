@@ -375,8 +375,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			definition.frame_rate = frame_rate != nullptr ? Converter::to_int32(frame_rate->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.frame_rate_is_not_a_integer")), std::string{frame_rate->Value()})) : 24;
 			auto width = document.FirstChildElement("DOMDocument")->FindAttribute("width");
 			auto height = document.FirstChildElement("DOMDocument")->FindAttribute("height");
-			definition.size = AnimationSize(width != nullptr ? Converter::to_int32(width->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})) : 390, 
-			height != nullptr ? Converter::to_int32(height->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})) : 390);
+			definition.size = AnimationSize(width != nullptr ? Converter::to_int32(width->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.width_is_not_a_integer")), std::string{width->Value()})) : 390,
+											height != nullptr ? Converter::to_int32(height->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.height_is_not_a_integer")), std::string{height->Value()})) : 390);
 			auto dom_timeline = dom_document->FirstChildElement("timelines")->FirstChildElement("DOMTimeline");
 			assert_conditional(hash_string(dom_timeline->FindAttribute("name")->Value()) == hash_string("animation"_sv), fmt::format("{}", Language::get("popcap.animation.from_flash.document_name_must_be_animation")), "exchange_dom_document");
 			auto frame_count = k_begin_index_int;
@@ -447,7 +447,41 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 			tsl::ordered_map<std::string, LabelInfo> &label,
 			FrameNodeStructure &frame_node_structure) -> void
 		{
-			assert_conditional(label.size() != k_none_size, fmt::format("{}", Language::get("popcap.animation.from_flash.animation_must_have_one_label")), "exchange_label"); 
+			assert_conditional(label.size() != k_none_size, fmt::format("{}", Language::get("popcap.animation.from_flash.animation_must_have_one_label")), "exchange_label");
+			auto first_label = label.begin()->first;
+			for (auto &[layer_index, frame_node_list] : label_frame_structure.at(first_label))
+			{
+				frame_node_structure[frame_node_structure.size()] = frame_node_list;
+			}
+			for (auto &[label_name, label_info] : label)
+			{
+				if (label_name == first_label)
+				{
+					continue;
+				}
+				auto start_index = label_info.start;
+				// auto last_label_duration = label_info.duration;
+				auto &label_frame_node = label_frame_structure.at(label_name);
+				for (auto &[layer_index, label_node_list] : label_frame_node)
+				{
+					auto &insert_frame = frame_node_structure[frame_node_structure.size()];
+					insert_frame.insert(insert_frame.end(), label_node_list.begin(), label_node_list.end());
+					for (auto &frame_node : insert_frame)
+					{
+						frame_node.index += start_index;
+					}
+				}
+			}
+			return;
+		}
+
+		/*
+		inline static auto exchange_label(
+			tsl::ordered_map<std::string, FrameNodeStructure> const &label_frame_structure,
+			tsl::ordered_map<std::string, LabelInfo> &label,
+			FrameNodeStructure &frame_node_structure) -> void
+		{
+			assert_conditional(label.size() != k_none_size, fmt::format("{}", Language::get("popcap.animation.from_flash.animation_must_have_one_label")), "exchange_label");
 			auto first_label = label.begin()->first;
 			for (auto &[layer_index, frame_node_list] : label_frame_structure.at(first_label))
 			{
@@ -517,10 +551,12 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 						}
 					}
 				}
-				assert_conditional(start_index == last_duration, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.label_length_does_not_match")), label_name), "exchange_label"); 
+				assert_conditional(start_index == last_duration, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.label_length_does_not_match")), label_name), "exchange_label");
 			}
 			return;
 		}
+
+		*/
 
 		inline static auto add_frame_if_need(
 			List<AnimationFrame> &frame_list,

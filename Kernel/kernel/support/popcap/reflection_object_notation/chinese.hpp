@@ -60,7 +60,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             auto json = JsonWriter{};
             json.WriteIndent = true;
             Decode::process_whole(dest, json);
-            FileSystem::write_file(destination, json.ToString());
+            FileSystem::write_file(destination, json.to_string());
             return;
         }
 

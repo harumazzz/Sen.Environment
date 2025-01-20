@@ -174,6 +174,59 @@ declare namespace Sen {
 			 * @param value The ArrayBuffer to fill with random bytes.
 			 */
 			export function random(value: ArrayBuffer): void;
+
+			/**
+			 * Converts an ArrayBuffer containing UTF-16 encoded text into a JavaScript string.
+			 *
+			 * @param value - The ArrayBuffer holding the UTF-16 encoded text data.
+			 * @returns A JavaScript string representing the decoded text.
+			 */
+			export function cast_ArrayBuffer_to_JS_WideString(value: ArrayBuffer): string;
+
+			/**
+			 * Converts an ArrayBuffer containing UTF-8 encoded text into a JavaScript string.
+			 *
+			 * @param value - The ArrayBuffer holding the UTF-8 encoded text data.
+			 * @returns A JavaScript string representing the decoded text.
+			 */
+			export function cast_ArrayBuffer_to_JS_String(value: ArrayBuffer): string;
+
+			/**
+			 * Converts a JavaScript string into an ArrayBuffer containing UTF-16 encoded text.
+			 *
+			 * @param value - The JavaScript string to be encoded as UTF-16.
+			 * @returns An ArrayBuffer holding the UTF-16 encoded text data.
+			 */
+			export function cast_movable_String_to_ArrayBuffer(value: string): ArrayBuffer;
+
+			/**
+			 * copyArrayBuffer function
+			 *
+			 * This function creates a deep copy of the provided ArrayBuffer.
+			 *
+			 * A deep copy ensures a new, independent ArrayBuffer is created with the same
+			 * contents as the original. Changes to the copy won't affect the original buffer,
+			 * and vice versa.
+			 *
+			 * @param {ArrayBuffer} value - The ArrayBuffer to copy.
+			 * @returns {ArrayBuffer} - A new ArrayBuffer containing a copy of the original data.
+			 */
+			export function copyArrayBuffer(value: ArrayBuffer): ArrayBuffer;
+
+			/**
+			 * Compares two ArrayBuffers for equality.
+			 *
+			 * @param source The first ArrayBuffer to compare.
+			 * @param destination The second ArrayBuffer to compare.
+			 * @returns `true` if the two ArrayBuffers are equal, `false` otherwise.
+			 *
+			 * **Note:** This function only compares the contents of the ArrayBuffers, not their memory addresses.
+			 * Two ArrayBuffers with identical contents but different memory locations will be considered equal.
+			 */
+			export function compareArrayBuffer(
+				source: ArrayBuffer,
+				destination: ArrayBuffer,
+			): boolean;
 		}
 
 		/**
@@ -338,43 +391,6 @@ declare namespace Sen {
 				dimension: Kernel.ImageAdapter.BasicView,
 				data: Array<Kernel.ImageAdapter.Image>,
 			): Kernel.ImageAdapter.Image;
-		}
-
-		/**
-		 * JavaScript Thread (Simulated)
-		 *
-		 * This namespace provides simulated thread-like functionality in JavaScript.
-		 *
-		 * **Important Note:** JavaScript is a single-threaded environment. These functions
-		 * cannot truly create separate threads that run concurrently. Instead, they offer
-		 * mechanisms to simulate thread-like behavior by yielding control to the event loop
-		 * for a specified duration or retrieving the current timestamp.
-		 */
-		declare namespace Thread {
-			/**
-			 * Simulates a thread sleep by pausing execution for a specified time.
-			 *
-			 * **Note:** This function does not truly block the main thread. Instead, it yields
-			 * control to the event loop for the given amount of time. Other tasks can still be
-			 * executed during this period.
-			 *
-			 * @param time The time to sleep in milliseconds (bigint for larger values).
-			 * @returns: undefined (intentionally doesn't return a value)
-			 */
-			export function sleep(time: bigint): void {
-				// Consider using a combination of setTimeout and promises to manage the
-				// simulated sleep behavior. This approach can improve responsiveness to
-				// user interactions and other events.
-			}
-
-			/**
-			 * Gets the current timestamp in milliseconds.
-			 *
-			 * This function can be used for timing operations or creating time-based behavior.
-			 *
-			 * @returns: The current timestamp in milliseconds as a number.
-			 */
-			export function now(): number;
 		}
 
 		/**
@@ -4792,59 +4808,6 @@ declare namespace Sen {
 			 * @returns A new, independent copy of the provided object.
 			 */
 			export function make_copy<T extends any>(object: T): T;
-
-			/**
-			 * Converts an ArrayBuffer containing UTF-16 encoded text into a JavaScript string.
-			 *
-			 * @param value - The ArrayBuffer holding the UTF-16 encoded text data.
-			 * @returns A JavaScript string representing the decoded text.
-			 */
-			export function cast_ArrayBuffer_to_JS_WideString(value: ArrayBuffer): string;
-
-			/**
-			 * Converts an ArrayBuffer containing UTF-8 encoded text into a JavaScript string.
-			 *
-			 * @param value - The ArrayBuffer holding the UTF-8 encoded text data.
-			 * @returns A JavaScript string representing the decoded text.
-			 */
-			export function cast_ArrayBuffer_to_JS_String(value: ArrayBuffer): string;
-
-			/**
-			 * Converts a JavaScript string into an ArrayBuffer containing UTF-16 encoded text.
-			 *
-			 * @param value - The JavaScript string to be encoded as UTF-16.
-			 * @returns An ArrayBuffer holding the UTF-16 encoded text data.
-			 */
-			export function cast_movable_String_to_ArrayBuffer(value: string): ArrayBuffer;
-
-			/**
-			 * copyArrayBuffer function
-			 *
-			 * This function creates a deep copy of the provided ArrayBuffer.
-			 *
-			 * A deep copy ensures a new, independent ArrayBuffer is created with the same
-			 * contents as the original. Changes to the copy won't affect the original buffer,
-			 * and vice versa.
-			 *
-			 * @param {ArrayBuffer} value - The ArrayBuffer to copy.
-			 * @returns {ArrayBuffer} - A new ArrayBuffer containing a copy of the original data.
-			 */
-			export function copyArrayBuffer(value: ArrayBuffer): ArrayBuffer;
-
-			/**
-			 * Compares two ArrayBuffers for equality.
-			 *
-			 * @param source The first ArrayBuffer to compare.
-			 * @param destination The second ArrayBuffer to compare.
-			 * @returns `true` if the two ArrayBuffers are equal, `false` otherwise.
-			 *
-			 * **Note:** This function only compares the contents of the ArrayBuffers, not their memory addresses.
-			 * Two ArrayBuffers with identical contents but different memory locations will be considered equal.
-			 */
-			export function compareArrayBuffer(
-				source: ArrayBuffer,
-				destination: ArrayBuffer,
-			): boolean;
 
 			/**
 			 * to_apng function

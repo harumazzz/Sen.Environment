@@ -127,7 +127,12 @@ namespace Sen::Kernel::Interface {
 				}
 				auto arrayBuffer = kernel.add_space("ArrayBuffer");
 				{
-					arrayBuffer.add_function("random"_sv, FunctionProxy<void, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::ArrayBuffer::random>);
+					arrayBuffer.add_function("random"_sv, FunctionProxy<void, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::ArrayBuffer::random>)
+					.add_function("cast_ArrayBuffer_to_JS_String"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_String>)
+					.add_function("cast_ArrayBuffer_to_JS_WideString"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_WideString>)
+					.add_function("cast_movable_String_to_ArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::string&>::as_function<Interface::API::Miscellaneous::cast_movable_String_to_ArrayBuffer>)
+					.add_function("copyArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::copyArrayBuffer>)
+					.add_function("compareArrayBuffer"_sv, FunctionProxy<bool, std::shared_ptr<JS::ArrayBuffer>&, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::compareArrayBuffer>);
 				}
 				auto operatingSystem = kernel.add_space("OperatingSystem");
 				{
@@ -289,22 +294,18 @@ namespace Sen::Kernel::Interface {
 					.add_function("convert_fs"_sv, FunctionProxy<void, std::string&, std::string&>::as_function<Interface::API::Support::PopCap::ResInfo::convert_fs>);
 				}
 				auto project = support.add_space("Project");
+				auto pStreamCompressedGroup = project.add_space("StreamCompressedGroup");
+				auto pResourceStreamBundle = project.add_space("ResourceStreamBundle");
 				{
-					project.add_function("test_scg"_sv, FunctionProxy<bool, std::string&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::check_scg_composite>);
-					project.add_function("decode_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::decode_fs>);
-					project.add_function("encode_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::encode_fs>);
-					project.add_function("unpack_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Project::ResourceStreamBundle::unpack_fs>);
-					project.add_function("pack_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Project::ResourceStreamBundle::pack_fs>);
+					pStreamCompressedGroup.add_function("test_scg"_sv, FunctionProxy<bool, std::string&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::check_scg_composite>)
+					.add_function("decode_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::decode_fs>)
+					.add_function("encode_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting>&>::as_function<Interface::API::Support::Project::StreamCompressedGroup::encode_fs>);
+					pResourceStreamBundle.add_function("unpack_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Project::ResourceStreamBundle::unpack_fs>)
+					.add_function("pack_fs"_sv, FunctionProxy<void, std::string&, std::string&, std::shared_ptr<Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting>&>::as_function<Interface::API::Support::Project::ResourceStreamBundle::pack_fs>);
 				}
 				auto miscellaneous = kernel.add_space("Miscellaneous");
 				{
-					// TODO : Change the function relate to ArrayBuffer to ArrayBuffer namespace
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
-					.add_function("cast_ArrayBuffer_to_JS_String"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_String>)
-					.add_function("cast_ArrayBuffer_to_JS_WideString"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_WideString>)
-					.add_function("cast_movable_String_to_ArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::string&>::as_function<Interface::API::Miscellaneous::cast_movable_String_to_ArrayBuffer>)
-					.add_function("copyArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::copyArrayBuffer>)
-					.add_function("compareArrayBuffer"_sv, FunctionProxy<bool, std::shared_ptr<JS::ArrayBuffer>&, std::shared_ptr<JS::ArrayBuffer>&>::as_function<Interface::API::Miscellaneous::compareArrayBuffer>)
 					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, Pointer<Kernel::APNGMakerSetting>&>::as_function<Interface::API::Miscellaneous::to_apng>);
 				}
 				Interface::API::ImageView::register_class(runtime.context().value, kernel);

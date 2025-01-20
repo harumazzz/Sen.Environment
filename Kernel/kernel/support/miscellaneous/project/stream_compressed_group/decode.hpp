@@ -469,7 +469,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     auto stream = DataStreamView{resource_data};
                     Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
                     exchange_path(resource_information.path, ".rton"_sv, ".json"_sv);
-                    write_text(fmt::format("{}/{}", resource_destination, resource_information.path), writer.ToString());
+                    write_text(fmt::format("{}/{}", resource_destination, resource_information.path), writer.to_string());
                     break;
                 }
                 case DataType::SoundBank:

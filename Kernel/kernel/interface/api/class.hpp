@@ -13,7 +13,7 @@ namespace Sen::Kernel::Interface::API {
 			Pointer<Kernel::DataStreamView> stream
 		) -> std::shared_ptr<JavaScript::ArrayBuffer> {
 			auto bytes = stream->toBytes();
-			return std::make_unique<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
+			return std::make_shared<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
 		}
 
 		inline auto getArrayBuffer(
@@ -22,7 +22,7 @@ namespace Sen::Kernel::Interface::API {
 			size_t& to
 		) -> std::shared_ptr<JavaScript::ArrayBuffer> {
 			auto bytes = stream->get(from, to);
-			return std::make_unique<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
+			return std::make_shared<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
 		}
 
 		inline auto register_class(
@@ -138,40 +138,40 @@ namespace Sen::Kernel::Interface::API {
 				return new JsonWriter{};
 			}>()
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->Clear();
+				return writer->clear();
 			}, void> ("clear")
 			.template add_member_function<[](Pointer<JsonWriter> writer) {
-				return writer->ToString();
+				return writer->to_string();
 			}, std::string>("toString")
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->WriteStartArray();
+				return writer->write_start_array();
 			}, void>("writeStartArray")
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->WriteEndArray();
+				return writer->write_end_array();
 			}, void>("writeEndArray")
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->WriteStartObject();
+				return writer->write_start_object();
 			}, void>("writeStartObject")
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->WriteEndObject();
+				return writer->write_end_object();
 			}, void>("writeEndObject")
 			.template add_member_function<[](Pointer<JsonWriter> writer, bool value){
-				return writer->WriteBoolean(value);
+				return writer->write_boolean(value);
 			}, void, bool>("writeBoolean")
 			.template add_member_function<[](Pointer<JsonWriter> writer){
-				return writer->WriteNull();
+				return writer->write_null();
 			}, void>("writeNull")
 			.template add_member_function<[](Pointer<JsonWriter> writer, std::string& property_name){
-				return writer->WritePropertyName(property_name);
+				return writer->write_property_name(property_name);
 			}, void, std::string&>("writePropertyName")
 			.template add_member_function<[](Pointer<JsonWriter> writer, std::string& value){
-				return writer->WriteValue(value);
+				return writer->write_value(value);
 			}, void, std::string&>("writeString")
 			.template add_member_function<[](Pointer<JsonWriter> writer, int64_t& value){
-				return writer->WriteValue(value);
+				return writer->write_value(value);
 			}, void, int64_t&>("writeBigInt")
 			.template add_member_function<[](Pointer<JsonWriter> writer, double& value){
-				return writer->WriteValue(value);
+				return writer->write_value(value);
 			}, void, double&>("writeNumber")
 			.template add_getter_setter<bool, [](Pointer<JsonWriter> writer){
 				return writer->WriteIndent;

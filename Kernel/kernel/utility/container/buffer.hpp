@@ -550,6 +550,33 @@ namespace Sen::Kernel
             return;
         }
 
+         template <typename... Args>
+            requires(IsValidArgument<Args> && ...)
+        inline auto writeRaw(
+            const uint8_t* inputBytes,
+            const size_t &inputLength,
+            Args... args) const -> void
+        {
+            static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "Expected 0 or 1 argument only");
+            if constexpr (sizeof...(Args) == 1)
+            {
+                thiz.write_pos = std::get<0>(std::make_tuple(args...));
+            }
+            auto new_pos = thiz.write_pos + inputLength;
+            if (new_pos > thiz.capacity())
+            {
+                thiz.reserve(new_pos + thiz.buffer_size);
+            }
+            if (new_pos > thiz.length)
+            {
+                thiz.length = new_pos;
+            }
+
+            std::move(inputBytes, inputBytes + inputLength, thiz.data.begin() + thiz.write_pos);
+            thiz.write_pos = new_pos;
+            return;
+        }
+
         template <class T>
         inline static auto set_raw_data(const T &val) -> List<uint8_t>
         {

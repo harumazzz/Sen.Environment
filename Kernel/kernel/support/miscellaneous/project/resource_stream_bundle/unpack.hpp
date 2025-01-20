@@ -68,7 +68,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                             auto stream = DataStreamView{resource_data};
                             auto writer = JsonWriter{};
                             Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
-                            convert_whole.template operator()<true>(writer.ToString());
+                            convert_whole.template operator()<true>(writer.to_string());
                             break;
                         }
                         else

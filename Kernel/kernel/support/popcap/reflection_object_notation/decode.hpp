@@ -22,145 +22,145 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             {
             case TypeIdentifierEnumeration::Type::boolean_false:
             {
-                value.WriteBoolean(false);
+                value.write_boolean(false);
                 break;
             }
             case TypeIdentifierEnumeration::Type::boolean_true:
             {
-                value.WriteBoolean(true);
+                value.write_boolean(true);
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_8:
             {
-                value.WriteValue(stream.readInt8());
+                value.write_value(stream.readInt8());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_8_zero:
             {
-                value.WriteValue(static_cast<int8_t>(0));
+                value.write_value(static_cast<int8_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_8:
             {
-                value.WriteValue(stream.readUint8());
+                value.write_value(stream.readUint8());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_8_zero:
             {
-                value.WriteValue(static_cast<uint8_t>(0));
+                value.write_value(static_cast<uint8_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_16:
             {
-                value.WriteValue(stream.readInt16());
+                value.write_value(stream.readInt16());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_16_zero:
             {
-                value.WriteValue(static_cast<int16_t>(0));
+                value.write_value(static_cast<int16_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_16:
             {
-                value.WriteValue(stream.readUint16());
+                value.write_value(stream.readUint16());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_16_zero:
             {
-                value.WriteValue(static_cast<uint16_t>(0));
+                value.write_value(static_cast<uint16_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_32:
             {
-                value.WriteValue(stream.readInt32());
+                value.write_value(stream.readInt32());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_32_zero:
             {
-                value.WriteValue(static_cast<int32_t>(0));
+                value.write_value(static_cast<int32_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_32:
             {
-                value.WriteValue(stream.readUint32());
+                value.write_value(stream.readUint32());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_32_zero:
             {
-                value.WriteValue(static_cast<uint32_t>(0));
+                value.write_value(static_cast<uint32_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_64:
             {
-                value.WriteValue(stream.readInt64());
+                value.write_value(stream.readInt64());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_signed_64_zero:
             {
-                value.WriteValue(static_cast<int64_t>(0));
+                value.write_value(static_cast<int64_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_64:
             {
-                value.WriteValue(stream.readUint64());
+                value.write_value(stream.readUint64());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_unsigned_64_zero:
             {
-                value.WriteValue(static_cast<uint64_t>(0));
+                value.write_value(static_cast<uint64_t>(0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::floater_signed_32:
             {
-                value.WriteValue(stream.readFloat());
+                value.write_value(stream.readFloat());
                 break;
             }
             case TypeIdentifierEnumeration::Type::floater_signed_32_zero:
             {
-                value.WriteValue(static_cast<float>(0.0f));
+                value.write_value(static_cast<float>(0.0f));
                 break;
             }
             case TypeIdentifierEnumeration::Type::floater_signed_64:
             {
-                value.WriteValue(stream.readDouble());
+                value.write_value(stream.readDouble());
                 break;
             }
             case TypeIdentifierEnumeration::Type::floater_signed_64_zero:
             {
-                value.WriteValue(static_cast<double>(0.0));
+                value.write_value(static_cast<double>(0.0));
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_variable_length_unsigned_32:
             case TypeIdentifierEnumeration::Type::integer_variable_length_unsigned_32_equivalent:
             {
-                value.WriteValue(stream.readVarInt32());
+                value.write_value(stream.readVarInt32());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_variable_length_signed_32:
             {
-                value.WriteValue(stream.readZigZag32());
+                value.write_value(stream.readZigZag32());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_variable_length_unsigned_64:
             case TypeIdentifierEnumeration::Type::integer_variable_length_unsigned_64_equivalent:
             {
-                value.WriteValue(stream.readVarInt64());
+                value.write_value(stream.readVarInt64());
                 break;
             }
             case TypeIdentifierEnumeration::Type::integer_variable_length_signed_64:
             {
-                value.WriteValue(stream.readZigZag64());
+                value.write_value(stream.readZigZag64());
                 break;
             }
             case TypeIdentifierEnumeration::Type::string_native:
             {
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(stream.readStringByVarInt32());
+                    value.write_property_name(stream.readStringByVarInt32());
                 }
                 else
                 {
-                    value.WriteValue(stream.readStringByVarInt32());
+                    value.write_value(stream.readStringByVarInt32());
                 }
                 break;
             }
@@ -170,11 +170,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto content = stream.readStringByVarInt32();
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(content);
+                    value.write_property_name(content);
                 }
                 else
                 {
-                    value.WriteValue(content);
+                    value.write_value(content);
                 }
                 native_string_index.emplace_back(content);
                 break;
@@ -184,11 +184,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto index = stream.readVarInt32();
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(native_string_index[index]);
+                    value.write_property_name(native_string_index[index]);
                 }
                 else
                 {
-                    value.WriteValue(native_string_index[index]);
+                    value.write_value(native_string_index[index]);
                 }
                 break;
             }
@@ -198,11 +198,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto content = stream.readStringByVarInt32();
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(content);
+                    value.write_property_name(content);
                 }
                 else
                 {
-                    value.WriteValue(content);
+                    value.write_value(content);
                 }
                 break;
             }
@@ -212,11 +212,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto content = stream.readStringByVarInt32();
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(content);
+                    value.write_property_name(content);
                 }
                 else
                 {
-                    value.WriteValue(content);
+                    value.write_value(content);
                 }
                 unicode_string_index.emplace_back(content);
                 break;
@@ -226,11 +226,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 auto index = stream.readVarInt32();
                 if constexpr (write_key)
                 {
-                    value.WritePropertyName(unicode_string_index[index]);
+                    value.write_property_name(unicode_string_index[index]);
                 }
                 else
                 {
-                    value.WriteValue(unicode_string_index[index]);
+                    value.write_value(unicode_string_index[index]);
                 }
                 break;
             }
@@ -242,11 +242,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 {
                     if constexpr (write_key)
                     {
-                        value.WritePropertyName(RTIDString::null);
+                        value.write_property_name(RTIDString::null);
                     }
                     else
                     {
-                        value.WriteValue(RTIDString::null);
+                        value.write_value(RTIDString::null);
                     }
                     break;
                 }
@@ -259,11 +259,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                     auto uid_last = stream.readUint32();
                     if constexpr (write_key)
                     {
-                        value.WritePropertyName(fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content));
+                        value.write_property_name(fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content));
                     }
                     else
                     {
-                        value.WriteValue(fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content));
+                        value.write_value(fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content));
                     }
 
                     break;
@@ -276,11 +276,11 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                     auto alias_content = stream.readStringByVarInt32();
                     if constexpr (write_key)
                     {
-                        value.WritePropertyName(fmt::format(RTIDString::alias, alias_content, sheet_content));
+                        value.write_property_name(fmt::format(RTIDString::alias, alias_content, sheet_content));
                     }
                     else
                     {
-                        value.WriteValue(fmt::format(RTIDString::alias, alias_content, sheet_content));
+                        value.write_value(fmt::format(RTIDString::alias, alias_content, sheet_content));
                     }
 
                     break;
@@ -292,12 +292,12 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             }
             case TypeIdentifierEnumeration::Type::string_rtid_null:
             {
-                value.WriteValue(RTIDString::null);
+                value.write_value(RTIDString::null);
                 break;
             }
             case TypeIdentifierEnumeration::Type::array_begin:
             {
-                value.WriteStartArray();
+                value.write_start_array();
                 assert_conditional(TypeIdentifierEnumeration::Type{stream.readUint8()} == TypeIdentifierEnumeration::Type::array_size, fmt::format("{} {:02x}. {}: {:02x}", Kernel::Language::get("popcap.rton.decode.invalid_rton_array_starts"), static_cast<uint8_t>(TypeIdentifierEnumeration::Type::array_size), Kernel::Language::get("offset"), stream.read_pos), "exchange_value");
                 auto size = stream.readVarInt32();
                 auto array_size = 0;
@@ -312,12 +312,12 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                     exchange_value<false>(stream, value, native_string_index, unicode_string_index, value_type_identifier);
                 }
                 assert(array_size == size);
-                value.WriteEndArray();
+                value.write_end_array();
                 break;
             }
             case TypeIdentifierEnumeration::Type::object_begin:
             {
-                value.WriteStartObject();
+                value.write_start_object();
                 while (true)
                 {
                     auto key_type_identifier = TypeIdentifierEnumeration::Type{stream.readUint8()};
@@ -329,7 +329,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                     auto value_type_identifier = TypeIdentifierEnumeration::Type{stream.readUint8()};
                     exchange_value<false>(stream, value, native_string_index, unicode_string_index, value_type_identifier);
                 }
-                value.WriteEndObject();
+                value.write_end_object();
                 break;
             }
             default:
@@ -363,7 +363,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             auto writer = JsonWriter{};
             writer.WriteIndent = true;
             process_whole(stream, writer);
-            FileSystem::write_file(definition, writer.ToString());
+            FileSystem::write_file(definition, writer.to_string());
             return;
         }
     };

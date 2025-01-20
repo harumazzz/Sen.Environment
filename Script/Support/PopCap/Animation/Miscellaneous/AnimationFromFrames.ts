@@ -108,10 +108,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AnimationFromFrames 
 		let index = source_list.length;
 		for (let i = 0; i < source_list.length; i++) {
 			if (
-				Kernel.Miscellaneous.compareArrayBuffer(
-					image_source_data.buffer,
-					source_list[i].data,
-				)
+				Kernel.ArrayBuffer.compareArrayBuffer(image_source_data.buffer, source_list[i].data)
 			) {
 				index = i;
 				break;
