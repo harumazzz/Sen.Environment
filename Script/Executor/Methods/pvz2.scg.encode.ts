@@ -2,10 +2,10 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
 	/**
 	 * Argument for the current method
 	 */
-	export type Generic = Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Generic;
+	export type Generic = Support.Project.StreamCompressedGroup.Configuration.Generic;
 
 	// Settings
-	export type Setting = Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting;
+	export type Setting = Support.Project.StreamCompressedGroup.Configuration.Setting;
 
 	export interface Argument extends Executor.Base {
 		source: string;
@@ -106,7 +106,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Encode {
 					animation_split_label: argument.animation_split_label! ?? false,
 				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 					argument.source,
 					argument.destination!,
 					setting,

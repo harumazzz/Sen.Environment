@@ -60,6 +60,7 @@ add_library(
 	./utility/javascript/converter/json.hpp
 	./utility/javascript/converter/xml.hpp
 	./utility/javascript/proxy.hpp
+	./utility/javascript/namespace_builder.hpp
 
 	./dependencies/fmt.hpp
 	./dependencies/json.hpp

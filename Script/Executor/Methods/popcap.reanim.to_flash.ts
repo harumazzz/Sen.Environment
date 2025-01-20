@@ -48,10 +48,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.ToFlash {
 				check_overwrite(argument as { destination: string }, 'directory');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.ToFlash.convert_fs(
-					argument.source,
-					argument.destination!,
-				);
+				Kernel.Support.PopCap.ReAnimation.to_flash(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
 			is_enabled: true,

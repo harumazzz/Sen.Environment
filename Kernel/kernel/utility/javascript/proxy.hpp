@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kernel/utility/javascript/builder.hpp"
+#include "kernel/utility/javascript/namespace_builder.hpp"
 
 
 namespace Sen::Kernel::JavaScript {
@@ -309,22 +310,12 @@ namespace Sen::Kernel::JavaScript {
 			return thiz;
 		}
 
-		template <size_t InstanceCount>
 		auto build(
-			const std::array<std::string_view, InstanceCount>& instance_names
+			NamespaceBuilder& builder
 		) -> void
 		{
 			assert_conditional(thiz.constructor.has_value(), fmt::format("Class {} must have a constructor", class_name), "build");
-			auto global_obj = JS_GetGlobalObject(context);
-			auto parent_obj = JS_DupValue(context, global_obj);
-			auto index = std::size_t{ 0 };
-			for (auto& name : instance_names) {
-				auto new_obj = make_instance_object(context, parent_obj, name);
-				parent_obj = new_obj;
-			}
-			auto atom = Atom{ context, class_name };
-			JS_DefinePropertyValue(context, parent_obj, atom.value, thiz.constructor.value(), int{JS_PROP_C_W_E});
-			JS_FreeValue(context, global_obj);
+			builder.add_proxy(atom.value, thiz.constructor.value());
 			return;
 		}
 

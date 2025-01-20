@@ -4,7 +4,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 	export const k_composite_flag_offset = 0x10n;
 
 	export function process(source: string, destination: string, to_ios: boolean) {
-		const setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting = {
+		const setting: Support.Project.ResourceStreamBundle.Configuration.Setting = {
 			texture_format_category: to_ios ? 0n : 1n,
 			only_high_resolution: true,
 			unpack_packages: false,
@@ -15,28 +15,22 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 				iv: '',
 			},
 		};
-		const scg_setting: Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting =
-			{
-				decode_method: 0n,
-				animation_split_label: false,
-			};
-		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.unpack_fs(
-			source,
-			destination,
-			setting,
-		);
+		const scg_setting: Support.Project.StreamCompressedGroup.Configuration.Setting = {
+			decode_method: 0n,
+			animation_split_label: false,
+		};
+		Kernel.Support.Project.ResourceStreamBundle.unpack_fs(source, destination, setting);
 		const data_info = Kernel.JSON.deserialize_fs<any>(`${destination}/data.json`);
 		const packet_list: Array<string> = data_info['packet'];
 		let streaming_wave_processed = false;
 		for (const i in packet_list) {
 			const e = packet_list[i];
 			Console.send(e);
-			const is_composite =
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.check_scg_composite(
-					`${destination}/packet/${e}.scg`,
-				);
+			const is_composite = Kernel.Support.Project.StreamCompressedGroup.test_scg(
+				`${destination}/packet/${e}.scg`,
+			);
 			if (is_composite) {
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.decode_fs(
 					`${destination}/packet/${e}.scg`,
 					`${destination}/packet/${e}.scg.package`,
 					scg_setting,
@@ -54,7 +48,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					1n,
 					true,
 				);
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 					`${destination}/packet/${e}.scg.package`,
 					`${destination}/packet/${e}.scg`,
 					scg_setting,
@@ -63,7 +57,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 			} else {
 				const element = e.toLowerCase();
 				if (element === 'streamingwave' && to_ios) {
-					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
+					Kernel.Support.Project.StreamCompressedGroup.decode_fs(
 						`${destination}/packet/${e}.scg`,
 						`${destination}/packet/${e}.scg.package`,
 						scg_setting,
@@ -114,7 +108,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 						1n,
 						true,
 					);
-					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
+					Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 						`${destination}/packet/Global_Data.scg.package`,
 						`${destination}/packet/Global_Data.scg`,
 						scg_setting,
@@ -124,7 +118,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					packet_list[i] = 'Global_Data';
 					streaming_wave_processed = true;
 				} else if (element === 'global_data' && !to_ios) {
-					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
+					Kernel.Support.Project.StreamCompressedGroup.decode_fs(
 						`${destination}/packet/${e}.scg`,
 						`${destination}/packet/${e}.scg.package`,
 						scg_setting,
@@ -175,7 +169,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 						1n,
 						true,
 					);
-					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
+					Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 						`${destination}/packet/StreamingWave.scg.package`,
 						`${destination}/packet/StreamingWave.scg`,
 						scg_setting,
@@ -197,7 +191,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 		);
 		Kernel.JSON.serialize_fs(`${destination}/data.json`, data_info, 1n, true);
 		setting['texture_format_category'] = to_ios ? 1n : 0n;
-		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
+		Kernel.Support.Project.ResourceStreamBundle.pack_fs(
 			destination,
 			`${Kernel.Path.except_extension(source)}.${to_ios ? 'main.rsb' : 'main.obb'}`,
 			setting,

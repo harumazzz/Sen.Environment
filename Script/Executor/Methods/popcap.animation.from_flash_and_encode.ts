@@ -59,7 +59,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.FromFlashAndEncode {
 					Kernel.Language.get('popcap.animation.extract_label'),
 				);
 				clock.start_safe();
-				Kernel.Support.PopCap.Animation.Instance.from_flash(
+				Kernel.Support.PopCap.Animation.from_flash_and_encode(
 					argument.source,
 					argument.destination!,
 					argument.has_label!,

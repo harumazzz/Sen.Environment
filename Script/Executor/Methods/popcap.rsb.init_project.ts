@@ -1,11 +1,11 @@
 namespace Sen.Script.Executor.Methods.PopCap.RSB.InitProject {
 	// Generic
 
-	export type Generic = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Generic;
+	export type Generic = Support.Project.ResourceStreamBundle.Configuration.Generic;
 
 	// Setting
 
-	export type Setting = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting;
+	export type Setting = Support.Project.ResourceStreamBundle.Configuration.Setting;
 
 	/**
 	 * Argument for the current method
@@ -107,7 +107,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.InitProject {
 					unpack_packages: true,
 				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.unpack_fs(
+				Kernel.Support.Project.ResourceStreamBundle.unpack_fs(
 					argument.source,
 					argument.destination!,
 					setting,

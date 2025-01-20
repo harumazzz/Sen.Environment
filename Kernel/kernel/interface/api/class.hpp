@@ -5,15 +5,89 @@
 
 namespace Sen::Kernel::Interface::API {
 
+	#pragma region DataStreamView
+
+	namespace DataStreamView {
+
+		inline auto toArrayBuffer(
+			Pointer<Kernel::DataStreamView> stream
+		) -> std::shared_ptr<JavaScript::ArrayBuffer> {
+			auto bytes = stream->toBytes();
+			return std::make_unique<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
+		}
+
+		inline auto getArrayBuffer(
+			Pointer<Kernel::DataStreamView> stream,
+			size_t& from,
+			size_t& to
+		) -> std::shared_ptr<JavaScript::ArrayBuffer> {
+			auto bytes = stream->get(from, to);
+			return std::make_unique<JavaScript::ArrayBuffer>(bytes.data(), bytes.size());
+		}
+
+		inline auto register_class(
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
+		) -> void
+		{
+			using DataStreamView = Kernel::DataStreamView;
+			auto builder = JavaScript::ClassBuilder<DataStreamView>{ context, "DataStreamView" };
+			builder.add_constructor<[](std::string& source) -> Pointer<DataStreamView> {
+				return new DataStreamView{source};
+			}, std::string&>()
+			.template add_getter_setter<size_t, [](Pointer<DataStreamView> stream){
+				return stream->read_pos;
+			}, [](Pointer<DataStreamView> stream, size_t& read_position){
+				stream->read_pos = read_position;
+			}>("read_position")
+			.template add_getter_setter<size_t, [](Pointer<DataStreamView> stream){
+				return stream->write_pos;
+			}, [](Pointer<DataStreamView> stream, size_t& write_position){
+				stream->write_pos = write_position;
+			}>("read_position")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->size();
+			}, size_t>("size")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& source){
+				return stream->fromString(source);
+			}, void, std::string&>("fromString")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->capacity();
+			}, size_t>("capacity")
+			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& size){
+				return stream->reserve(size);
+			}, void, size_t&>("reserve")
+			.template add_member_function<toArrayBuffer, std::shared_ptr<JavaScript::ArrayBuffer>>("toArrayBuffer")
+			.template add_member_function<getArrayBuffer, std::shared_ptr<JavaScript::ArrayBuffer>, size_t&, size_t&>("getArrayBuffer")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->toString();
+			}, std::string>("toString")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& destination){
+				return stream->out_file(destination);
+			}, void, std::string&>("out_file")
+			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& size){
+				return stream->allocate(size);
+			}, void, size_t&>("allocate")
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint8_t value){
+				return stream->writeUint8(value);
+			}, void, uint8_t>("writeUint8")
+
+			.build(class_builder);
+			return;
+		}
+
+	}
+
+	#pragma endregion
+
 	
 	#pragma region Clock
 
 	namespace Clock {
 
-		template <size_t InstanceCount>
 		inline auto register_class(
-			JSContext* context,
-			const std::array<std::string_view, InstanceCount>& instance_names
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using Clock = Kernel::Clock;
@@ -41,8 +115,7 @@ namespace Sen::Kernel::Interface::API {
 			}, bool > ("is_stopped")
 			.template add_member_function <[](Pointer<Clock> clock) {
 			return static_cast<double>(clock->get_duration() / 1000.0);
-			}, double> ("duration_as_seconds")
-			.build(instance_names);
+			}, double> ("duration_as_seconds").build(class_builder);
 			return;
 		}
 
@@ -54,10 +127,9 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace JsonWriter {
 
-		template <size_t InstanceCount>
 		inline auto register_class(
-			JSContext* context,
-			const std::array<std::string_view, InstanceCount>& instance_names
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using JsonWriter = Kernel::JsonWriter;
@@ -105,7 +177,7 @@ namespace Sen::Kernel::Interface::API {
 				return writer->WriteIndent;
 			}, [](Pointer<JsonWriter> writer, bool& value){
 				writer->WriteIndent = value;
-			}>("writeIndent").build(instance_names);
+			}>("writeIndent").build(class_builder);
 			return;
 		}
 
@@ -117,10 +189,9 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Canvas {
 
-		template <size_t InstanceCount>
 		inline auto register_class(
-			JSContext* context,
-			const std::array<std::string_view, InstanceCount>& instance_names
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using Canvas = canvas_ity::canvas;
@@ -233,7 +304,7 @@ namespace Sen::Kernel::Interface::API {
 			}, void> ("save")
 			.template add_member_function<[](Pointer<Canvas> canvas){
 				return canvas->restore();
-			}, void> ("restore").build(instance_names);
+			}, void> ("restore").build(class_builder);
 			return;
 		}
 
@@ -384,10 +455,9 @@ namespace Sen::Kernel::Interface::API {
 			return new Image{ 0, 0, data->width, data->height, data->bit_depth, data->color_type, data->interlace_type, data->channels, data->rowbytes, std::move(List<uint8_t>{data->data.value, data->data.value + data->data.size}) };
 		}
 
-		template <size_t InstanceCount>
 		inline auto register_class(
-			JSContext* context,
-			const std::array<std::string_view, InstanceCount>& instance_names
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using ImageView = Image;
@@ -436,7 +506,7 @@ namespace Sen::Kernel::Interface::API {
 			.template add_static_function<read_fs, Pointer<ImageView>, std::string&>("read_fs")
 			.template add_static_function<write_fs, void, std::string&, Pointer<ImageView>>("write_fs")
 			.template add_static_function<instance, Pointer<ImageView>, int32_t&, int32_t&, std::shared_ptr<JavaScript::ArrayBuffer>&>("instance")
-			.build(instance_names);
+			.build(class_builder);
 		}
 
 	}
@@ -447,10 +517,9 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace APNGMakerSetting {
 
-		template <size_t InstanceCount>
 		inline auto register_class(
-			JSContext* context,
-			const std::array<std::string_view, InstanceCount>& instance_names
+			Pointer<JSContext> context,
+			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
 			using APNGMakerSetting = Kernel::APNGMakerSetting;
@@ -482,7 +551,7 @@ namespace Sen::Kernel::Interface::API {
 				return setting->trim;
 			}, [](Pointer<APNGMakerSetting> setting, bool& trim) {
 				setting->trim = trim;
-			}>("trim").build(instance_names);
+			}>("trim").build(class_builder);
 			return;
 		}
 
@@ -510,10 +579,9 @@ namespace Sen::Kernel::Interface::API {
 
 					namespace Image {
 
-						template <size_t InstanceCount>
 						inline auto register_class(
-							JSContext* context,
-							const std::array<std::string_view, InstanceCount>& instance_names
+							Pointer<JSContext> context,
+							JavaScript::NamespaceBuilder& class_builder
 						) -> void
 						{
 							using Image = Kernel::Support::PopCap::Animation::Miscellaneous::Image;
@@ -536,7 +604,7 @@ namespace Sen::Kernel::Interface::API {
 								return image->transform;
 							}, [](Pointer<Image> image, Transform& transform){
 								image->transform = transform;
-							}>("transform").build(instance_names);
+							}>("transform").build(class_builder);
 							return;
 						}
 
@@ -548,10 +616,9 @@ namespace Sen::Kernel::Interface::API {
 
 					namespace Sprite {
 
-						template <size_t InstanceCount>
 						inline auto register_class(
-							JSContext* context,
-							const std::array<std::string_view, InstanceCount>& instance_names
+							Pointer<JSContext> context,
+							JavaScript::NamespaceBuilder& class_builder
 						) -> void
 						{
 							using Sprite = Kernel::Support::PopCap::Animation::Miscellaneous::Sprite;
@@ -580,7 +647,7 @@ namespace Sen::Kernel::Interface::API {
 								return sprite->color;
 							}, [](Pointer<Sprite> sprite, Color& color){
 								sprite->color = color;
-							}>("color").build(instance_names);
+							}>("color").build(class_builder);
 							return;
 						}
 

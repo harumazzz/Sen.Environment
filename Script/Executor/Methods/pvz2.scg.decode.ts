@@ -2,7 +2,7 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
 	/**
 	 * Argument for the current method
 	 */
-	export type Generic = Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Generic;
+	export type Generic = Support.Project.StreamCompressedGroup.Configuration.Generic;
 
 	export interface Argument extends Executor.Base {
 		source: string;
@@ -95,13 +95,12 @@ namespace Sen.Script.Executor.Methods.PvZ2.SCG.Decode {
 						Kernel.Language.get('pvz2.scg.animation_split_label'),
 					);
 				}
-				const setting: Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting =
-					{
-						decode_method: argument.generic!,
-						animation_split_label: argument.animation_split_label! ?? false,
-					};
+				const setting: Support.Project.StreamCompressedGroup.Configuration.Setting = {
+					decode_method: argument.generic!,
+					animation_split_label: argument.animation_split_label! ?? false,
+				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.decode_fs(
 					argument.source,
 					argument.destination!,
 					setting,

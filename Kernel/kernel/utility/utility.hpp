@@ -44,6 +44,7 @@
 #include "kernel/utility/javascript/builder.hpp"
 #include "kernel/utility/javascript/value_adapter.hpp"
 #include "kernel/utility/javascript/proxy.hpp"
+#include "kernel/utility/javascript/namespace_builder.hpp"
 #include "kernel/utility/javascript/converter.hpp"
 #include "kernel/utility/javascript/converter/json.hpp"
 #include "kernel/utility/javascript/converter/xml.hpp"

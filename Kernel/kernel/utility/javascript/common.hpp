@@ -50,7 +50,6 @@ namespace Sen::Kernel::JavaScript {
 		) 
 		{
 			if (thiz.value != nullptr) {
-				JS_RunGC(thiz.value);
 				JS_FreeRuntime(this->value);
 				this->value = nullptr;
 			}

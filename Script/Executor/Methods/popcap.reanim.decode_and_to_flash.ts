@@ -88,7 +88,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.DecodeAndToFlash {
 				Console.argument(Kernel.Language.get('popcap.reanim.decode.generic'));
 				configurate_or_input(argument, 'platform', Detail.platform());
 				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.Instance.to_flash(
+				Kernel.Support.PopCap.ReAnimation.decode_and_to_flash(
 					argument.source,
 					argument.destination!,
 					argument.platform!,

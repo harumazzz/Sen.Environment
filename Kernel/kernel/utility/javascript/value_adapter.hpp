@@ -255,7 +255,7 @@ namespace Sen::Kernel::JavaScript {
 		return destination;
 	}
 
-	template <typename T> requires is_std_array_v<T>
+	template <typename T> requires is_array<T>::value
 	inline auto from_value(
 		JSContext* context,
 		JSValue value

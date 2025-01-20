@@ -50,7 +50,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Reanim.FromFlash {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.FromFlash.convert_fs(
+				Kernel.Support.PopCap.ReAnimation.from_flash(
 					argument.source,
 					argument.destination!,
 				);

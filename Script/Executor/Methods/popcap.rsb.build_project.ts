@@ -1,10 +1,10 @@
 namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 	// Generic
 
-	export type Generic = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Generic;
+	export type Generic = Support.Project.ResourceStreamBundle.Configuration.Generic;
 
 	// Setting
-	export type Setting = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting;
+	export type Setting = Support.Project.ResourceStreamBundle.Configuration.Setting;
 
 	/**
 	 * Argument for the current method
@@ -35,7 +35,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 	export interface Configuration extends Executor.Configuration {
 		layout: string | '?';
 		generic: string | '?';
-		packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting;
+		packages_setting: Support.Project.ResourceStreamBundle.Configuration.PackagesSetting;
 	}
 
 	/**
@@ -59,8 +59,8 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 	export function load_packages(
 		source: string,
 		packages_info: null | PackagesInfo,
-	): Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting {
-		const packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting =
+	): Support.Project.ResourceStreamBundle.Configuration.PackagesSetting {
+		const packages_setting: Support.Project.ResourceStreamBundle.Configuration.PackagesSetting =
 			{
 				rton_count: 0n,
 				json_count: 0n,
@@ -127,7 +127,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 				const packages_info: PackagesInfo | null = (
 					Kernel.JSON.deserialize_fs(`${argument.source}/data.json`) as any
 				).packages_info;
-				const packages_setting: Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.PackagesSetting =
+				const packages_setting: Support.Project.ResourceStreamBundle.Configuration.PackagesSetting =
 					load_packages(argument.source, packages_info);
 				if (packages_info !== null) {
 					if (packages_setting.json_count !== 0n && packages_info.encode) {
@@ -170,7 +170,7 @@ namespace Sen.Script.Executor.Methods.PopCap.RSB.BuildProject {
 					unpack_packages: true,
 				};
 				clock.start_safe();
-				Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
+				Kernel.Support.Project.ResourceStreamBundle.pack_fs(
 					argument.source,
 					argument.destination!,
 					setting,

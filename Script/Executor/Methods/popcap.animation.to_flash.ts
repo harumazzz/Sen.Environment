@@ -88,7 +88,7 @@ namespace Sen.Script.Executor.Methods.PopCap.Animation.ToFlash {
 					Kernel.Language.get('popcap.animation.extract_label'),
 				);
 				clock.start_safe();
-				Kernel.Support.PopCap.Animation.ToFlash.convert_fs(
+				Kernel.Support.PopCap.Animation.to_flash(
 					argument.source,
 					argument.destination!,
 					BigInt(argument.resolution!),

@@ -773,76 +773,74 @@ declare namespace Sen {
 		 * In this case, it provides a nested `Texture` namespace for texture encoding and decoding.
 		 */
 		declare namespace Support {
-			declare namespace Miscellaneous {
-				declare namespace Project {
-					declare namespace StreamCompressedGroup {
-						/**
-						 * Check a Stream Compressed Group is compsite.
-						 *
-						 * @param source The path to the source SCG file to be check.
-						 * @throws {Error} If there is an error during decoding.
-						 */
-						export function check_scg_composite(source: string): boolean;
+			declare namespace Project {
+				declare namespace StreamCompressedGroup {
+					/**
+					 * Check a Stream Compressed Group is compsite.
+					 *
+					 * @param source The path to the source SCG file to be check.
+					 * @throws {Error} If there is an error during decoding.
+					 */
+					export function test_scg(source: string): boolean;
 
-						/**
-						 * Decodes an SCG file.
-						 *
-						 * @param source {string} Path to the source SCG file.
-						 * @param destination {string} Path to the destination directory where the unpacked files will be written.
-						 * @param setting A Setting object containing configuration options for the SCG custom process.
-						 * @returns {void} No return value, function unpacks the group to the destination directory.
-						 */
-						export function decode_fs(
-							source: string,
-							destination: string,
-							setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting,
-						): void;
+					/**
+					 * Decodes an SCG file.
+					 *
+					 * @param source {string} Path to the source SCG file.
+					 * @param destination {string} Path to the destination directory where the unpacked files will be written.
+					 * @param setting A Setting object containing configuration options for the SCG custom process.
+					 * @returns {void} No return value, function unpacks the group to the destination directory.
+					 */
+					export function decode_fs(
+						source: string,
+						destination: string,
+						setting: Script.Support.Miscellaneous.Project.StreamCompressedGroup.Configuration.Setting,
+					): void;
 
-						/**
-						 * Encode_fs a directory containing resources into an SCG file.
-						 *
-						 *
-						 * @param source {string} Path to the source directory containing the resources to be packed.
-						 * @param destination {string} Path to the destination SCG group file.
-						 * @param setting A Setting object containing configuration options for the SCG custom process.
-						 * @returns {void} No return value, function packs the resources into the destination SCG group file.
-						 */
-						export function encode_fs(
-							source: string,
-							destination: string,
-							setting: Script.Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting,
-						): void;
-					}
-					declare namespace ResourceStreamBundle {
-						/**
-						 * Unpacks an RSG bundle file to specific directory contains SCG files.
-						 *
-						 * @param source {string} Path to the source RSB bundle file.
-						 * @param destination {string} Path to the destination directory where the unpacked files will be written.
-						 * @param setting A Setting object containing configuration options for the RSB unpack custom process.
-						 * @returns {void} No return value, function unpacks the bundle to the destination directory.
-						 */
-						export function unpack_fs(
-							source: string,
-							destination: string,
-							setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting,
-						): void;
+					/**
+					 * Encode_fs a directory containing resources into an SCG file.
+					 *
+					 *
+					 * @param source {string} Path to the source directory containing the resources to be packed.
+					 * @param destination {string} Path to the destination SCG group file.
+					 * @param setting A Setting object containing configuration options for the SCG custom process.
+					 * @returns {void} No return value, function packs the resources into the destination SCG group file.
+					 */
+					export function encode_fs(
+						source: string,
+						destination: string,
+						setting: Script.Support.Miscellaneous.Project.StreamCompressedGroup.Configuration.Setting,
+					): void;
+				}
+				declare namespace ResourceStreamBundle {
+					/**
+					 * Unpacks an RSG bundle file to specific directory contains SCG files.
+					 *
+					 * @param source {string} Path to the source RSB bundle file.
+					 * @param destination {string} Path to the destination directory where the unpacked files will be written.
+					 * @param setting A Setting object containing configuration options for the RSB unpack custom process.
+					 * @returns {void} No return value, function unpacks the bundle to the destination directory.
+					 */
+					export function unpack_fs(
+						source: string,
+						destination: string,
+						setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting,
+					): void;
 
-						/**
-						 * Packs a directory containing resources into an RSB bundle file.
-						 *
-						 *
-						 * @param source {string} Path to the source directory containing the resources to be packed.
-						 * @param destination {string} Path to the destination RSB bundle file.
-						 * @param setting A Setting object containing configuration options for the RSB pack custom process.
-						 * @returns {void} No return value, function packs the resources into the destination RSB bundle file.
-						 */
-						export function pack_fs(
-							source: string,
-							destination: string,
-							setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting,
-						): void;
-					}
+					/**
+					 * Packs a directory containing resources into an RSB bundle file.
+					 *
+					 *
+					 * @param source {string} Path to the source directory containing the resources to be packed.
+					 * @param destination {string} Path to the destination RSB bundle file.
+					 * @param setting A Setting object containing configuration options for the RSB pack custom process.
+					 * @returns {void} No return value, function packs the resources into the destination RSB bundle file.
+					 */
+					export function pack_fs(
+						source: string,
+						destination: string,
+						setting: Script.Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting,
+					): void;
 				}
 			}
 
@@ -1380,37 +1378,57 @@ declare namespace Sen {
 					 * This namespace provides functions for converting animation data between PopCap and Flash formats.
 					 */
 
-					declare namespace ToFlash {
-						/**
-						 * Converts a PopCap Animation (PAM) file to Flash XFL format.
-						 *
-						 * @param source {string} Path to the source PAM file to be converted.
-						 * @param destination {string} Path to the destination directory where the converted XFL files will be written.
-						 * @param resolution {bigint} The resolution to use for the generated XFL file (specific interpretation may depend on the implementation).
-						 * @returns {void} No return value, function writes converted XFL files to the destination directory.
-						 */
-						export function convert_fs(
-							source: string,
-							destination: string,
-							resolution: bigint,
-							has_label: boolean,
-						): void;
-					}
+					/**
+					 * Converts a PopCap Animation (PAM) file to Flash XFL format.
+					 *
+					 * @param source {string} Path to the source PAM file to be converted.
+					 * @param destination {string} Path to the destination directory where the converted XFL files will be written.
+					 * @param resolution {bigint} The resolution to use for the generated XFL file (specific interpretation may depend on the implementation).
+					 * @returns {void} No return value, function writes converted XFL files to the destination directory.
+					 */
+					export function to_flash(
+						source: string,
+						destination: string,
+						resolution: bigint,
+						has_label: boolean,
+					): void;
 
-					declare namespace FromFlash {
-						/**
-						 * Converts a Flash XFL file to PopCap Animation (PAM) format.
-						 *
-						 * @param source {string} Path to the source directory containing the XFL file to be converted.
-						 * @param destination {string} Path to the destination PAM file where the converted data will be written.
-						 * @returns {void} No return value, function writes converted PAM data to the destination file.
-						 */
-						export function convert_fs(
-							source: string,
-							destination: string,
-							has_label: boolean,
-						): void;
-					}
+					/**
+					 * Converts a Flash XFL file to PopCap Animation (PAM) format.
+					 *
+					 * @param source {string} Path to the source directory containing the XFL file to be converted.
+					 * @param destination {string} Path to the destination PAM file where the converted data will be written.
+					 * @returns {void} No return value, function writes converted PAM data to the destination file.
+					 */
+					export function from_flash(
+						source: string,
+						destination: string,
+						has_label: boolean,
+					): void;
+
+					/**
+					 * Function to convert data from the project's format to Flash (likely for export)
+					 * @param source  Path to the source data file
+					 * @param destination Path to save the converted data in Flash format
+					 * @param resolution Resolution for the converted data (likely in pixels)
+					 */
+					export function decode_and_to_flash(
+						source: string,
+						destination: string,
+						resolution: bigint,
+						has_label: boolean,
+					): void;
+
+					/**
+					 * Function to convert data from Flash format to the project's format (likely for import)
+					 * @param source  Path to the source data file in Flash format
+					 * @param destination Path to save the converted data in the project's format
+					 */
+					export function from_flash_and_encode(
+						source: string,
+						destination: string,
+						has_label: boolean,
+					): void;
 
 					/**
 					 * Namespace for miscellaneous document, image, and sprite utilities
@@ -1566,35 +1584,6 @@ declare namespace Sen {
 						 * @param sprite  The Sprite object containing the sprite data
 						 */
 						export function generate_sprite(destination: string, sprite: Sprite): void;
-					}
-
-					/**
-					 * Namespace for potential conversion to/from a specific game engine or development tool (possibly Flash)
-					 */
-					declare namespace Instance {
-						/**
-						 * Function to convert data from the project's format to Flash (likely for export)
-						 * @param source  Path to the source data file
-						 * @param destination Path to save the converted data in Flash format
-						 * @param resolution Resolution for the converted data (likely in pixels)
-						 */
-						export function to_flash(
-							source: string,
-							destination: string,
-							resolution: bigint,
-							has_label: boolean,
-						): void;
-
-						/**
-						 * Function to convert data from Flash format to the project's format (likely for import)
-						 * @param source  Path to the source data file in Flash format
-						 * @param destination Path to save the converted data in the project's format
-						 */
-						export function from_flash(
-							source: string,
-							destination: string,
-							has_label: boolean,
-						): void;
 					}
 
 					/**
@@ -2043,69 +2032,52 @@ declare namespace Sen {
 					export function from_xml(source: string, destination: string): void;
 
 					/**
-					 * Instance namespace for convert method
-					 * Quick adapt
+					 * Decodes a file system archive from the source path to the destination directory,
+					 * targeting a specific platform.
+					 *
+					 * @param {string} source - The path to the archive file.
+					 * @param {string} destination - The directory where the extracted files will be placed.
+					 * @param {Platform} platform - The target platform for the decoded files.
+					 * @returns {void}
 					 */
-
-					declare namespace Instance {
-						/**
-						 * Decodes a file system archive from the source path to the destination directory,
-						 * targeting a specific platform.
-						 *
-						 * @param {string} source - The path to the archive file.
-						 * @param {string} destination - The directory where the extracted files will be placed.
-						 * @param {Platform} platform - The target platform for the decoded files.
-						 * @returns {void}
-						 */
-						export function to_flash(
-							source: string,
-							destination: string,
-							platform: Platform,
-						): void;
-
-						/**
-						 * Encodes a directory and its contents into a file system archive at the destination path,
-						 * targeting a specific platform.
-						 *
-						 * @param {string} source - The directory to be archived.
-						 * @param {string} destination - The path and filename of the resulting archive.
-						 * @param {Platform} platform - The target platform for the encoded archive.
-						 * @returns {void}
-						 */
-						export function from_flash(
-							source: string,
-							destination: string,
-							platform: Platform,
-						): void;
-					}
+					export function decode_and_to_flash(
+						source: string,
+						destination: string,
+						platform: Platform,
+					): void;
 
 					/**
-					 * Namespace for converting file systems to Flash format.
+					 * Encodes a directory and its contents into a file system archive at the destination path,
+					 * targeting a specific platform.
+					 *
+					 * @param {string} source - The directory to be archived.
+					 * @param {string} destination - The path and filename of the resulting archive.
+					 * @param {Platform} platform - The target platform for the encoded archive.
+					 * @returns {void}
 					 */
-					declare namespace ToFlash {
-						/**
-						 * Converts a file system from the source path to Flash format at the destination path.
-						 *
-						 * @param {string} source - The path to the source file system.
-						 * @param {string} destination - The path and filename for the Flash output.
-						 * @returns {void}
-						 */
-						export function convert_fs(source: string, destination: string): void;
-					}
+					export function from_flash_and_encode(
+						source: string,
+						destination: string,
+						platform: Platform,
+					): void;
 
 					/**
-					 * Namespace for converting from Flash format to a file system.
+					 * Converts a file system from the source path to Flash format at the destination path.
+					 *
+					 * @param {string} source - The path to the source file system.
+					 * @param {string} destination - The path and filename for the Flash output.
+					 * @returns {void}
 					 */
-					declare namespace FromFlash {
-						/**
-						 * Converts a file system from Flash format at the source path to a regular file system at the destination path.
-						 *
-						 * @param {string} source - The path to the source Flash file.
-						 * @param {string} destination - The directory where the extracted files will be placed.
-						 * @returns {void}
-						 */
-						export function convert_fs(source: string, destination: string): void;
-					}
+					export function to_flash(source: string, destination: string): void;
+
+					/**
+					 * Converts a file system from Flash format at the source path to a regular file system at the destination path.
+					 *
+					 * @param {string} source - The path to the source Flash file.
+					 * @param {string} destination - The directory where the extracted files will be placed.
+					 * @returns {void}
+					 */
+					export function from_flash(source: string, destination: string): void;
 				}
 
 				/**
@@ -3153,7 +3125,13 @@ declare namespace Sen {
 			 *
 			 * @param {string} source (optional) - A source string to process (exact functionality unclear).
 			 */
-			public constructor(source?: string): void;
+			public constructor(source: string): void;
+
+			/**
+			 * Create an instance of DataStreamView (constructor with 0 parameter)
+			 */
+
+			public static instance(): DataStreamView;
 
 			/**
 			 * Get the size of the current data stream in bytes

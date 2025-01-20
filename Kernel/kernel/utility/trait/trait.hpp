@@ -118,12 +118,25 @@ namespace Sen::Kernel {
 	using container_value_t = typename container_traits<Container>::value_type;
 
 	template <typename T>
-	struct is_std_array : std::false_type {};
+	struct is_array : std::false_type {};
 
 	template <typename T, std::size_t Size>
-	struct is_std_array<std::array<T, Size>> : std::true_type {};
+	struct is_array<std::array<T, Size>> : std::true_type {};
 
 	template <typename T>
-	constexpr auto is_std_array_v = is_std_array<T>::value;
+	constexpr auto is_array_v = is_array<T>::value;
 
+	template <typename T>
+	struct is_optional : std::false_type {};
+
+	template <typename T>
+	struct is_optional<std::optional<T>> : std::true_type {};
+
+	template <typename T>
+	constexpr bool is_optional_v = is_optional<T>::value;
+
+	template <typename... T>
+	constexpr auto count_optionals() {
+		return (is_optional_v<T> + ... + 0); 
+	}
 }

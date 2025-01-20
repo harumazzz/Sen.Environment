@@ -9,11 +9,9 @@ namespace Sen::Kernel::JavaScript
 
 	namespace FileSystem = Sen::Kernel::FileSystem;
 		
-	struct Handler {
+	class Engine {
 		
 		protected:
-
-			using JS = Handler;
 
 			using Atom = JavaScript::Atom;
 
@@ -23,57 +21,25 @@ namespace Sen::Kernel::JavaScript
 
 		private:
 
-			Runtime runtime;
+			Runtime m_runtime;
 
-			Context context;
+			Context m_context;
 
-			Mutex mutex;
+			Mutex m_mutex;
 
 			Boolean is_module;
+
+			List<JSValue> m_resources;
 
 		public:
 
 			using Function = JSValue (*)(JSContext*, JSValue, int, JSValue*);
 
-			explicit Handler(
+			explicit Engine(
 
-			) : mutex{}, is_module{false}, runtime{Runtime::as_new_instance()}, context{thiz.runtime}
+			) : m_mutex{}, is_module{false}, m_runtime{Runtime::as_new_instance()}, m_context{thiz.m_runtime}, m_resources{}
 			{
-			}
-			
-
-			inline auto register_object(
-				std::function<void (JSRuntime*, JSContext*)> register_method
-			) -> void
-			{
-				register_method(thiz.runtime.value, thiz.context.value);
-				return;
-			}
-
-			inline auto unregister_object(
-				std::function<void (JSContext*)> callback
-			) -> void
-			{
-				callback(thiz.context.value);
-				return;
-			}
-
-			inline auto register_object(
-				std::function<void (JSContext*)> register_method
-			) -> void
-			{
-				register_method(thiz.context.value);
-				return;
-			}
-
-			template <size_t Size>
-			inline auto register_object(
-				std::function<void(JSContext*, const std::array<std::string_view, Size>&)> register_method,
-				const std::array<std::string_view, Size>& space
-			) -> void
-			{
-				register_method(thiz.context.value, space);
-				return;
+				thiz.m_resources.reserve(256_size);
 			}
 
 			inline auto evaluate_fs (
@@ -86,7 +52,13 @@ namespace Sen::Kernel::JavaScript
 			inline auto has_promise(
 			) -> bool
 			{
-				return static_cast<bool>(JS_IsJobPending(thiz.runtime.value));
+				return static_cast<bool>(JS_IsJobPending(thiz.m_runtime.value));
+			}
+
+			inline auto context(
+			) -> Context&
+			{
+				return thiz.m_context;
 			}
 
 			inline static auto custom_module_loader(
@@ -123,7 +95,7 @@ namespace Sen::Kernel::JavaScript
 			) -> void
 			{
 				thiz.is_module = true;
-				JS_SetModuleLoaderFunc(thiz.runtime.value, nullptr, &custom_module_loader, nullptr);
+				JS_SetModuleLoaderFunc(thiz.m_runtime.value, nullptr, &custom_module_loader, nullptr);
 				return;
 			}
 
@@ -131,7 +103,7 @@ namespace Sen::Kernel::JavaScript
 			) -> void
 			{
 				thiz.is_module = false;
-				JS_SetModuleLoaderFunc(thiz.runtime.value, nullptr, nullptr, nullptr);
+				JS_SetModuleLoaderFunc(thiz.m_runtime.value, nullptr, nullptr, nullptr);
 				return;
 			}
 
@@ -139,7 +111,7 @@ namespace Sen::Kernel::JavaScript
 			) -> void
 			{
 				auto job_context = static_cast<JSContext *>(nullptr);
-				auto count = JS_ExecutePendingJob(thiz.runtime.value, &job_context);
+				auto count = JS_ExecutePendingJob(thiz.m_runtime.value, &job_context);
 				assert_conditional(count != 0, "Unhandled promise: Promise still not finished", "execute_pending_job");
 			}
 
@@ -155,10 +127,10 @@ namespace Sen::Kernel::JavaScript
 				std::string_view name
 			) -> JSValue 
 			{
-				auto atom = Atom{context.value, name};
-				auto property = JS_GetProperty(context.value, parent, atom.value);
+				auto atom = Atom{ m_context.value, name};
+				auto property = JS_GetProperty(m_context.value, parent, atom.value);
 				if (JS_IsUndefined(property)) {
-					property = JS_NewObject(context.value);
+					property = JS_NewObject(m_context.value);
 				}
 				return property;
 			}
@@ -168,14 +140,14 @@ namespace Sen::Kernel::JavaScript
 				std::string_view source_file
 			) -> JSValue
 			{
-				thiz.mutex.lock();
-				auto eval_result = JS_Eval(thiz.context.value, source_data.data(), source_data.size(), source_file.data(), JS_EVAL_FLAG_STRICT | thiz.evaluate_flag());
+				thiz.m_mutex.lock();
+				auto eval_result = JS_Eval(thiz.m_context.value, source_data.data(), source_data.size(), source_file.data(), JS_EVAL_FLAG_STRICT | thiz.evaluate_flag());
 				if(JS_IsException(eval_result)){
-					auto exception = Value{thiz.context.value, JS_GetException(thiz.context.value)};
+					auto exception = Value{thiz.m_context.value, JS_GetException(thiz.m_context.value)};
 					auto error = exception.get<Error>();
 					throw Exception(error.make_exception(), std::source_location::current(), "evaluate");
 				}
-				thiz.mutex.unlock();
+				thiz.m_mutex.unlock();
 				return eval_result;
 			}
 
@@ -185,64 +157,9 @@ namespace Sen::Kernel::JavaScript
 				JSValue value
 			) -> void
 			{
-				auto atom = Atom{context.value, name};
-				JS_DefinePropertyValue(context.value, parent, atom.value, value, int{JS_PROP_C_W_E});
+				auto atom = Atom{ m_context.value, name};
+				JS_DefinePropertyValue(m_context.value, parent, atom.value, value, int{JS_PROP_C_W_E});
 				return;
-			}
-
-			inline auto add_function (
-				JSValue (*func)(JSContext*, JSValue, int, JSValue*),
-                std::string_view function_name, 
-				JSValue target_object
-			) -> void
-			{
-				auto func_atom = Atom{context.value, function_name};
-				JS_DefinePropertyValue(
-					context.value,
-					target_object,
-					func_atom.value,
-					JS_NewCFunction2(context.value, func, function_name.data(), 0, JS_CFUNC_generic, 0),
-					JS_PROP_C_W_E
-				);
-				return;
-			}
-
-			inline auto _add_proxy(
-				std::function<void(Value &global_object)> callback
-			) -> void 
-			{
-				auto global_obj = Value::as_new_instance(thiz.context.value, JS_GetGlobalObject(context.value));
-				callback(global_obj);
-			}
-
-			inline auto add_proxy(
-				JSValue (*func)(JSContext *, JSValue, int, JSValue *),
-				std::string_view function_name
-			) -> void
-			{
-				return _add_proxy([&](auto &global_obj){
-					return add_function(func, function_name, global_obj.value);
-				});
-			}
-
-			template <std::size_t Size>
-			inline auto add_proxy (
-				JSValue (*func)(JSContext *, JSValue, int, JSValue *),
-				const std::array<std::string_view, Size>& object_names,
-				std::string_view function_name
-			) -> void 
-			{
-				return _add_proxy([&](auto &global_obj) {
-					auto current_object = std::accumulate(
-						object_names.begin(), object_names.end(),
-						global_obj.value,
-						[&](auto&& obj, const std::string_view& name) {
-							auto next_object = get_or_create_object(obj, name);
-							define_property(obj, name, next_object);
-							return next_object; 
-						});
-					return add_function(func, function_name, current_object);
-				});
 			}
 
 			inline auto dump_memory_usage (
@@ -250,20 +167,34 @@ namespace Sen::Kernel::JavaScript
 			) -> void
 			{
 				auto mem_usage = JSMemoryUsage{};
-    			JS_ComputeMemoryUsage(thiz.runtime.value, &mem_usage);
-				JS_DumpMemoryUsage(stdout, &mem_usage, thiz.runtime.value);
+    			JS_ComputeMemoryUsage(thiz.m_runtime.value, &mem_usage);
+				JS_DumpMemoryUsage(stdout, &mem_usage, thiz.m_runtime.value);
 			}
 
 			inline auto set_context_opaque (
 				void* opaque
 			) -> void
 			{
-				JS_SetContextOpaque(context.value, opaque);
+				JS_SetContextOpaque(m_context.value, opaque);
 				return;
 			}
 
-			~Handler(
+			auto delete_allocated_memory (
 
-			) = default;
+			) -> void
+			{
+				for (auto &e : thiz.m_resources) {
+					JS_FreeValue(thiz.m_context.value, e);
+				}
+				thiz.m_resources.clear();
+				return;
+			}
+
+			~Engine(
+
+			)
+			{
+				thiz.delete_allocated_memory();
+			}
 	};
 }

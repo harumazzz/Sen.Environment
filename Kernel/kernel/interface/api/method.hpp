@@ -1234,83 +1234,61 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
 				}
 
-				#pragma region to-flash
-
-				namespace ToFlash
+				inline static auto to_flash (
+					std::string& source,
+					std::string& destination,
+					int64_t& resolution,
+					bool use_label
+				) -> void
 				{
-
-					inline static auto convert_fs(
-						std::string& source,
-						std::string& destination,
-						int64_t& resolution,
-						bool use_label
-					) -> void
-					{
-						if (use_label) {
-							return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_fs(source, destination, static_cast<int>(resolution));
-						}
-						else {
-							return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, static_cast<int>(resolution));
-						}
+					if (use_label) {
+						return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithLabel::process_fs(source, destination, static_cast<int>(resolution));
+					}
+					else {
+						return Kernel::Support::PopCap::Animation::Convert::ConvertToFlashWithMainSprite::process_fs(source, destination, static_cast<int>(resolution));
 					}
 				}
 
-				#pragma endregion
-
-				#pragma region from-flash
-
-				namespace FromFlash
+				inline static auto from_flash (
+					std::string& source,
+					std::string& destination,
+					bool use_label
+				) -> void
 				{
-
-					inline static auto convert_fs(
-						std::string& source,
-						std::string& destination,
-						bool use_label
-					) -> void
-					{
-						if (use_label) {
-							return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithLabel::process_fs(source, destination);
-						}
-						else {
-							return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
-						}
+					if (use_label) {
+						return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithLabel::process_fs(source, destination);
+					}
+					else {
+						return Kernel::Support::PopCap::Animation::Convert::ConvertFromFlashWithMainSprite::process_fs(source, destination);
 					}
 				}
 
-				#pragma endregion
-
-				#pragma region instance
-
-				namespace Instance
+				inline static auto decode_and_to_flash (
+					std::string& source,
+					std::string& destination,
+					int64_t& resolution,
+					bool use_label
+				) -> void
 				{
-
-					inline static auto to_flash(
-						std::string& source,
-						std::string& destination,
-						int64_t& resolution,
-						bool use_label
-					) -> void
-					{
-						if (use_label) {
-							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<true>(source, destination, static_cast<int>(resolution));
-						}
-						else {
-							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, static_cast<int>(resolution));
-						}
+					if (use_label) {
+						return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<true>(source, destination, static_cast<int>(resolution));
 					}
+					else {
+						return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::to_flash<false>(source, destination, static_cast<int>(resolution));
+					}
+				}
 
-					inline static auto from_flash(
-						std::string& source,
-						std::string& destination,
-						bool use_label
-					) -> void
-					{
-						if (use_label) {
-							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<true>(source, destination);
-						}
-						else {
-							return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
-						}
+				inline static auto from_flash_and_encode (
+					std::string& source,
+					std::string& destination,
+					bool use_label
+				) -> void
+				{
+					if (use_label) {
+						return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<true>(source, destination);
+					}
+					else {
+						return Kernel::Support::PopCap::Animation::Convert::InstanceConvert::from_flash<false>(source, destination);
 					}
 				}
 
@@ -1442,64 +1420,40 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
 				}
 
-				#pragma region to_flash
-
-				namespace ToFlash {
-
-					inline static auto convert_fs(
-						std::string& source,
-						std::string& destination
-					) -> void
-					{
-						return Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
-					}
-
+				inline static auto to_flash(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
 				}
 
-				#pragma endregion
-
-				#pragma region from_flash
-
-				namespace FromFlash {
-
-					inline static auto convert_fs(
-						std::string& source,
-						std::string& destination
-					) -> void
-					{
-						return Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
-					}
-
+				inline static auto from_flash(
+					std::string& source,
+					std::string& destination
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
 				}
 
-				#pragma endregion
-
-				#pragma region instance
-
-				namespace Instance {
-
-					inline static auto to_flash(
-						std::string& source,
-						std::string& destination,
-						std::string& platform
-					) -> void
-					{
-						return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, exchange_platform(platform));
-					}
-
-
-					inline static auto from_flash(
-						std::string& source,
-						std::string& destination,
-						std::string& platform
-					) -> void
-					{
-						return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, exchange_platform(platform));
-					}
-
+				inline static auto decode_and_to_flash(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::to_flash(source, destination, exchange_platform(platform));
 				}
 
-				#pragma endregion
+
+				inline static auto from_flash_and_encode(
+					std::string& source,
+					std::string& destination,
+					std::string& platform
+				) -> void
+				{
+					return Kernel::Support::PopCap::ReAnimation::Convert::InstanceConvert::from_flash(source, destination, exchange_platform(platform));
+				}
 
 			}
 
@@ -1622,78 +1576,70 @@ namespace Sen::Kernel::Interface::API {
 
 		#pragma endregion
 
-		#pragma region miscellaneous
+		#pragma region project
 
-		namespace Miscellaneous {
+		namespace Project
+		{
 
-			#pragma region project
+			#pragma region stream-compressed-group
 
-			namespace Project
+			namespace StreamCompressedGroup
 			{
 
-				#pragma region stream-compressed-group
+				using Setting = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting;
 
-				namespace StreamCompressedGroup
+				inline static auto check_scg_composite(
+					std::string& source
+				) -> bool
 				{
-
-					using Setting = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting;
-
-					inline static auto check_scg_composite(
-						std::string& source
-					) -> bool
-					{
-						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::check_scg_composite(source);
-					}
-
-					inline static auto decode_fs(
-						std::string& source,
-						std::string& destination,
-						std::shared_ptr<Setting>& setting
-					) -> void
-					{
-						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Decode::process_fs(source, destination, setting.operator*());
-					}
-
-					inline static auto encode_fs(
-						std::string& source,
-						std::string& destination,
-						std::shared_ptr<Setting>& setting
-					) -> void
-					{
-						return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Encode::process_fs(source, destination, setting.operator*());
-					}
+					return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::check_scg_composite(source);
 				}
 
-				#pragma endregion
-
-				#pragma region resource-stream-bundle
-
-				namespace ResourceStreamBundle
+				inline static auto decode_fs(
+					std::string& source,
+					std::string& destination,
+					std::shared_ptr<Setting>& setting
+				) -> void
 				{
-
-					using Setting = Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting;
-
-					inline static auto unpack_fs(
-						std::string& source,
-						std::string& destination,
-						std::shared_ptr<Setting>& setting
-					) -> void
-					{
-						Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Unpack::process_fs(source, destination, setting.operator*());
-					}
-
-					inline static auto pack_fs(
-						std::string& source,
-						std::string& destination,
-						std::shared_ptr<Setting>& setting
-					) -> void
-					{
-						return Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Pack::process_fs(source, destination, setting.operator*());
-					}
+					return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Decode::process_fs(source, destination, setting.operator*());
 				}
 
-				#pragma endregion
+				inline static auto encode_fs(
+					std::string& source,
+					std::string& destination,
+					std::shared_ptr<Setting>& setting
+				) -> void
+				{
+					return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Encode::process_fs(source, destination, setting.operator*());
+				}
+			}
 
+			#pragma endregion
+
+			#pragma region resource-stream-bundle
+
+			namespace ResourceStreamBundle
+			{
+
+				using Setting = Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting;
+
+				inline static auto unpack_fs(
+					std::string& source,
+					std::string& destination,
+					std::shared_ptr<Setting>& setting
+				) -> void
+				{
+					Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Unpack::process_fs(source, destination, setting.operator*());
+				}
+
+				inline static auto pack_fs(
+					std::string& source,
+					std::string& destination,
+					std::shared_ptr<Setting>& setting
+				) -> void
+				{
+					return Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Pack::process_fs(source, destination, setting.operator*());
+				}
 			}
 
 			#pragma endregion
@@ -1702,8 +1648,6 @@ namespace Sen::Kernel::Interface::API {
 
 		#pragma endregion
 	}
-
-	#pragma endregion
 
 	#pragma region miscellaneous
 

@@ -1,5 +1,5 @@
 namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
-	export type Generic = Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Generic;
+	export type Generic = Support.Project.ResourceStreamBundle.Configuration.Generic;
 
 	export function load_bigint(rule: any): bigint {
 		const new_rule: Array<bigint> = [];
@@ -30,12 +30,12 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 				packages: true,
 			},
 			unpack_packages: true,
-		} as Support.Miscellaneous.Custom.ResourceStreamBundle.Configuration.Setting;
+		} as Support.Project.ResourceStreamBundle.Configuration.Setting;
 
 		const scg_setting = {
 			decode_method: setting.decode_method,
 			animation_split_label: false,
-		} as Support.Miscellaneous.Custom.StreamCompressedGroup.Configuration.Setting;
+		} as Support.Project.StreamCompressedGroup.Configuration.Setting;
 		if (setting.rebuild_rsb_by_loose_constraints_first) {
 			Kernel.Support.PopCap.ResourceStreamBundle.unpack_cipher(
 				source,
@@ -47,7 +47,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			);
 			source = `${source}.temp.rsb`;
 		}
-		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.unpack_fs(
+		Kernel.Support.Project.ResourceStreamBundle.unpack_fs(
 			source,
 			`${source}.bundle`,
 			rsb_setting,
@@ -58,14 +58,11 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		)) {
 			Console.send(`${Kernel.Language.get('unpack')}: ${Kernel.Path.basename(element)}`);
 			try {
-				const composite =
-					Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.check_scg_composite(
-						element,
-					);
+				const composite = Kernel.Support.Project.StreamCompressedGroup.test_scg(element);
 				const scg_dest = `${source}.bundle/packet/${Kernel.Path.base_without_extension(
 					element,
 				)}.package`;
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.decode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.decode_fs(
 					element,
 					scg_dest,
 					scg_setting,
@@ -95,7 +92,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		)) {
 			try {
 				Console.send(`${Kernel.Language.get('pack')}: ${Kernel.Path.basename(element)}`);
-				Kernel.Support.Miscellaneous.Project.StreamCompressedGroup.encode_fs(
+				Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 					element,
 					`${source}.bundle/packet/${Kernel.Path.base_without_extension(element)}.scg`,
 					scg_setting,
@@ -119,7 +116,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			Kernel.Path.extname(source),
 			`_rebuild${Kernel.Path.extname(source)}`,
 		);
-		Kernel.Support.Miscellaneous.Project.ResourceStreamBundle.pack_fs(
+		Kernel.Support.Project.ResourceStreamBundle.pack_fs(
 			`${source}.bundle`,
 			destination,
 			rsb_setting,
