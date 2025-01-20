@@ -26,18 +26,6 @@ namespace Sen::Kernel::Interface::Script
 
 	inline auto constexpr get_property_bool = JS::Converter::get_property_bool;
 
-	template <typename T> requires std::is_class<T>::value
-	inline auto constexpr initialize_constructor = JS::initialize_constructor<T>;
-
-	template <typename T, int magic> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr generate_getter_setter = JS::generate_getter_setter<T, magic>;
-
-	template <typename T, int length> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
-	inline auto constexpr generate_class_function = JS::generate_class_function<T, length>;
-
-	template <typename Class, typename Constructor, std::size_t InstanceCount, std::size_t ProtoFunctionCount> requires (std::is_class<Class>::value && std::is_function<Constructor>::value)
-	inline auto constexpr build_class = JS::build_class<Class, Constructor, InstanceCount, ProtoFunctionCount>;
-
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline auto constexpr make_class_definition = JS::make_class_definition<T>;
 
@@ -46,8 +34,6 @@ namespace Sen::Kernel::Interface::Script
 
 	template <typename T> requires (std::is_class<T>::value && !std::is_pointer<T>::value)
 	inline auto constexpr make_deleter = JS::make_deleter<T>;
-
-	inline auto constexpr make_instance_object = JS::make_instance_object;
 
 	template <typename T> requires std::is_same<T, uint32_t>::value || std::is_same<T, std::string_view>::value
 	inline auto constexpr get_value_from_object = JS::get_value_from_object<T>;

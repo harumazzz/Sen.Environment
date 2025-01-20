@@ -645,8 +645,8 @@ namespace Sen::Kernel::Interface::API {
 			std::string& source
 		) -> JSValue
 		{
-			auto data = Kernel::FileSystem::read_quick_file(source);
-			return JS_Eval(context, data.data(), data.size(), source.data(), JS_EVAL_FLAG_STRICT | JS_EVAL_TYPE_GLOBAL);
+			auto engine = static_cast<JavaScript::Engine*>(JS_GetContextOpaque(context));
+			return engine->evaluate_fs(source);
 		}
 
 	}

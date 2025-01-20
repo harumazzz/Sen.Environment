@@ -599,19 +599,16 @@ namespace Sen::Kernel::JavaScript {
 	}
 
 	template <>
-	auto Value::get<Error>(
+	auto Value::get<std::shared_ptr<Error>>(
 
-	) -> Error
+	) -> std::shared_ptr<Error>
 	{
 		auto message_size = std::size_t{};
 		auto message = JS_ToCStringLen(context, &message_size, value);
 		auto stack_trace = thiz.get_property("stack");
 		auto stack_size = std::size_t{};
 		auto stack = JS_ToCStringLen(context, &stack_size, stack_trace.value);
-		auto destination = Error{
-			.message = std::string{message, message_size},
-			.stack = std::string{stack, stack_size},
-		};
+		auto destination = std::make_shared<Error>(std::string{ message, message_size },std::string{ stack, stack_size });
 		JS_FreeCString(context, message);
 		JS_FreeCString(context, stack);
 		return destination;

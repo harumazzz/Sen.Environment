@@ -19,17 +19,17 @@ namespace Sen::Kernel::JavaScript
 
 			using Boolean = bool;
 
+			inline static auto constexpr MEMORY_SIZE = 256_size;
+
 		private:
 
 			Runtime m_runtime;
 
 			Context m_context;
 
-			Mutex m_mutex;
-
 			Boolean is_module;
 
-			List<JSValue> m_resources;
+			List<JSValue> resources;
 
 		public:
 
@@ -37,9 +37,9 @@ namespace Sen::Kernel::JavaScript
 
 			explicit Engine(
 
-			) : m_mutex{}, is_module{false}, m_runtime{Runtime::as_new_instance()}, m_context{thiz.m_runtime}, m_resources{}
+			) : is_module{ false }, m_runtime{ Runtime::as_new_instance() }, m_context{ thiz.m_runtime }, resources{}
 			{
-				thiz.m_resources.reserve(256_size);
+				thiz.resources.reserve(MEMORY_SIZE);
 			}
 
 			inline auto evaluate_fs (
@@ -122,33 +122,19 @@ namespace Sen::Kernel::JavaScript
 				return thiz.is_module ? JS_EVAL_TYPE_MODULE : JS_EVAL_TYPE_GLOBAL;
 			}
 
-			inline auto get_or_create_object(
-				JSValue parent, 
-				std::string_view name
-			) -> JSValue 
-			{
-				auto atom = Atom{ m_context.value, name};
-				auto property = JS_GetProperty(m_context.value, parent, atom.value);
-				if (JS_IsUndefined(property)) {
-					property = JS_NewObject(m_context.value);
-				}
-				return property;
-			}
-
 			inline auto evaluate (
 				std::string_view source_data,
 				std::string_view source_file
 			) -> JSValue
 			{
-				thiz.m_mutex.lock();
-				auto eval_result = JS_Eval(thiz.m_context.value, source_data.data(), source_data.size(), source_file.data(), JS_EVAL_FLAG_STRICT | thiz.evaluate_flag());
-				if(JS_IsException(eval_result)){
+				auto result = JS_Eval(thiz.m_context.value, source_data.data(), source_data.size(), source_file.data(), JS_EVAL_FLAG_STRICT | thiz.evaluate_flag());
+				if(JS_IsException(result)){
 					auto exception = Value{thiz.m_context.value, JS_GetException(thiz.m_context.value)};
-					auto error = exception.get<Error>();
-					throw Exception(error.make_exception(), std::source_location::current(), "evaluate");
+					auto error = exception.get<std::shared_ptr<Error>>();
+					throw Exception{ error->make_exception(), std::source_location::current(), "evaluate" };
 				}
-				thiz.m_mutex.unlock();
-				return eval_result;
+				thiz.resources.push_back(result);
+				return result;
 			}
 
 			inline auto define_property (
@@ -179,14 +165,14 @@ namespace Sen::Kernel::JavaScript
 				return;
 			}
 
-			auto delete_allocated_memory (
+			inline auto release_value(
 
 			) -> void
 			{
-				for (auto &e : thiz.m_resources) {
+				for (auto& e : thiz.resources) {
 					JS_FreeValue(thiz.m_context.value, e);
 				}
-				thiz.m_resources.clear();
+				thiz.resources.clear();
 				return;
 			}
 
@@ -194,7 +180,7 @@ namespace Sen::Kernel::JavaScript
 
 			)
 			{
-				thiz.delete_allocated_memory();
+				thiz.release_value();
 			}
 	};
 }
