@@ -268,7 +268,7 @@ namespace Sen::Kernel::JavaScript {
 		explicit ClassBuilder(
 			Pointer<JSContext> context,
 			std::string_view name
-		) : context{ context }, atom{context, name}, class_proto{JS_NewObject(thiz.context)}, class_name{name.data(), name.size()}, constructor{std::nullopt}
+		) : context{ context }, atom{context, name}, class_proto{JS_NewObject(context)}, class_name{name.data(), name.size()}, constructor{std::nullopt}
 		{
 			class_id.allocate_new(thiz.context);
 			auto definition = JSClassDef {
