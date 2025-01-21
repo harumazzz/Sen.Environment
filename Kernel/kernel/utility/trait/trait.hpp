@@ -133,10 +133,31 @@ namespace Sen::Kernel {
 	struct is_optional<std::optional<T>> : std::true_type {};
 
 	template <typename T>
-	constexpr bool is_optional_v = is_optional<T>::value;
+	constexpr auto is_optional_v = is_optional<T>::value;
 
 	template <typename... T>
 	constexpr auto count_optionals() {
 		return (is_optional_v<T> + ... + 0); 
 	}
+
+	template <typename T>
+	struct map_traits;
+
+	template <typename Key, typename Value>
+	struct map_traits<tsl::ordered_map<Key, Value>> {
+		using key_type = Key;
+		using value_type = Value;
+	};
+
+	template <typename Key, typename Value>
+	struct map_traits<std::map<Key, Value>> {
+		using key_type = Key;
+		using value_type = Value;
+	};
+
+	template <typename Key, typename Value>
+	struct map_traits<std::unordered_map<Key, Value>> {
+		using key_type = Key;
+		using value_type = Value;
+	};
 }

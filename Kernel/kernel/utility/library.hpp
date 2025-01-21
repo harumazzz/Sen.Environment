@@ -59,5 +59,4 @@
 #include "kernel/dependencies/canvas_ity.hpp"
 #include "kernel/dependencies/tsl.hpp"
 #include "kernel/dependencies/compile-time-regular-expressions.hpp"
-#include "kernel/dependencies/stringzilla.hpp"
 #include "kernel/dependencies/parallel-hashmap.hpp"

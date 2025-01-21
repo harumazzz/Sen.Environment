@@ -68,22 +68,27 @@ namespace Sen::Kernel::JavaScript {
 		return Converter::to_array<T>(context, value);
 	}
 
-	template <typename T> requires is_map<T>::value && std::is_class<T>::value
-	static auto make_object(
-		JSContext* context,
-		const T& value
-	) -> JSValue
-	{
-		// TODO
-		return JS_UNDEFINED;
-	}
-
 	template <typename T>
 	inline auto to_value(
 		JSContext* context, 
 		const T& value
 	) -> JSValue {
 		static_assert(false, "Base case of to_value is not implemented");
+	}
+
+	template <typename T> requires is_map<T>::value && std::is_class<T>::value
+	static auto make_object(
+		JSContext* context,
+		const T& value_map
+	) -> JSValue
+	{
+		auto destination = Value::as_new_instance(context, JS_NewObject(context));
+		using Key = typename map_traits<T>::key_type;
+		using Value = typename map_traits<T>::value_type;
+		for (auto& [key, value] : value_map) {
+			destination.define_property(key, JavaScript::to_value<Value>(context, value));
+		}
+		return destination.release();
 	}
 
 	template <>

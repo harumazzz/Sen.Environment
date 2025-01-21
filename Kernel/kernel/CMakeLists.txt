@@ -86,7 +86,6 @@ add_library(
 	./dependencies/canvas_ity.hpp
 	./dependencies/tsl.hpp
 	./dependencies/compile-time-regular-expressions.hpp
-	./dependencies/stringzilla.hpp
 	./dependencies/parallel-hashmap.hpp
 
 	./support/popcap/animation/common.hpp
@@ -278,7 +277,6 @@ target_link_libraries(
 	canvas_ity
 	tsl
 	compile-time-regular-expressions
-	stringzilla
 	parallel-hashmap
 )
 

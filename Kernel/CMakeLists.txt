@@ -47,7 +47,6 @@ add_subdirectory("./dependencies/magic_enum")
 add_subdirectory("./dependencies/canvas_ity")
 add_subdirectory("./dependencies/tsl")
 add_subdirectory("./dependencies/compile-time-regular-expressions")
-add_subdirectory("./dependencies/stringzilla")
 add_subdirectory("./dependencies/parallel-hashmap")
 
 if (MSVC)
