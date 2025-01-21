@@ -1477,84 +1477,35 @@ declare namespace Sen {
 						/**
 						 * Class encapsulating information about an image
 						 */
-						declare class Image {
+						/**
+						 * Interface encapsulating information about an image
+						 */
+						export interface Image {
 							/** Name of the image */
-							private _name: string;
+							name: string;
+
 							/** ID of the image (possibly unique within the document) */
-							private _id: string;
+							id: string;
+
 							/** Transformation matrix for the image */
-							private _transform: Matrix;
-
-							/**
-							 * Constructor for the Image class
-							 * @param name  Name of the image
-							 * @param id    ID of the image (possibly unique within the document)
-							 * @param transform Transformation matrix for the image
-							 */
-							constructor(name: string, id: string, transform: Matrix);
-
-							/** Getter for the image name */
-							get name(): string;
-							/** Setter for the image name */
-							set name(name: string);
-
-							/** Getter for the image ID */
-							get id(): string;
-							/** Setter for the image ID */
-							set id(id: string);
-
-							/** Getter for the image transformation matrix */
-							get transform(): Matrix;
-							/** Setter for the image transformation matrix */
-							set transform(matrix: Matrix);
+							transform: Matrix;
 						}
 
 						/**
-						 * Class encapsulating information about a sprite
+						 * Interface encapsulating information about a sprite
 						 */
-						declare class Sprite {
+						export interface Sprite {
 							/** Name of the sprite */
-							private _name: string;
+							name: string;
+
 							/** Link to the image data for the sprite */
-							private _link: string;
+							link: string;
+
 							/** Transformation matrix for the sprite */
-							private _transform: Matrix;
+							transform: Matrix;
+
 							/** Color of the sprite */
-							private _color: Color;
-
-							/**
-							 * Constructor for the Sprite class
-							 * @param name  Name of the sprite
-							 * @param link   Link to the image data for the sprite
-							 * @param transform Transformation matrix for the sprite
-							 * @param color  Color of the sprite
-							 */
-							constructor(
-								name: string,
-								link: string,
-								transform: Matrix,
-								color: Color,
-							);
-
-							/** Getter for the sprite name */
-							get name(): string;
-							/** Setter for the sprite name */
-							set name(name: string);
-
-							/** Getter for the sprite image link */
-							get link(): string;
-							/** Setter for the sprite image link */
-							set link(id: string);
-
-							/** Getter for the sprite transformation matrix */
-							get transform(): Matrix;
-							/** Setter for the sprite transformation matrix */
-							set transform(matrix: Matrix);
-
-							/** Getter for the sprite color */
-							get color(): Color;
-							/** Setter for the sprite color */
-							set color(color: Color);
+							color: Color;
 						}
 
 						/**
@@ -2564,158 +2515,52 @@ declare namespace Sen {
 		 *  - Blending mode (how frames are combined)
 		 */
 
-		declare class APNGMakerSetting {
+		export interface APNGMakerSetting {
 			/**
-			 * _APNGMakerSetting: APNGMakerSetting
+			 * delay_frames_list: Array<bigint>
 			 *
-			 * This private member holds a reference to an APNGMakerSetting object.
-			 * This object likely contains configuration settings for the APNG generation process.
-			 *
-			 * Access to this setting object is likely controlled through public methods of the class
-			 * (not shown here) to ensure proper configuration and validation.
+			 * Stores an array of bigint values representing the delay
+			 * (in milliseconds or some unit) between consecutive frames
+			 * in the APNG animation.
 			 */
-			private _APNGMakerSetting: APNGMakerSetting;
+			delay_frames_list: Array<bigint>;
 
 			/**
-			 * _delay_frames_list: Array<bigint>
+			 * loop: bigint
 			 *
-			 * This private member stores an array of bigint values.
-			 * Each bigint value likely represents the delay (in milliseconds or some unit)
-			 * between consecutive frames in the APNG animation.
-			 *
-			 * The size of this array should correspond to the number of frames in the animation.
-			 */
-			private _delay_frames_list: Array<bigint>;
-
-			/**
-			 * _loop: bigint
-			 *
-			 * This private member stores a bigint value representing the number of times
+			 * Stores a bigint value representing the number of times
 			 * the APNG animation should loop.
 			 *
-			 * A value of 0 likely indicates infinite looping, while any positive value specifies
-			 * the number of loops before stopping playback.
+			 * A value of 0 indicates infinite looping, while any positive
+			 * value specifies the number of loops before stopping playback.
 			 */
-			private _loop: bigint;
+			loop: bigint;
 
 			/**
-			 * _width: bigint
+			 * width: bigint
 			 *
-			 * This private member stores a bigint value representing the width of the APNG image
+			 * Stores a bigint value representing the width of the APNG image
 			 * in pixels.
-			 *
-			 * Using bigint allows for handling very large image dimensions if necessary.
 			 */
-			private _width: bigint;
+			width: bigint;
 
 			/**
-			 * _height: bigint
+			 * height: bigint
 			 *
-			 * This private member stores a bigint value representing the height of the APNG image
+			 * Stores a bigint value representing the height of the APNG image
 			 * in pixels.
-			 *
-			 * Using bigint allows for handling very large image dimensions if necessary.
 			 */
-			private _height: bigint;
+			height: bigint;
 
 			/**
-			 * _trim: boolean
+			 * trim: boolean
 			 *
-			 * This private member stores a boolean value indicating whether to trim any transparent
-			 * pixels from the edges of the APNG frames.
+			 * Indicates whether to trim any transparent pixels from the edges
+			 * of the APNG frames.
 			 *
 			 * A value of true enables trimming, while false keeps all pixels.
 			 */
-			private _trim: boolean;
-
-			/**
-			 * Constructor for the class
-			 *
-			 * Initializes the class with the provided APNG settings.
-			 *
-			 * @param delay_frames_list An array of bigint values representing delays between frames (in milliseconds or similar units).
-			 * @param loop              A Kernel.UInteger32 value indicating the number of loops for the animation (0 for infinite).
-			 * @param width             A Kernel.UInteger32 value representing the width of the APNG image in pixels.
-			 * @param height            A Kernel.UInteger32 value representing the height of the APNG image in pixels.
-			 * @param trim              A Kernel.Boolean value indicating whether to trim transparent pixels from the edges.
-			 */
-			public constructor(
-				delay_frames_list: typeof this._delay_frames_list,
-				loop: bigint,
-				width: bigint,
-				height: bigint,
-				trim: boolean,
-			): void;
-
-			/**
-			 * Gets the array of delays between frames.
-			 *
-			 * @returns An array of bigint values representing the delays.
-			 */
-			public get delay_frames_list(): typeof this._delay_frames_list;
-
-			/**
-			 * Sets the array of delays between frames.
-			 *
-			 * @param value An array of bigint values representing the new delays to set.
-			 */
-			public set delay_frames_list(value: typeof this._delay_frames_list): void;
-
-			/**
-			 * Gets the number of loops for the animation.
-			 *
-			 * @returns A Kernel.UInteger32 value representing the number of loops.
-			 */
-			public get loop(): typeof this._loop;
-
-			/**
-			 * Sets the number of loops for the animation.
-			 *
-			 * @param value A Kernel.UInteger32 value representing the new number of loops to set.
-			 */
-			public set loop(value: typeof this._loop): void;
-
-			/**
-			 * Gets the width of the APNG image.
-			 *
-			 * @returns A Kernel.UInteger32 value representing the width in pixels.
-			 */
-			public get width(): typeof this._width;
-
-			/**
-			 * Sets the width of the APNG image.
-			 *
-			 * @param value A Kernel.UInteger32 value representing the new width to set.
-			 */
-			public set width(value: typeof this._width): void;
-
-			/**
-			 * Gets the height of the APNG image.
-			 *
-			 * @returns A Kernel.UInteger32 value representing the height in pixels.
-			 */
-			public get height(): typeof this._height;
-
-			/**
-			 * Sets the height of the APNG image.
-			 *
-			 * @param value A Kernel.UInteger32 value representing the new height to set.
-			 */
-			public set height(value: typeof this._height): void;
-
-			/**
-			 * Gets the trim setting for transparent pixels.
-			 *
-			 * @returns A Kernel.Boolean value indicating whether trimming is enabled.
-			 */
-			public get trim(): typeof this._trim;
-
-			/**
-			 * Sets the trim setting for transparent pixels.
-			 *
-			 * @param value A Kernel.Boolean value indicating whether to enable trimming.
-			 */
-			public set trim(value: typeof this._trim): void;
+			trim: boolean;
 		}
 
 		/**

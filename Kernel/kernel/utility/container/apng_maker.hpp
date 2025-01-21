@@ -51,9 +51,10 @@ namespace Sen::Kernel
             std::uint8_t compress;
             std::uint8_t filter;
             std::uint8_t interlace;
-            explicit ImageHeader(
 
-                ) = default;
+            constexpr explicit ImageHeader(
+
+            ) = default;
 
             explicit ImageHeader(
                 std::uint32_t width,
@@ -69,9 +70,9 @@ namespace Sen::Kernel
             {
             }
 
-            ~ImageHeader(
+            constexpr ~ImageHeader(
 
-                ) = default;
+            ) = default;
         };
 
         struct ImageData
@@ -92,6 +93,7 @@ namespace Sen::Kernel
         {
 
             auto pixel = List<uint32_t>{};
+            pixel.reserve(1024);
             auto found = 0;
             while (stream.read_pos < stream.size() - 12ull)
             {
@@ -141,6 +143,7 @@ namespace Sen::Kernel
                         stream.readUint8(),
                         stream.readUint8(),
                         stream.readUint8()}};
+                    image_data.pixel_list.reserve(256);
                 find_idat(stream, image_data.pixel_list);
                 image_data_list.emplace_back(image_data);
             }
@@ -154,11 +157,14 @@ namespace Sen::Kernel
             APNGMakerSetting *setting) -> void
         {
             auto image_data_list = List<ImageData>{};
+            image_data_list.reserve(image_path_list.size());
             load_image_path(image_path_list, image_data_list);
             if (setting->width == 0 || setting->height == 0)
             {
                 auto max_width = List<uint32_t>{};
                 auto max_height = List<uint32_t>{};
+                max_width.reserve(image_data_list.size());
+                max_height.reserve(image_data_list.size());
                 for (auto &image_data : image_data_list)
                 {
                     max_width.emplace_back(image_data.meta_data.width);
@@ -166,11 +172,11 @@ namespace Sen::Kernel
                 }
                 if (setting->width == 0)
                 {
-                    setting->width = *std::max_element(max_width.begin(), max_width.end());
+                    setting->width = std::max_element(max_width.begin(), max_width.end()).operator*();
                 }
                 if (setting->height == 0)
                 {
-                    setting->height = *std::max_element(max_height.begin(), max_height.end());
+                    setting->height = std::max_element(max_height.begin(), max_height.end()).operator*();
                 }
             }
             auto stream = DataStreamViewBigEndian{};
@@ -194,7 +200,7 @@ namespace Sen::Kernel
                 stream.writeUint32(Encryption::CRC32::Normal::compute(0, stream.readBytes(12, 37_size)));
             }
             auto frame_index = 0;
-            for (const auto &i : Range<int>(image_data_list.size()))
+            for (auto i : Range{image_data_list.size()})
             {
                 const auto &image_data = image_data_list[i];
                 if (is_animated)
@@ -221,7 +227,7 @@ namespace Sen::Kernel
                         stream.writeUint32(data_size);
                         data_stream.writeString("fdAT");
                         data_stream.writeUint32(frame_index++);
-                        for (const auto &k : Range<int>(pixel.size() - 1)) {
+                        for (auto k : Range{pixel.size() - 1}) {
                             data_stream.writeUint32(pixel[k]);
                         }
                         auto data = data_stream.toBytes();

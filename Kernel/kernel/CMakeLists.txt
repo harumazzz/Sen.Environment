@@ -87,6 +87,7 @@ add_library(
 	./dependencies/tsl.hpp
 	./dependencies/compile-time-regular-expressions.hpp
 	./dependencies/stringzilla.hpp
+	./dependencies/parallel-hashmap.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
@@ -278,6 +279,7 @@ target_link_libraries(
 	tsl
 	compile-time-regular-expressions
 	stringzilla
+	parallel-hashmap
 )
 
 if (WIN32)

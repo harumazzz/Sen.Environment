@@ -44,11 +44,11 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AddLibrary {
 			Kernel.FileSystem.copy(original_path, `${source}/library/media/${media}.png`);
 			Kernel.Support.PopCap.Animation.Miscellaneous.generate_image(
 				`${source}/library/image/${image}.xml`,
-				new Kernel.Support.PopCap.Animation.Miscellaneous.Image(
-					media,
-					media,
-					base_transform,
-				),
+				{
+					name: media,
+					id: media,
+					transform: base_transform,
+				},
 			);
 			additional_data.media.push(media);
 			additional_data.image.push(image);
@@ -63,12 +63,12 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AddLibrary {
 			if (sprite !== undefined) {
 				Kernel.Support.PopCap.Animation.Miscellaneous.generate_sprite(
 					`${source}/library/sprite/${sprite}.xml`,
-					new Kernel.Support.PopCap.Animation.Miscellaneous.Sprite(
-						sprite,
-						`image/${image}`,
-						base_transform,
-						[1.0, 1.0, 1.0, 1.0],
-					),
+					{
+						name: sprite,
+						link: `image/${image}`,
+						transform: base_transform,
+						color: [1.0, 1.0, 1.0, 1.0],
+					},
 				);
 				additional_data.sprite.push(sprite);
 			}

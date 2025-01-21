@@ -620,17 +620,13 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 				destination: string,
 				frame_list: Array<bigint>,
 			) => {
-				Kernel.Miscellaneous.to_apng(
-					path_list,
-					destination,
-					new Kernel.APNGMakerSetting(
-						frame_list,
-						setting.apng_setting.loop,
-						setting.rendering_size.width,
-						setting.rendering_size.height,
-						false,
-					),
-				);
+				Kernel.Miscellaneous.to_apng(path_list, destination, {
+					delay_frames_list: frame_list,
+					loop: setting.apng_setting.loop,
+					width: setting.rendering_size.width,
+					height: setting.rendering_size.height,
+					trim: false,
+				});
 			};
 			if (setting.apng_setting.split_label) {
 				const main_animation_path_list: Array<string> = [];

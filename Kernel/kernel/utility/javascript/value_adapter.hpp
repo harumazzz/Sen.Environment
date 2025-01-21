@@ -462,4 +462,21 @@ namespace Sen::Kernel::JavaScript {
 		return destination;
 	}
 
+	template <>
+	inline auto from_value<std::shared_ptr<APNGMakerSetting>>(
+		JSContext* context,
+		JSValue value
+	) -> std::shared_ptr<APNGMakerSetting>
+	{
+		auto current_value = Value::as_new_reference(context, value);
+		assert_conditional(current_value.is_object(), "Value must be object, but it isn't", "from_value");
+		auto destination = std::make_shared<APNGMakerSetting>();
+		destination->delay_frames_list = JavaScript::from_value<List<uint32_t>>(context, current_value.get_property("delay_frames_list").value);
+		destination->loop = JavaScript::from_value<uint32_t>(context, current_value.get_property("loop").value);
+		destination->width = JavaScript::from_value<uint32_t>(context, current_value.get_property("width").value);
+		destination->height = JavaScript::from_value<uint32_t>(context, current_value.get_property("height").value);
+		destination->trim = JavaScript::from_value<bool>(context, current_value.get_property("trim").value);
+		return destination;
+	}
+
 }

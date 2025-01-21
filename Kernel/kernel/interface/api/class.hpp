@@ -5,6 +5,13 @@
 
 namespace Sen::Kernel::Interface::API {
 
+	template <typename Class, typename... Args>
+	auto make_constructor() {
+		return [](Args&... args) {
+			return new Class{ args... };
+		};
+	}
+
 	#pragma region DataStreamView
 
 	namespace DataStreamView {
@@ -508,161 +515,5 @@ namespace Sen::Kernel::Interface::API {
 
 	#pragma endregion
 
-	#pragma region APNGMakerSetting
-
-	namespace APNGMakerSetting {
-
-		// TODO : Change this to object
-		inline auto register_class(
-			JavaScript::ClassBuilder<Kernel::APNGMakerSetting>& builder,
-			JavaScript::NamespaceBuilder& class_builder
-		) -> void
-		{
-			using APNGMakerSetting = Kernel::APNGMakerSetting;
-			builder.add_constructor<[](List<uint32_t>& delay_frames_list, uint32_t& loop, uint32_t& width, uint32_t& height, bool trim){
-				return new APNGMakerSetting{ delay_frames_list , loop, width, height, trim };
-			}, List<uint32_t>&, uint32_t&, uint32_t&, uint32_t&, bool>()
-			.template add_getter_setter<List<uint32_t>, [](Pointer<APNGMakerSetting> setting){
-				return setting->delay_frames_list;
-			}, [](APNGMakerSetting* setting, List<uint32_t>& delay_frames_list) {
-				setting->delay_frames_list = delay_frames_list;
-			}>("delay_frames_list")
-			.template add_getter_setter<uint32_t, [](Pointer<APNGMakerSetting> setting) {
-				return setting->loop;
-			}, [](Pointer<APNGMakerSetting> setting, uint32_t& loop) {
-				setting->loop = loop;
-			}> ("loop")
-			.template add_getter_setter<uint32_t, [](Pointer<APNGMakerSetting> setting){
-				return setting->width;
-			}, [](Pointer<APNGMakerSetting> setting, uint32_t& width) {
-				setting->width = width;
-			}>("width")
-			.template add_getter_setter<uint32_t, [](Pointer<APNGMakerSetting> setting) {
-				return setting->height;
-			}, [](Pointer<APNGMakerSetting> setting, uint32_t& height) {
-				setting->height = height;
-			}>("height")
-			.template add_getter_setter<bool, [](Pointer<APNGMakerSetting> setting) {
-				return setting->trim;
-			}, [](Pointer<APNGMakerSetting> setting, bool& trim) {
-				setting->trim = trim;
-			}>("trim").build(class_builder);
-			return;
-		}
-
-	}
-
-	#pragma endregion
-
-	#pragma region Support
-
-	namespace Support {
-
-		#pragma region Popcap
-
-		namespace PopCap {
-
-			#pragma region Animation
-
-			namespace Animation {
-
-				#pragma region Miscellaneous
-
-				namespace Miscellaneous {
-
-					#pragma region Image 
-
-					namespace Image {
-
-						inline auto register_class(
-							Pointer<JSContext> context,
-							JavaScript::NamespaceBuilder& class_builder
-						) -> void
-						{
-							using Image = Kernel::Support::PopCap::Animation::Miscellaneous::Image;
-							using Transform = std::array<double, 6>;
-							auto builder = JavaScript::ClassBuilder<Image>{ context, "Image" };
-							builder.add_constructor<[](std::string& name, std::string& id, Transform& transform) {
-								return new Image{ name, id, transform };
-							}, std::string&, std::string&, Transform&>()
-							.template add_getter_setter<std::string, [](Pointer<Image> image){
-								return image->name;
-							}, [](Pointer<Image> image, std::string& name){
-								image->name = name;
-							}>("name")
-							.template add_getter_setter<std::string, [](Pointer<Image> image){
-								return image->id;
-							}, [](Pointer<Image> image, std::string& id){
-								image->id = id;
-							}>("id")
-							.template add_getter_setter<Transform, [](Pointer<Image> image){
-								return image->transform;
-							}, [](Pointer<Image> image, Transform& transform){
-								image->transform = transform;
-							}>("transform").build(class_builder);
-							return;
-						}
-
-					}
-
-					#pragma endregion
-
-					#pragma region Sprite 
-
-					namespace Sprite {
-
-						inline auto register_class(
-							Pointer<JSContext> context,
-							JavaScript::NamespaceBuilder& class_builder
-						) -> void
-						{
-							using Sprite = Kernel::Support::PopCap::Animation::Miscellaneous::Sprite;
-							using Transform = std::array<double, 6>;
-							using Color = std::array<double, 4>;
-							auto builder = JavaScript::ClassBuilder<Sprite>{ context, "Sprite" };
-							builder.add_constructor<[](std::string& name, std::string& link, Transform& transform, Color& color) {
-								return new Sprite{ name, link, transform, color };
-							}, std::string&, std::string&, Transform&, Color&>()
-							.template add_getter_setter<std::string, [](Pointer<Sprite> sprite){
-								return sprite->name;
-							}, [](Pointer<Sprite> sprite, std::string& name){
-								sprite->name = name;
-							}>("name")
-							.template add_getter_setter<std::string, [](Pointer<Sprite> sprite){
-								return sprite->link;
-							}, [](Pointer<Sprite> sprite, std::string& link){
-								sprite->link = link;
-							}>("link")
-							.template add_getter_setter<Transform, [](Pointer<Sprite> sprite){
-								return sprite->transform;
-							}, [](Pointer<Sprite> sprite, Transform& transform){
-								sprite->transform = transform;
-							}>("transform")
-							.template add_getter_setter<Color, [](Pointer<Sprite> sprite){
-								return sprite->color;
-							}, [](Pointer<Sprite> sprite, Color& color){
-								sprite->color = color;
-							}>("color").build(class_builder);
-							return;
-						}
-
-					}
-
-					#pragma endregion
-
-				}
-
-				#pragma endregion
-
-			}
-
-			#pragma endregion
-
-		}
-
-		#pragma endregion
-
-	}
-
-	#pragma endregion
+	
 }

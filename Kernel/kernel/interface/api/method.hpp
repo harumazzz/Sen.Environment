@@ -1337,18 +1337,18 @@ namespace Sen::Kernel::Interface::API {
 
 					inline static auto generate_image(
 						std::string& destination,
-						Pointer<VImage>& source
+						std::shared_ptr<VImage>& source
 					) -> void
 					{
-						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source);
+						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source.get());
 					}
 
 					inline static auto generate_sprite(
 						std::string& destination,
-						Pointer<VSprite>& source
+						std::shared_ptr<VSprite>& source
 					) -> void
 					{
-						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source);
+						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_sprite(destination, source.get());
 					}
 
 				}
@@ -1704,10 +1704,10 @@ namespace Sen::Kernel::Interface::API {
 		inline static auto to_apng(
 			List<std::string>& image_path_list,
 			std::string& destination,
-			Pointer<Kernel::APNGMakerSetting>& setting
+			std::shared_ptr<Kernel::APNGMakerSetting>& setting
 		) -> void
 		{
-			return Kernel::APNGMaker::process_fs(image_path_list, destination, setting);
+			return Kernel::APNGMaker::process_fs(image_path_list, destination, setting.get());
 		}
 
 		inline static auto make_copy(

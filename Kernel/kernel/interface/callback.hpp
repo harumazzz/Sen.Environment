@@ -257,8 +257,8 @@ namespace Sen::Kernel::Interface {
 					aMiscellaneous.add_function("resize_fs"_sv, FunctionProxy<void, std::string&, int64_t&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::resize_fs>)
 					.add_function("dump_document"_sv, SpecialFunctionProxy<void, std::string&, JSValue&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::dump_document>)
 					.add_function("generate_document"_sv, FunctionProxy<void, std::string&, std::shared_ptr<Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument>&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_document>)
-					.add_function("generate_image"_sv, FunctionProxy<void, std::string&, Pointer<Kernel::Support::PopCap::Animation::Miscellaneous::Image>&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_image>)
-					.add_function("generate_sprite"_sv, FunctionProxy<void, std::string&, Pointer<Kernel::Support::PopCap::Animation::Miscellaneous::Sprite>&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_sprite>);
+					.add_function("generate_image"_sv, FunctionProxy<void, std::string&, std::shared_ptr<Kernel::Support::PopCap::Animation::Miscellaneous::Image>&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_image>)
+					.add_function("generate_sprite"_sv, FunctionProxy<void, std::string&, std::shared_ptr<Kernel::Support::PopCap::Animation::Miscellaneous::Sprite>&>::template as_function<Interface::API::Support::PopCap::Animation::Miscellaneous::generate_sprite>);
 				}
 				auto reAnimation = popcap.add_space("ReAnimation");
 				{
@@ -303,7 +303,7 @@ namespace Sen::Kernel::Interface {
 				auto miscellaneous = kernel.add_space("Miscellaneous");
 				{
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
-					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, Pointer<Kernel::APNGMakerSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
+					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::APNGMakerSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
 				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ runtime.context().value, "DataStreamView" };
 				Interface::API::DataStreamView::register_class(DataStreamView, kernel);
@@ -314,13 +314,6 @@ namespace Sen::Kernel::Interface {
 				Interface::API::Canvas::register_class(Canvas, kernel);
 				auto JsonWriter = JavaScript::ClassBuilder<Kernel::JsonWriter>{ runtime.context().value, "JsonWriter" };
 				Interface::API::JsonWriter::register_class(JsonWriter, kernel);
-				// TODO : Change to Object
-				auto APNGMakerSetting = JavaScript::ClassBuilder<Kernel::APNGMakerSetting>{ runtime.context().value, "APNGMakerSetting" };
-				Interface::API::APNGMakerSetting::register_class(APNGMakerSetting, kernel);
-				// TODO : Change to object
-				// Interface::API::Support::PopCap::Animation::Miscellaneous::Image::register_class(runtime.context().value, aMiscellaneous);
-				// TODO : Change to Object
-				// Interface::API::Support::PopCap::Animation::Miscellaneous::Sprite::register_class(runtime.context().value, aMiscellaneous);
 				Interface::API::Clock::register_class(Clock, kernel);
 				// execute the script
 				runtime.evaluate_fs(construct_string(Executor::script));
