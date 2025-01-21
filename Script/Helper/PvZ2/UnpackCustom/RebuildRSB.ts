@@ -106,7 +106,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		}
 		const packages_info = (Kernel.JSON.deserialize_fs(`${source}.bundle/data.json`) as any)
 			.packages_info;
-		const packages_setting = Executor.Methods.PopCap.RSB.BuildProject.load_packages(
+		const packages_setting = Executor.Functions.Project.RSB.Build.load_packages(
 			`${source}.bundle`,
 			packages_info,
 		);
@@ -127,7 +127,6 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 	}
 
 	export function execute() {
-		//setting.
 		const setting = {
 			rebuild_rsb_by_loose_constraints_first: false,
 			decode_method: 1n,
@@ -136,7 +135,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			Kernel.Language.get('script.unpack_custom.rebuild_rsb.source_file'),
 			'file',
 		);
-		const generic = Executor.Methods.PopCap.RSB.InitProject.Detail.generic();
+		const generic = Executor.Functions.Project.RSB.Detail.generic();
 		Console.argument(Kernel.Language.get('popcap.rsb.custom.generic'));
 		const input_generic = load_bigint(generic);
 		const resolution_list: Array<bigint> = [];

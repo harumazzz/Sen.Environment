@@ -72,7 +72,7 @@ namespace Sen.Script.Executor {
 	 * ----------------------------------------------------------
 	 */
 
-	export function push_as_module<
+	export function inject<
 		Argument extends Executor.Base,
 		BatchArgument extends Executor.Base,
 		Configuration extends Executor.Configuration,

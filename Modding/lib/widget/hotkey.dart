@@ -38,7 +38,7 @@ class HotkeyBuilder extends StatelessWidget {
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       return KeyboardListener(
         focusNode: FocusNode(),
-        autofocus: false,
+        //autofocus: false,
         includeSemantics: false,
         onKeyEvent: _keyEventPresed,
         child: child,
