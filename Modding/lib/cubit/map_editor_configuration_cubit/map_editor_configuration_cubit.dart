@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:custom_mouse_cursor/custom_mouse_cursor.dart';
@@ -27,63 +28,60 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   void _setState(MapEditorConfigurationState state) => emit(state);
 
   void _throwErrorState(String ex) {
-    emit(MapEditorConfigurationState(
-        status: AppConfigurationStatus.failed, errorSnapShot: ex));
+    emit(MapEditorConfigurationState(status: AppConfigurationStatus.failed, errorSnapShot: ex));
   }
 
   ConfigModel _loadConfig(AppLocalizations los, String path) {
     return ConfigModel.fromJson(FileHelper.readJson(source: path));
   }
 
+  bool get _isAvailable {
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
+
   Future<EditorResource> _loadEditorResource(
     AppLocalizations los,
     String path,
   ) async {
-    final eraseCursor = await CustomMouseCursor.icon(Symbols.ink_eraser,
-        size: 28, color: Colors.white);
-    final panCursor = await CustomMouseCursor.icon(Symbols.pan_tool,
-        size: 28, color: Colors.white);
-    final multiSelectCursor = await CustomMouseCursor.icon(Symbols.pan_tool_alt,
-        size: 28, color: Colors.white);
+    final eraseCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white) : null;
+    final panCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white) : null;
+    final multiSelectCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white) : null;
     final pickItemSound = AudioPlayer();
     try {
-      pickItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
+      pickItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final removeItemSound = AudioPlayer();
     try {
-      removeItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
+      removeItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final setItemSound = AudioPlayer();
     try {
-      setItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
+      setItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final mapLoadedSound = AudioPlayer();
     try {
-      mapLoadedSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
+      mapLoadedSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final clearMapSound = AudioPlayer();
     try {
-      clearMapSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
+      clearMapSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final switchResourceSound = AudioPlayer();
     try {
-      switchResourceSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
+      switchResourceSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
@@ -112,8 +110,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       final listener = ImageStreamListener((info, _) {
         completer.complete(info.image);
       });
-      final stream = MemoryImage(data).resolve(const ImageConfiguration())
-        ..addListener(listener);
+      final stream = MemoryImage(data).resolve(const ImageConfiguration())..addListener(listener);
       final image = await completer.future;
       stream.removeListener(listener);
       return image;
@@ -122,26 +119,22 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     }
   }
 
-  Future<VisualAnimation?> loadVisualAnimation(String path,
-      {FilterQuality? filterQuality}) async {
+  Future<VisualAnimation?> loadVisualAnimation(String path, {FilterQuality? filterQuality}) async {
     try {
       final animationPath = '$path/animation.pam.json';
       final mediaPath = '$path/media';
-      final visual = await VisualAnimation.create(animationPath, mediaPath,
-          filterQuality: filterQuality);
+      final visual = await VisualAnimation.create(animationPath, mediaPath, filterQuality: filterQuality);
       return visual;
     } catch (ex) {
       return null;
     }
   }
 
-  Future<GameResource> _loadGameResource(
-      AppLocalizations los, String path, ConfigModel config) async {
+  Future<GameResource> _loadGameResource(AppLocalizations los, String path, ConfigModel config) async {
     final filterQuality = config.setting.filterQuality;
     final commonImage = HashMap<ImageCommonType, VisualImage>();
     //
-    final missingArtPiece =
-        await loadVisualImage('$path/alwaysloaded/missing_artpiece.png');
+    final missingArtPiece = await loadVisualImage('$path/alwaysloaded/missing_artpiece.png');
     if (missingArtPiece == null) {
       throw Exception(los.cannot_load_missing_artpiece);
     }
@@ -156,38 +149,32 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       throw Exception('cannot_load_ready_plant'); //TODO: add locale
     }
     commonImage[ImageCommonType.readyPlant] = readyPlant;
-    final spaceSpiral =
-        await loadVisualImage('$path/alwaysloaded/space_spiral.png');
+    final spaceSpiral = await loadVisualImage('$path/alwaysloaded/space_spiral.png');
     if (spaceSpiral == null) {
       throw Exception(los.cannot_load_space_spiral);
     }
     commonImage[ImageCommonType.spaceSpiral] = spaceSpiral;
-    final spaceDust =
-        await loadVisualImage('$path/alwaysloaded/space_dust.png');
+    final spaceDust = await loadVisualImage('$path/alwaysloaded/space_dust.png');
     if (spaceDust == null) {
       throw Exception(los.cannot_load_space_dust);
     }
     commonImage[ImageCommonType.spaceDust] = spaceDust;
-    final freePinata =
-        await loadVisualImage('$path/pinata/pinata_free_spine.png');
+    final freePinata = await loadVisualImage('$path/pinata/pinata_free_spine.png');
     if (freePinata == null) {
       throw Exception(los.cannot_load_free_pinata);
     }
     commonImage[ImageCommonType.freePinata] = freePinata;
-    final freePinataOpen =
-        await loadVisualImage('$path/pinata/pinatas_dust_spine_free.png');
+    final freePinataOpen = await loadVisualImage('$path/pinata/pinatas_dust_spine_free.png');
     if (freePinataOpen == null) {
       throw Exception(los.cannot_load_free_pinata_dust);
     }
     commonImage[ImageCommonType.freePinataOpen] = freePinataOpen;
-    final buttonHudBackNormal =
-        await loadVisualImage('$path/common/buttons_hud_back_normal.png');
+    final buttonHudBackNormal = await loadVisualImage('$path/common/buttons_hud_back_normal.png');
     if (buttonHudBackNormal == null) {
       throw Exception(los.cannot_load_buttons_hud_back_normal);
     }
     commonImage[ImageCommonType.buttonHudBackNormal] = buttonHudBackNormal;
-    final buttonHudBackSelected =
-        await loadVisualImage('$path/common/buttons_hud_back_selected.png');
+    final buttonHudBackSelected = await loadVisualImage('$path/common/buttons_hud_back_selected.png');
     if (buttonHudBackSelected == null) {
       throw Exception(los.cannot_load_buttons_hud_back_selected);
     }
@@ -221,89 +208,71 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     //-----------------
     final commonAnimation = HashMap<AnimationCommonType, VisualAnimation>();
     //
-    final giftBox = await loadVisualAnimation('$path/common/giftbox_world_map',
-        filterQuality: filterQuality);
+    final giftBox = await loadVisualAnimation('$path/common/giftbox_world_map', filterQuality: filterQuality);
     if (giftBox == null) {
       throw Exception(los.cannot_load_giftbox_world_map);
     }
     commonAnimation[AnimationCommonType.giftBox] = giftBox;
-    final levelNode = await loadVisualAnimation('$path/common/level_node',
-        filterQuality: filterQuality);
+    final levelNode = await loadVisualAnimation('$path/common/level_node', filterQuality: filterQuality);
     if (levelNode == null) {
       throw Exception(los.cannot_load_level_node);
     }
     commonAnimation[AnimationCommonType.levelNode] = levelNode;
-    final levelNodeGargantuar = await loadVisualAnimation(
-        '$path/common/level_node_gargantuar',
-        filterQuality: filterQuality);
+    final levelNodeGargantuar =
+        await loadVisualAnimation('$path/common/level_node_gargantuar', filterQuality: filterQuality);
     if (levelNodeGargantuar == null) {
       throw Exception(los.cannot_load_level_node_gargantuar);
     }
-    commonAnimation[AnimationCommonType.levelNodeGargantuar] =
-        levelNodeGargantuar;
-    final levelNodeMinigame = await loadVisualAnimation(
-        '$path/common/level_node_minigame',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.levelNodeGargantuar] = levelNodeGargantuar;
+    final levelNodeMinigame =
+        await loadVisualAnimation('$path/common/level_node_minigame', filterQuality: filterQuality);
     if (levelNodeMinigame == null) {
       throw Exception(los.cannot_load_level_node_minigame);
     }
     commonAnimation[AnimationCommonType.levelNodeMinigame] = levelNodeMinigame;
-    final mapPath = await loadVisualAnimation('$path/common/map_path',
-        filterQuality: filterQuality);
+    final mapPath = await loadVisualAnimation('$path/common/map_path', filterQuality: filterQuality);
     if (mapPath == null) {
       throw Exception(los.cannot_load_map_path);
     }
     commonAnimation[AnimationCommonType.mapPath] = mapPath;
-    final yetiIcon = await loadVisualAnimation('$path/common/yeti_icon',
-        filterQuality: filterQuality);
+    final yetiIcon = await loadVisualAnimation('$path/common/yeti_icon', filterQuality: filterQuality);
     if (yetiIcon == null) {
       throw Exception(los.cannot_load_yeti_icon);
     }
     commonAnimation[AnimationCommonType.yetiIcon] = yetiIcon;
-    final zombossNodeHologram = await loadVisualAnimation(
-        '$path/common/zomboss_node_hologram',
-        filterQuality: filterQuality);
+    final zombossNodeHologram =
+        await loadVisualAnimation('$path/common/zomboss_node_hologram', filterQuality: filterQuality);
     if (zombossNodeHologram == null) {
       throw Exception(los.cannot_load_zomboss_node_hologram);
     }
-    commonAnimation[AnimationCommonType.zombossNodeHologram] =
-        zombossNodeHologram;
-    final missingArtPieceAnimation = await loadVisualAnimation(
-        '$path/alwaysloaded/missing_artpiece',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.zombossNodeHologram] = zombossNodeHologram;
+    final missingArtPieceAnimation =
+        await loadVisualAnimation('$path/alwaysloaded/missing_artpiece', filterQuality: filterQuality);
     if (missingArtPieceAnimation == null) {
       throw Exception(los.cannot_load_map_path);
     }
-    commonAnimation[AnimationCommonType.missingArtPieceAnimation] =
-        missingArtPieceAnimation;
-    final stargate = await loadVisualAnimation('$path/common/stargate',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.missingArtPieceAnimation] = missingArtPieceAnimation;
+    final stargate = await loadVisualAnimation('$path/common/stargate', filterQuality: filterQuality);
     if (stargate == null) {
       throw Exception('cannot load star gate'); //TODO: add locale
     }
     commonAnimation[AnimationCommonType.stargate] = stargate;
-    final sodRoll = await loadVisualAnimation('$path/common/sod_roll',
-        filterQuality: filterQuality);
+    final sodRoll = await loadVisualAnimation('$path/common/sod_roll', filterQuality: filterQuality);
     if (sodRoll == null) {
       throw Exception('cannot load sod roll'); //TODO: add locale
     }
     commonAnimation[AnimationCommonType.sodRoll] = sodRoll;
-    final collectedUpgradeEffect = await loadVisualAnimation(
-        '$path/common/collected_upgrade_effect',
-        filterQuality: filterQuality);
+    final collectedUpgradeEffect =
+        await loadVisualAnimation('$path/common/collected_upgrade_effect', filterQuality: filterQuality);
     if (collectedUpgradeEffect == null) {
-      throw Exception(
-          'cannot load collected upgrade effect'); //TODO: add locale
+      throw Exception('cannot load collected upgrade effect'); //TODO: add locale
     }
-    commonAnimation[AnimationCommonType.collectedUpgradeEffect] =
-        collectedUpgradeEffect;
+    commonAnimation[AnimationCommonType.collectedUpgradeEffect] = collectedUpgradeEffect;
     //-----------------
     final uiUniverse = HashMap<String, VisualImage>();
     //
     for (final mapName in config.resource.worldmap.keys) {
-      uiUniverse[mapName] = await loadVisualImage(
-              '$path/alwaysloaded/ui_universe/$mapName.png') ??
-          missingArtPiece;
+      uiUniverse[mapName] = await loadVisualImage('$path/alwaysloaded/ui_universe/$mapName.png') ?? missingArtPiece;
     }
     //-----------------
     final seedBank = HashMap<String, VisualImage?>();
@@ -312,8 +281,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     for (final plantName in config.resource.plant.keys) {
       final seedBankName = config.resource.plant[plantName];
       if (!seedBank.containsKey(seedBankName)) {
-        seedBank[seedBankName] =
-            await loadVisualImage('$path/plant/$seedBankName.png');
+        seedBank[seedBankName] = await loadVisualImage('$path/plant/$seedBankName.png');
       }
       plant[plantName] = await loadVisualImage('$path/plant/$plantName.png');
     }
@@ -321,8 +289,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     //
     for (final upgradeName in config.resource.upgrade.keys) {
       final src = config.resource.upgrade[upgradeName];
-      upgrade[upgradeName] =
-          await loadVisualImage('$path/upgrade/upgrade_$src.png');
+      upgrade[upgradeName] = await loadVisualImage('$path/upgrade/upgrade_$src.png');
     }
     //-----------------
     return GameResource(
@@ -508,8 +475,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
 
   Future<void> load(AppLocalizations los, String resourceLocation) async {
     try {
-      final newState =
-          MapEditorConfigurationState(status: AppConfigurationStatus.success);
+      final newState = MapEditorConfigurationState(status: AppConfigurationStatus.success);
       await Future.delayed(const Duration(milliseconds: 10));
       newState.settingPath = resourceLocation;
       newState.toolItem = _initailizeTool(los);
@@ -517,10 +483,8 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       newState.extensionItem = _initailizeExtension(los);
       newState.actionTypeLocalization = _initlActionTypeString(los);
       newState.configModel = _loadConfig(los, '$resourceLocation/config.json');
-      newState.editorResource =
-          await _loadEditorResource(los, resourceLocation);
-      newState.gameResource =
-          await _loadGameResource(los, resourceLocation, newState.configModel);
+      newState.editorResource = await _loadEditorResource(los, resourceLocation);
+      newState.gameResource = await _loadGameResource(los, resourceLocation, newState.configModel);
       _setState(newState);
     } catch (ex) {
       _throwErrorState(ex.toString());

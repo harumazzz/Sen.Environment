@@ -214,7 +214,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
   Translator _exchangeTranslator(String name) {
     return switch (name) {
-      'haruma' => Translator(
+      'haruma' => const Translator(
           name: 'Haruma',
           discord: 'harumaluvcat',
           contacts: [
@@ -223,7 +223,7 @@ class _SettingScreenState extends State<SettingScreen> {
           ],
           imageCover: 'assets/images/translator/haruma.png',
         ),
-      'jnr' => Translator(
+      'jnr' => const Translator(
           name: 'JNR',
           discord: 'jnr1809',
           contacts: [
@@ -231,7 +231,7 @@ class _SettingScreenState extends State<SettingScreen> {
           ],
           imageCover: 'assets/images/translator/jnr.png',
         ),
-      'ppp' => Translator(
+      'ppp' => const Translator(
           name: 'PPP',
           discord: 'theprimalpea',
           contacts: [
@@ -239,7 +239,7 @@ class _SettingScreenState extends State<SettingScreen> {
           ],
           imageCover: 'assets/images/translator/ppp.png',
         ),
-      'vi' => Translator(
+      'vi' => const Translator(
           name: 'Vi',
           discord: 'vi_i_guess',
           contacts: [

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
@@ -17,6 +19,8 @@ import 'package:sen/screen/map_editor/widgets/box_stage.dart';
 class MapStageView extends StatelessWidget {
   const MapStageView({super.key});
 
+  bool get _isAvailable => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
@@ -27,8 +31,7 @@ class MapStageView extends StatelessWidget {
       for (final id in itemStore.keys) {
         stackList.add(itemStore[id]!.widget!);
       }
-      final editorResource =
-          context.read<MapEditorConfigurationCubit>().state.editorResource;
+      final editorResource = context.read<MapEditorConfigurationCubit>().state.editorResource;
       final controller = context.read<CanvasBloc>().state.canvasController;
       return BlocBuilder<SelectedBloc, SelectedState>(
           buildWhen: (prev, state) => prev.copyList != state.copyList,
@@ -44,17 +47,12 @@ class MapStageView extends StatelessWidget {
                             controller.listenerPointerHover(details);
                           },
                           child: BlocBuilder<ToolBarBloc, ToolBarState>(
-                              buildWhen: (prev, state) =>
-                                  prev.toolStatus != state.toolStatus,
+                              buildWhen: (prev, state) => prev.toolStatus != state.toolStatus,
                               builder: (context, toolState) {
-                                final panTool =
-                                    toolState.toolStatus[ToolType.panTool]!;
-                                final resize =
-                                    toolState.toolStatus[ToolType.resizeTool]!;
-                                final multiSelect = toolState
-                                    .toolStatus[ToolType.rectangleTool]!;
-                                final eraseTool =
-                                    toolState.toolStatus[ToolType.eraseTool]!;
+                                final panTool = toolState.toolStatus[ToolType.panTool]!;
+                                final resize = toolState.toolStatus[ToolType.resizeTool]!;
+                                final multiSelect = toolState.toolStatus[ToolType.rectangleTool]!;
+                                final eraseTool = toolState.toolStatus[ToolType.eraseTool]!;
 
                                 return MouseListener(
                                     itemStore: itemStore,
@@ -66,68 +64,56 @@ class MapStageView extends StatelessWidget {
                                       final onSelectedId = state.onSelect;
                                       final selectedList = state.selectedList;
 
-                                      if (panTool) {
+                                      if (panTool && _isAvailable) {
                                         context.read<MouseCursorBloc>().add(
-                                            ChangeCursorEvent(
-                                                cursor:
-                                                    editorResource.panCursor));
-                                      } else if (eraseTool) {
-                                        context.read<MouseCursorBloc>().add(
-                                            ChangeCursorEvent(
-                                                cursor: editorResource
-                                                    .eraseCursor));
-                                      } else if (multiSelect) {
-                                        context.read<MouseCursorBloc>().add(
-                                            ChangeCursorEvent(
-                                                cursor: editorResource
-                                                    .multiSelectCursor));
+                                              ChangeCursorEvent(
+                                                cursor: editorResource.panCursor!,
+                                              ),
+                                            );
+                                      } else if (eraseTool && _isAvailable) {
+                                        context
+                                            .read<MouseCursorBloc>()
+                                            .add(ChangeCursorEvent(cursor: editorResource.eraseCursor!));
+                                      } else if (multiSelect && _isAvailable) {
+                                        context
+                                            .read<MouseCursorBloc>()
+                                            .add(ChangeCursorEvent(cursor: editorResource.multiSelectCursor!));
                                       } else {
                                         if (state.onSelect == null) {
-                                          context.read<MouseCursorBloc>().add(
-                                              const ChangeCursorEvent(
-                                                  cursor: MouseCursor.defer));
+                                          context
+                                              .read<MouseCursorBloc>()
+                                              .add(const ChangeCursorEvent(cursor: MouseCursor.defer));
                                         }
                                       }
                                       return BoxStage(
                                           mapGrid: settingState.mapGrid,
                                           usePanTool: panTool,
                                           useResizeTool: resize,
-                                          boundBackground:
-                                              settingState.boundBackground,
-                                          boxStageColor:
-                                              settingState.boundingColor,
+                                          boundBackground: settingState.boundBackground,
+                                          boxStageColor: settingState.boundingColor,
                                           children: [
                                             ...stackList,
                                             if (!panTool &&
                                                 !resize &&
                                                 onSelectedId != null &&
-                                                itemStore.containsKey(
-                                                    onSelectedId) &&
-                                                !selectedList
-                                                    .contains(onSelectedId))
+                                                itemStore.containsKey(onSelectedId) &&
+                                                !selectedList.contains(onSelectedId))
                                               HoverBox(
-                                                matrix: itemStore[onSelectedId]!
-                                                    .matrix!,
-                                                rect: itemStore[onSelectedId]!
-                                                        .itemRect ??
-                                                    Rect.zero,
+                                                matrix: itemStore[onSelectedId]!.matrix!,
+                                                rect: itemStore[onSelectedId]!.itemRect ?? Rect.zero,
                                               ),
-                                            if (!panTool &&
-                                                selectedList.isNotEmpty)
+                                            if (!panTool && selectedList.isNotEmpty)
                                               MultiSelectBox(
                                                 idList: selectedList.toList(),
                                                 itemStore: itemStore,
                                               ),
-                                            if (controller.marqueeStart !=
-                                                    null &&
+                                            if (controller.marqueeStart != null &&
                                                 controller.marqueeEnd != null &&
                                                 multiSelect)
                                               Positioned.fill(
                                                 child: Marquee(
-                                                  start: controller.toLocal(
-                                                      controller.marqueeStart!),
-                                                  end: controller.toLocal(
-                                                      controller.marqueeEnd!),
+                                                  start: controller.toLocal(controller.marqueeStart!),
+                                                  end: controller.toLocal(controller.marqueeEnd!),
                                                 ),
                                               ),
                                           ]);
