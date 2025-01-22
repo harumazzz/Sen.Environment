@@ -60,3 +60,5 @@
 #include "kernel/dependencies/tsl.hpp"
 #include "kernel/dependencies/compile-time-regular-expressions.hpp"
 #include "kernel/dependencies/parallel-hashmap.hpp"
+#include "kernel/dependencies/thread-pool.hpp"
+#include "kernel/dependencies/mio.hpp"

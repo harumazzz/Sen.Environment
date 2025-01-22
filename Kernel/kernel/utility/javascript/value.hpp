@@ -609,6 +609,9 @@ namespace Sen::Kernel::JavaScript {
 		auto stack_size = std::size_t{};
 		auto stack = JS_ToCStringLen(context, &stack_size, stack_trace.value);
 		auto destination = std::make_shared<Error>(std::string{ message, message_size },std::string{ stack, stack_size });
+		#if WINDOWS
+		std::replace(destination->stack.data(), destination->stack.data() + destination->stack.size(), '\\', '/');
+		#endif
 		JS_FreeCString(context, message);
 		JS_FreeCString(context, stack);
 		return destination;

@@ -125,7 +125,7 @@ export namespace Sen::Shell {
 			) -> void
 			{
 				#if WINDOWS
-				kernel = utf16_to_utf8(argv[1]);
+				kernel = u16_to_u8(std::u16string_view{reinterpret_cast<char16_t*>(argv[1])});
 				#else
 				kernel = std::string{argv[1], std::strlen(argv[1])};
 				#endif
@@ -136,7 +136,7 @@ export namespace Sen::Shell {
 			) -> void
 			{
 				#if WINDOWS
-				auto utf16_kernel = u8_to_u16(kernel);
+				auto utf16_kernel = u8_to_u16(std::u8string_view{reinterpret_cast<char8_t*>(kernel.data()), kernel.size()});
 				hinst_lib = LoadLibraryW(utf16_kernel.data());
 				#else
 				hinst_lib = dlopen(kernel.data(), RTLD_LAZY | RTLD_LOCAL);
@@ -172,7 +172,7 @@ export namespace Sen::Shell {
 				this->argument_list->value = new String[argument_list->size];
 				for (auto i = std::size_t{0}; i < argc; ++i) {
 					#if WINDOWS
-						auto arg_value = utf16_to_utf8(argv[i]);
+						auto arg_value = u16_to_u8(std::u16string_view{reinterpret_cast<char16_t*>(argv[i])});
 						auto value_copy = std::make_unique<uint8_t[]>(arg_value.size() + 1);
 						std::memcpy(value_copy.get(), arg_value.data(), arg_value.size());
 						value_copy[arg_value.size()] = '\0';

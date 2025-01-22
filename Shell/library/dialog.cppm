@@ -47,7 +47,7 @@ export namespace Sen::Shell {
 					auto display_name = LPWSTR{nullptr};
 					state_h = selection_item_list->GetItemAt(index, &item);
 					state_h = item->GetDisplayName(SIGDN_FILESYSPATH, &display_name);
-					auto display_name_8 = utf16_to_utf8(std::u16string_view{reinterpret_cast<char16_t const *>(display_name)});
+					auto display_name_8 = u16_to_u8(std::u16string_view{reinterpret_cast<char16_t const *>(display_name)});
 					result.emplace_back(std::move(reinterpret_cast<std::string &>(display_name_8)));
 					CoTaskMemFree(display_name);
 					item->Release();

@@ -32,7 +32,7 @@ export namespace Sen::Shell {
 				auto text_16 = std::array<char16_t, 0x1000>{};
 				auto length = DWORD{};
 				state_b = ReadConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), &length, nullptr);
-				auto text_8 = utf16_to_utf8(std::u16string_view{text_16.data(), length - 2});
+				auto text_8 = u16_to_u8(std::u16string_view{text_16.data(), length - 2});
 				str = std::move(reinterpret_cast<std::string &>(text_8));
 			}
 			else {
@@ -76,7 +76,7 @@ export namespace Sen::Shell {
 	) -> void
 	{
 		auto text = std::string{message.data(), message.size()} + '\n';
-		auto text_16 = utf8_to_utf16(text);
+		auto text_16 = u8_to_u16(std::u8string_view{reinterpret_cast<const char8_t*>(text.data()), text.size()});
 		auto state_b = WriteConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), nullptr, nullptr);
 		return;
 	}
@@ -219,8 +219,8 @@ export namespace Sen::Shell {
 			SetConsoleTextAttribute(handle, Color::CYAN);
 			auto state = GetConsoleMode(handle, &handle_mode);
 			if (state) {
-				auto text = "● ";
-				auto text_16 = utf8_to_utf16(text);
+				auto text = std::string{"● "};
+				auto text_16 = u8_to_u16(std::u8string_view{reinterpret_cast<const char8_t*>(text.data()), text.size()});
 				state_b = WriteConsoleW(handle, text_16.data(), static_cast<DWORD>(text_16.size()), nullptr, nullptr);
 			} 
 			else {
