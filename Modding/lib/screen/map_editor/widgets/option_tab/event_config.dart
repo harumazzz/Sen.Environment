@@ -36,14 +36,10 @@ class EventConfigTab extends StatelessWidget {
     void captureEvent(ActionType actionType) {
       final actionService = ActionService<ActionModelType>(
           actionType: actionType,
-          data: {
-            ActionModelType.oneEvent: event.clone(),
-            ActionModelType.id: id
-          },
+          data: {ActionModelType.oneEvent: event.clone(), ActionModelType.id: id},
           change: (data) {
             final eventId = data![ActionModelType.id];
-            stageBloc.state.events[eventId] =
-                (data[ActionModelType.oneEvent] as MapEventItem).clone();
+            stageBloc.state.events[eventId] = (data[ActionModelType.oneEvent] as MapEventItem).clone();
             itemBloc.add(const ItemStoreUpdated());
             historyBloc.add(const UpdateIndexEvent());
           });
@@ -51,8 +47,7 @@ class EventConfigTab extends StatelessWidget {
     }
 
     final los = context.los;
-    final gameResource =
-        context.read<MapEditorConfigurationCubit>().state.gameResource;
+    final gameResource = context.read<MapEditorConfigurationCubit>().state.gameResource;
     return Column(
       children: [
         Card(
@@ -73,8 +68,7 @@ class EventConfigTab extends StatelessWidget {
         ),
         Expanded(
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, left: 8, right: 8, bottom: 16),
+            padding: const EdgeInsets.only(top: 4, left: 8, right: 8, bottom: 16),
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -94,15 +88,12 @@ class EventConfigTab extends StatelessWidget {
                           child: SizedBox(
                             width: 60,
                             child: BlocBuilder<ItemBloc, ItemState>(
-                                buildWhen: (prev, state) =>
-                                    prev.itemStore != state.itemStore,
+                                buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                                 builder: (context, state) {
                                   return NumberTextField(
                                     label: los.id,
-                                    controller: NumberEditingController(
-                                        value: event.eventID, isDouble: false),
-                                    range: const Range(
-                                        begin: 0, end: MapConst.intMaxValue),
+                                    controller: NumberEditingController(value: event.eventID, isDouble: false),
+                                    range: const Range(begin: 0, end: MapConst.intMaxValue),
                                     useChangeButton: true,
                                     onFieldSubmitted: (value) {
                                       event.eventID = value as int;
@@ -111,14 +102,10 @@ class EventConfigTab extends StatelessWidget {
                                     },
                                     autovalidateMode: AutovalidateMode.always,
                                     validator: (value) {
-                                      final events = context
-                                          .read<StageBloc>()
-                                          .state
-                                          .events;
+                                      final events = context.read<StageBloc>().state.events;
                                       var counter = 0;
                                       events.forEach((_, eventValue) {
-                                        if (eventValue.eventID ==
-                                            event.eventID) {
+                                        if (eventValue.eventID == event.eventID) {
                                           counter++;
                                         }
                                         if (counter > 1) {
@@ -133,8 +120,7 @@ class EventConfigTab extends StatelessWidget {
                     ],
                   ),
                   BlocBuilder<ItemBloc, ItemState>(
-                      buildWhen: (prev, state) =>
-                          prev.itemStore != state.itemStore,
+                      buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                       builder: (context, state) {
                         return Row(children: [
                           Padding(
@@ -143,11 +129,8 @@ class EventConfigTab extends StatelessWidget {
                                 width: 90,
                                 child: NumberTextField(
                                   label: los.position_x,
-                                  controller: NumberEditingController(
-                                      value: event.position.x, isDouble: true),
-                                  range: const Range(
-                                      begin: MapConst.doubleMinValue,
-                                      end: MapConst.doubleMaxValue),
+                                  controller: NumberEditingController(value: event.position.x, isDouble: true),
+                                  range: const Range(begin: MapConst.doubleMinValue, end: MapConst.doubleMaxValue),
                                   useChangeButton: true,
                                   onFieldSubmitted: (value) {
                                     event.position.x = value as double;
@@ -162,11 +145,8 @@ class EventConfigTab extends StatelessWidget {
                                 width: 90,
                                 child: NumberTextField(
                                   label: los.position_y,
-                                  controller: NumberEditingController(
-                                      value: event.position.y, isDouble: true),
-                                  range: const Range(
-                                      begin: MapConst.doubleMinValue,
-                                      end: MapConst.doubleMaxValue),
+                                  controller: NumberEditingController(value: event.position.y, isDouble: true),
+                                  range: const Range(begin: MapConst.doubleMinValue, end: MapConst.doubleMaxValue),
                                   useChangeButton: true,
                                   onFieldSubmitted: (value) {
                                     event.position.y = value as double;
@@ -183,22 +163,20 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                             width: double.infinity,
                             child: BlocBuilder<ItemBloc, ItemState>(
-                                buildWhen: (prev, state) =>
-                                    prev.itemStore != state.itemStore,
+                                buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                                 builder: (context, state) {
                                   return TextStringField(
                                       label: los.name,
                                       value: event.name,
                                       onFieldSubmitted: (value) {
                                         event.name = value;
-                                        captureEvent(
-                                            ActionType.eventChangeName);
+                                        captureEvent(ActionType.eventChangeName);
                                         itemBloc.add(const ItemStoreUpdated());
                                       },
                                       autovalidateMode: AutovalidateMode.always,
                                       validator: (value) {
                                         if (value != event.name) {
-                                          return 'Enter to save'; //TODO: add locale
+                                          return los.press_enter_to_save;
                                         }
                                         return null;
                                       });
@@ -212,19 +190,14 @@ class EventConfigTab extends StatelessWidget {
                               label: los.parent,
                               value: event.parentEvent,
                               suggestionsCallback: (pattern) {
-                                final eventNameList =
-                                    context.read<StageBloc>().getLevelName();
+                                final eventNameList = context.read<StageBloc>().getLevelName();
                                 return context
                                     .read<SuggestionBloc>()
-                                    .getSuggestion(eventNameList, pattern,
-                                        expect: event.name);
+                                    .getSuggestion(eventNameList, pattern, expect: event.name);
                               },
                               itemBuilder: (context, String suggestion) {
                                 return ListTile(
-                                  title: Text(suggestion,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
+                                  title: Text(suggestion, style: Theme.of(context).textTheme.titleMedium),
                                 );
                               },
                               onSuggestionSelected: (String suggestion) {
@@ -233,8 +206,7 @@ class EventConfigTab extends StatelessWidget {
                               },
                               autovalidateMode: AutovalidateMode.always,
                               validator: (value) {
-                                final eventNameList =
-                                    context.read<StageBloc>().getLevelName();
+                                final eventNameList = context.read<StageBloc>().getLevelName();
                                 if (value == '') {
                                   event.parentEvent = '';
                                   return null;
@@ -242,7 +214,7 @@ class EventConfigTab extends StatelessWidget {
                                 if (eventNameList.contains(value)) {
                                   return null;
                                 } else {
-                                  return 'Parent must same name'; //TODO: add locale
+                                  return los.parent_must_have_the_same_name;
                                 }
                               },
                             ))),
@@ -255,19 +227,14 @@ class EventConfigTab extends StatelessWidget {
                             label: los.unlocked_from,
                             value: event.unlockedFrom,
                             suggestionsCallback: (pattern) {
-                              final eventNameList =
-                                  context.read<StageBloc>().getLevelName();
+                              final eventNameList = context.read<StageBloc>().getLevelName();
                               return context
                                   .read<SuggestionBloc>()
-                                  .getSuggestion(eventNameList, pattern,
-                                      expect: event.name);
+                                  .getSuggestion(eventNameList, pattern, expect: event.name);
                             },
                             itemBuilder: (context, String suggestion) {
                               return ListTile(
-                                title: Text(suggestion,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                title: Text(suggestion, style: Theme.of(context).textTheme.titleMedium),
                               );
                             },
                             onSuggestionSelected: (String suggestion) {
@@ -281,12 +248,11 @@ class EventConfigTab extends StatelessWidget {
                                 event.unlockedFrom = '';
                                 return null;
                               }
-                              final eventNameList =
-                                  context.read<StageBloc>().getLevelName();
+                              final eventNameList = context.read<StageBloc>().getLevelName();
                               if (eventNameList.contains(value)) {
                                 return null;
                               } else {
-                                return 'Unlocked must same name'; //TODO: add locale
+                                return 'Unlocked must same name';
                               }
                             },
                           )),
@@ -297,22 +263,17 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: DowndropSearchField(
-                            label: 'Visible From', //TODO: add locale
+                            label: los.visible_from,
                             value: event.visibleFrom,
                             suggestionsCallback: (pattern) {
-                              final eventNameList =
-                                  context.read<StageBloc>().getLevelName();
+                              final eventNameList = context.read<StageBloc>().getLevelName();
                               return context
                                   .read<SuggestionBloc>()
-                                  .getSuggestion(eventNameList, pattern,
-                                      expect: event.name);
+                                  .getSuggestion(eventNameList, pattern, expect: event.name);
                             },
                             itemBuilder: (context, String suggestion) {
                               return ListTile(
-                                title: Text(suggestion,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                title: Text(suggestion, style: Theme.of(context).textTheme.titleMedium),
                               );
                             },
                             onSuggestionSelected: (String suggestion) {
@@ -322,8 +283,7 @@ class EventConfigTab extends StatelessWidget {
                             },
                             autovalidateMode: AutovalidateMode.always,
                             validator: (value) {
-                              final eventNameList =
-                                  context.read<StageBloc>().getLevelName();
+                              final eventNameList = context.read<StageBloc>().getLevelName();
                               if (value == '') {
                                 event.visibleFrom = '';
                                 return null;
@@ -331,15 +291,14 @@ class EventConfigTab extends StatelessWidget {
                               if (eventNameList.contains(value)) {
                                 return null;
                               } else {
-                                return 'Visible must same name'; //TODO: add locale
+                                return los.visible_from_must_have_same_name;
                               }
                             },
                           ),
                         )),
                   if (event.eventType != EventType.doodad)
                     BlocBuilder<ItemBloc, ItemState>(
-                        buildWhen: (prev, state) =>
-                            prev.itemStore != state.itemStore,
+                        buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                         builder: (context, state) {
                           return CheckBoxField(
                             label: los.auto_visible,
@@ -356,7 +315,7 @@ class EventConfigTab extends StatelessWidget {
                     Padding(
                         padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
                         child: ReadonlyBoxField(
-                          label: 'Level Type', // TODO : Localize
+                          label: los.level_type,
                           value: levelNodeType!.name,
                         )),
                   if (event.eventType == EventType.level)
@@ -365,23 +324,20 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                             width: double.infinity,
                             child: BlocBuilder<ItemBloc, ItemState>(
-                                buildWhen: (prev, state) =>
-                                    prev.itemStore != state.itemStore,
+                                buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                                 builder: (context, state) {
                                   return TextStringField(
-                                      label: 'Level Data', //TODO: add locale
+                                      label: los.level_data,
                                       value: event.dataString,
                                       onFieldSubmitted: (value) {
                                         event.dataString = value;
-                                        captureEvent(
-                                            ActionType.eventChangeLevelData);
+                                        captureEvent(ActionType.eventChangeLevelData);
                                         itemBloc.add(const ItemStoreUpdated());
                                       },
                                       autovalidateMode: AutovalidateMode.always,
                                       validator: (value) {
-                                        if (value != '' &&
-                                            value != event.dataString) {
-                                          return 'Enter to save'; //TODO: add locale
+                                        if (value != '' && value != event.dataString) {
+                                          return los.press_enter_to_save;
                                         }
                                         return null;
                                       });
@@ -392,23 +348,20 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                             width: double.infinity,
                             child: BlocBuilder<ItemBloc, ItemState>(
-                                buildWhen: (prev, state) =>
-                                    prev.itemStore != state.itemStore,
+                                buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                                 builder: (context, state) {
                                   return TextStringField(
-                                      label: 'Display Text', //TODO: add locale
+                                      label: los.display_text,
                                       value: event.displayText,
                                       onFieldSubmitted: (value) {
                                         event.displayText = value;
-                                        captureEvent(
-                                            ActionType.eventChangeDisplayText);
+                                        captureEvent(ActionType.eventChangeDisplayText);
                                         itemBloc.add(const ItemStoreUpdated());
                                       },
                                       autovalidateMode: AutovalidateMode.always,
                                       validator: (value) {
-                                        if (value != '' &&
-                                            value != event.displayText) {
-                                          return 'Enter to save'; //TODO: add locale
+                                        if (value != '' && value != event.displayText) {
+                                          return los.press_enter_to_save;
                                         }
                                         return null;
                                       });
@@ -419,23 +372,15 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                             width: double.infinity,
                             child: DowndropSearchField(
-                              label: 'Narration Unlocked', // TODO : Localize
+                              label: los.narration_unlocked,
                               value: event.unlockedNarrationID ?? '',
                               suggestionsCallback: (pattern) {
-                                final narrationList = context
-                                    .read<SuggestionBloc>()
-                                    .state
-                                    .narrationList;
-                                return context
-                                    .read<SuggestionBloc>()
-                                    .getSuggestion(narrationList, pattern);
+                                final narrationList = context.read<SuggestionBloc>().state.narrationList;
+                                return context.read<SuggestionBloc>().getSuggestion(narrationList, pattern);
                               },
                               itemBuilder: (context, String suggestion) {
                                 return ListTile(
-                                  title: Text(suggestion,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
+                                  title: Text(suggestion, style: Theme.of(context).textTheme.titleMedium),
                                 );
                               },
                               onSuggestionSelected: (String suggestion) {
@@ -446,14 +391,10 @@ class EventConfigTab extends StatelessWidget {
                               autovalidateMode: AutovalidateMode.always,
                               validator: (value) {
                                 event.unlockedNarrationID = value;
-                                final narrationList = context
-                                    .read<SuggestionBloc>()
-                                    .state
-                                    .narrationList;
+                                final narrationList = context.read<SuggestionBloc>().state.narrationList;
                                 if (event.unlockedNarrationID == null ||
                                     event.unlockedNarrationID == '' ||
-                                    narrationList
-                                        .contains(event.unlockedNarrationID)) {
+                                    narrationList.contains(event.unlockedNarrationID)) {
                                   return null;
                                 } else {
                                   return '';
@@ -466,23 +407,15 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: DowndropSearchField(
-                            label: 'Narration Completed', // TODO : Localize
+                            label: los.narration_completed,
                             value: event.completedNarrationID ?? '',
                             suggestionsCallback: (pattern) {
-                              final narrationList = context
-                                  .read<SuggestionBloc>()
-                                  .state
-                                  .narrationList;
-                              return context
-                                  .read<SuggestionBloc>()
-                                  .getSuggestion(narrationList, pattern);
+                              final narrationList = context.read<SuggestionBloc>().state.narrationList;
+                              return context.read<SuggestionBloc>().getSuggestion(narrationList, pattern);
                             },
                             itemBuilder: (context, String suggestion) {
                               return ListTile(
-                                title: Text(suggestion,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                title: Text(suggestion, style: Theme.of(context).textTheme.titleMedium),
                               );
                             },
                             onSuggestionSelected: (String suggestion) {
@@ -492,14 +425,10 @@ class EventConfigTab extends StatelessWidget {
                             autovalidateMode: AutovalidateMode.always,
                             validator: (value) {
                               event.completedNarrationID = value;
-                              final narrationList = context
-                                  .read<SuggestionBloc>()
-                                  .state
-                                  .narrationList;
+                              final narrationList = context.read<SuggestionBloc>().state.narrationList;
                               if (event.completedNarrationID == null ||
                                   event.completedNarrationID == '' ||
-                                  narrationList
-                                      .contains(event.completedNarrationID)) {
+                                  narrationList.contains(event.completedNarrationID)) {
                                 return null;
                               } else {
                                 return '';
@@ -513,12 +442,10 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: DropdownButtonField<WorldMapEventStatus>(
-                            label: 'Level Tutorial When', // TODO : Localize
-                            value: event.worldMapTutorialVisibleWhen ??
-                                WorldMapEventStatus.none,
+                            label: los.level_tutorial_when,
+                            value: event.worldMapTutorialVisibleWhen ?? WorldMapEventStatus.none,
                             items: WorldMapEventStatus.values
-                                .map((e) =>
-                                    DropdownMenuItem<WorldMapEventStatus>(
+                                .map((e) => DropdownMenuItem<WorldMapEventStatus>(
                                       value: e,
                                       child: Text(
                                         e.name,
@@ -530,8 +457,7 @@ class EventConfigTab extends StatelessWidget {
                                 .toList(),
                             onChanged: (value) {
                               event.worldMapTutorialVisibleWhen = value;
-                              captureEvent(
-                                  ActionType.eventChangeTutorialUnlocked);
+                              captureEvent(ActionType.eventChangeTutorialUnlocked);
                             },
                           ),
                         )),
@@ -541,23 +467,20 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: BlocBuilder<ItemBloc, ItemState>(
-                              buildWhen: (prev, state) =>
-                                  prev.itemStore != state.itemStore,
+                              buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                               builder: (context, state) {
                                 return TextStringField(
-                                    label: 'Level Toggle', // TODO : Localize
+                                    label: los.level_toggle,
                                     value: event.toggleName,
                                     onFieldSubmitted: (value) {
                                       event.toggleName = value;
-                                      captureEvent(
-                                          ActionType.eventChangeLevelToggle);
+                                      captureEvent(ActionType.eventChangeLevelToggle);
                                       itemBloc.add(const ItemStoreUpdated());
                                     },
                                     autovalidateMode: AutovalidateMode.always,
                                     validator: (value) {
-                                      if (value != '' &&
-                                          value != event.toggleName) {
-                                        return 'Enter to save'; //TODO: add locale
+                                      if (value != '' && value != event.toggleName) {
+                                        return los.press_enter_to_save;
                                       }
                                       return null;
                                     });
@@ -570,28 +493,21 @@ class EventConfigTab extends StatelessWidget {
                           width: double.infinity,
                           height: 360,
                         )),
-                  if (event.eventType == EventType.plant ||
-                      event.eventType == EventType.plantbox)
+                  if (event.eventType == EventType.plant || event.eventType == EventType.plantbox)
                     Padding(
                         padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
                         child: SizedBox(
                           width: double.infinity,
                           child: DowndropSearchField(
-                            label: 'Plant Type', // TODO : Localize
+                            label: los.plant_type,
                             value: event.dataString ?? '',
                             suggestionsCallback: (pattern) {
-                              final plantList = context
-                                  .read<SuggestionBloc>()
-                                  .state
-                                  .plantList;
-                              return context
-                                  .read<SuggestionBloc>()
-                                  .getSuggestion(plantList, pattern);
+                              final plantList = context.read<SuggestionBloc>().state.plantList;
+                              return context.read<SuggestionBloc>().getSuggestion(plantList, pattern);
                             },
                             itemBuilder: (context, String suggestion) {
                               final plant = gameResource.plant[suggestion] ??
-                                  gameResource
-                                      .commonImage[ImageCommonType.readyPlant];
+                                  gameResource.commonImage[ImageCommonType.readyPlant];
                               return ListTile(
                                 title: Row(children: [
                                   Container(
@@ -607,9 +523,7 @@ class EventConfigTab extends StatelessWidget {
                                   Flexible(
                                       child: Text(suggestion,
                                           overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium))
+                                          style: Theme.of(context).textTheme.titleMedium))
                                 ]),
                               );
                             },
@@ -621,10 +535,7 @@ class EventConfigTab extends StatelessWidget {
                             autovalidateMode: AutovalidateMode.always,
                             validator: (value) {
                               event.dataString = value;
-                              final plantList = context
-                                  .read<SuggestionBloc>()
-                                  .state
-                                  .plantList;
+                              final plantList = context.read<SuggestionBloc>().state.plantList;
                               if (plantList.contains(value)) {
                                 return null;
                               } else {
@@ -639,21 +550,15 @@ class EventConfigTab extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         child: DowndropSearchField(
-                          label: 'Upgrade Type', // TODO : Localize
+                          label: los.upgrade_type,
                           value: event.dataString ?? '',
                           suggestionsCallback: (pattern) {
-                            final upgradeList = context
-                                .read<SuggestionBloc>()
-                                .state
-                                .upgradeList;
-                            return context
-                                .read<SuggestionBloc>()
-                                .getSuggestion(upgradeList, pattern);
+                            final upgradeList = context.read<SuggestionBloc>().state.upgradeList;
+                            return context.read<SuggestionBloc>().getSuggestion(upgradeList, pattern);
                           },
                           itemBuilder: (context, String suggestion) {
                             final upgrade = gameResource.upgrade[suggestion] ??
-                                gameResource.commonImage[
-                                    ImageCommonType.missingArtPiece];
+                                gameResource.commonImage[ImageCommonType.missingArtPiece];
 
                             return ListTile(
                               title: Row(children: [
@@ -670,9 +575,7 @@ class EventConfigTab extends StatelessWidget {
                                 Flexible(
                                     child: Text(suggestion,
                                         overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium))
+                                        style: Theme.of(context).textTheme.titleMedium))
                               ]),
                             );
                           },
@@ -684,10 +587,7 @@ class EventConfigTab extends StatelessWidget {
                           autovalidateMode: AutovalidateMode.always,
                           validator: (value) {
                             event.dataString = value;
-                            final upgradeList = context
-                                .read<SuggestionBloc>()
-                                .state
-                                .upgradeList;
+                            final upgradeList = context.read<SuggestionBloc>().state.upgradeList;
                             if (upgradeList.contains(value)) {
                               return null;
                             } else {
@@ -703,11 +603,9 @@ class EventConfigTab extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         child: NumberTextField(
-                          label: 'Star Cost', //TODO: add locale
-                          controller: NumberEditingController(
-                              value: event.cost ?? 0, isDouble: false),
-                          range:
-                              const Range(begin: 0, end: MapConst.intMaxValue),
+                          label: los.star_cost,
+                          controller: NumberEditingController(value: event.cost ?? 0, isDouble: false),
+                          range: const Range(begin: 0, end: MapConst.intMaxValue),
                           useChangeButton: true,
                           onFieldSubmitted: (value) {
                             event.cost = value as int;
@@ -723,11 +621,9 @@ class EventConfigTab extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         child: NumberTextField(
-                          label: 'Key Cost', //TODO: add locale
-                          controller: NumberEditingController(
-                              value: event.cost ?? 0, isDouble: false),
-                          range:
-                              const Range(begin: 0, end: MapConst.intMaxValue),
+                          label: los.key_cost,
+                          controller: NumberEditingController(value: event.cost ?? 0, isDouble: false),
+                          range: const Range(begin: 0, end: MapConst.intMaxValue),
                           useChangeButton: true,
                           onFieldSubmitted: (value) {
                             event.cost = value as int;
@@ -737,11 +633,9 @@ class EventConfigTab extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (event.eventType == EventType.star_gate ||
-                      event.eventType == EventType.key_gate)
+                  if (event.eventType == EventType.star_gate || event.eventType == EventType.key_gate)
                     BlocBuilder<ItemBloc, ItemState>(
-                        buildWhen: (prev, state) =>
-                            prev.itemStore != state.itemStore,
+                        buildWhen: (prev, state) => prev.itemStore != state.itemStore,
                         builder: (context, state) {
                           return CheckBoxField(
                             label: los.piece_art_flip,

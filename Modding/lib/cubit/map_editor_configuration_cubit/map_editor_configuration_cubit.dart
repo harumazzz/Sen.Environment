@@ -146,7 +146,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     commonImage[ImageCommonType.readySeedBank] = readySeedBank;
     final readyPlant = await loadVisualImage('$path/plant/sunflower.png');
     if (readyPlant == null) {
-      throw Exception('cannot_load_ready_plant'); //TODO: add locale
+      throw Exception(los.cannot_load_ready_plant);
     }
     commonImage[ImageCommonType.readyPlant] = readyPlant;
     final spaceSpiral = await loadVisualImage('$path/alwaysloaded/space_spiral.png');
@@ -181,28 +181,28 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     commonImage[ImageCommonType.buttonHudBackSelected] = buttonHudBackSelected;
     final keygateFlag = await loadVisualImage('$path/common/keygate_flag.png');
     if (keygateFlag == null) {
-      throw Exception('cannot load key gate flag'); //TODO: add locale
+      throw Exception(los.cannot_load_key_gate_flag);
     }
     commonImage[ImageCommonType.keygateFlag] = keygateFlag;
     final infoIcon = await loadVisualImage('$path/common/info_icon.png');
     if (infoIcon == null) {
-      throw Exception('cannot load info icon'); //TODO: add locale
+      throw Exception(los.cannot_load_info_icon);
     }
     commonImage[ImageCommonType.infoIcon] = infoIcon;
 
     final sprout = await loadVisualImage('$path/common/sprout.png');
     if (sprout == null) {
-      throw Exception('cannot load sprout'); //TODO: add locale
+      throw Exception(los.cannot_load_sprout);
     }
     commonImage[ImageCommonType.sprout] = sprout;
     final doodad = await loadVisualImage('$path/common/doodad1.png');
     if (doodad == null) {
-      throw Exception('cannot load doodad'); //TODO: add locale
+      throw Exception(los.cannot_load_doodad);
     }
     commonImage[ImageCommonType.doodad] = doodad;
     final pathNode = await loadVisualImage('$path/common/grass_light.png');
     if (pathNode == null) {
-      throw Exception('cannot load pathNode'); //TODO: add locale
+      throw Exception(los.cannot_load_pathNode);
     }
     commonImage[ImageCommonType.pathNode] = pathNode;
     //-----------------
@@ -254,18 +254,18 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     commonAnimation[AnimationCommonType.missingArtPieceAnimation] = missingArtPieceAnimation;
     final stargate = await loadVisualAnimation('$path/common/stargate', filterQuality: filterQuality);
     if (stargate == null) {
-      throw Exception('cannot load star gate'); //TODO: add locale
+      throw Exception(los.cannot_load_star_gate);
     }
     commonAnimation[AnimationCommonType.stargate] = stargate;
     final sodRoll = await loadVisualAnimation('$path/common/sod_roll', filterQuality: filterQuality);
     if (sodRoll == null) {
-      throw Exception('cannot load sod roll'); //TODO: add locale
+      throw Exception(los.cannot_load_sod_roll);
     }
     commonAnimation[AnimationCommonType.sodRoll] = sodRoll;
     final collectedUpgradeEffect =
         await loadVisualAnimation('$path/common/collected_upgrade_effect', filterQuality: filterQuality);
     if (collectedUpgradeEffect == null) {
-      throw Exception('cannot load collected upgrade effect'); //TODO: add locale
+      throw Exception(los.cannot_load_collected_upgrade_effect);
     }
     commonAnimation[AnimationCommonType.collectedUpgradeEffect] = collectedUpgradeEffect;
     //-----------------
@@ -316,8 +316,8 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         isEnabled: true,
       ),
       ToolType.rectangleTool: Item(
-        title: 'Rectangle Tool (Ctrl Left)', //TODO: add locale
-        description: 'Select multi item by rectangle', //TODO: add locale
+        title: '${los.rectangle_tool} (Ctrl Left)',
+        description: los.select_multiple_items_by_rectangle,
         icon: const Icon(Symbols.gesture_select),
         isEnabled: true,
       ),
@@ -352,8 +352,8 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         isEnabled: true,
       ),
       ToolType.shortcutMenu: Item(
-        title: 'Shortcut Help (F2)', //TODO: add locale
-        description: ' ', //TODO: add locale
+        title: '${los.shortcut_help} (F2)',
+        description: los.shortcut_help_description,
         icon: const Icon(Symbols.help),
         isEnabled: true,
       ),
@@ -364,22 +364,20 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   HashMap<SectionType, Item> _initailizeSection(AppLocalizations los) {
     final sectionItem = HashMap<SectionType, Item>.from({
       SectionType.select: Item(
-        title: 'Select', //TODO: add locale
+        title: los.select,
         description: los.section_description,
         icon: const Icon(Symbols.pan_tool_alt),
         isEnabled: true,
       ),
       SectionType.image: Item(
-        title: 'Island Images', //TODO: add locale
-        description:
-            'Open island image selection list and place an island image piece to this section', //TODO: add locale
+        title: los.island_image,
+        description: los.island_image_description,
         icon: const Icon(Symbols.filter_hdr),
         isEnabled: true,
       ),
       SectionType.animation: Item(
-        title: 'Island Animations', //TODO: add locale
-        description:
-            'Open island animation selection list and place an island animation piece to this section', //TODO: add locale
+        title: los.island_animation,
+        description: los.island_animation_description,
         icon: const Icon(Symbols.filter_drama),
         isEnabled: true,
       ),
@@ -396,14 +394,14 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   HashMap<ExtensionType, Item> _initailizeExtension(AppLocalizations los) {
     final extensionItem = HashMap<ExtensionType, Item>.from({
       ExtensionType.layer: Item(
-        title: 'Layer', //TODO: add locale
-        description: 'los.layer_description', //TODO: add locale
+        title: los.layer,
+        description: los.layer_description,
         icon: const Icon(Symbols.layers),
         isEnabled: true,
       ),
       ExtensionType.history: Item(
-        title: 'History', //TODO: add locale
-        description: 'los.island_pieces_description', //TODO: add locale
+        title: los.history,
+        description: los.history_description,
         icon: const Icon(Symbols.history),
         isEnabled: true,
       ),

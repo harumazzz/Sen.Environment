@@ -44,19 +44,20 @@ final class SettingState extends Equatable {
 
   factory SettingState.initailize() {
     return const SettingState(
-        boundBackground: BorderBackground.color,
-        islandImageBorder: true,
-        islandAnimationBorder: true,
-        eventBorder: true,
-        hideMissingArt: false,
-        hideOldEvent: true,
-        mapPath: true,
-        mapCompleted: true,
-        mapGrid: false,
-        boundingColor: Colors.black,
-        playSingleFrame: false,
-        muteAudio: false,
-        filterQuality: FilterQuality.high);
+      boundBackground: BorderBackground.timeSpace,
+      islandImageBorder: true,
+      islandAnimationBorder: true,
+      eventBorder: true,
+      hideMissingArt: true,
+      hideOldEvent: true,
+      mapPath: true,
+      mapCompleted: true,
+      mapGrid: false,
+      boundingColor: Colors.black,
+      playSingleFrame: false,
+      muteAudio: false,
+      filterQuality: FilterQuality.high,
+    );
   }
 
   SettingState copyWith(
@@ -76,8 +77,7 @@ final class SettingState extends Equatable {
     return SettingState(
         boundBackground: boundBackground ?? this.boundBackground,
         islandImageBorder: islandImageBorder ?? this.islandImageBorder,
-        islandAnimationBorder:
-            islandAnimationBorder ?? this.islandAnimationBorder,
+        islandAnimationBorder: islandAnimationBorder ?? this.islandAnimationBorder,
         eventBorder: eventBorder ?? this.eventBorder,
         hideMissingArt: hideMissingArt ?? this.hideMissingArt,
         hideOldEvent: hideOldEvent ?? this.hideOldEvent,

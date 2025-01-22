@@ -43,9 +43,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
 
   void _clearLayerNode(ClearLayerNode event, Emitter<LayerState> emit) {
     emit(LayerState(
-        treeController: TreeController(
-            roots: [],
-            childrenProvider: (LayerNode node) => node.children.values)));
+        treeController: TreeController(roots: [], childrenProvider: (LayerNode node) => node.children.values)));
   }
 
   void updateTree(bool refesh) {
@@ -66,16 +64,13 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
     return stageBloc.state.pieceProperty[id]!;
   }
 
-  void _actionListItemStatusResest(
-      List<(IconData, dynamic Function())> actionList, (int, int)? id) {
+  void _actionListItemStatusResest(List<(IconData, dynamic Function())> actionList, (int, int)? id) {
     actionList.clear();
     actionList.addAll([
       (
         Symbols.lock,
         () {
-          final itemProperty = id != null
-              ? _entryPieceProperty(id)
-              : stageBloc.state.eventProperty;
+          final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
           _itemStatusChange(itemProperty, LockProperties.lockVisible);
           updateTree(true);
         }
@@ -83,9 +78,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
       (
         Symbols.lock_open,
         () {
-          final itemProperty = id != null
-              ? _entryPieceProperty(id)
-              : stageBloc.state.eventProperty;
+          final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
           _itemStatusChange(itemProperty, LockProperties.visible);
           updateTree(true);
         }
@@ -93,9 +86,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
       (
         Symbols.visibility,
         () {
-          final itemProperty = id != null
-              ? _entryPieceProperty(id)
-              : stageBloc.state.eventProperty;
+          final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
           _itemStatusChange(itemProperty, LockProperties.opacityVisible);
           updateTree(true);
         }
@@ -103,9 +94,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
       (
         Symbols.visibility_lock,
         () {
-          final itemProperty = id != null
-              ? _entryPieceProperty(id)
-              : stageBloc.state.eventProperty;
+          final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
           _itemStatusChange(itemProperty, LockProperties.invisible);
           updateTree(true);
         }
@@ -113,9 +102,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
       (
         Symbols.visibility_off,
         () {
-          final itemProperty = id != null
-              ? _entryPieceProperty(id)
-              : stageBloc.state.eventProperty;
+          final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
           _itemStatusChange(itemProperty, LockProperties.visible);
           updateTree(true);
         }
@@ -123,44 +110,31 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
     ]);
   }
 
-  bool _visibleOnAccepted(
-      ItemProperty entry, List<LockProperties> statusAcceptedList) {
+  bool _visibleOnAccepted(ItemProperty entry, List<LockProperties> statusAcceptedList) {
     return statusAcceptedList.contains(entry.status);
   }
 
-  void _actionListItemStatusAcceptedReset(
-      List<bool Function()> onActionAccepted, (int, int)? id) {
+  void _actionListItemStatusAcceptedReset(List<bool Function()> onActionAccepted, (int, int)? id) {
     onActionAccepted.clear();
     onActionAccepted.addAll([
       () {
-        final itemProperty = id != null
-            ? _entryPieceProperty(id)
-            : stageBloc.state.eventProperty;
+        final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
         return _visibleOnAccepted(itemProperty, [LockProperties.visible]);
       },
       () {
-        final itemProperty = id != null
-            ? _entryPieceProperty(id)
-            : stageBloc.state.eventProperty;
+        final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
         return _visibleOnAccepted(itemProperty, [LockProperties.lockVisible]);
       },
       () {
-        final itemProperty = id != null
-            ? _entryPieceProperty(id)
-            : stageBloc.state.eventProperty;
+        final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
         return _visibleOnAccepted(itemProperty, [LockProperties.visible]);
       },
       () {
-        final itemProperty = id != null
-            ? _entryPieceProperty(id)
-            : stageBloc.state.eventProperty;
-        return _visibleOnAccepted(
-            itemProperty, [LockProperties.opacityVisible]);
+        final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
+        return _visibleOnAccepted(itemProperty, [LockProperties.opacityVisible]);
       },
       () {
-        final itemProperty = id != null
-            ? _entryPieceProperty(id)
-            : stageBloc.state.eventProperty;
+        final itemProperty = id != null ? _entryPieceProperty(id) : stageBloc.state.eventProperty;
         return _visibleOnAccepted(itemProperty, [LockProperties.invisible]);
       }
     ]);
@@ -203,8 +177,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
     ]);
   }
 
-  void _layerActionAcceptedReset(
-      List<bool Function()> onActionAccepted, int index) {
+  void _layerActionAcceptedReset(List<bool Function()> onActionAccepted, int index) {
     onActionAccepted.clear();
     onActionAccepted.addAll([
       () {
@@ -242,16 +215,11 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
           ActionModelType.layerNode: node.copyWith(),
         },
         change: (data) {
-          final pieces =
-              data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-          final events =
-              data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-          stageBloc.add(UpdateStageState(
-              stageState:
-                  stageBloc.state.copyWith(events: events, pieces: pieces)));
+          final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+          final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+          stageBloc.add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
 
-          final layerNode =
-              (data[ActionModelType.layerNode] as LayerNode).copyWith();
+          final layerNode = (data[ActionModelType.layerNode] as LayerNode).copyWith();
           state.treeController.roots.first.children.clear();
           state.treeController.roots.first.children.addAll(layerNode.children);
           final layerKeys = <int>[];
@@ -294,16 +262,11 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
           ActionModelType.layerNode: node.copyWith(),
         },
         change: (data) {
-          final pieces =
-              data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-          final events =
-              data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-          stageBloc.add(UpdateStageState(
-              stageState:
-                  stageBloc.state.copyWith(events: events, pieces: pieces)));
+          final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+          final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+          stageBloc.add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
 
-          final layerNode =
-              (data[ActionModelType.layerNode] as LayerNode).copyWith();
+          final layerNode = (data[ActionModelType.layerNode] as LayerNode).copyWith();
           state.treeController.roots.first.children.clear();
           state.treeController.roots.first.children.addAll(layerNode.children);
           final layerKeys = <int>[];
@@ -349,16 +312,11 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
           ActionModelType.layerNode: node.copyWith(),
         },
         change: (data) {
-          final pieces =
-              data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-          final events =
-              data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-          stageBloc.add(UpdateStageState(
-              stageState:
-                  stageBloc.state.copyWith(events: events, pieces: pieces)));
+          final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+          final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+          stageBloc.add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
 
-          final layerNode =
-              (data[ActionModelType.layerNode] as LayerNode).copyWith();
+          final layerNode = (data[ActionModelType.layerNode] as LayerNode).copyWith();
           state.treeController.roots.first.children.clear();
           state.treeController.roots.first.children.addAll(layerNode.children);
           final layerKeys = <int>[];
@@ -403,22 +361,19 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
     return target > 0 && _moreLayers();
   }
 
-  void updateNodeParallax(int target,
-      {HashMap<String, MapPieceItem>? pieceItems}) {
+  void updateNodeParallax(int target, {HashMap<String, MapPieceItem>? pieceItems}) {
     final node = _getPiecesLayer().children[target]!.children;
     final pieces = pieceItems ?? stageBloc.state.pieces;
     final parallaxCount = <int, int>{};
     for (final piece in pieces.values) {
       if (piece.layer == target) {
-        parallaxCount[piece.parallax] =
-            (parallaxCount[piece.parallax] ?? 0) + 1;
+        parallaxCount[piece.parallax] = (parallaxCount[piece.parallax] ?? 0) + 1;
       }
     }
     for (final parallax in parallaxCount.keys) {
       if (!node.containsKey(parallax)) {
         final child = LayerNode(
-            title:
-                'Parallax $parallax (${parallaxCount[parallax]})', //TODO: add locale
+            title: '${los.parallax} $parallax (${parallaxCount[parallax]})',
             icon: Symbols.landscape,
             type: NodeType.item);
         final id = (target, parallax);
@@ -426,15 +381,13 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
         _actionListItemStatusAcceptedReset(child.onActionAccepted, id);
         node[parallax] = child;
       } else {
-        node[parallax]!.title =
-            'Parallax $parallax (${parallaxCount[parallax]})'; //TODO: add locale
+        node[parallax]!.title = '${los.parallax} $parallax (${parallaxCount[parallax]})';
       }
     }
     node.removeWhere((e, value) => !parallaxCount.containsKey(e));
   }
 
-  void _createNewLayer(
-      {String name = 'New Layer', bool captureHistory = false}) {
+  void _createNewLayer({String name = 'New Layer', bool captureHistory = false}) {
     final node = _getPiecesLayer();
     final layerNameList = node.children.values.map((e) => e.title).toList();
     final layerName = name;
@@ -444,8 +397,7 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
       newLayerName = '$layerName $index';
       ++index;
     }
-    final nextIndex =
-        node.children.isNotEmpty ? node.children.keys.first + 1 : 0;
+    final nextIndex = node.children.isNotEmpty ? node.children.keys.first + 1 : 0;
     final child = LayerNode(
         title: newLayerName,
         icon: Symbols.folder,
@@ -462,24 +414,19 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
             ActionModelType.layerNode: node.copyWith(),
           },
           change: (data) {
-            final layerNode =
-                (data![ActionModelType.layerNode] as LayerNode).copyWith();
+            final layerNode = (data![ActionModelType.layerNode] as LayerNode).copyWith();
             state.treeController.roots.first.children.clear();
-            state.treeController.roots.first.children
-                .addAll(layerNode.children);
+            state.treeController.roots.first.children.addAll(layerNode.children);
             updateTree(false);
           });
       historyBloc.add(CaptureState(state: actionService));
     }
   }
 
-  void _initailizeLayerNode(
-      InitailizeLayerNode event, Emitter<LayerState> emit) {
+  void _initailizeLayerNode(InitailizeLayerNode event, Emitter<LayerState> emit) {
     final node = _getPiecesLayer().children;
     final pieces = stageBloc.state.pieces;
-    final largestLayer = pieces.values.isNotEmpty
-        ? pieces.values.reduce((a, b) => a.layer > b.layer ? a : b).layer
-        : 0;
+    final largestLayer = pieces.values.isNotEmpty ? pieces.values.reduce((a, b) => a.layer > b.layer ? a : b).layer : 0;
     while (node.length <= largestLayer) {
       _createNewLayer(name: 'Layer ${node.length}');
       updateNodeParallax(
@@ -488,11 +435,10 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
     }
   }
 
-  void _initializeController(
-      InitailizeTreeController event, Emitter<LayerState> emit) {
+  void _initializeController(InitailizeTreeController event, Emitter<LayerState> emit) {
     state.treeController.roots = [
       LayerNode(
-          title: 'Pieces Layer', //TODO: add locale
+          title: los.piece_layer,
           icon: Symbols.folder,
           iconExpanded: Symbols.folder_open,
           type: NodeType.root,
@@ -509,15 +455,13 @@ class LayerBloc extends Bloc<LayerEvent, LayerState> {
             () => true
           ]),
       LayerNode(
-        title: 'Events Setting', //TODO: add locale
+        title: los.event_settings,
         icon: Symbols.kid_star,
         type: NodeType.item,
       ),
     ];
-    _actionListItemStatusResest(
-        state.treeController.roots.last.actionList, null);
-    _actionListItemStatusAcceptedReset(
-        state.treeController.roots.last.onActionAccepted, null);
+    _actionListItemStatusResest(state.treeController.roots.last.actionList, null);
+    _actionListItemStatusAcceptedReset(state.treeController.roots.last.onActionAccepted, null);
     _createNewLayer(name: 'Default');
     emit(state);
   }

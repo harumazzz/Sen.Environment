@@ -14,27 +14,21 @@ class EditorSettingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context
-        .read<MapEditorConfigurationCubit>()
-        .state
-        .extensionItem[ExtensionType.setting]!;
+    final item = context.read<MapEditorConfigurationCubit>().state.extensionItem[ExtensionType.setting]!;
     return SizedBox(
         width: 300,
         height: 520,
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          child: item.icon),
+                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
                       Text(
                         item.title,
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -42,10 +36,9 @@ class EditorSettingWidget extends StatelessWidget {
                       const Spacer(),
                       IconButton(
                           onPressed: () {
-                            context.read<SectionBloc>().add(
-                                const ExtensionToggled(
-                                    type: ExtensionType.setting,
-                                    enabled: false));
+                            context
+                                .read<SectionBloc>()
+                                .add(const ExtensionToggled(type: ExtensionType.setting, enabled: false));
                           },
                           icon: const Icon(Icons.close))
                     ],
@@ -55,8 +48,7 @@ class EditorSettingWidget extends StatelessWidget {
                     child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
+                          color: Theme.of(context).colorScheme.secondaryContainer,
                         ),
                         child: const EditorSettingState())),
               ],
@@ -69,20 +61,22 @@ class EditorSettingWidget extends StatelessWidget {
 class EditorSettingState extends StatelessWidget {
   const EditorSettingState({super.key});
 
-  String _backgroundString(BorderBackground background, AppLocalizations los) {
+  String _backgroundString(
+    BorderBackground background,
+    AppLocalizations los,
+  ) {
     switch (background) {
-      //TODO: add locale.
       case BorderBackground.color:
         {
-          return 'Color';
+          return los.color;
         }
       case BorderBackground.timeSpace:
         {
-          return 'Time Space';
+          return los.time_space;
         }
       case BorderBackground.senLogo:
         {
-          return 'Sen Logo';
+          return los.sui_logo;
         }
     }
   }
@@ -93,27 +87,22 @@ class EditorSettingState extends StatelessWidget {
     return BlocBuilder<SettingBloc, SettingState>(builder: (context, state) {
       return Column(children: [
         CheckBoxField(
-          label: 'Island Image Border', //TODO: add locale.
+          label: los.island_image_border,
           value: state.islandImageBorder,
-          margin:
-              const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetIslandImageBorder(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetIslandImageBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
         CheckBoxField(
-          label: 'Island Animation Border', //TODO: add locale.
+          label: los.animated_island_border,
           value: state.islandAnimationBorder,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetIslandAnimationBorder(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetIslandAnimationBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -123,38 +112,32 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetEventBorder(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetEventBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
         CheckBoxField(
-          label: 'Hide Missing Art', //TODO: add locale.
+          label: los.hide_missing_art,
           value: state.hideMissingArt,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetHideMissingArt(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetHideMissingArt(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
         CheckBoxField(
-          label: 'Hide Old Event', //TODO: add locale.
+          label: los.hide_old_events,
           value: state.hideOldEvent,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetHideOldEvent(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetHideOldEvent(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
         CheckBoxField(
-          label: 'Map Path', //TODO: add locale.
+          label: los.use_map_path,
           value: state.mapPath,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
@@ -164,19 +147,17 @@ class EditorSettingState extends StatelessWidget {
           },
         ),
         CheckBoxField(
-          label: 'Map Completed', //TODO: add locale.
+          label: los.map_completed,
           value: state.mapCompleted,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context
-                .read<SettingBloc>()
-                .add(SetMapCompleted(enabled: value ?? true));
+            context.read<SettingBloc>().add(SetMapCompleted(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
         CheckBoxField(
-          label: los.map_grid, //TODO: add locale.
+          label: los.map_grid,
           value: state.mapGrid,
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
@@ -186,16 +167,16 @@ class EditorSettingState extends StatelessWidget {
           },
         ),
         Padding(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 2),
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 2),
             child: Row(
               children: [
-                Text('Background', //TODO: add locale
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryFixedVariant)),
+                Text(
+                  los.background,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                  ),
+                ),
                 const Spacer(),
                 SizedBox(
                   width: 130,
@@ -207,8 +188,7 @@ class EditorSettingState extends StatelessWidget {
                         decoration: BoxDecoration(
                             border: Border(
                                 bottom: BorderSide(
-                      color:
-                          Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                      color: Theme.of(context).colorScheme.onSecondaryFixedVariant,
                       width: 0.8,
                     )))),
                     items: BorderBackground.values
@@ -224,9 +204,7 @@ class EditorSettingState extends StatelessWidget {
                         .toList(),
                     onChanged: (value) {
                       final background = value ?? BorderBackground.color;
-                      context
-                          .read<SettingBloc>()
-                          .add(SetBoundBackground(background: background));
+                      context.read<SettingBloc>().add(SetBoundBackground(background: background));
                     },
                   ),
                 )

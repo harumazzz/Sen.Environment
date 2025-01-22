@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:nil/nil.dart';
 import 'package:pie_menu/pie_menu.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
@@ -15,27 +16,21 @@ class LayerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context
-        .read<MapEditorConfigurationCubit>()
-        .state
-        .extensionItem[ExtensionType.layer]!;
+    final item = context.read<MapEditorConfigurationCubit>().state.extensionItem[ExtensionType.layer]!;
     return SizedBox(
         width: 330,
         height: 400,
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          child: item.icon),
+                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
                       Text(
                         item.title,
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -43,9 +38,9 @@ class LayerWidget extends StatelessWidget {
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          context.read<SectionBloc>().add(
-                              const ExtensionToggled(
-                                  type: ExtensionType.layer, enabled: false));
+                          context
+                              .read<SectionBloc>()
+                              .add(const ExtensionToggled(type: ExtensionType.layer, enabled: false));
                         },
                         icon: const Icon(Symbols.close),
                       ),
@@ -56,12 +51,9 @@ class LayerWidget extends StatelessWidget {
                     child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
+                          color: Theme.of(context).colorScheme.secondaryContainer,
                         ),
-                        child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10),
-                            child: LayerTreeView())))
+                        child: const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: LayerTreeView())))
               ],
             ),
           ),
@@ -111,16 +103,13 @@ class TreeTile extends StatelessWidget {
     for (var i = 0; i < node.actionList.length; ++i) {
       final action = node.actionList[i];
       if (node.onActionAccepted[i]()) {
-        pieActionList.add(PieAction(
-            tooltip: nil, onSelect: action.$2, child: Icon(action.$1)));
+        pieActionList.add(PieAction(tooltip: nil, onSelect: action.$2, child: Icon(action.$1)));
       }
     }
     final moreHoriz = Tooltip(
-      message: 'More actions', //TODO: add locale
+      message: context.los.more_actions,
       waitDuration: const Duration(seconds: 1),
-      child: IconButton(
-          onPressed: pieActionList.isNotEmpty ? () {} : null,
-          icon: const Icon(Symbols.more_horiz)),
+      child: IconButton(onPressed: pieActionList.isNotEmpty ? () {} : null, icon: const Icon(Symbols.more_horiz)),
     );
     return SizedBox(
         height: 60,
@@ -136,18 +125,13 @@ class TreeTile extends StatelessWidget {
                     children: [
                       Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: entry.isExpanded
-                              ? Icon(node.iconExpanded)
-                              : Icon(node.icon)),
+                          child: entry.isExpanded ? Icon(node.iconExpanded) : Icon(node.icon)),
                       Expanded(
                         child: Text(node.title),
                       ),
                       Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: PieMenu(
-                              onPressed: () {},
-                              actions: pieActionList,
-                              child: moreHoriz))
+                          child: PieMenu(onPressed: () {}, actions: pieActionList, child: moreHoriz))
                     ],
                   )),
               NodeType.parent => InkWell(
@@ -157,9 +141,7 @@ class TreeTile extends StatelessWidget {
                     children: [
                       Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: entry.isExpanded
-                              ? Icon(node.iconExpanded)
-                              : Icon(node.icon)),
+                          child: entry.isExpanded ? Icon(node.iconExpanded) : Icon(node.icon)),
                       SizedBox(
                         width: 80,
                         child: TextFormField(
@@ -170,15 +152,11 @@ class TreeTile extends StatelessWidget {
                           ),
                           autovalidateMode: AutovalidateMode.always,
                           onFieldSubmitted: (value) {
-                            if (!context
-                                .read<LayerBloc>()
-                                .isVaildLayerName(value)) {
+                            if (!context.read<LayerBloc>().isVaildLayerName(value)) {
                               textEditing.text = node.title;
                             } else {
                               node.title = value;
-                              context
-                                  .read<ItemBloc>()
-                                  .add(const ItemStoreUpdated());
+                              context.read<ItemBloc>().add(const ItemStoreUpdated());
                             }
                           },
                         ),
@@ -186,26 +164,18 @@ class TreeTile extends StatelessWidget {
                       const Spacer(),
                       Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: PieMenu(
-                              onPressed: () {},
-                              actions: pieActionList,
-                              child: moreHoriz))
+                          child: PieMenu(onPressed: () {}, actions: pieActionList, child: moreHoriz))
                     ],
                   )),
               NodeType.item => Row(
                   children: [
-                    Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Icon(node.icon)),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Icon(node.icon)),
                     Expanded(
                       child: Text(node.title),
                     ),
                     Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: PieMenu(
-                            onPressed: () {},
-                            actions: pieActionList,
-                            child: moreHoriz))
+                        child: PieMenu(onPressed: () {}, actions: pieActionList, child: moreHoriz))
                   ],
                 ),
             }));

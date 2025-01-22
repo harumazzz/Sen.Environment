@@ -15,10 +15,8 @@ class AnimationShopView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context
-        .read<MapEditorConfigurationCubit>()
-        .state
-        .sectionItem[SectionType.animation]!;
+    final los = context.los;
+    final item = context.read<MapEditorConfigurationCubit>().state.sectionItem[SectionType.animation]!;
     return Positioned(
       bottom: 20,
       left: 20,
@@ -28,27 +26,24 @@ class AnimationShopView extends StatelessWidget {
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          child: item.icon),
+                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
                       Text(
-                        'Island Animation Shop', //TODO: Localize
+                        los.animation_pieces_shop,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          context.read<SectionBloc>().add(
-                              const SectionMinizeToggled(
-                                  type: SectionType.animation, minize: true));
+                          context
+                              .read<SectionBloc>()
+                              .add(const SectionMinizeToggled(type: SectionType.animation, minize: true));
                         },
                         icon: const Icon(Symbols.close),
                       )
@@ -85,8 +80,7 @@ class AnimationShopGrid extends StatelessWidget {
         return GridView.builder(
           itemCount: keysList.length,
           padding: const EdgeInsets.all(6),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 6),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 6),
           itemBuilder: (context, index) {
             final imageId = keysList[index];
             final visual = shopList[imageId]!;
@@ -94,7 +88,7 @@ class AnimationShopGrid extends StatelessWidget {
               color: Colors.transparent,
               shadowColor: Colors.transparent,
               child: Tooltip(
-                message: 'Island $imageId', //TODO: add locale
+                message: '${los.island} $imageId',
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () => context.read<StageBloc>().add(AddIslandItemEvent(

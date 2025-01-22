@@ -55,13 +55,15 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       if (!settingBloc.state.muteAudio) {
         cubit.state.editorResource.switchResourceSound.resume();
       }
-      initBloc.add(const ShowSnackBarEvent(
-          text: 'World Resource Changed')); //TODO: add locale
+      initBloc.add(
+        ShowSnackBarEvent(
+          text: los.world_resources_changed,
+        ),
+      );
     }
   }
 
-  Widget _createAnimationItemShop(VisualAnimation visual,
-      {required Iterable<String> label}) {
+  Widget _createAnimationItemShop(VisualAnimation visual, {required Iterable<String> label}) {
     return FittedBox(
         fit: BoxFit.contain,
         child: UnconstrainedBox(
@@ -77,80 +79,58 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
 
   Iterable<String> _getPlayLabel(EventNodeType type, {bool locked = false}) {
     if (eventAnimationLabel.containsKey(type)) {
-      return locked
-          ? eventAnimationLabel[type]!.$1
-          : eventAnimationLabel[type]!.$2;
+      return locked ? eventAnimationLabel[type]!.$1 : eventAnimationLabel[type]!.$2;
     }
     return const ['main'];
   }
 
-  Future<void> _loadEventResource(ResourceState state,
-      MapEditorConfigurationCubit cubit, FilterQuality filterQuality) async {
+  Future<void> _loadEventResource(
+      ResourceState state, MapEditorConfigurationCubit cubit, FilterQuality filterQuality) async {
     final gameResource = cubit.state.gameResource;
-    final bossVisual =
-        state.resourceAnimation[ResourceAnimationType.zombossNode];
+    final bossVisual = state.resourceAnimation[ResourceAnimationType.zombossNode];
     final bossItem = Transform(
         alignment: Alignment.center,
-        transform: Matrix4Transform()
-            .scale(bossVisual != null ? 0.5 : 1.8)
-            .translate(y: bossVisual != null ? 10 : 0)
-            .m,
+        transform: Matrix4Transform().scale(bossVisual != null ? 0.5 : 1.8).translate(y: bossVisual != null ? 10 : 0).m,
         child: _createAnimationItemShop(
-            bossVisual ??
-                gameResource.commonAnimation[
-                    AnimationCommonType.missingArtPieceAnimation]!,
+            bossVisual ?? gameResource.commonAnimation[AnimationCommonType.missingArtPieceAnimation]!,
             label: _getPlayLabel(EventNodeType.boss)));
-    final keyGateVisual =
-        state.resourceAnimation[ResourceAnimationType.keyGate];
+    final keyGateVisual = state.resourceAnimation[ResourceAnimationType.keyGate];
     final keyGateItem = Transform(
         alignment: Alignment.center,
         transform: Matrix4Transform()
             .scale(keyGateVisual != null ? 1.3 : 1.8)
-            .translate(
-                x: keyGateVisual != null ? -5 : 0,
-                y: keyGateVisual != null ? 10 : 0)
+            .translate(x: keyGateVisual != null ? -5 : 0, y: keyGateVisual != null ? 10 : 0)
             .m,
         child: _createAnimationItemShop(
-            keyGateVisual ??
-                gameResource.commonAnimation[
-                    AnimationCommonType.missingArtPieceAnimation]!,
+            keyGateVisual ?? gameResource.commonAnimation[AnimationCommonType.missingArtPieceAnimation]!,
             label: _getPlayLabel(EventNodeType.keygate)));
     state.eventShop.addAll({
       EventNodeType.normal: Transform.scale(
           scale: 2,
-          child: _createAnimationItemShop(
-              gameResource.commonAnimation[AnimationCommonType.levelNode]!,
+          child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.levelNode]!,
               label: _getPlayLabel(EventNodeType.normal))),
       EventNodeType.minigame: Transform.scale(
           scale: 2,
-          child: _createAnimationItemShop(
-              gameResource
-                  .commonAnimation[AnimationCommonType.levelNodeMinigame]!,
+          child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.levelNodeMinigame]!,
               label: _getPlayLabel(EventNodeType.minigame))),
       EventNodeType.miniboss: Transform.scale(
           scale: 2,
-          child: _createAnimationItemShop(
-              gameResource
-                  .commonAnimation[AnimationCommonType.levelNodeGargantuar]!,
+          child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.levelNodeGargantuar]!,
               label: _getPlayLabel(EventNodeType.miniboss))),
       EventNodeType.nonfinalboss: Transform.scale(
           scale: 2,
-          child: _createAnimationItemShop(
-              gameResource
-                  .commonAnimation[AnimationCommonType.levelNodeGargantuar]!,
+          child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.levelNodeGargantuar]!,
               label: _getPlayLabel(EventNodeType.nonfinalboss))),
       EventNodeType.boss: bossItem,
       EventNodeType.danger: _createAnimationItemShop(
           state.resourceAnimation[ResourceAnimationType.dangerNode] ??
-              gameResource.commonAnimation[
-                  AnimationCommonType.missingArtPieceAnimation]!,
+              gameResource.commonAnimation[AnimationCommonType.missingArtPieceAnimation]!,
           label: _getPlayLabel(EventNodeType.danger)),
       EventNodeType.giftbox: Transform.scale(
           scale: 2,
           child: Transform.translate(
               offset: const Offset(0, 10),
-              child: _createAnimationItemShop(
-                  gameResource.commonAnimation[AnimationCommonType.giftBox]!,
+              child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.giftBox]!,
                   label: _getPlayLabel(EventNodeType.giftbox, locked: true)))),
       EventNodeType.pinata: Transform.scale(
           scale: 1.3,
@@ -162,15 +142,10 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       EventNodeType.plant: Stack(
         fit: StackFit.passthrough,
         children: [
-          Transform.scale(
-              scale: 0.9,
-              child: RawImage(
-                  image:
-                      gameResource.commonImage[ImageCommonType.readySeedBank])),
+          Transform.scale(scale: 0.9, child: RawImage(image: gameResource.commonImage[ImageCommonType.readySeedBank])),
           Transform(
             transform: Matrix4Transform().scale(0.5).translate(x: 10, y: 22).m,
-            child: RawImage(
-                image: gameResource.commonImage[ImageCommonType.readyPlant]),
+            child: RawImage(image: gameResource.commonImage[ImageCommonType.readyPlant]),
           ),
         ],
       ),
@@ -181,8 +156,7 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
                   gameResource.commonImage[ImageCommonType.missingArtPiece])),
       EventNodeType.stargate: Transform.scale(
           scale: 1.5,
-          child: _createAnimationItemShop(
-              gameResource.commonAnimation[AnimationCommonType.stargate]!,
+          child: _createAnimationItemShop(gameResource.commonAnimation[AnimationCommonType.stargate]!,
               label: _getPlayLabel(EventNodeType.stargate))),
       EventNodeType.keygate: keyGateItem,
       EventNodeType.pathNode: RawImage(
@@ -218,8 +192,7 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
     });
   }
 
-  Future<void> _loadResourceByWorld(
-      LoadResourceByWorldName event, Emitter<ResourceState> emit) async {
+  Future<void> _loadResourceByWorld(LoadResourceByWorldName event, Emitter<ResourceState> emit) async {
     final newState = ResourceState(status: ResourceStateStatus.finished);
     final loadPath = '${cubit.state.settingPath}/worldmap/${event.worldName}';
     /*
@@ -233,14 +206,12 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       return;
     }
     if (!FileHelper.isDirectory(loadPath)) {
-      initBloc.add(ShowSnackBarEvent(
-          text: '${los.cannot_find_world}: ${event.worldName}'));
+      initBloc.add(ShowSnackBarEvent(text: '${los.cannot_find_world}: ${event.worldName}'));
       emit(newState);
       return;
     }
     _loadEventNodeName(newState);
-    for (final e
-        in FileHelper.readDirectory(source: loadPath, recursive: false)) {
+    for (final e in FileHelper.readDirectory(source: loadPath, recursive: false)) {
       final baseName = path.basenameWithoutExtension(e).toLowerCase();
       if (baseName.startsWith('island')) {
         final image = await cubit.loadVisualImage(e);
@@ -249,28 +220,20 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
           newState.islandImage[id] = image;
         }
       } else if (baseName.startsWith('anim')) {
-        final animation =
-            await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
+        final animation = await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
         final id = int.tryParse(baseName.substring(4));
         if (animation != null && id != null) {
           newState.islandAnimation[id] = animation;
-          newState.rasterizedInAnimation[id] =
-              event.animationDetails[baseName]?.usesRasterizedImagesInAnim ??
-                  false;
+          newState.rasterizedInAnimation[id] = event.animationDetails[baseName]?.usesRasterizedImagesInAnim ?? false;
         }
       } else if (baseName.startsWith('danger_node')) {
-        final animation =
-            await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
-        newState.resourceAnimation[ResourceAnimationType.dangerNode] =
-            animation;
+        final animation = await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
+        newState.resourceAnimation[ResourceAnimationType.dangerNode] = animation;
       } else if (baseName.startsWith('zomboss_node')) {
-        final animation =
-            await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
-        newState.resourceAnimation[ResourceAnimationType.zombossNode] =
-            animation;
+        final animation = await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
+        newState.resourceAnimation[ResourceAnimationType.zombossNode] = animation;
       } else if (baseName.startsWith('gate')) {
-        final animation =
-            await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
+        final animation = await cubit.loadVisualAnimation(e, filterQuality: filterQuality);
         newState.resourceAnimation[ResourceAnimationType.keyGate] = animation;
       } else if (baseName.startsWith('danger_level')) {
         final image = await cubit.loadVisualImage(e);
@@ -278,11 +241,10 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       }
     }
     final pinataPath = '${cubit.state.settingPath}/pinata';
-    newState.resourceImage[ResourceImageType.pinataSpine] = await cubit
-        .loadVisualImage('$pinataPath/pinata_${event.worldName}_spine.png');
+    newState.resourceImage[ResourceImageType.pinataSpine] =
+        await cubit.loadVisualImage('$pinataPath/pinata_${event.worldName}_spine.png');
     newState.resourceImage[ResourceImageType.pinataSpineOpen] =
-        await cubit.loadVisualImage(
-            '$pinataPath/pinatas_dust_spine_${event.worldName}.png');
+        await cubit.loadVisualImage('$pinataPath/pinatas_dust_spine_${event.worldName}.png');
     await _loadEventResource(newState, cubit, filterQuality);
     emit(newState);
     _finished(event.notify, event.itemUpdate);

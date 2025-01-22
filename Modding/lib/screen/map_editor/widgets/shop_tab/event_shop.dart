@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
@@ -14,10 +15,7 @@ class EventShopView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context
-        .read<MapEditorConfigurationCubit>()
-        .state
-        .sectionItem[SectionType.event]!;
+    final item = context.read<MapEditorConfigurationCubit>().state.sectionItem[SectionType.event]!;
     return Positioned(
       bottom: 20,
       left: 20,
@@ -27,27 +25,24 @@ class EventShopView extends StatelessWidget {
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          child: item.icon),
+                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
                       Text(
-                        'Event Shop', //TODO: Localize
+                        context.los.event_shop,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          context.read<SectionBloc>().add(
-                              const SectionMinizeToggled(
-                                  type: SectionType.event, minize: true));
+                          context
+                              .read<SectionBloc>()
+                              .add(const SectionMinizeToggled(type: SectionType.event, minize: true));
                         },
                         icon: const Icon(Symbols.close),
                       )
@@ -99,8 +94,7 @@ class EventShopGrid extends StatelessWidget {
               return GridView.builder(
                 itemCount: keysList.length,
                 padding: const EdgeInsets.all(6),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 6),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 6),
                 itemBuilder: (context, index) {
                   final eventType = keysList[index];
                   if (state.hideOldEvent && _checkOldEvent(eventType)) {
@@ -108,8 +102,7 @@ class EventShopGrid extends StatelessWidget {
                         color: Colors.transparent,
                         shadowColor: Colors.transparent,
                         child: ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                              Colors.grey, BlendMode.modulate),
+                          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.modulate),
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             shadowColor: Colors.transparent,
@@ -125,14 +118,12 @@ class EventShopGrid extends StatelessWidget {
                         message: eventName[eventType]!,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () =>
-                              context.read<StageBloc>().add(AddEventItemEvent(
-                                    eventType: eventType,
-                                    itemBloc: context.read<ItemBloc>(),
-                                    stageBloc: context.read<StageBloc>(),
-                                  )),
-                          splashColor:
-                              Theme.of(context).colorScheme.secondaryFixedDim,
+                          onTap: () => context.read<StageBloc>().add(AddEventItemEvent(
+                                eventType: eventType,
+                                itemBloc: context.read<ItemBloc>(),
+                                stageBloc: context.read<StageBloc>(),
+                              )),
+                          splashColor: Theme.of(context).colorScheme.secondaryFixedDim,
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             shadowColor: Colors.transparent,

@@ -41,7 +41,10 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
 
   final AppLocalizations los;
 
-  void _shortcutMenu(ShortcutMenuEvent event, Emitter<ToolBarState> emit) {
+  void _shortcutMenu(
+    ShortcutMenuEvent event,
+    Emitter<ToolBarState> emit,
+  ) {
     initBloc.add(const ShowAlertDialog(
       type: AlertDialogShowType.shortcut,
       enable: true,
@@ -49,7 +52,10 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _configTool(ToolConfigEvent event, Emitter<ToolBarState> emit) {
+  void _configTool(
+    ToolConfigEvent event,
+    Emitter<ToolBarState> emit,
+  ) {
     initBloc.add(const ShowAlertDialog(
       type: AlertDialogShowType.config,
       enable: true,
@@ -57,7 +63,10 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _configToolDone(ToolConfigSubmitted event, Emitter<ToolBarState> emit) {
+  void _configToolDone(
+    ToolConfigSubmitted event,
+    Emitter<ToolBarState> emit,
+  ) {
     final settingPath = '${cubit.state.settingPath}/config.json';
     final config = cubit.state.configModel;
     config.setting.playSingleFrame = settingBloc.state.playSingleFrame;
@@ -73,7 +82,10 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _clearTool(ToolClearEvent event, Emitter<ToolBarState> emit) {
+  void _clearTool(
+    ToolClearEvent event,
+    Emitter<ToolBarState> emit,
+  ) {
     initBloc.add(const ShowAlertDialog(
       type: AlertDialogShowType.clear,
       enable: true,
@@ -81,7 +93,10 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _clearToolDone(ToolClearSubmitted event, Emitter<ToolBarState> emit) {
+  void _clearToolDone(
+    ToolClearSubmitted event,
+    Emitter<ToolBarState> emit,
+  ) {
     event.stageBloc.add(ClearWorldEvent(
       itemUpdate: event.itemUpdate,
       layerBloc: event.layerBloc,
@@ -90,7 +105,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
   }
 
   Future<void> _saveTool(
-      ToolSaveEvent event, Emitter<ToolBarState> emit) async {
+    ToolSaveEvent event,
+    Emitter<ToolBarState> emit,
+  ) async {
     final path = await FileHelper.saveFile(suggestedName: 'worldmap.json');
     if (path != null) {
       final state = event.stageBloc.state;
@@ -111,7 +128,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
   }
 
   Future<void> _openTool(
-      ToolOpenEvent event, Emitter<ToolBarState> emit) async {
+    ToolOpenEvent event,
+    Emitter<ToolBarState> emit,
+  ) async {
     final path = await FileHelper.uploadFile();
     if (path == null) {
       return;
@@ -125,8 +144,11 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
           stageBloc: event.stageBloc));
       initBloc.add(ShowSnackBarEvent(text: los.worldmap_loaded));
     } catch (ex) {
-      initBloc.add(const ShowSnackBarEvent(
-          text: 'Failed to load WorldMap')); //TODO: add locale
+      initBloc.add(
+        ShowSnackBarEvent(
+          text: los.failed_to_load_worldmap,
+        ),
+      );
     }
   }
 
@@ -135,8 +157,6 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     Emitter<ToolBarState> emit,
   ) {
     final toolStatus = state.toolStatus[event.type];
-    assert(
-        toolStatus != null, 'failed get tool stats by tool type ${event.type}');
     final toolBarState = state.copyWith();
     toolBarState.toolStatus[event.type] = event.enabled ?? !toolStatus!;
     emit(toolBarState);

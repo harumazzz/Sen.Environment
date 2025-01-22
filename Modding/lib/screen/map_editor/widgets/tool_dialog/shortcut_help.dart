@@ -6,112 +6,115 @@ class ShortCutMenuWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final los = context.los; //TODO: add locale
-    return const AlertDialog(
-        title: Text('Shortcut Menu'),
-        content: Card(
-          shadowColor: Colors.transparent,
-          child: SizedBox(
-              width: 600,
-              height: 430,
-              child: Padding(
-                  padding: EdgeInsets.fromLTRB(10, 16, 8, 16),
-                  child: Row(
+    final los = context.los;
+    return AlertDialog(
+      title: Text(los.shortcut_menu),
+      content: Card(
+        shadowColor: Colors.transparent,
+        child: SizedBox(
+          width: 600,
+          height: 430,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 16, 8, 16),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 290,
+                  child: Column(
                     children: [
-                      SizedBox(
-                        width: 290,
-                        child: Column(
-                          children: [
-                            ShortcutTile(
-                              shortcutName: 'Open WorldMap',
-                              keyMapList: ['Ctrl', 'O'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Save WorldMap',
-                              keyMapList: ['Ctrl', 'S'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Rectangle Tool',
-                              keyMapList: ['Ctrl'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Erase Tool',
-                              keyMapList: ['E'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Pan Tool',
-                              keyMapList: ['Space'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Resize Tool',
-                              keyMapList: ['Ctrl', 'R'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Clear Tool',
-                              keyMapList: ['F8'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Open Config',
-                              keyMapList: ['F9'],
-                            ),
-                            ShortcutTile(
-                              shortcutName: 'Open Shortcut Menu',
-                              keyMapList: ['F2'],
-                            )
-                          ],
-                        ),
+                      ShortcutTile(
+                        shortcutName: los.open_world_map,
+                        keyMapList: const ['Ctrl', 'O'],
                       ),
-                      SizedBox(
-                          width: 290,
-                          child: Column(
-                            children: [
-                              ShortcutTile(
-                                shortcutName: 'Delete',
-                                keyMapList: ['Del'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Copy',
-                                keyMapList: ['Ctrl', 'C'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Paste',
-                                keyMapList: ['Ctrl', 'V'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Undo',
-                                keyMapList: ['Ctrl', 'Z'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Redo',
-                                keyMapList: ['Ctrl', 'Y'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Open Layer',
-                                keyMapList: ['Ctrl', 'L'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Open History',
-                                keyMapList: ['Ctrl', 'H'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Open Setting',
-                                keyMapList: ['Ctrl', 'I'],
-                              ),
-                              ShortcutTile(
-                                shortcutName: 'Open Palette',
-                                keyMapList: ['Ctrl', 'P'],
-                              )
-                            ],
-                          ))
+                      ShortcutTile(
+                        shortcutName: los.save_world_map,
+                        keyMapList: const ['Ctrl', 'S'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.rectangle_tool,
+                        keyMapList: const ['Ctrl'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.erase_tool,
+                        keyMapList: const ['E'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.pan_tool,
+                        keyMapList: const ['Space'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.resize_tool,
+                        keyMapList: const ['Ctrl', 'R'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.clear_tool,
+                        keyMapList: const ['F8'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_config,
+                        keyMapList: const ['F9'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_shortcut_menu,
+                        keyMapList: const ['F2'],
+                      )
                     ],
-                  ))),
-        ));
+                  ),
+                ),
+                SizedBox(
+                  width: 290,
+                  child: Column(
+                    children: [
+                      ShortcutTile(
+                        shortcutName: los.delete,
+                        keyMapList: const ['Del'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.copy,
+                        keyMapList: const ['Ctrl', 'C'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.paste,
+                        keyMapList: const ['Ctrl', 'V'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.undo,
+                        keyMapList: const ['Ctrl', 'Z'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.redo,
+                        keyMapList: const ['Ctrl', 'Y'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_layer,
+                        keyMapList: const ['Ctrl', 'L'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_history,
+                        keyMapList: const ['Ctrl', 'H'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_settings,
+                        keyMapList: const ['Ctrl', 'I'],
+                      ),
+                      ShortcutTile(
+                        shortcutName: los.open_palette,
+                        keyMapList: const ['Ctrl', 'P'],
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
 class ShortcutTile extends StatelessWidget {
-  const ShortcutTile(
-      {super.key, required this.shortcutName, required this.keyMapList});
+  const ShortcutTile({super.key, required this.shortcutName, required this.keyMapList});
 
   final String shortcutName;
 
@@ -127,9 +130,7 @@ class ShortcutTile extends StatelessWidget {
               Text(
                 shortcutName,
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color:
-                        Theme.of(context).colorScheme.onSecondaryFixedVariant),
+                    fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSecondaryFixedVariant),
               ),
               const Spacer(),
               ...keyMapList.map((e) => KeyCap(
@@ -157,9 +158,7 @@ class KeyCap extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
         child: Text(
           keyName,
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSecondaryFixedVariant),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSecondaryFixedVariant),
         ),
       ),
     );

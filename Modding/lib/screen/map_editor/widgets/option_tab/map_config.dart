@@ -145,7 +145,7 @@ class MapConfigTab extends StatelessWidget {
                         child: SizedBox(
                             width: double.infinity,
                             child: TextStringField(
-                                label: 'World Name', //TODO: add locale
+                                label: los.world_name,
                                 value: state.worldName,
                                 onFieldSubmitted: (value) {
                                   stageBloc.add(SetWorldName(worldName: value));
@@ -165,7 +165,7 @@ class MapConfigTab extends StatelessWidget {
                                 autovalidateMode: AutovalidateMode.always,
                                 validator: (value) {
                                   if (value != state.worldName) {
-                                    return 'Enter to save'; //TODO: add locale
+                                    return los.press_enter_to_save;
                                   }
                                   return null;
                                 }))),
@@ -198,7 +198,7 @@ class MapConfigTab extends StatelessWidget {
                             child: SizedBox(
                               width: 132,
                               child: DropdownButtonField<String>(
-                                label: 'World Resource', // TODO : Localize
+                                label: los.world_resources,
                                 value: state.worldResource,
                                 items: worldResourceList
                                     .map((e) => DropdownMenuItem<String>(
