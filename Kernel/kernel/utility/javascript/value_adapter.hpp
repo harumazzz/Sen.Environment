@@ -104,7 +104,6 @@ namespace Sen::Kernel::JavaScript {
 		JSContext* context, 
 		const T& value
 	) -> JSValue {
-		static_assert(sizeof(T) != sizeof(bool), "value cannot be bool");
 		return Converter::to_bigint<T>(context, value);
 	}
 

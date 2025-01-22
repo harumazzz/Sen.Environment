@@ -44,7 +44,7 @@ namespace Sen::Kernel::Support::PopCap::CryptData
 						index %= arysize;
 					}
 				}
-				destination.append(source.get(source.get_write_pos(), source.size()));
+				destination.append(source.get(source.write_position(), source.size()));
 				return;
 			}
 

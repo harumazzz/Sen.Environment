@@ -288,31 +288,6 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
 			option: 59n,
 		});
-		inject<
-			Functions.PopCap.RSB.Obfuscate.Argument,
-			Functions.PopCap.RSB.Obfuscate.BatchArgument,
-			Functions.PopCap.RSB.Obfuscate.Configuration
-		>({
-			id: 'popcap.rsb.obfuscate',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.rsb.obfuscate.json'),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(argument, 'destination', `${argument.source}.bin`);
-				check_overwrite(argument as { destination: string }, 'file');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate.process_fs(
-					argument.source,
-					argument.destination!,
-				);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 54n,
-		});
 	}
 }
 

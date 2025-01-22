@@ -180,7 +180,8 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					streaming_wave_processed = true;
 				} else {
 					const scg_stream = new Kernel.DataStreamView(`${destination}/packet/${e}.scg`);
-					scg_stream.writeUint32(to_ios ? 4n : 2n, k_composite_flag_offset);
+					scg_stream.write_position = k_composite_flag_offset;
+					scg_stream.writeUint32(to_ios ? 4n : 2n);
 					scg_stream.out_file(`${destination}/packet/${e}.scg`);
 				}
 			}

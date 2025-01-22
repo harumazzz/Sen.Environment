@@ -368,7 +368,6 @@ namespace Sen.Script {
 			'~/Support/PopCap/Animation/Miscellaneous/GenerateAnimation.js',
 			'~/Support/PopCap/Animation/Miscellaneous/AddLibrary.js',
 			'~/Support/PopCap/Lawnstrings/Convert.js',
-			'~/Support/PopCap/ResourceStreamBundle/Miscellaneous/Obfuscate.js',
 			'~/Support/PopCap/ResourceStreamBundle/Miscellaneous/PlatformConverter.js',
 			'~/Support/PopCap/ReflectionObjectNotation/DecodeByLooseConstraints.js',
 			'~/Support/Wwise/Media/Common.js',

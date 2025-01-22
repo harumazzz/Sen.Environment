@@ -216,7 +216,7 @@ namespace Sen::Kernel::Support::Texture
 			int width,
 			int height) -> Image<int>
 		{
-			auto stream = DataStreamView{color};
+			auto stream = DataStreamView{std::move(color)};
 			auto area = pixel_area_rgba(width, height);
 			auto data = List<unsigned char>(area, 0x00);
 			for (auto y : Range<int>(height))

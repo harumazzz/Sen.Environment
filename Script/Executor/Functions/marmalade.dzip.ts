@@ -33,10 +33,10 @@ namespace Sen.Script.Executor.Functions.Marmalade.DZip {
 		>({
 			id: 'marmalade.dzip.unpack',
 			configuration_file: Home.query('~/Executor/Configuration/marmalade.dzip.unpack.json'),
-			direct_forward(argument: Unpack.Argument): void {
+			direct_forward(argument): void {
 				is_valid_source(argument, false);
 				Console.obtained(argument.source);
-				defined_or_default<Unpack.Argument, string>(
+				defined_or_default(
 					argument,
 					'destination',
 					`${Kernel.Path.except_extension(argument.source)}.data_package`,
@@ -59,7 +59,7 @@ namespace Sen.Script.Executor.Functions.Marmalade.DZip {
 		>({
 			id: 'marmalade.dzip.pack',
 			configuration_file: Home.query('~/Executor/Configuration/marmalade.dzip.pack.json'),
-			direct_forward(argument: Pack.Argument): void {
+			direct_forward(argument): void {
 				is_valid_source(argument, true);
 				Console.obtained(argument.source);
 				defined_or_default<Pack.Argument, string>(

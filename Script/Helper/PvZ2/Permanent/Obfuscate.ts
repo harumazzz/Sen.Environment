@@ -1,4 +1,4 @@
-namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate {
+namespace Sen.Script.Helper.PvZ2.Permanent.Obfuscate {
 	/**
 	 * Version
 	 */
@@ -128,20 +128,27 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.Obfuscate
 		for (let i = 0n; i < rsb_head_info.rsg_number; ++i) {
 			const start_index = stream.read_position;
 			const autopool_start_index = rsb_head_info.autopool_info_begin + i * 152n;
-			stream.writeArrayBuffer(subgroup_section, start_index);
-			stream.writeArrayBuffer(subgroup_section, autopool_start_index);
-			stream.writeArrayBuffer(packet_section, start_index + 132n);
+			stream.write_position = start_index;
+			stream.writeArrayBuffer(subgroup_section);
+			stream.write_position = autopool_start_index;
+			stream.writeArrayBuffer(subgroup_section);
+			stream.write_position = start_index + 132n;
+			stream.writeArrayBuffer(packet_section);
 			const packet_offset = stream.readUint32(start_index + 128n);
-			stream.writeArrayBuffer(rsg_section, packet_offset);
+			stream.write_position = packet_offset;
+			stream.writeArrayBuffer(rsg_section);
 			stream.read_position = start_index + rsb_head_info.rsg_info_each_length;
 		}
 	}
 
 	// -----------------------------------------------------------------
 
-	export function process_fs(source: string, destination: string): void {
+	export function execute(): void {
+		const source = Console.path('input source file', 'file');
+		const destination = `${source}.bin`;
 		const rsb = new Kernel.DataStreamView(source);
 		process(rsb);
 		rsb.out_file(destination);
 	}
 }
+Sen.Script.Helper.PvZ2.Permanent.Obfuscate.execute();

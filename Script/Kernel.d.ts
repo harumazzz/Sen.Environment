@@ -3121,7 +3121,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeUint8(value: bigint, position?: bigint): void;
+			public writeUint8(value: bigint): void;
 
 			/**
 			 * Write a Uint16 value to the data stream (with or without position)
@@ -3133,7 +3133,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeUint16(value: bigint, position?: bigint): void;
+			public writeUint16(value: bigint): void;
 
 			/**
 			 * Write a Uint32 value to the data stream (with or without position)
@@ -3145,7 +3145,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeUint32(value: bigint, position?: bigint): void;
+			public writeUint32(value: bigint): void;
 
 			/**
 			 * Write a Uint64 value to the data stream (with or without position)
@@ -3157,7 +3157,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeUint64(value: bigint, position?: bigint): void;
+			public writeUint64(value: bigint): void;
 
 			/**
 			 * Write a Int8 value to the data stream (with or without position)
@@ -3168,7 +3168,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeInt8(value: bigint, position?: bigint): void;
+			public writeInt8(value: bigint): void;
 
 			/**
 			 * Write a Int16 value to the data stream (with or without position)
@@ -3179,7 +3179,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeInt16(value: bigint, position?: bigint): void;
+			public writeInt16(value: bigint): void;
 
 			/**
 			 * Write a Int32 value to the data stream (with or without position)
@@ -3190,7 +3190,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeInt32(value: bigint, position?: bigint): void;
+			public writeInt32(value: bigint): void;
 
 			/**
 			 * Write a Int64 value to the data stream (with or without position)
@@ -3201,7 +3201,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeInt64(value: bigint, position?: bigint): void;
+			public writeInt64(value: bigint): void;
 
 			/**
 			 * Write an entire ArrayBuffer to the data stream (with or without position)
@@ -3213,7 +3213,7 @@ declare namespace Sen {
 			 * @param {ArrayBuffer} value - The ArrayBuffer containing the data to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeArrayBuffer(value: ArrayBuffer, position?: bigint): void;
+			public writeArrayBuffer(value: ArrayBuffer): void;
 
 			/**
 			 * Write an entire Uint8Array to the data stream (with or without position)
@@ -3225,7 +3225,7 @@ declare namespace Sen {
 			 * @param {Uint8Array} value - The Uint8Array containing the data to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeUint8Array(value: Uint8Array, position?: bigint): void;
+			public writeUint8Array(value: Uint8Array): void;
 
 			/**
 			 * Write a float value to the data stream (with or without position)
@@ -3237,7 +3237,7 @@ declare namespace Sen {
 			 * @param {number} value - The floating-point number to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeFloat(value: number, position?: bigint): void;
+			public writeFloat(value: number): void;
 
 			/**
 			 * Write a double value to the data stream (with or without position)
@@ -3249,7 +3249,7 @@ declare namespace Sen {
 			 * @param {number} value - The floating-point number to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeDouble(value: number, position?: bigint): void;
+			public writeDouble(value: number): void;
 
 			/**
 			 * Write a variable-length encoded signed 32-bit integer to the data stream (with or without position)
@@ -3262,7 +3262,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The integer value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeVarInt32(value: bigint, position?: bigint): void;
+			public writeVarInt32(value: bigint): void;
 
 			/**
 			 * Write a variable-length encoded signed 64-bit integer to the data stream (with or without position)
@@ -3275,7 +3275,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The integer value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeVarInt64(value: bigint, position?: bigint): void;
+			public writeVarInt64(value: bigint): void;
 
 			/**
 			 * Write a zigzag-encoded 32-bit signed integer to the data stream (with or without position)
@@ -3289,7 +3289,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The integer value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeZigZag32(value: bigint, position?: bigint): void;
+			public writeZigZag32(value: bigint): void;
 
 			/**
 			 * Write a zigzag-encoded 64-bit signed integer to the data stream (with or without position)
@@ -3302,7 +3302,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The integer value to write (as a bigint).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeZigZag64(value: bigint, position?: bigint): void;
+			public writeZigZag64(value: bigint): void;
 
 			/**
 			 * Write a string to the data stream (with or without position)
@@ -3315,7 +3315,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeString(value: string, position?: bigint): void;
+			public writeString(value: string): void;
 
 			/**
 			 * Write a string to the data stream, potentially with a 4-byte prefix indicating string length (with or without position)
@@ -3328,7 +3328,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringFourByte(value: string, position?: bigint): void;
+			public writeStringFourByte(value: string): void;
 
 			/**
 			 * Write a null value to the data stream (with or without position)
@@ -3340,7 +3340,7 @@ declare namespace Sen {
 			 * @param {bigint} value (unused) - This parameter might be optional or used for compatibility purposes.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeNull(value?: bigint, position?: bigint): void;
+			public writeNull(value?: bigint): void;
 
 			/**
 			 * Write a boolean value to the data stream (with or without position)
@@ -3353,7 +3353,7 @@ declare namespace Sen {
 			 * @param {bigint} value - The boolean value to write (cast to bigint - likely 0 or 1).
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeBoolean(value: bigint, position?: bigint): void;
+			public writeBoolean(value: bigint): void;
 
 			/**
 			 * Write a string to the data stream using a Uint8 array for length encoding (with or without position)
@@ -3367,7 +3367,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByUint8(value: string, position?: bigint): void;
+			public writeStringByUint8(value: string): void;
 
 			/**
 			 * Write a string to the data stream using a Uint16 array for length encoding (with or without position)
@@ -3380,7 +3380,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByUint16(value: string, position?: bigint): void;
+			public writeStringByUint16(value: string): void;
 
 			/**
 			 * Write a string to the data stream using a Uint32 array for length encoding (with or without position)
@@ -3392,7 +3392,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByUint32(value: string, position?: bigint): void;
+			public writeStringByUint32(value: string): void;
 
 			/**
 			 * Write a string to the data stream using a Int8 array for length encoding (with or without position)
@@ -3406,7 +3406,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByInt8(value: string, position?: bigint): void;
+			public writeStringByInt8(value: string): void;
 
 			/**
 			 * Write a string to the data stream using a Int16 array for length encoding (with or without position)
@@ -3419,7 +3419,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByInt16(value: string, position?: bigint): void;
+			public writeStringByInt16(value: string): void;
 
 			/**
 			 * Write a string to the data stream using a Uint32 array for length encoding (with or without position)
@@ -3433,7 +3433,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByInt32(value: string, position?: bigint): void;
+			public writeStringByInt32(value: string): void;
 
 			/**
 			 * Write a string to the data stream without any explicit length encoding (with or without position)
@@ -3447,7 +3447,7 @@ declare namespace Sen {
 			 * @param {string} value - The string value to write.
 			 * @param {bigint} position (optional) - The byte offset for writing (defaults to write_position).
 			 */
-			public writeStringByEmpty(value: string, position?: bigint): void;
+			public writeStringByEmpty(value: string): void;
 
 			/**
 			 * Read an unsigned 8-bit integer from the data stream (with or without position)

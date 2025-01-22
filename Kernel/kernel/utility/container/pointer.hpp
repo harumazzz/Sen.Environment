@@ -37,4 +37,16 @@ namespace Sen::Kernel {
 	{
 		return std::move(value); 
 	}
+
+	template <typename To, typename From>
+	 auto steal_reference(From& from) -> To& {
+			static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
+			return *reinterpret_cast<To*>(&from);
+		}
+
+	template <typename To, typename From>
+	auto steal_pointer(From* from) -> To* {
+			static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
+		return reinterpret_cast<To*>(from);
+	}
 }

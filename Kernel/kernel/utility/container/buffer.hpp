@@ -45,13 +45,20 @@ namespace Sen::Kernel
         }
 
         Stream(
-            const List<std::uint8_t> &data) : data(std::move(data)), read_pos(0), write_pos(data.size()), length(data.size())
+            const List<std::uint8_t> &data
+        ) : data{data}, read_pos{0}, write_pos{data.size()}, length{data.size()}
         {
-            return;
+        }
+        
+        Stream(
+            List<std::uint8_t> &&data
+        ) : data{std::move(data)}, read_pos{0}, write_pos{data.size()}, length{data.size()}
+        {
         }
 
         Stream(
-            Stream &&that) noexcept : data(std::move(that.data)), length(that.length), read_pos(0), write_pos(0)
+            Stream &&that
+        ) noexcept : data{std::move(that.data)}, length{that.length}, read_pos{0}, write_pos{0}
         {
         }
 
@@ -93,7 +100,7 @@ namespace Sen::Kernel
 
         Stream(
             const std::size_t &length
-        ) : read_pos(0), write_pos(length), length(length)
+        ) : read_pos{0}, write_pos{length}, length{length}
         {
             thiz.reserve(length + thiz.buffer_size);
             return;
@@ -196,21 +203,21 @@ namespace Sen::Kernel
             return List<unsigned char>(thiz.data.begin() + from, thiz.data.begin() + to);
         }
 
-        inline constexpr auto get_read_pos(
+        inline constexpr auto read_position(
 
         ) const -> std::size_t
         {
             return thiz.read_pos;
         }
 
-        inline constexpr auto get_write_pos(
+        inline constexpr auto write_position(
 
         ) const -> std::size_t
         {
             return thiz.write_pos;
         }
 
-        inline auto change_read_pos(
+        inline auto read_position(
             const std::size_t &pos
         ) const -> void
         {
@@ -219,7 +226,7 @@ namespace Sen::Kernel
             return;
         }
 
-        inline auto constexpr change_write_pos(
+        inline auto constexpr write_position(
             const std::size_t &pos
         ) const -> void
         {
@@ -229,7 +236,7 @@ namespace Sen::Kernel
 
         inline auto toString(
 
-            ) -> std::string
+        ) -> std::string
         {
             auto ss = std::stringstream{};
             auto bytes = thiz.data.data();
@@ -356,14 +363,14 @@ namespace Sen::Kernel
             auto size = 3;
             if constexpr (use_big_endian)
             {
-                for (auto i : Range(size))
+                for (auto i : Range{size})
                 {
                     thiz.writeUint8((value >> ((size - 1 - i) * 8)) & 0xFF);
                 }
             }
             else
             {
-                for (auto i : Range(size))
+                for (auto i : Range{size})
                 {
                     thiz.writeUint8((value >> (i * 8)) & 0xFF);
                 }
@@ -466,14 +473,14 @@ namespace Sen::Kernel
             auto size = 3;
             if constexpr (use_big_endian)
             {
-                for (auto i : Range(size))
+                for (auto i : Range{size})
                 {
                     thiz.writeInt8((value >> ((size - 1 - i) * 8)) & 0xFF);
                 }
             }
             else
             {
-                for (auto i : Range(size))
+                for (auto i : Range{size})
                 {
                     thiz.writeInt8((value >> (i * 8)) & 0xFF);
                 }

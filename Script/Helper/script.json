@@ -41,6 +41,11 @@
 			"path": "./WWise/HashID.js",
 			"name": "Hash WWise ID",
 			"description": "From string, Sen will hash it into WWise ID"
+		},
+		{
+			"path": "./PvZ2/Permanent/Obfuscate.js",
+			"name": "Obfuscate PvZ2 RSB",
+			"description": "Protect your RSB from unpacking tools"
 		}
 	]
 }

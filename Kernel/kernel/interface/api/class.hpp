@@ -74,10 +74,180 @@ namespace Sen::Kernel::Interface::API {
 			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& size){
 				return stream->allocate(size);
 			}, void, size_t&>("allocate")
-			.template add_member_function<[](Pointer<DataStreamView> stream, uint8_t value){
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint8_t& value){
 				return stream->writeUint8(value);
-			}, void, uint8_t>("writeUint8")
-
+			}, void, uint8_t&>("writeUint8")
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint16_t& value){
+				return stream->writeUint16(value);
+			}, void, uint16_t&>("writeUint16")
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint32_t& value){
+				return stream->writeUint24(value);
+			}, void, uint32_t&>("writeUint24")
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint32_t& value){
+				return stream->writeUint32(value);
+			}, void, uint32_t&>("writeUint32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, uint64_t& value){
+				return stream->writeUint64(value);
+			}, void, uint64_t&>("writeUint64")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int8_t& value){
+				return stream->writeInt8(value);
+			}, void, int8_t&>("writeInt8")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int16_t& value){
+				return stream->writeInt16(value);
+			}, void, int16_t&>("writeInt16")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int32_t& value){
+				return stream->writeInt24(value);
+			}, void, int32_t&>("writeInt24")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int32_t& value){
+				return stream->writeInt32(value);
+			}, void, int32_t&>("writeInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int64_t& value){
+				return stream->writeInt64(value);
+			}, void, int64_t&>("writeInt64")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::shared_ptr<JavaScript::ArrayBuffer>& value){
+				return stream->writeRaw(value->value, value->size);
+			}, void, std::shared_ptr<JavaScript::ArrayBuffer>&>("writeArrayBuffer")
+			.template add_member_function<[](Pointer<DataStreamView> stream, float& value){
+				return stream->writeFloat(value);
+			}, void, float&>("writeFloat")
+			.template add_member_function<[](Pointer<DataStreamView> stream, double& value){
+				return stream->writeDouble(value);
+			}, void, double&>("writeDouble")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int32_t& value){
+				return stream->writeDouble(value);
+			}, void, int32_t&>("writeVarInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int64_t& value){
+				return stream->writeVarInt64(value);
+			}, void, int64_t&>("writeVarInt64")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int32_t& value){
+				return stream->writeZigZag32(value);
+			}, void, int32_t&>("writeZigZag32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, int64_t& value){
+				return stream->writeZigZag64(value);
+			}, void, int64_t&>("writeZigZag64")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeString(value);
+			}, void, std::string&>("writeString")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringFourByte(value);
+			}, void, std::string&>("writeStringFourByte")
+			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& amount){
+				return stream->writeNull(amount);
+			}, void, size_t&>("writeNull")
+			.template add_member_function<[](Pointer<DataStreamView> stream, bool& value){
+				return stream->writeBoolean(value);
+			}, void, bool&>("writeBoolean")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByUint8(value);
+			}, void, std::string&>("writeStringByUint8")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByUint16(value);
+			}, void, std::string&>("writeStringByUint16")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByUint32(value);
+			}, void, std::string&>("writeStringByUint32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByInt8(value);
+			}, void, std::string&>("writeStringByInt8")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByInt16(value);
+			}, void, std::string&>("writeStringByInt16")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByInt32(value);
+			}, void, std::string&>("writeStringByInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByEmpty(value);
+			}, void, std::string&>("writeStringByEmpty")
+			.template add_member_function<[](Pointer<DataStreamView> stream, std::string& value){
+				return stream->writeStringByEmpty(value);
+			}, void, std::string&>("writeStringByEmpty")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readUint8();
+			}, uint8_t>("readUint8")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readUint16();
+			}, uint16_t>("readUint16")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readUint24();
+			}, uint32_t>("readUint24")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readUint32();
+			}, uint32_t>("readUint32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readUint64();
+			}, uint64_t>("readUint64")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readInt8();
+			}, int8_t>("readInt8")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readInt16();
+			}, int16_t>("readInt16")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readInt24();
+			}, int32_t>("readInt24")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readInt32();
+			}, int32_t>("readInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readInt64();
+			}, int64_t>("readInt64")
+			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& size){
+				return stream->readString(size);
+			}, std::string, size_t&>("readString")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByUint8();
+			}, std::string>("readStringByUint8")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByUint16();
+			}, std::string>("readStringByUint16")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByUint32();
+			}, std::string>("readStringByUint32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByInt8();
+			}, std::string>("readStringByInt8")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByInt16();
+			}, std::string>("readStringByInt16")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByInt32();
+			}, std::string>("readStringByInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByVarInt32();
+			}, std::string>("readStringByVarInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readStringByEmpty();
+			}, std::string>("readStringByEmpty")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readVarInt32();
+			}, int32_t>("readVarInt32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readVarInt64();
+			}, int64_t>("readVarInt64")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readVarUint32();
+			}, uint32_t>("readVarUint32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readVarUint64();
+			}, uint64_t>("readVarUint64")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readZigZag32();
+			}, int32_t>("readZigZag32")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readZigZag64();
+			}, int64_t>("readZigZag64")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readFloat();
+			}, float>("readFloat")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->readDouble();
+			}, double>("readDouble")
+			.template add_member_function<[](Pointer<DataStreamView> stream){
+				return stream->close();
+			}, void>("close")
+			.template add_member_function<[](Pointer<DataStreamView> stream, size_t& size){
+				return stream->allocate(size);
+			}, void, size_t&>("allocate")
 			.build(class_builder);
 			return;
 		}

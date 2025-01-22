@@ -72,7 +72,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void
 			{
-				block_offset.block1_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block1_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_1) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -90,7 +90,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void
 			{
-				block_offset.block5_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block5_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_5) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -109,7 +109,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void 
 			{
-				block_offset.block6_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block6_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_6) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -126,7 +126,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void 
 			{
-				block_offset.block2_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block2_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_2) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -141,11 +141,11 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				DataStreamView& string_section
 			) -> void
 			{
-				block_offset.block3_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block3_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_3) {
 					dataStream.writeUint32(static_cast<uint32_t>(item.string.size()));
 					dataStream.writeUint32(item.unknown_2);
-					dataStream.writeUint32(string_section.get_write_pos());
+					dataStream.writeUint32(string_section.write_position());
 					string_section.writeStringByEmpty(item.string);
 				}
 			}
@@ -157,7 +157,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void 
 			{
-				block_offset.block4_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block4_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_4) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -174,7 +174,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void 
 			{
-				block_offset.block7_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block7_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_7) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);
@@ -188,7 +188,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				const RenderEffects& data
 			) -> void 
 			{
-				block_offset.block8_section_offset = static_cast<uint32_t>(dataStream.get_write_pos());
+				block_offset.block8_section_offset = static_cast<uint32_t>(dataStream.write_position());
 				for (auto& item : data.block_8) {
 					dataStream.writeUint32(item.unknown_1);
 					dataStream.writeUint32(item.unknown_2);

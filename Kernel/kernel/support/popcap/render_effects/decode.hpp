@@ -113,7 +113,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block1_section_offset);
+				stream.read_position(info.block1_section_offset);
 				render_effects.block_1.reserve(info.block1_size);
 				for (auto i : Range<uint32_t>(info.block1_size)) {
 					render_effects.block_1.emplace_back(Block1{
@@ -129,7 +129,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block2_section_offset);
+				stream.read_position(info.block2_section_offset);
 				render_effects.block_2.reserve(info.block2_size);
 				for (auto i : Range<uint32_t>(info.block2_size)) {
 					render_effects.block_2.emplace_back(Block2{
@@ -145,13 +145,13 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block3_section_offset);
+				stream.read_position(info.block3_section_offset);
 				render_effects.block_3.reserve(info.block3_size);
 				for (auto i : Range<uint32_t>(info.block3_size)) {
 					stream.readUint32();
 					auto block_3 = Block3{};
 					block_3.unknown_2 = stream.readUint32();
-					string_section.change_read_pos(stream.readUint32());
+					string_section.read_position(stream.readUint32());
 					block_3.string = string_section.readStringByEmpty();
 					render_effects.block_3.emplace_back(block_3);
 				}
@@ -163,7 +163,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block4_section_offset);
+				stream.read_position(info.block4_section_offset);
 				render_effects.block_4.reserve(info.block4_size);
 				for (auto i : Range<uint32_t>(info.block4_size)) {
 					render_effects.block_4.emplace_back(Block4{
@@ -179,7 +179,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block5_section_offset);
+				stream.read_position(info.block5_section_offset);
 				render_effects.block_5.reserve(info.block5_size);
 				for (auto i : Range<uint32_t>(info.block5_size)) {
 					render_effects.block_5.emplace_back(Block5{
@@ -196,7 +196,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block6_section_offset);
+				stream.read_position(info.block6_section_offset);
 				render_effects.block_6.reserve(info.block6_size);
 				for (auto i : Range<uint32_t>(info.block6_size)) {
 					render_effects.block_6.emplace_back(Block6{
@@ -212,7 +212,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block7_section_offset);
+				stream.read_position(info.block7_section_offset);
 				render_effects.block_7.reserve(info.block7_size);
 				for (auto i : Range<uint32_t>(info.block7_size)) {
 					render_effects.block_7.emplace_back(Block7{
@@ -227,7 +227,7 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 				RenderEffects& render_effects
 			) -> void
 			{
-				stream.change_read_pos(info.block8_section_offset);
+				stream.read_position(info.block8_section_offset);
 				render_effects.block_8.reserve(info.block8_size);
 				for (auto i : Range<uint32_t>(info.block8_size)) {
 					render_effects.block_8.emplace_back(Block8{
