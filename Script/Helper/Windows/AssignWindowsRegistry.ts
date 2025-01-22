@@ -20,7 +20,7 @@ namespace Sen.Script.Helper.Windows.AssignWindowsRegistry {
 		command += `@="PvZ2 SCG: Encode"\n`;
 		command += `"Icon"="${entry}\\\\Launcher.exe\\"\n`;
 		command += `[HKEY_CLASSES_ROOT\\Directory\\shell\\PvZ2 SCG: Encode\\command]\n`;
-		command += `@="\\"${entry}\\\\Launcher.exe\\" -source \\"%1\\" -method pvz2.scg.encode"\n`;
+		command += `@="\\"${entry}\\\\Launcher.exe\\" -source \\"%1\\" -method project.scg.encode"\n`;
 		const extensions = [
 			'.rsb',
 			'.rsg',

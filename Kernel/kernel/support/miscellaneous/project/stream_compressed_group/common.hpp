@@ -230,7 +230,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             {
                 if (res.is_string())
                 {
-                    return Converter::to_int32(res.get<std::string>(), String::format(fmt::format("{}", Language::get("pvz2.scg.exchange_custom_resource_info.invalid_convert")), res.get<std::string>()));
+                    return Converter::to_int32(res.get<std::string>(), String::format(fmt::format("{}", Language::get("project.scg.exchange_custom_resource_info.invalid_convert")), res.get<std::string>()));
                 }
                 else if (res.is_number())
                 {
@@ -536,11 +536,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             if (data["type"] != nullptr)
             {
-                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), String::format(fmt::format("{}", Language::get("pvz2.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
+                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), String::format(fmt::format("{}", Language::get("project.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
                 for (auto &[packet_id, packet_value] : data["packet"].items())
                 {
                     auto &packet = value.texture.packet[packet_id];
-                    assert_conditional(hash_string(packet_value["type"].get<std::string>()) == hash_string("Image"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
+                    assert_conditional(hash_string(packet_value["type"].get<std::string>()) == hash_string("Image"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
                     packet.path = packet_value["path"].get<std::string>();
                     packet.dimension.width = packet_value["dimension"]["width"].get<int>();
                     packet.dimension.height = packet_value["dimension"]["height"].get<int>();
@@ -822,7 +822,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
             }
             default:
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
+                assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
             }
         }
 
@@ -854,7 +854,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
             }
             default:
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
+                assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
             }
         }
 
@@ -964,7 +964,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             for (auto &[data_id, data_value] : image_info.data)
             {
-                assert_conditional(data_value.type == DataType::Image, String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_image_type")), data_id), "exchange_image");
+                assert_conditional(data_value.type == DataType::Image, String::format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), data_id), "exchange_image");
                 auto rectangle = RectangleFileIO<int>(
                     data_value.texture_info.ax,
                     data_value.texture_info.ay,
@@ -1114,9 +1114,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             auto header_information = HeaderInformaiton{};
             exchange_head_information(stream, header_information);
-            assert_conditional(header_information.magic == k_magic_identifier, fmt::format("{}", Language::get("pvz2.scg.invalid_scg_magic")), "exchange_stream_resource_group");
+            assert_conditional(header_information.magic == k_magic_identifier, fmt::format("{}", Language::get("project.scg.invalid_scg_magic")), "exchange_stream_resource_group");
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(header_information.version));
-            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_scg_version")), std::to_string(header_information.version)), "exchange_stream_resource_group");
+            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("project.scg.invalid_scg_version")), std::to_string(header_information.version)), "exchange_stream_resource_group");
             packet_information.version = static_cast<int>(header_information.version);
             auto composite_flag = CompositeFlag{};
             exchange_composite_flag(header_information.composite_flag, composite_flag);
@@ -1135,7 +1135,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             }
             else
             {
-                assert_conditional(false, fmt::format("{}", Language::get("pvz2.scg.invalid_texture_format_category")), "exchange_stream_resource_group");
+                assert_conditional(false, fmt::format("{}", Language::get("project.scg.invalid_texture_format_category")), "exchange_stream_resource_group");
             }
             auto subgroup_information_list = List<SubgroupInformation>{};
             stream.read_pos = header_information.subgroup_information_section_offset;
@@ -1152,10 +1152,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 auto resource_content_information = ResourceContentInformation{};
                 exchange_resouce_content_information(stream, resource_content_information);
                 assert_conditional(resource_content_information.magic == k_resource_content_information_magic_identifier, String::format(fmt::format("{}", Language::get("popcap.rsb.project.invalid_resource_content_magic")), std::to_string(resource_content_information.magic), std::to_string(k_resource_content_information_magic_identifier)), "exchange_stream_resource_group");
-                assert_conditional(resource_content_information.version == k_resource_content_information_version, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
+                assert_conditional(resource_content_information.version == k_resource_content_information_version, String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 auto compressed_data = stream.readString(static_cast<size_t>(resource_content_information.information_compressed_size));
                 auto content_data_string = Encryption::Base64::decode(compressed_data);
-                assert_conditional(content_data_string.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
+                assert_conditional(content_data_string.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 packet_subgroup.info = nlohmann::ordered_json::parse(content_data_string);
             }
             return;

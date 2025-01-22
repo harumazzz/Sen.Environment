@@ -73,7 +73,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 					argument,
 					'enable_debug',
 					this.configuration,
-					Kernel.Language.get('pvz2.scg.enable_debug'),
+					Kernel.Language.get('project.scg.enable_debug'),
 				);
 				const generic = Detail.generic();
 				if (!argument.enable_debug) {
@@ -84,7 +84,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 					'generic',
 					this.configuration,
 					generic,
-					Kernel.Language.get('pvz2.scg.decode.generic'),
+					Kernel.Language.get('project.scg.decode.generic'),
 				);
 				argument.generic! -= 1n;
 				if (argument.generic! === 1n) {
@@ -92,7 +92,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 						argument,
 						'animation_split_label',
 						this.configuration,
-						Kernel.Language.get('pvz2.scg.animation_split_label'),
+						Kernel.Language.get('project.scg.animation_split_label'),
 					);
 				}
 				const setting: Support.Project.StreamCompressedGroup.Configuration.Setting = {
@@ -120,8 +120,8 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 			Functions.Project.SCG.Encode.BatchArgument,
 			Functions.Project.SCG.Encode.Configuration
 		>({
-			id: 'pvz2.scg.encode',
-			configuration_file: Home.query('~/Executor/Configuration/pvz2.scg.encode.json'),
+			id: 'project.scg.encode',
+			configuration_file: Home.query('~/Executor/Configuration/project.scg.encode.json'),
 			direct_forward(argument): void {
 				is_valid_source(argument, true);
 				Console.obtained(argument.source);
@@ -136,7 +136,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 					argument,
 					'enable_debug',
 					this.configuration,
-					Kernel.Language.get('pvz2.scg.enable_debug'),
+					Kernel.Language.get('project.scg.enable_debug'),
 				);
 				const generic = Detail.generic();
 				if (!argument.enable_debug) {
@@ -147,7 +147,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 					'generic',
 					this.configuration,
 					generic,
-					Kernel.Language.get('pvz2.scg.encode.generic'),
+					Kernel.Language.get('project.scg.encode.generic'),
 				);
 				argument.generic! -= 1n;
 				if (argument.generic! === 1n) {
@@ -155,7 +155,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 						argument,
 						'animation_split_label',
 						this.configuration,
-						Kernel.Language.get('pvz2.scg.animation_split_label'),
+						Kernel.Language.get('project.scg.animation_split_label'),
 					);
 				}
 				const setting: Setting = {

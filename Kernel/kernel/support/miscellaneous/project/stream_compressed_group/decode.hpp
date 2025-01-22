@@ -206,10 +206,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             trim_string(data_info.path);
             auto extension = Kernel::Path::getExtension(data_info.path);
-            assert_conditional(data_info.type == DataType::PopAnim, String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
-            assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_pam_file")), data_info.path), "exchange_animation");
+            assert_conditional(data_info.type == DataType::PopAnim, String::format(fmt::format("{}", Language::get("project.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
+            assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), data_info.path), "exchange_animation");
             auto stream = DataStreamView{resource_data};
-            assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("pvz2.scg.pam_is_corrupted")), data_info.path), "exchange_animation");
+            assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), data_info.path), "exchange_animation");
             auto animation = Sen::Kernel::Support::PopCap::Animation::SexyAnimation{};
             Sen::Kernel::Support::PopCap::Animation::Decode::process_whole(stream, animation);
             data_info.path = exchange_animation_path(data_info.path);
@@ -463,7 +463,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 {
                 case DataType::Data:
                 {
-                    assert_conditional(compare_string(extension, ".rton"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_rton_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".rton"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_rton_file")), resource_information.path), "decode_popcap_file");
                     auto writer = JsonWriter{};
                     writer.WriteIndent = true;
                     auto stream = DataStreamView{resource_data};
@@ -475,7 +475,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 case DataType::SoundBank:
                 case DataType::DecodedSoundBank:
                 {
-                    assert_conditional(compare_string(extension, ".bnk"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_bnk_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".bnk"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_bnk_file")), resource_information.path), "decode_popcap_file");
                     auto stream = DataStreamView{resource_data};
                     exchange_path(resource_information.path, ".bnk"_sv, ""_sv);
                     auto soundbank_definition = Sen::Kernel::Support::WWise::SoundBank::SoundBankInformation{};
@@ -486,9 +486,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
                 case DataType::PopAnim:
                 {
-                    assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_pam_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), resource_information.path), "decode_popcap_file");
                     auto stream = DataStreamView{resource_data};
-                    assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("pvz2.scg.pam_is_corrupted")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), resource_information.path), "decode_popcap_file");
                     auto animation = Sen::Kernel::Support::PopCap::Animation::SexyAnimation{};
                     Sen::Kernel::Support::PopCap::Animation::Decode::process_whole(stream, animation);
                     exchange_path(resource_information.path, ""_sv, ".json"_sv);
@@ -515,7 +515,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             for (auto &[subgroup_id, packet_value] : packet_information)
             {
-                assert_conditional(!packet_value.is_image, fmt::format("{}", Language::get("pvz2.scg.general_cannot_cotain_image")), "exchange_general_additional");
+                assert_conditional(!packet_value.is_image, fmt::format("{}", Language::get("project.scg.general_cannot_cotain_image")), "exchange_general_additional");
                 auto &packet_info = definition.subgroup[subgroup_id];
                 packet_info.category.locale = packet_value.subgroup_content_information.general.locale;
                 auto before_compression = PacketCompression{};

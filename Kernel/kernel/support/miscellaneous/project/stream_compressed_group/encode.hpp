@@ -97,8 +97,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             log(image_height);
             auto option = MaxRectsAlgorithm::Option{
                 .border = 1,
-                .padding = 3}; // safe padding.
-            auto max_rects_packer = MaxRectsAlgorithm::MaxRectsPacker(image_width, image_height, option);
+                .padding = 3
+            }; // safe padding.
+            auto max_rects_packer = MaxRectsAlgorithm::MaxRectsPacker{image_width, image_height, option};
+            if (rectangle_list.size() > max_rects_packer.bins.capacity()) {
+                max_rects_packer.bins.reserve(rectangle_list.size());
+            }
             max_rects_packer.addArray(rectangle_list);
             for (auto i : Range(max_rects_packer.bins.size()))
             {
@@ -194,7 +198,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     }
                     else
                     {
-                        assert_conditional(false, String::format(fmt::format("{}", Language::get("pvz2.scg.same_id_but_image_mismatch")), toupper_back(image_value.id)), "exchange_image_sprite");
+                        assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.same_id_but_image_mismatch")), toupper_back(image_value.id)), "exchange_image_sprite");
                     }
                 }
                 auto &image_info = texture_sprite_view_stored[toupper_back(image_value.id)];
@@ -242,7 +246,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             bool const &animation_split_label) -> void
         {
             auto extension = Kernel::Path::getExtension(data_info.path);
-            assert_conditional(data_info.type == DataType::PopAnim, String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
+            assert_conditional(data_info.type == DataType::PopAnim, String::format(fmt::format("{}", Language::get("project.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
             auto stream = DataStreamView{resource_data};
             auto animation = Sen::Kernel::Support::PopCap::Animation::SexyAnimation{};
             if (animation_split_label)
@@ -316,9 +320,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         else
                         {
                             auto animation_source = fmt::format("{}/{}", resource_source, resource_info.path);
-                            assert_conditional(compare_string(Kernel::Path::getExtension(resource_info.path), ""_sv) && std::filesystem::is_directory(animation_source), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_folder_and_no_file_extension")), resource_info.path), "exchange_texture_advanced");
+                            assert_conditional(compare_string(Kernel::Path::getExtension(resource_info.path), ""_sv) && std::filesystem::is_directory(animation_source), String::format(fmt::format("{}", Language::get("project.scg.must_be_folder_and_no_file_extension")), resource_info.path), "exchange_texture_advanced");
                             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo extra = FileSystem::read_json(fmt::format("{}/data.json", animation_source));
-                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(highest_resolution, extra.resolution, Path::getFileName(resource_info.path), "pvz2.scg.resolution_mismatch");
+                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(highest_resolution, extra.resolution, Path::getFileName(resource_info.path), "project.scg.resolution_mismatch");
                             exchange_image_sprite(texture_sprite_view_stored, extra, resource_source, resource_info.path);
                             auto resource_data = List<uint8_t>{};
                             exchange_animation(resource_data, extra, data_information, get_animation_resolution(definition.texture_format_category, highest_resolution), animation_source, animation_split_label);
@@ -399,7 +403,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     {
                     case DataType::ImageData:
                     {
-                        assert_conditional(hash_string(Path::getExtension(resource_info.path)) == hash_string(".json"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), resource_info.path), "exchange_texture_simple");
+                        assert_conditional(hash_string(Path::getExtension(resource_info.path)) == hash_string(".json"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_json_file")), resource_info.path), "exchange_texture_simple");
                         auto subgroup_id_with_resolution = fmt::format("{}_{}", subgroup_id, highest_resolution);
                         auto &packet_info = packet_information[subgroup_id_with_resolution];
                         packet_info.packet_structure.version = definition.version;
@@ -414,8 +418,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         {
                             auto image = ImageIO::read_png(fmt::format("{}/{}.png", resource_source, image_info.path));
                             auto image_id_index = exchange_image_id_index(subgroup_id_with_resolution, image_index);
-                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(image.width, image_info.dimension.width, image_id, "pvz2.scg.mismatch_image_width");
-                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(image.height, image_info.dimension.height, image_id, "pvz2.scg.mismatch_image_height");
+                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(image.width, image_info.dimension.width, image_id, "project.scg.mismatch_image_width");
+                            Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::compare_conditional(image.height, image_info.dimension.height, image_id, "project.scg.mismatch_image_height");
                             auto texture_path = fmt::format("atlases/{}.ptx", image_id_index);
                             auto &texture_data = packet_info.resource_data_section_view_stored[toupper_back(String::to_windows_style(texture_path))];
                             auto image_format = exchange_image_format(definition.texture_format_category, definition.category.format);
@@ -543,7 +547,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 {
                 case DataType::Data:
                 {
-                    assert_conditional(compare_string(extension, ".json"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), data_information.path), "encode_popcap_file");
+                    assert_conditional(compare_string(extension, ".json"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_json_file")), data_information.path), "encode_popcap_file");
                     auto stream = DataStreamView{};
                     Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(stream, FileSystem::read_file(fmt::format("{}/{}", resource_source, data_information.path)));
                     data_information.type = DataType::File;
@@ -555,7 +559,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 case DataType::DecodedSoundBank:
                 {
                     auto soundbank_source = fmt::format("{}/{}", resource_source, data_information.path);
-                    assert_conditional(compare_string(extension, ""_sv) && std::filesystem::is_directory(soundbank_source), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_folder_and_no_file_extension")), data_information.path), "encode_popcap_file");
+                    assert_conditional(compare_string(extension, ""_sv) && std::filesystem::is_directory(soundbank_source), String::format(fmt::format("{}", Language::get("project.scg.must_be_folder_and_no_file_extension")), data_information.path), "encode_popcap_file");
                     auto stream = DataStreamView{};
                     auto soundbank_definition = FileSystem::read_json(fmt::format("{}/data.json", soundbank_source));
                     Sen::Kernel::Support::WWise::SoundBank::Encode::process_whole(stream, soundbank_definition, soundbank_source);
@@ -565,7 +569,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
                 case DataType::PopAnim:
                 {
-                    assert_conditional(compare_string(extension, ".json"_sv), String::format(fmt::format("{}", Language::get("pvz2.scg.must_be_json_file")), data_information.path), "encode_popcap_file");
+                    assert_conditional(compare_string(extension, ".json"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_json_file")), data_information.path), "encode_popcap_file");
                     auto animation = FileSystem::read_json(fmt::format("{}/{}", resource_source, data_information.path));
                     auto stream = DataStreamView{};
                     Sen::Kernel::Support::PopCap::Animation::Encode::process_whole(stream, animation);

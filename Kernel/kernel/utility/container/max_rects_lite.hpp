@@ -43,7 +43,8 @@ namespace Sen::Kernel
                 int height,
                 int x,
                 int y, 
-                const std::string &source) : width(width), height(height), x(x), y(y), source(source)
+                const std::string &source
+            ) : width{width}, height{height}, x{x}, y{y}, source{source}
             {
                 rect_used = true;
                 return;
@@ -52,7 +53,7 @@ namespace Sen::Kernel
             Rectangle(
                 int width,
                 int height,
-                const std::string &source) : width(width), height(height), source(source)
+                const std::string &source) : width{width}, height{height}, source{source}
             {
                 rect_used = true;
                 return;
@@ -146,17 +147,11 @@ namespace Sen::Kernel
             MaxRectsBin(
                 int _maxWidth,
                 int _maxHeight,
-                Option &_options)
+                Option &_options
+            ) : options{_options}, maxWidth{_maxWidth}, maxHeight{_maxHeight}, width{_options.smart ? 1 : _maxWidth}, height{_options.smart ? 1 : _maxHeight}, border{_options.border}, padding{_options.padding}
             {
-                freeRects.clear();
-                rects.clear();
-                options = std::move(_options);
-                maxWidth = _maxWidth;
-                maxHeight = _maxHeight;
-                width = options.smart ? 1 : maxWidth;
-                height = options.smart ? 1 : maxHeight;
-                border = options.border;
-                padding = options.padding;
+                freeRects.reserve(1024);
+                rects.reserve(1024);
                 freeRects.emplace_back(Rectangle(maxWidth + padding - border * 2, maxHeight + padding - border * 2, border, border, ""));
                 stage = Rectangle(width, height, "");
                 return;
@@ -333,7 +328,7 @@ namespace Sen::Kernel
                 auto tmpHeight = (std::max)(height, node.y + node.height - padding + border);
                 if (options.pot)
                 {
-                    auto log2e = 1.4426950408889634;
+                    constexpr auto log2e = 1.4426950408889634;
                     tmpWidth = std::pow(2, std::ceil(std::log(tmpWidth) * log2e));
                     tmpHeight = std::pow(2, std::ceil(std::log(tmpHeight) * log2e));
                 }
@@ -388,21 +383,23 @@ namespace Sen::Kernel
             int mutable width = EDGE_MAX_VALUE;
             int mutable height = EDGE_MAX_VALUE;
             Option mutable options;
-            List<MaxRectsBin> mutable bins;
+            List<MaxRectsBin> mutable bins{};
 
             MaxRectsPacker() = default;
 
             MaxRectsPacker(
                 int width,
-                int height) : width(width), height(height)
+                int height) : width{width}, height{height}
             {
+                bins.reserve(1024);
             }
 
             MaxRectsPacker(
                 int width,
                 int height,
-                Option &options) : width(width), height(height), options(options)
+                Option &options) : width{width}, height{height}, options{options}
             {
+                bins.reserve(1024);
             }
 
             ~MaxRectsPacker() = default;
@@ -456,7 +453,7 @@ namespace Sen::Kernel
                             return true;
                         }
                     }
-                    auto bin = MaxRectsBin(width, height, options);
+                    auto bin = MaxRectsBin{width, height, options};
                     bin.add(rect);
                     bins.emplace_back(bin);
                 }

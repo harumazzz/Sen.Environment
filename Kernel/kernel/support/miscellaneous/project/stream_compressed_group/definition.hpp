@@ -383,7 +383,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             {
                 return it->second;
             }
-            assert_conditional(false, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_data_type")), std::to_string(static_cast<uint8_t>(data))), "exchange_data_type");
+            assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_data_type")), std::to_string(static_cast<uint8_t>(data))), "exchange_data_type");
         }
 
         inline static auto exchange_data_type(
@@ -393,7 +393,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             {
                 return it->first;
             }
-            assert_conditional(false, String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_data_type")), data), "exchange_data_type");
+            assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_data_type")), data), "exchange_data_type");
         }
     */
 
@@ -407,7 +407,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         std::string_view const &data) -> DataType
     {
         auto data_type = magic_enum::enum_cast<DataType>(data);
-        assert_conditional(data_type.has_value(), String::format(fmt::format("{}", Language::get("pvz2.scg.invalid_data_type")), data), "exchange_data_type");
+        assert_conditional(data_type.has_value(), String::format(fmt::format("{}", Language::get("project.scg.invalid_data_type")), data), "exchange_data_type");
         return data_type.value();
     }
 
