@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
@@ -47,6 +50,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   String? _mediaDirectory;
 
   late VisualHelper _visualHelper;
+  late ScreenshotController _screenshotController;
 
   @override
   void initState() {
@@ -55,6 +59,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     _visualHelper = VisualHelper(
       context: context,
     );
+    _screenshotController = ScreenshotController();
     super.initState();
     _sprite = [];
     _image = [];
@@ -332,6 +337,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     _screen = <Widget>[
       AnimationScreen(
         key: ValueKey(_visualHelper.hasAnimation),
+        controller: _screenshotController,
         visualHelper: _visualHelper,
         selectedLabelBloc: widget.selectedLabelBloc,
         onUploadFile: _onUploadFile,
@@ -420,6 +426,53 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     }
   }
 
+  Future<void> _showDialog(
+    Uint8List image,
+  ) async {
+    final los = AppLocalizations.of(context)!;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(los.screenshot_taken),
+          content: Image.memory(
+            image,
+          ),
+          actions: [
+            TextButton(
+              child: Text(los.save),
+              onPressed: () async {
+                void closeDialog() => Navigator.of(context).pop();
+                final file = await FileHelper.saveFile(
+                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+                  suggestedName: 'screenshot.png',
+                );
+                if (file != null) {
+                  FileHelper.writeBuffer(source: file, data: image);
+                  closeDialog();
+                }
+              },
+            ),
+            TextButton(
+              child: Text(los.okay),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _takeScreenshot() async {
+    final imageBytes = await _screenshotController.capture();
+
+    if (imageBytes != null) {
+      await _showDialog(imageBytes);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
@@ -428,6 +481,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         forceMaterialTransparency: Platform.isWindows || Platform.isLinux || Platform.isMacOS,
         title: Text(los.animation_viewer),
         actions: [
+          IconButton(
+            onPressed: _takeScreenshot,
+            icon: const Icon(Symbols.screenshot),
+          ),
           IconButton(
             onPressed: _onUploadFile,
             icon: const Icon(Symbols.file_upload),

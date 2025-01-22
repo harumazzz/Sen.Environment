@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
@@ -23,6 +24,7 @@ class AnimationScreen extends StatefulWidget {
     required this.animationController,
     required this.visualHelper,
     required this.selectedLabelBloc,
+    required this.controller,
   });
 
   final bool hasFile;
@@ -40,6 +42,8 @@ class AnimationScreen extends StatefulWidget {
   final VisualHelper visualHelper;
 
   final SelectedLabelBloc selectedLabelBloc;
+
+  final ScreenshotController controller;
 
   @override
   State<AnimationScreen> createState() => _AnimationScreenState();
@@ -135,23 +139,26 @@ class _AnimationScreenState extends State<AnimationScreen> {
     required double yOffset,
   }) {
     return Builder(builder: (context) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Transform(
-          transform: widget.visualHelper.transformMatrixFromVariant([
-            xOffset,
-            yOffset,
-          ]),
-          child: Transform.scale(
-            scale: scale,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.6,
-                maxHeight: MediaQuery.of(context).size.height * 0.6,
-              ),
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: _animationVisual,
+      return Screenshot(
+        controller: widget.controller,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Transform(
+            transform: widget.visualHelper.transformMatrixFromVariant([
+              xOffset,
+              yOffset,
+            ]),
+            child: Transform.scale(
+              scale: scale,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.6,
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: _animationVisual,
+                ),
               ),
             ),
           ),

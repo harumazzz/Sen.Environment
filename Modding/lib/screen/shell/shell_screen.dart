@@ -372,9 +372,9 @@ class _ShellScreenState extends State<ShellScreen> {
             actions: [
               Tooltip(
                 message: los.take_screenshot,
-                child: ElevatedButton(
+                child: IconButton(
                   onPressed: _takeScreenshot,
-                  child: const Icon(Symbols.camera),
+                  icon: const Icon(Symbols.screenshot),
                 ),
               ),
             ],
