@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-colored = "2.2.0"
+colored = "3.0.0"
 rfd = "0.15.2"
 libc = "0.2.169"
 
