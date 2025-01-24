@@ -10,7 +10,7 @@ use crate::service::host::sen::shell::Host;
 
 fn main() {
 	match run() {
-		Ok(_) => println!("Application executed successfully."),
+		Ok(_) => {},
 		Err(e) => eprintln!("Application encountered an error: {}", e),
 	}
 }

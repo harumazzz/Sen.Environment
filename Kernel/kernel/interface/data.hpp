@@ -94,17 +94,16 @@ namespace Sen::Kernel::Interface {
 	using StringListFinalizer = void(*)(StringList*);
 
 	inline static auto construct_string(
-		std::string_view that
-	) -> StringView
+		std::string_view that,
+		StringView& destination
+	) -> void
 	{
 		auto temporary = std::unique_ptr<uint8_t[]>(new uint8_t[that.size() + 1]);
 		std::memcpy(temporary.get(), that.data(), that.size());
 		temporary.get()[that.size()] = '\0'; 
-		auto destination = StringView{
-			.value = temporary.release(),
-			.size = that.size(),
-		};
-		return destination;
+		destination.value = temporary.release();
+		destination.size = that.size();
+		return;
 	}
 
 	inline static auto construct_string(
@@ -125,7 +124,7 @@ namespace Sen::Kernel::Interface {
 		destination.value = new StringView[that.size()];
 		destination.size = that.size();
 		for (auto i : Range(that.size())) {
-			destination.value[i] = construct_string(that[i]);
+			construct_string(that[i], destination.value[i]);
 		}
 		return;
 	}
@@ -139,7 +138,7 @@ namespace Sen::Kernel::Interface {
 		destination.value = new StringView[N];
 		destination.size = N;
 		for (auto i : Range(N)) {
-			destination.value[i] = construct_string(that[i]);
+			construct_string(that[i], destination.value[i]);
 		}
 		return;
 	}

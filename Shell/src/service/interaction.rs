@@ -1,6 +1,7 @@
 pub mod sen {
 
     pub mod shell {
+        use std::io::Write;
         use colored::Colorize;
         use crate ::external::color::sen::shell::Color;
         use crate::bridge::convert::sen::shell::{to_cstring};
@@ -16,20 +17,20 @@ pub mod sen {
 
         impl Interaction {
 
-            fn print_color(
+            pub fn print_color(
                 message: &String,
                 color: &Color,
             ) {
                 match color {
-                    Color::Cyan => println!("{:?}", message.as_str().cyan()),
-                    Color::Red => println!("{:?}", message.as_str().red()),
-                    Color::Green => println!("{:?}", message.as_str().green()),
-                    Color::Yellow => println!("{:?}", message.as_str().yellow()),
-                    Color::Default => println!("{:?}", message),
+                    Color::Cyan => println!("{}", message.as_str().cyan()),
+                    Color::Red => println!("{}", message.as_str().red()),
+                    Color::Green => println!("{}", message.as_str().green()),
+                    Color::Yellow => println!("{}", message.as_str().yellow()),
+                    Color::Default => println!("{}", message),
                 }
             }
 
-            fn print(
+            pub fn print(
                 title: &String,
                 message: &String,
                 color: &Color,
@@ -40,7 +41,7 @@ pub mod sen {
                 }
             }
 
-            fn input(
+            pub fn input(
 
             ) -> String
             {
@@ -49,33 +50,34 @@ pub mod sen {
                 value
             }
 
-            pub(crate) unsafe fn input_string(
+            pub fn input_string(
                 destination: *mut CStringView,
             ){
                 let value = Self::input();
                 to_cstring(&value, destination);
             }
 
-            pub(crate) fn display_argument (
+            pub fn display_argument (
                 data: &Vec<String>
             )
             {
-                assert_if(data.len() < 2, "Not enough arguments");
+                assert_if(data.len() >= 2, "Not enough arguments");
                 match data.len() {
                     2 => println!("{}", data[1]),
-                    3 => Self::print(&data[0], &data[1], &Color::Default),
-                    _ => Self::print(&data[0], &data[1], &exchange_color(data[2].as_str())),
+                    3 => Self::print(&data[1], &data[2], &Color::Default),
+                    _ => Self::print(&data[1], &data[2], &exchange_color(data[3].as_str())),
                 }
             }
 
-            pub(crate) fn wait (
+            pub fn wait (
 
             )
             {
-                Self::print_color(&String::from("● "), &Color::Cyan);
+                print!("{}", "● ".cyan());
+                std::io::stdout().flush().unwrap(); 
             }
 
-            pub(crate) unsafe fn current_version (
+            pub fn current_version (
                 destination: *mut CStringView,
             )
             {
@@ -83,7 +85,7 @@ pub mod sen {
                 to_cstring(&version, destination);
             }
 
-            pub(crate) unsafe fn is_gui (
+            pub fn is_gui (
                 destination: *mut CStringView,
             )
             {
@@ -91,7 +93,7 @@ pub mod sen {
                 to_cstring(&is_gui, destination);
             }
 
-            pub(crate) unsafe fn pick_file (
+            pub fn pick_file (
                 destination: *mut CStringView,
             )
             {
@@ -101,7 +103,7 @@ pub mod sen {
                 }
             }
 
-            pub(crate) unsafe fn pick_directory (
+            pub fn pick_directory (
                 destination: *mut CStringView,
             )
             {

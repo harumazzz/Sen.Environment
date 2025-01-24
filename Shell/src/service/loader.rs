@@ -28,13 +28,15 @@ pub mod sen {
         use crate::utility::exception::sen::shell::assert_if;
 
 
-
+        #[warn(unsafe_op_in_unsafe_fn)]
         unsafe extern "C" fn callback (
             source: *mut CStringList,
             destination: *mut CStringView,
         ) -> c_int
         {
-            assert_if((*source).size >= 0, "Not enough arguments");
+            unsafe {
+                assert_if((*source).size >= 1, "Not enough arguments");
+            }
             let mut data: Vec<String> = Vec::new();
             to_vector(source, &mut data);
             match data[0].as_str() {
@@ -42,7 +44,7 @@ pub mod sen {
                 "wait" => Interaction::wait(),
                 "version" => Interaction::current_version(destination),
                 "is_gui" => Interaction::is_gui(destination),
-                "input" => Interaction::input_string(destination),
+                "input" =>  Interaction::input_string(destination),
                 "pick_file" => Interaction::pick_file(destination),
                 "pick_directory" => Interaction::pick_directory(destination),
                 _ => {},
@@ -75,8 +77,8 @@ pub mod sen {
                 {
                     unsafe {
                         let symbol_function = CString::new(symbol).unwrap();
-                        let proc_address = GetProcAddress(self.handle.unwrap(), symbol.as_ptr().cast());
-                        assert_if(!proc_address.is_none(), "Function not found not found.");
+                        let proc_address = GetProcAddress(self.handle.unwrap(), symbol_function.as_ptr().cast());
+                        assert_if(!proc_address.is_none(), "Function not found.");
                         Ok(std::mem::transmute(proc_address))
                     }
                 }
@@ -85,7 +87,7 @@ pub mod sen {
                     unsafe {
                         let symbol_function = CString::new(symbol).unwrap();
                         let symbol_ptr = dlsym(self.handle.unwrap(), symbol_function.as_ptr());
-                        assert_if(!symbol_ptr.is_null(), "Function not found not found.");
+                        assert_if(!symbol_ptr.is_null(), "Function not found.");
                         Ok(std::mem::transmute(symbol_ptr))
                     }
                 }
@@ -109,24 +111,28 @@ pub mod sen {
                 &self
             )
             {
-                for index in 0..(*self.argument_list.unwrap()).size {
-                    if (*(*self.argument_list.unwrap()).value.offset(index as isize)).value.is_null() {
-                        free((*(*self.argument_list.unwrap()).value.offset(index as isize)).value as *mut c_void);
+                unsafe {
+                    for index in 0..(*self.argument_list.unwrap()).size {
+                        if (*(*self.argument_list.unwrap()).value.offset(index as isize)).value.is_null() {
+                            free((*(*self.argument_list.unwrap()).value.offset(index as isize)).value as *mut c_void);
+                        }
                     }
+                    free(self.argument_list.unwrap() as *mut c_void);
                 }
-                free(self.argument_list.unwrap() as *mut c_void);
             }
 
             unsafe fn construct_argument (
                 &mut self
             )
             {
-                self.argument_list = Some(malloc(std::mem::size_of::<CStringList>()) as *mut CStringList);
-                (*self.argument_list.unwrap()).size = self.arguments.len() as usize;
-                (*self.argument_list.unwrap()).value = malloc(std::mem::size_of::<CStringView>() * self.arguments.len()) as *mut CStringView;
-                for (index, argument) in self.arguments.iter().enumerate() {
-                    let value: *mut CStringView = (*self.argument_list.unwrap()).value.offset(index as isize);
-                    to_cstring(argument, value);
+                unsafe {
+                    self.argument_list = Some(malloc(std::mem::size_of::<CStringList>()) as *mut CStringList);
+                    (*self.argument_list.unwrap()).size = self.arguments.len() as usize;
+                    (*self.argument_list.unwrap()).value = malloc(std::mem::size_of::<CStringView>() * self.arguments.len()) as *mut CStringView;
+                    for (index, argument) in self.arguments.iter().enumerate() {
+                        let value: *mut CStringView = (*self.argument_list.unwrap()).value.offset(index as isize);
+                        to_cstring(argument, value);
+                    }
                 }
             }
         }
@@ -134,7 +140,7 @@ pub mod sen {
         impl Client for Loader {
 
             fn initialize(&mut self) {
-                assert_if(self.arguments.len() < 3, "Please use launcher to launch Sen");
+                assert_if(self.arguments.len() >= 3, "Please use launcher to launch Sen");
                 #[cfg(windows)]
                 {
                     let kernel: Vec<u16> = OsStr::new(self.arguments[1].as_str()).encode_wide().collect();

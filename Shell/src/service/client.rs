@@ -7,6 +7,7 @@ pub mod sen {
             fn initialize(&mut self);
 
             fn execute(&mut self);
+            
             fn finalizer(&self);
 
         }
