@@ -18,12 +18,12 @@ class MapEditor extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Help'),
+            title: const Text('Help'),
             content: SingleChildScrollView(
               child: Column(
                 children: [
                   Text('The tool will save the map every 5 minutes automatically in $directory'),
-                  Text('After you save the map, SUI will automatically clean all the files in the directory'),
+                  const Text('After you save the map, SUI will automatically clean all the files in the directory'),
                 ],
               ),
             ),

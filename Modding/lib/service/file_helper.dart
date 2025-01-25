@@ -82,7 +82,7 @@ class FileHelper {
     required dynamic data,
   }) async {
     final file = File(source);
-    file.writeAsString(const JsonEncoder.withIndent('\t').convert(data));
+    file.writeAsString(const JsonEncoder.withIndent('\t').convert(data), flush: true);
     return;
   }
 
@@ -185,6 +185,10 @@ class FileHelper {
 
   static void createDirectory(String destination) {
     return Directory(destination).createSync(recursive: true);
+  }
+
+  static Future<void> createDirectoryAsync(String destination) async {
+    await Directory(destination).create(recursive: true);
   }
 
   static void removeFile(String source) {

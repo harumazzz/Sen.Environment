@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/service/file_helper.dart';
+import 'package:path/path.dart' as p;
 
 part 'autosave_event.dart';
 part 'autosave_state.dart';
@@ -19,11 +20,11 @@ class AutosaveBloc extends Bloc<AutosaveEvent, AutosaveState> {
   AutosaveBloc({
     required this.stageBloc,
   }) : super(const AutosaveState(files: [])) {
-    _timer = Timer(const Duration(minutes: 5), () {
-      add(const AutosaveEvent());
-    });
     on<SaveEvent>(_onAutosaveEvent);
     on<CleanAutosaveEvent>(_onClean);
+    _timer = Timer.periodic(const Duration(seconds: 15), (Timer t) {
+      add(const SaveEvent());
+    });
   }
 
   Future<void> _onAutosaveEvent(
@@ -49,9 +50,13 @@ class AutosaveBloc extends Bloc<AutosaveEvent, AutosaveState> {
           ),
         ],
       );
+      await FileHelper.createDirectoryAsync(p.dirname(destination));
       await FileHelper.writeJsonAsync(source: destination, data: WorldMap.toJson(worldMap));
     }
 
+    if (stageBloc.state.worldName == 'none') {
+      return;
+    }
     final destination = '${await FileHelper.getWorkingDirectory()}/${DateTime.now().millisecond}';
     state.files.add(destination);
     await Isolate.spawn(
