@@ -24,6 +24,47 @@ class Hotkey extends StatelessWidget {
 
   final CanvasController controller;
 
+  void _delete(BuildContext context) {
+    final stageBloc = context.read<StageBloc>();
+    final layerBloc = context.read<LayerBloc>();
+    final selectedList = context.read<SelectedBloc>().state.selectedList;
+    context.read<StageBloc>().add(
+          RemoveItemEvent(
+            idList: selectedList,
+            itemBloc: context.read<ItemBloc>(),
+            layerBloc: context.read<LayerBloc>(),
+          ),
+        );
+    final actionService = ActionService<ActionModelType>(
+      actionType: ActionType.eraseItem,
+      data: {
+        ActionModelType.mapPieces: stageBloc.clonePieces(),
+        ActionModelType.mapEvents: stageBloc.cloneEvents(),
+      },
+      change: (data) {
+        final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+        final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+        stageBloc.add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
+        final layerKeys = <int>[];
+        for (final e in pieces.values) {
+          if (!layerKeys.contains(e.layer)) {
+            layerKeys.add(e.layer);
+          }
+        }
+        for (final layerId in layerKeys) {
+          layerBloc.updateNodeParallax(layerId, pieceItems: pieces);
+        }
+        layerBloc.updateTree(true);
+      },
+    );
+    context.read<HistoryBloc>().add(CaptureState(state: actionService));
+  }
+
+  void _copy(BuildContext context) {
+    controller.catchPointerHover();
+    context.read<SelectedBloc>().add(const CopySelectedList());
+  }
+
   @override
   Widget build(BuildContext context) {
     final toolbarBloc = context.read<ToolBarBloc>();
@@ -36,8 +77,7 @@ class Hotkey extends StatelessWidget {
             switch (logicalKey) {
               case LogicalKeyboardKey.keyC:
                 {
-                  controller.catchPointerHover();
-                  context.read<SelectedBloc>().add(const CopySelectedList());
+                  _copy(context);
                   break;
                 }
               case LogicalKeyboardKey.keyV:
@@ -202,36 +242,7 @@ class Hotkey extends StatelessWidget {
                 }
               case LogicalKeyboardKey.delete:
                 {
-                  final selectedList = context.read<SelectedBloc>().state.selectedList;
-                  context.read<StageBloc>().add(RemoveItemEvent(
-                        idList: selectedList,
-                        itemBloc: context.read<ItemBloc>(),
-                        layerBloc: context.read<LayerBloc>(),
-                      ));
-                  final actionService = ActionService<ActionModelType>(
-                      actionType: ActionType.eraseItem,
-                      data: {
-                        ActionModelType.mapPieces: stageBloc.clonePieces(),
-                        ActionModelType.mapEvents: stageBloc.cloneEvents(),
-                      },
-                      change: (data) {
-                        final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-                        final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-                        stageBloc.add(
-                            UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
-                        final layerKeys = <int>[];
-                        for (final e in pieces.values) {
-                          if (!layerKeys.contains(e.layer)) {
-                            layerKeys.add(e.layer);
-                          }
-                        }
-                        for (final layerId in layerKeys) {
-                          layerBloc.updateNodeParallax(layerId, pieceItems: pieces);
-                        }
-                        layerBloc.updateTree(true);
-                        // historyBloc.add(const UpdateIndexEvent());
-                      });
-                  context.read<HistoryBloc>().add(CaptureState(state: actionService));
+                  _delete(context);
                   break;
                 }
               case LogicalKeyboardKey.keyE:

@@ -22,6 +22,7 @@ import 'package:sen/screen/shell/controller/shell_controller.dart';
 import 'package:sen/screen/shell/view/string_stage.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class ShellScreen extends StatefulWidget {
   final List<String> arguments;
@@ -365,32 +366,34 @@ class _ShellScreenState extends State<ShellScreen> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return Screenshot(
-      controller: _screenshotController,
-      child: ExitHandler(
-        finished: _state != RunningState.running,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(los.shell),
-            actions: [
-              Tooltip(
-                message: los.take_screenshot,
-                child: IconButton(
-                  onPressed: _takeScreenshot,
-                  icon: const Icon(Symbols.screenshot),
+    return HotkeyBuilder(
+      child: Screenshot(
+        controller: _screenshotController,
+        child: ExitHandler(
+          finished: _state != RunningState.running,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(los.shell),
+              actions: [
+                Tooltip(
+                  message: los.take_screenshot,
+                  child: IconButton(
+                    onPressed: _takeScreenshot,
+                    icon: const Icon(Symbols.screenshot),
+                  ),
                 ),
+              ],
+            ),
+            body: DropHandler(
+              inputController: _inputController,
+              child: ClientView(
+                state: _state,
+                messages: _messages,
+                scrollController: _scrollController,
+                makeStage: _makeStage,
+                stage: _stage,
+                onLaunch: () => _run(widget.arguments),
               ),
-            ],
-          ),
-          body: DropHandler(
-            inputController: _inputController,
-            child: ClientView(
-              state: _state,
-              messages: _messages,
-              scrollController: _scrollController,
-              makeStage: _makeStage,
-              stage: _stage,
-              onLaunch: () => _run(widget.arguments),
             ),
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/javascript_category/javascript_card.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class JavaScriptCategory extends StatelessWidget {
   const JavaScriptCategory({
@@ -45,55 +46,57 @@ class JavaScriptCategory extends StatelessWidget {
         });
         return bloc;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(los.js_page),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: BlocConsumer<LoadScriptBloc, LoadScriptState>(
-            listener: (context, state) {
-              if (state is LoadScriptFailed) {
-                _showErrorDialog(context, state.message);
-              }
-            },
-            builder: (context, state) {
-              if (state is LoadScriptLoaded) {
-                final data = state.data;
-                return ListView.builder(
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    final script = data[index];
-                    return JavaScriptCard(
-                      item: script,
-                      toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                    );
-                  },
-                );
-              } else if (state is LoadScriptFailed) {
-                return Center(
-                  child: TextButton(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 16.0,
-                      ),
-                      child: Text(los.reload_script),
-                    ),
-                    onPressed: () {
-                      BlocProvider.of<LoadScriptBloc>(context).add(
-                        ReloadScripts(
-                          localizations: AppLocalizations.of(context)!,
-                        ),
+      child: HotkeyBuilder(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(los.js_page),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BlocConsumer<LoadScriptBloc, LoadScriptState>(
+              listener: (context, state) {
+                if (state is LoadScriptFailed) {
+                  _showErrorDialog(context, state.message);
+                }
+              },
+              builder: (context, state) {
+                if (state is LoadScriptLoaded) {
+                  final data = state.data;
+                  return ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final script = data[index];
+                      return JavaScriptCard(
+                        item: script,
+                        toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
                       );
                     },
-                  ),
+                  );
+                } else if (state is LoadScriptFailed) {
+                  return Center(
+                    child: TextButton(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 16.0,
+                        ),
+                        child: Text(los.reload_script),
+                      ),
+                      onPressed: () {
+                        BlocProvider.of<LoadScriptBloc>(context).add(
+                          ReloadScripts(
+                            localizations: AppLocalizations.of(context)!,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+                return const Center(
+                  child: CircularProgressIndicator.adaptive(),
                 );
-              }
-              return const Center(
-                child: CircularProgressIndicator.adaptive(),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),

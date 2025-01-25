@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
-class HotkeyBuilder extends StatelessWidget {
+class HotkeyBuilder extends StatefulWidget {
   const HotkeyBuilder({
     super.key,
     required this.child,
@@ -12,12 +12,32 @@ class HotkeyBuilder extends StatelessWidget {
 
   final Widget child;
 
+  @override
+  State<HotkeyBuilder> createState() => _HotkeyBuilderState();
+}
+
+class _HotkeyBuilderState extends State<HotkeyBuilder> {
   Future<void> _setFullScreen() async {
     if (await windowManager.isFullScreen()) {
       await windowManager.setFullScreen(false);
     } else {
       await windowManager.setFullScreen(true);
     }
+  }
+
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    _focusNode = FocusNode();
+    _focusNode.requestFocus();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   void _keyEventPresed(
@@ -27,7 +47,7 @@ class HotkeyBuilder extends StatelessWidget {
       final logicalKey = keyboardEvent.logicalKey;
       switch (logicalKey) {
         case LogicalKeyboardKey.f11:
-          _setFullScreen();
+          await _setFullScreen();
           break;
       }
     }
@@ -37,13 +57,12 @@ class HotkeyBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       return KeyboardListener(
-        focusNode: FocusNode(),
-        //autofocus: false,
+        focusNode: _focusNode,
         includeSemantics: false,
         onKeyEvent: _keyEventPresed,
-        child: child,
+        child: widget.child,
       );
     }
-    return child;
+    return widget.child;
   }
 }

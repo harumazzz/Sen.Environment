@@ -10,6 +10,7 @@ import 'package:sen/screen/level_maker/level_initializer.dart';
 import 'package:sen/screen/level_maker/music_type.dart';
 import 'package:sen/screen/level_maker/wave_manager.dart';
 import 'package:sen/service/file_helper.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class LevelMaker extends StatefulWidget {
   const LevelMaker({super.key});
@@ -91,65 +92,67 @@ class _LevelMakerState extends State<LevelMaker> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(los.level_maker),
-        bottom: TabBar(
+    return HotkeyBuilder(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(los.level_maker),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const <Widget>[
+              Tab(icon: Icon(Symbols.settings)),
+              Tab(icon: Icon(Symbols.grid_3x3)),
+              Tab(icon: Icon(Symbols.waves)),
+              Tab(icon: Icon(Symbols.code_blocks)),
+            ],
+          ),
+        ),
+        body: TabBarView(
           controller: _tabController,
-          tabs: const <Widget>[
-            Tab(icon: Icon(Symbols.settings)),
-            Tab(icon: Icon(Symbols.grid_3x3)),
-            Tab(icon: Icon(Symbols.waves)),
-            Tab(icon: Icon(Symbols.code_blocks)),
+          children: <Widget>[
+            LevelDefinition(
+              levelNameController: _levelNameController,
+              levelDescriptionController: _levelDescriptionController,
+              lawnMowerController: _lawnMowerController,
+              levelStageController: _levelStageController,
+              levelModule: _levelModule,
+              musicType: _musicType,
+              onChangeMusicType: (newValue) {
+                if (newValue == null) return;
+                setState(() {
+                  _musicType = newValue;
+                });
+              },
+              hasSunFalling: _hasSunFalling,
+              onToggleSunFalling: (bool? newValue) {
+                if (newValue == null) return;
+                setState(() {
+                  _hasSunFalling = newValue;
+                });
+              },
+            ),
+            LevelInitializer(
+              plants: _plants,
+              zombies: _zombies,
+              gridItem: _gridItems,
+            ),
+            WaveManager(
+              resource: _resource,
+              waves: _waves,
+              zombies: _zombies,
+              dinos: _dinos,
+              levelModule: _levelModule,
+            ),
+            CodePreview(
+              levelNameController: _levelNameController,
+              levelDescriptionController: _levelDescriptionController,
+              levelStageController: _levelStageController,
+              lawnMowerController: _lawnMowerController,
+              hasSunFalling: _hasSunFalling,
+              musicType: _musicType,
+              wave: _waves,
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          LevelDefinition(
-            levelNameController: _levelNameController,
-            levelDescriptionController: _levelDescriptionController,
-            lawnMowerController: _lawnMowerController,
-            levelStageController: _levelStageController,
-            levelModule: _levelModule,
-            musicType: _musicType,
-            onChangeMusicType: (newValue) {
-              if (newValue == null) return;
-              setState(() {
-                _musicType = newValue;
-              });
-            },
-            hasSunFalling: _hasSunFalling,
-            onToggleSunFalling: (bool? newValue) {
-              if (newValue == null) return;
-              setState(() {
-                _hasSunFalling = newValue;
-              });
-            },
-          ),
-          LevelInitializer(
-            plants: _plants,
-            zombies: _zombies,
-            gridItem: _gridItems,
-          ),
-          WaveManager(
-            resource: _resource,
-            waves: _waves,
-            zombies: _zombies,
-            dinos: _dinos,
-            levelModule: _levelModule,
-          ),
-          CodePreview(
-            levelNameController: _levelNameController,
-            levelDescriptionController: _levelDescriptionController,
-            levelStageController: _levelStageController,
-            lawnMowerController: _lawnMowerController,
-            hasSunFalling: _hasSunFalling,
-            musicType: _musicType,
-            wave: _waves,
-          ),
-        ],
       ),
     );
   }

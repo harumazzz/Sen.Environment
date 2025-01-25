@@ -39,20 +39,37 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = context.los;
     return MultiBlocProvider(providers: [
-      BlocProvider<MouseCursorBloc>(create: (_) => MouseCursorBloc()),
-      BlocProvider<SuggestionBloc>(create: (_) => SuggestionBloc()),
-      BlocProvider<SettingBloc>(create: (_) => SettingBloc()),
-      BlocProvider<InitBloc>(create: (_) => InitBloc()),
-      BlocProvider<SectionBloc>(create: (_) => SectionBloc()),
-      BlocProvider<SelectedBloc>(create: (_) => SelectedBloc()),
-      BlocProvider<HistoryBloc>(create: (_) => HistoryBloc()),
+      BlocProvider<MouseCursorBloc>(
+        create: (_) => MouseCursorBloc(),
+      ),
+      BlocProvider<SuggestionBloc>(
+        create: (_) => SuggestionBloc(),
+      ),
+      BlocProvider<SettingBloc>(
+        create: (_) => SettingBloc(),
+      ),
+      BlocProvider<InitBloc>(
+        create: (_) => InitBloc(),
+      ),
+      BlocProvider<SectionBloc>(
+        create: (_) => SectionBloc(),
+      ),
+      BlocProvider<SelectedBloc>(
+        create: (_) => SelectedBloc(),
+      ),
+      BlocProvider<HistoryBloc>(
+        create: (_) => HistoryBloc(),
+      ),
       BlocProvider<TickerBloc>(
-          create: (_) => TickerBloc(ticker: const Ticker(), tickStart: 0, tickEnd: 360 * 30, tickDuration: 30)),
-      BlocProvider<CanvasBloc>(create: (_) {
-        final bloc = CanvasBloc();
-        bloc.add(const InitCameraViewOffset());
-        return bloc;
-      }),
+        create: (_) => TickerBloc(ticker: const Ticker(), tickStart: 0, tickEnd: 360 * 30, tickDuration: 30),
+      ),
+      BlocProvider<CanvasBloc>(
+        create: (_) {
+          final bloc = CanvasBloc();
+          bloc.add(const InitCameraViewOffset());
+          return bloc;
+        },
+      ),
       BlocProvider<ToolBarBloc>(
         create: (context) => ToolBarBloc(
           cubit: context.read<MapEditorConfigurationCubit>(),
@@ -90,23 +107,25 @@ class MainPage extends StatelessWidget {
         ),
       ),
       BlocProvider<ItemBloc>(
-          create: (context) => ItemBloc(
-                cubit: context.read<MapEditorConfigurationCubit>(),
-                stageBloc: context.read<StageBloc>(),
-                selectedBloc: context.read<SelectedBloc>(),
-                historyBloc: context.read<HistoryBloc>(),
-                canvasBloc: context.read<CanvasBloc>(),
-                resourceBloc: context.read<ResourceBloc>(),
-                settingBloc: context.read<SettingBloc>(),
-              )),
+        create: (context) => ItemBloc(
+          cubit: context.read<MapEditorConfigurationCubit>(),
+          stageBloc: context.read<StageBloc>(),
+          selectedBloc: context.read<SelectedBloc>(),
+          historyBloc: context.read<HistoryBloc>(),
+          canvasBloc: context.read<CanvasBloc>(),
+          resourceBloc: context.read<ResourceBloc>(),
+          settingBloc: context.read<SettingBloc>(),
+        ),
+      ),
       BlocProvider<LayerBloc>(
-          create: (context) => LayerBloc(
-                historyBloc: context.read<HistoryBloc>(),
-                selectedBloc: context.read<SelectedBloc>(),
-                stageBloc: context.read<StageBloc>(),
-                itemBloc: context.read<ItemBloc>(),
-                los: los,
-              )),
+        create: (context) => LayerBloc(
+          historyBloc: context.read<HistoryBloc>(),
+          selectedBloc: context.read<SelectedBloc>(),
+          stageBloc: context.read<StageBloc>(),
+          itemBloc: context.read<ItemBloc>(),
+          los: los,
+        ),
+      ),
     ], child: const MainPageChild());
   }
 }

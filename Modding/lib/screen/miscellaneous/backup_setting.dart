@@ -8,6 +8,7 @@ import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class BackupSetting extends StatefulWidget {
   const BackupSetting({
@@ -282,71 +283,73 @@ class _BackupSettingState extends State<BackupSetting> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(los.backup_configuration),
-        actions: [
-          Tooltip(
-            message: los.upload_configuration,
-            child: IconButton(
-              onPressed: _onUploadConfiguration,
-              icon: const Icon(Symbols.upload),
+    return HotkeyBuilder(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(los.backup_configuration),
+          actions: [
+            Tooltip(
+              message: los.upload_configuration,
+              child: IconButton(
+                onPressed: _onUploadConfiguration,
+                icon: const Icon(Symbols.upload),
+              ),
             ),
-          ),
-          Tooltip(
-            message: los.save_configuration,
-            child: IconButton(
-              onPressed: _saveConfiguration,
-              icon: const Icon(Symbols.save),
+            Tooltip(
+              message: los.save_configuration,
+              child: IconButton(
+                onPressed: _saveConfiguration,
+                icon: const Icon(Symbols.save),
+              ),
             ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Card(
-                child: ListTile(
-                  leading: const Icon(Symbols.package_2),
-                  title: Text(los.toolchain),
-                  subtitle: Text(
-                    BlocProvider.of<SettingsCubit>(context).state.toolChain,
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Symbols.package_2),
+                    title: Text(los.toolchain),
+                    subtitle: Text(
+                      BlocProvider.of<SettingsCubit>(context).state.toolChain,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _onLoadConfiguration(
-                        toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: Text(los.load_configuration),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 15.0),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _onApplyConfiguration(
-                        toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: Text(los.apply_configuration),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _onLoadConfiguration(
+                          toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text(los.load_configuration),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              _configuration == null ? const SizedBox.shrink() : _buildExpandableList(),
-            ],
+                    const SizedBox(width: 15.0),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _onApplyConfiguration(
+                          toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text(los.apply_configuration),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                _configuration == null ? const SizedBox.shrink() : _buildExpandableList(),
+              ],
+            ),
           ),
         ),
       ),

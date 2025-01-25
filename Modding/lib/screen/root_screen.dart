@@ -6,16 +6,16 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import 'package:sen/model/build_distribution.dart';
 import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/android_helper.dart';
+import 'package:sen/widget/hotkey.dart';
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key, required this.title});
-
-  final String title;
+  const RootScreen({super.key});
 
   @override
   State<RootScreen> createState() => _RootScreenState();
@@ -176,30 +176,32 @@ class _RootScreenState extends State<RootScreen> {
     if (!_hasNavigated) {
       _loadArgumentOnAndroid();
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Row(
-        children: [
-          _makeNavigationRail(),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(
-                milliseconds: 100,
+    return HotkeyBuilder(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(BuildDistribution.kApplicationName),
+        ),
+        body: Row(
+          children: [
+            _makeNavigationRail(),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(
+                  milliseconds: 100,
+                ),
+                child: _destinations[_currentPageIndex],
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
               ),
-              child: _destinations[_currentPageIndex],
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
             ),
-          ),
-        ],
+          ],
+        ),
+        bottomNavigationBar: _makeNavigationBar(),
       ),
-      bottomNavigationBar: _makeNavigationBar(),
     );
   }
 }
