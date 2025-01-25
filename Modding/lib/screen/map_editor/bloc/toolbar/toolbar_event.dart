@@ -44,9 +44,14 @@ final class ToolOpenEvent extends ToolBarEvent {
 }
 
 final class ToolSaveEvent extends ToolBarEvent {
-  const ToolSaveEvent({required this.stageBloc});
+  const ToolSaveEvent({
+    required this.stageBloc,
+    required this.autosaveBloc,
+  });
 
   final StageBloc stageBloc;
+
+  final AutosaveBloc autosaveBloc;
 
   @override
   List<Object> get props => [stageBloc];

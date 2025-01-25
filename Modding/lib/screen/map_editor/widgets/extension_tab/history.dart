@@ -70,7 +70,7 @@ class HistoryTree extends StatelessWidget {
           child: ValueListenableBuilder(
               valueListenable: captureManager.notifier,
               builder: (context, notifierIndex, ref) {
-                final stackList = captureManager.getStackList;
+                final stackList = captureManager.stackList;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (captureManager.canUndo() && !captureManager.canRedo()) {
                     scrollController.jumpTo(scrollController.position.maxScrollExtent);

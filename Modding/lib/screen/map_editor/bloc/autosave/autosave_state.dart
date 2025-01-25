@@ -1,6 +1,13 @@
 part of 'autosave_bloc.dart';
 
 @immutable
-sealed class AutosaveState {}
+class AutosaveState extends Equatable {
+  final List<String> files;
 
-final class AutosaveInitial extends AutosaveState {}
+  const AutosaveState({
+    required this.files,
+  });
+
+  @override
+  List<Object?> get props => [files];
+}

@@ -7,3 +7,17 @@ class AutosaveEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+
+class SaveEvent extends AutosaveEvent {
+  const SaveEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class CleanAutosaveEvent extends AutosaveEvent {
+  const CleanAutosaveEvent();
+
+  @override
+  List<Object?> get props => [];
+}

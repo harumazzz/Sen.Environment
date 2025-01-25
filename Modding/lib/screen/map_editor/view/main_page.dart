@@ -4,6 +4,7 @@ import 'package:pie_menu/pie_menu.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
@@ -70,18 +71,24 @@ class MainPage extends StatelessWidget {
         ),
       ),
       BlocProvider<StageBloc>(
-          create: (context) => StageBloc(
-                cubit: context.read<MapEditorConfigurationCubit>(),
-                selectedBloc: context.read<SelectedBloc>(),
-                historyBloc: context.read<HistoryBloc>(),
-                canvasBloc: context.read<CanvasBloc>(),
-                resourceBloc: context.read<ResourceBloc>(),
-                suggestionBloc: context.read<SuggestionBloc>(),
-                sectionBloc: context.read<SectionBloc>(),
-                settingBloc: context.read<SettingBloc>(),
-                initBloc: context.read<InitBloc>(),
-                los: los,
-              )),
+        create: (context) => StageBloc(
+          cubit: context.read<MapEditorConfigurationCubit>(),
+          selectedBloc: context.read<SelectedBloc>(),
+          historyBloc: context.read<HistoryBloc>(),
+          canvasBloc: context.read<CanvasBloc>(),
+          resourceBloc: context.read<ResourceBloc>(),
+          suggestionBloc: context.read<SuggestionBloc>(),
+          sectionBloc: context.read<SectionBloc>(),
+          settingBloc: context.read<SettingBloc>(),
+          initBloc: context.read<InitBloc>(),
+          los: los,
+        ),
+      ),
+      BlocProvider<AutosaveBloc>(
+        create: (_) => AutosaveBloc(
+          stageBloc: context.read<StageBloc>(),
+        ),
+      ),
       BlocProvider<ItemBloc>(
           create: (context) => ItemBloc(
                 cubit: context.read<MapEditorConfigurationCubit>(),

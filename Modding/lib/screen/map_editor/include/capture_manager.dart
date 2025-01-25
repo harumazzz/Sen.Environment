@@ -17,7 +17,7 @@ class CaptureManager<T> {
 
   final Queue<T> _stackList = Queue();
 
-  List<T> get getStackList => _stackList.toList();
+  List<T> get stackList => _stackList.toList();
 
   // final Queue<String> _captureLog = Queue();
 

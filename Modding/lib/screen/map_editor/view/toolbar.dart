@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/model/item.dart';
+import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
@@ -37,14 +38,15 @@ class ToolBarView extends StatelessWidget {
                               itemBloc: context.read<ItemBloc>(),
                               layerBloc: context.read<LayerBloc>(),
                             )),
-                          ToolType.saveFile => toolbarBloc
-                              .add(ToolSaveEvent(stageBloc: stageBloc)),
-                          ToolType.clearEditor =>
-                            toolbarBloc.add(const ToolClearEvent()),
-                          ToolType.configEditor =>
-                            toolbarBloc.add(const ToolConfigEvent()),
-                          ToolType.shortcutMenu =>
-                            toolbarBloc.add(const ShortcutMenuEvent()),
+                          ToolType.saveFile => toolbarBloc.add(
+                              ToolSaveEvent(
+                                stageBloc: stageBloc,
+                                autosaveBloc: context.read<AutosaveBloc>(),
+                              ),
+                            ),
+                          ToolType.clearEditor => toolbarBloc.add(const ToolClearEvent()),
+                          ToolType.configEditor => toolbarBloc.add(const ToolConfigEvent()),
+                          ToolType.shortcutMenu => toolbarBloc.add(const ShortcutMenuEvent()),
                           _ => toolbarBloc.add(ToolToogled(type: toolType))
                         });
               });
@@ -53,11 +55,7 @@ class ToolBarView extends StatelessWidget {
 }
 
 class ToolItem extends StatelessWidget {
-  const ToolItem(
-      {super.key,
-      required this.item,
-      required this.onSetting,
-      required this.buttonColor});
+  const ToolItem({super.key, required this.item, required this.onSetting, required this.buttonColor});
 
   final Item item;
 
@@ -77,8 +75,7 @@ class ToolItem extends StatelessWidget {
           child: IconButton(
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(buttonColor),
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)))),
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
             onPressed: onSetting,
             icon: item.icon,
           )),

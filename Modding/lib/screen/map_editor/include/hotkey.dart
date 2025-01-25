@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/model/worldmap.dart';
+import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
@@ -58,13 +59,10 @@ class Hotkey extends StatelessWidget {
                           ActionModelType.mapEvents: stageBloc.cloneEvents(),
                         },
                         change: (data) {
-                          final pieces = data![ActionModelType.mapPieces]
-                              as HashMap<String, MapPieceItem>;
-                          final events = data[ActionModelType.mapEvents]
-                              as HashMap<String, MapEventItem>;
-                          stageBloc.add(UpdateStageState(
-                              stageState: stageBloc.state
-                                  .copyWith(events: events, pieces: pieces)));
+                          final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+                          final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+                          stageBloc.add(
+                              UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
                           final layerKeys = <int>[];
                           for (final e in pieces.values) {
                             if (!layerKeys.contains(e.layer)) {
@@ -72,22 +70,18 @@ class Hotkey extends StatelessWidget {
                             }
                           }
                           for (final layerId in layerKeys) {
-                            layerBloc.updateNodeParallax(layerId,
-                                pieceItems: pieces);
+                            layerBloc.updateNodeParallax(layerId, pieceItems: pieces);
                           }
                           layerBloc.updateTree(true);
                           // historyBloc.add(const UpdateIndexEvent());
                         });
-                    context
-                        .read<HistoryBloc>()
-                        .add(CaptureState(state: actionService));
+                    context.read<HistoryBloc>().add(CaptureState(state: actionService));
                   }
                   break;
                 }
               default:
                 {
-                  toolbarBloc.add(const ToolToogled(
-                      type: ToolType.rectangleTool, enabled: true));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.rectangleTool, enabled: true));
                   break;
                 }
             }
@@ -95,14 +89,12 @@ class Hotkey extends StatelessWidget {
             switch (logicalKey) {
               case LogicalKeyboardKey.keyE:
                 {
-                  toolbarBloc.add(const ToolToogled(
-                      type: ToolType.eraseTool, enabled: true));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.eraseTool, enabled: true));
                   break;
                 }
               case LogicalKeyboardKey.space:
                 {
-                  toolbarBloc.add(
-                      const ToolToogled(type: ToolType.panTool, enabled: true));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.panTool, enabled: true));
                   break;
                 }
               default:
@@ -125,6 +117,7 @@ class Hotkey extends StatelessWidget {
                 {
                   toolbarBloc.add(ToolSaveEvent(
                     stageBloc: context.read<StageBloc>(),
+                    autosaveBloc: context.read<AutosaveBloc>(),
                   ));
                   break;
                 }
@@ -167,10 +160,8 @@ class Hotkey extends StatelessWidget {
                   if (historyBloc.state.captureManager.canUndo()) {
                     historyBloc.add(const UndoEvent());
                     final scrollController = historyBloc.state.scrollController;
-                    if (!(scrollController.position.atEdge &&
-                        scrollController.position.pixels == 0)) {
-                      scrollController
-                          .jumpTo(scrollController.position.pixels - 45);
+                    if (!(scrollController.position.atEdge && scrollController.position.pixels == 0)) {
+                      scrollController.jumpTo(scrollController.position.pixels - 45);
                     }
                   }
                   break;
@@ -181,18 +172,15 @@ class Hotkey extends StatelessWidget {
                   if (historyBloc.state.captureManager.canRedo()) {
                     historyBloc.add(const RedoEvent());
                     final scrollController = historyBloc.state.scrollController;
-                    if (!(scrollController.position.atEdge &&
-                        scrollController.position.pixels != 0)) {
-                      scrollController
-                          .jumpTo(scrollController.position.pixels + 45);
+                    if (!(scrollController.position.atEdge && scrollController.position.pixels != 0)) {
+                      scrollController.jumpTo(scrollController.position.pixels + 45);
                     }
                   }
                   break;
                 }
               default:
                 {
-                  toolbarBloc.add(const ToolToogled(
-                      type: ToolType.rectangleTool, enabled: false));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.rectangleTool, enabled: false));
                   break;
                 }
             }
@@ -214,8 +202,7 @@ class Hotkey extends StatelessWidget {
                 }
               case LogicalKeyboardKey.delete:
                 {
-                  final selectedList =
-                      context.read<SelectedBloc>().state.selectedList;
+                  final selectedList = context.read<SelectedBloc>().state.selectedList;
                   context.read<StageBloc>().add(RemoveItemEvent(
                         idList: selectedList,
                         itemBloc: context.read<ItemBloc>(),
@@ -228,13 +215,10 @@ class Hotkey extends StatelessWidget {
                         ActionModelType.mapEvents: stageBloc.cloneEvents(),
                       },
                       change: (data) {
-                        final pieces = data![ActionModelType.mapPieces]
-                            as HashMap<String, MapPieceItem>;
-                        final events = data[ActionModelType.mapEvents]
-                            as HashMap<String, MapEventItem>;
-                        stageBloc.add(UpdateStageState(
-                            stageState: stageBloc.state
-                                .copyWith(events: events, pieces: pieces)));
+                        final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+                        final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+                        stageBloc.add(
+                            UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
                         final layerKeys = <int>[];
                         for (final e in pieces.values) {
                           if (!layerKeys.contains(e.layer)) {
@@ -242,27 +226,22 @@ class Hotkey extends StatelessWidget {
                           }
                         }
                         for (final layerId in layerKeys) {
-                          layerBloc.updateNodeParallax(layerId,
-                              pieceItems: pieces);
+                          layerBloc.updateNodeParallax(layerId, pieceItems: pieces);
                         }
                         layerBloc.updateTree(true);
                         // historyBloc.add(const UpdateIndexEvent());
                       });
-                  context
-                      .read<HistoryBloc>()
-                      .add(CaptureState(state: actionService));
+                  context.read<HistoryBloc>().add(CaptureState(state: actionService));
                   break;
                 }
               case LogicalKeyboardKey.keyE:
                 {
-                  toolbarBloc.add(const ToolToogled(
-                      type: ToolType.eraseTool, enabled: false));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.eraseTool, enabled: false));
                   break;
                 }
               case LogicalKeyboardKey.space:
                 {
-                  toolbarBloc.add(const ToolToogled(
-                      type: ToolType.panTool, enabled: false));
+                  toolbarBloc.add(const ToolToogled(type: ToolType.panTool, enabled: false));
                   break;
                 }
               default:

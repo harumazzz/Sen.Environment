@@ -77,6 +77,15 @@ class FileHelper {
     return;
   }
 
+  static Future<void> writeJsonAsync({
+    required String source,
+    required dynamic data,
+  }) async {
+    final file = File(source);
+    file.writeAsString(const JsonEncoder.withIndent('\t').convert(data));
+    return;
+  }
+
   static String readFile({
     required String source,
   }) {
@@ -203,5 +212,17 @@ class FileHelper {
       final link = Link('$destination/${entity.fullPathName}');
       link.createSync(entity.symbolicLink!, recursive: true);
     }
+  }
+
+  static void deleteFile({
+    required String source,
+  }) {
+    File(source).deleteSync();
+  }
+
+  static Future<void> deleteFileAsync({
+    required String source,
+  }) async {
+    await File(source).delete();
   }
 }
