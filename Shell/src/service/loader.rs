@@ -61,6 +61,12 @@ pub mod sen {
             argument_list: Option<*mut CStringList>,
         }
 
+        impl Drop for Loader {
+            fn drop(&mut self) {
+                self.free_library();
+            }
+        }
+
         impl Loader {
             pub fn new(host: &Host) -> Loader {
                 Loader {
@@ -98,7 +104,7 @@ pub mod sen {
             )
             {
                 unsafe {
-                    if self.handle.is_none() {
+                    if !self.handle.is_none() {
                         #[cfg(windows)]
                         FreeLibrary(self.handle.unwrap());
                         #[cfg(not(windows))]
@@ -143,12 +149,15 @@ pub mod sen {
                 assert_if(self.arguments.len() >= 3, "Please use launcher to launch Sen");
                 #[cfg(windows)]
                 {
-                    let kernel: Vec<u16> = OsStr::new(self.arguments[1].as_str()).encode_wide().collect();
-                    let handle = unsafe {
-                        LoadLibraryW(kernel.as_ptr())
+                    let kernel: Vec<u16> = OsStr::new(self.arguments[1].as_str())
+                        .encode_wide()
+                        .chain(Some(0))
+                        .collect();
+                    unsafe {
+                        let handle = LoadLibraryW(kernel.as_ptr());
+                        assert_if(!handle.is_null(), "Failed to load library");
+                        self.handle = Option::from(handle);
                     };
-                    assert_if(!handle.is_null(), "Failed to load library");
-                    self.handle = Option::from(handle);
                 }
                 #[cfg(not(windows))]
                 {

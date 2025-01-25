@@ -1,0 +1,3 @@
+#include "winuser.h"
+
+IDI_ICON1 ICON "./resource/icon/logo.ico"

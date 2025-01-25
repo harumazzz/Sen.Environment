@@ -30,9 +30,9 @@ pub mod sen {
                 std::io::stdout().flush().unwrap();
             }
 
-            pub fn ensure_unicode(
+            pub fn enable_unicode(
                 &self
-            )
+            ) -> ()
             {
                 #[cfg(windows)]
                 unsafe {

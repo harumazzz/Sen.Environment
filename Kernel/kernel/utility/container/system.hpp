@@ -73,7 +73,7 @@ namespace Sen::Kernel {
 			#if WINDOWS
 			return String::utf16_to_utf8({environment, wcslen(environment)});
 			#else
-			return std::string{environment, std::strlen(environment)}
+			return std::string{environment, std::strlen(environment)};
 			#endif
 		}
 

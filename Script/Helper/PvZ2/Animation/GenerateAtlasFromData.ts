@@ -9,12 +9,12 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 	): void {
 		const paths: Array<string> = Object.keys(record.image);
 		paths.forEach((path: string) => {
-			atlas.groups[path] = {
+			atlas.groups[record.image[path].id] = {
 				default: {
 					x: 0n,
 					y: 0n,
 				},
-				path: [...z_path, record.image[path].id].join('/'),
+				path: [...z_path, path].join('/'),
 			};
 		});
 	}
@@ -47,7 +47,7 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 				allowance,
 			),
 		);
-		const destination = Kernel.Path.dirname(subgroup);
+		const destination = Kernel.Path.dirname(record);
 		resolutions.forEach(function handle_resolution(resolution) {
 			const atlas: Support.PopCap.Atlas.Structure.Definition = {
 				expand_path: 'array',

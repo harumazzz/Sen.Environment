@@ -57,7 +57,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                         if (compare_string(extenstion, k_newton_extension_string))
                         {
                             manifest_info.allow_new_type_resource = true;
-                            auto stream = DataStreamView{};
+                            auto stream = DataStreamView{resource_data};
                             auto result = nlohmann::ordered_json{};
                             Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process(stream, result);
                             convert_whole.template operator()<true>(result);
