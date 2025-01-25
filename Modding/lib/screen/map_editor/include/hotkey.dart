@@ -157,7 +157,7 @@ class Hotkey extends StatelessWidget {
                 {
                   toolbarBloc.add(ToolSaveEvent(
                     stageBloc: context.read<StageBloc>(),
-                    autosaveBloc: context.read<AutosaveBloc>(),
+                    // autosaveBloc: context.read<AutosaveBloc>(),
                   ));
                   break;
                 }

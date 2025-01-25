@@ -134,7 +134,7 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
       ]);
       FileHelper.writeJson(source: path, data: WorldMap.toJson(worldMap));
       initBloc.add(ShowSnackBarEvent(text: los.worldmap_loaded));
-      event.autosaveBloc.add(const CleanAutosaveEvent());
+      //event.autosaveBloc.add(const CleanAutosaveEvent());
     }
   }
 

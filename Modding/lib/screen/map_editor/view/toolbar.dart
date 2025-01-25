@@ -41,7 +41,7 @@ class ToolBarView extends StatelessWidget {
                           ToolType.saveFile => toolbarBloc.add(
                               ToolSaveEvent(
                                 stageBloc: stageBloc,
-                                autosaveBloc: context.read<AutosaveBloc>(),
+                                // autosaveBloc: context.read<AutosaveBloc>(),
                               ),
                             ),
                           ToolType.clearEditor => toolbarBloc.add(const ToolClearEvent()),
