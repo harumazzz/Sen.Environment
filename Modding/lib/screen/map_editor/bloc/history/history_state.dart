@@ -1,10 +1,11 @@
 part of 'history_bloc.dart';
 
 final class HistoryState extends Equatable {
-  const HistoryState(
-      {required this.captureManager,
-      required this.scrollController,
-      required this.index});
+  const HistoryState({
+    required this.captureManager,
+    required this.scrollController,
+    required this.index,
+  });
 
   final int index;
 

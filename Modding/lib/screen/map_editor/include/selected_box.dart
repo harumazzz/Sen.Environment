@@ -3,8 +3,7 @@ import 'package:sen/screen/map_editor/include/painter.dart';
 import 'package:sen/screen/map_editor/models/item_profile.dart';
 
 class MultiSelectBox extends StatelessWidget {
-  const MultiSelectBox(
-      {super.key, required this.idList, required this.itemStore});
+  const MultiSelectBox({super.key, required this.idList, required this.itemStore});
 
   final List<String> idList;
 
@@ -60,10 +59,7 @@ class SelectedBox extends StatelessWidget {
     } else {
       return CustomPaint(
         foregroundPainter: BorderPainer(
-            itemRect: itemProfile.itemRect!,
-            matrix: itemProfile.matrix,
-            borderColor: Colors.yellow,
-            borderWidth: 10.0),
+            itemRect: itemProfile.itemRect!, matrix: itemProfile.matrix, borderColor: Colors.yellow, borderWidth: 10.0),
         child: Visibility(
           visible: false,
           child: itemProfile.widget!,

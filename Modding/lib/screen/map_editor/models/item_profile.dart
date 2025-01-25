@@ -7,10 +7,11 @@ class ItemProfile {
   Rect? selectRect;
   Widget? widget;
 
-  ItemProfile(
-      {required this.isEvent,
-      this.matrix,
-      this.itemRect,
-      this.selectRect,
-      this.widget});
+  ItemProfile({
+    required this.isEvent,
+    this.matrix,
+    this.itemRect,
+    this.selectRect,
+    this.widget,
+  });
 }

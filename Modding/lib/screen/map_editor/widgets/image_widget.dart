@@ -28,9 +28,7 @@ class ImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: VisualImagePainer((image, matrix),
-          borderColor: borderColor,
-          borderWidth: borderWidth,
-          filterQuality: filterQuality),
+          borderColor: borderColor, borderWidth: borderWidth, filterQuality: filterQuality),
     );
   }
 }
@@ -65,14 +63,13 @@ class ImageRotateWidget extends StatelessWidget {
         return CustomPaint(
           painter: VisualImagePainer((
             image,
-            matrix.multiplied(Matrix4Transform()
-                .rotateDegrees(rotationRate > 0 ? -rotateDeg : rotateDeg,
-                    origin: Offset(image.width / 2, image.height / 2))
-                .m)
-          ),
-              borderColor: borderColor,
-              borderWidth: borderWidth,
-              filterQuality: filterQuality),
+            matrix.multiplied(
+              Matrix4Transform()
+                  .rotateDegrees(rotationRate > 0 ? -rotateDeg : rotateDeg,
+                      origin: Offset(image.width / 2, image.height / 2))
+                  .m,
+            )
+          ), borderColor: borderColor, borderWidth: borderWidth, filterQuality: filterQuality),
         );
       },
     );

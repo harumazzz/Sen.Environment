@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
@@ -22,6 +23,7 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     required this.settingBloc,
     required this.initBloc,
     required this.los,
+    required this.initialDirectoryCubit,
   }) : super(ToolBarState.initailize()) {
     on<ToolToogled>(_onToggled);
     on<ToolOpenEvent>(_openTool);
@@ -34,6 +36,8 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
   }
 
   final MapEditorConfigurationCubit cubit;
+
+  final InitialDirectoryCubit initialDirectoryCubit;
 
   final SettingBloc settingBloc;
 
@@ -108,8 +112,14 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     ToolSaveEvent event,
     Emitter<ToolBarState> emit,
   ) async {
-    final path = await FileHelper.saveFile(suggestedName: 'worldmap.json');
+    var path = await FileHelper.saveFile(
+      initialDirectory: initialDirectoryCubit.state.initialDirectory,
+      suggestedName: 'worldmap.json',
+    );
     if (path != null) {
+      if (RegExp(r'\.json$', caseSensitive: false).hasMatch(path)) {
+        path += '.json';
+      }
       final state = event.stageBloc.state;
       final worldMap = WorldMap(list: [
         WorldData(
@@ -131,7 +141,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     ToolOpenEvent event,
     Emitter<ToolBarState> emit,
   ) async {
-    final path = await FileHelper.uploadFile();
+    final path = await FileHelper.uploadFile(
+      initialDirectory: initialDirectoryCubit.state.initialDirectory,
+    );
     if (path == null) {
       return;
     }

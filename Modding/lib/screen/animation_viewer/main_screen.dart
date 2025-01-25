@@ -443,11 +443,14 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               child: Text(los.save),
               onPressed: () async {
                 void closeDialog() => Navigator.of(context).pop();
-                final file = await FileHelper.saveFile(
+                var file = await FileHelper.saveFile(
                   initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
                   suggestedName: 'screenshot.png',
                 );
                 if (file != null) {
+                  if (RegExp(r'\.png$', caseSensitive: false).hasMatch(file)) {
+                    file += '.png';
+                  }
                   FileHelper.writeBuffer(source: file, data: image);
                   closeDialog();
                 }

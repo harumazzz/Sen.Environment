@@ -20,7 +20,8 @@ pub mod sen {
             pub fn print_color(
                 message: &String,
                 color: &Color,
-            ) {
+            ) -> ()
+            {
                 match color {
                     Color::Cyan => println!("{}", message.as_str().cyan()),
                     Color::Red => println!("{}", message.as_str().red()),
@@ -34,7 +35,8 @@ pub mod sen {
                 title: &String,
                 message: &String,
                 color: &Color,
-            ) {
+            )  -> ()
+            {
                 Self::print_color(title, color);
                 if !message.is_empty() {
                     println!("{}", message);
@@ -52,14 +54,15 @@ pub mod sen {
 
             pub fn input_string(
                 destination: *mut CStringView,
-            ){
+            )  -> ()
+            {
                 let value = Self::input();
                 to_cstring(&value, destination);
             }
 
             pub fn display_argument (
                 data: &Vec<String>
-            )
+            ) -> ()
             {
                 assert_if(data.len() >= 2, "Not enough arguments");
                 match data.len() {
@@ -71,7 +74,7 @@ pub mod sen {
 
             pub fn wait (
 
-            )
+            ) -> ()
             {
                 print!("{}", "● ".cyan());
                 std::io::stdout().flush().unwrap(); 
@@ -79,7 +82,7 @@ pub mod sen {
 
             pub fn current_version (
                 destination: *mut CStringView,
-            )
+            ) -> ()
             {
                 let version = VERSION.to_string();
                 to_cstring(&version, destination);
@@ -87,7 +90,7 @@ pub mod sen {
 
             pub fn is_gui (
                 destination: *mut CStringView,
-            )
+            ) -> ()
             {
                 let is_gui = IS_GUI.to_string();
                 to_cstring(&is_gui, destination);
@@ -95,7 +98,7 @@ pub mod sen {
 
             pub fn pick_file (
                 destination: *mut CStringView,
-            )
+            ) -> ()
             {
                 let file = pick_file();
                 if !file.is_none() {
@@ -105,7 +108,7 @@ pub mod sen {
 
             pub fn pick_directory (
                 destination: *mut CStringView,
-            )
+            ) -> ()
             {
                 let file = pick_directory();
                 if !file.is_none() {

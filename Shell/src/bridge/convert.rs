@@ -10,7 +10,8 @@ pub mod sen {
         pub fn to_cstring(
             source: &String, 
             destination: *mut CStringView
-        ) {
+        ) -> ()
+        {
             unsafe {
                 let value: *mut u8 = malloc(source.len() + 1) as *mut u8;
                 std::ptr::copy_nonoverlapping(source.as_ptr(), value, source.len());
@@ -23,7 +24,8 @@ pub mod sen {
         pub fn to_string_list(
             source: &Vec<String>, 
             destination: &mut CStringList
-        ) {
+        ) -> ()
+        {
             unsafe {
                 let value: *mut CStringView = malloc(source.len() as libc::size_t) as *mut CStringView;
                 for index in 0..source.len() {
@@ -38,7 +40,8 @@ pub mod sen {
         pub fn to_string(
             source: *mut CStringView,
             destination: &mut String
-        ) {
+        ) -> ()
+        {
             unsafe {
                 let value: *mut u8 = (*source).value;
                 let value: &str = std::str::from_utf8_unchecked(std::slice::from_raw_parts(value, (*source).size));
@@ -49,7 +52,8 @@ pub mod sen {
         pub fn to_vector(
             source: *mut CStringList,
             destination: &mut Vec<String>
-        ) {
+        ) -> ()
+        {
             unsafe {
                 let size = (*source).size;
                 destination.reserve(size);

@@ -1,5 +1,3 @@
-
-
 pub mod sen {
 
     pub mod shell {
@@ -62,13 +60,21 @@ pub mod sen {
         }
 
         impl Drop for Loader {
-            fn drop(&mut self) {
-                self.free_library();
+            fn drop(
+                &mut self
+            ) -> ()
+            {
+                unsafe {
+                    self.release_argument();
+                    self.free_library();
+                }
             }
         }
 
         impl Loader {
-            pub fn new(host: &Host) -> Loader {
+            pub fn new(
+                host: &Host
+            ) -> Loader {
                 Loader {
                     arguments: host.collect_arguments(),
                     handle: None,
@@ -78,7 +84,10 @@ pub mod sen {
 
 
 
-            fn lookup_symbol(&self, symbol: &str) -> Result<Execute, String>{
+            fn lookup_symbol(
+                &self,
+                symbol: &str
+            ) -> Result<Execute, String>{
                 #[cfg(windows)]
                 {
                     unsafe {
@@ -101,7 +110,7 @@ pub mod sen {
 
             fn free_library(
                 &self
-            )
+            ) -> ()
             {
                 unsafe {
                     if !self.handle.is_none() {
@@ -115,11 +124,11 @@ pub mod sen {
 
             unsafe fn release_argument (
                 &self
-            )
+            ) -> ()
             {
                 unsafe {
                     for index in 0..(*self.argument_list.unwrap()).size {
-                        if (*(*self.argument_list.unwrap()).value.offset(index as isize)).value.is_null() {
+                        if !(*(*self.argument_list.unwrap()).value.offset(index as isize)).value.is_null() {
                             free((*(*self.argument_list.unwrap()).value.offset(index as isize)).value as *mut c_void);
                         }
                     }
@@ -129,7 +138,7 @@ pub mod sen {
 
             unsafe fn construct_argument (
                 &mut self
-            )
+            ) -> ()
             {
                 unsafe {
                     self.argument_list = Some(malloc(std::mem::size_of::<CStringList>()) as *mut CStringList);
@@ -145,7 +154,10 @@ pub mod sen {
 
         impl Client for Loader {
 
-            fn initialize(&mut self) {
+            fn initialize(
+                &mut self
+            ) -> ()
+            {
                 assert_if(self.arguments.len() >= 3, "Please use launcher to launch Sen");
                 #[cfg(windows)]
                 {
@@ -170,20 +182,16 @@ pub mod sen {
                 }
             }
 
-            fn execute(&mut self) {
+            fn execute(
+                &mut self
+            ) -> ()
+            {
                 let execute = self.lookup_symbol("execute");
                 assert_if(execute.is_ok(), "Failed to load execute function");
                 let execute = execute.unwrap();
                 unsafe {
                     self.construct_argument();
                     execute(self.argument_list.unwrap(), callback);
-                }
-            }
-
-            fn finalizer(&self) {
-                unsafe {
-                    self.release_argument();
-                    self.free_library();
                 }
             }
         }

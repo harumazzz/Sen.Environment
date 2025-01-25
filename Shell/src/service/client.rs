@@ -4,11 +4,9 @@ pub mod sen {
 
         pub trait Client {
 
-            fn initialize(&mut self);
+            fn initialize(&mut self) -> ();
 
-            fn execute(&mut self);
-            
-            fn finalizer(&self);
+            fn execute(&mut self) -> ();
 
         }
 

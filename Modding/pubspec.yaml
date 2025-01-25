@@ -54,7 +54,6 @@ dependencies:
     flutter_bloc: ^8.1.6
     bloc: ^8.1.4
     meta: ^1.15.0
-    flutter_acrylic: ^1.1.4
     loading_indicator: ^3.1.1
     screenshot: ^3.0.0
     flutter_fancy_tree_view: ^1.6.0

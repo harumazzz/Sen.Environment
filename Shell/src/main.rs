@@ -16,11 +16,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 	let mut loader = Loader::new(&host);
 	loader.initialize();
 	loader.execute();
-	loader.finalizer();
 	Ok(())
 }
 
-fn main() {
+fn main() -> () {
 	match run() {
 		Ok(_) => {},
 		Err(e) => eprintln!("Application encountered an error: {}", e),
