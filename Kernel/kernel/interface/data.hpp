@@ -51,7 +51,7 @@ namespace Sen::Kernel::Interface {
 	) -> void
 	{
 		if (list.value != nullptr) {
-			for (auto i : Range(list.size)) {
+			for (auto i : Range{list.size}) {
 				clean_up<StringView>(list.value[i]);
 			}
 			delete[] list.value;
@@ -71,6 +71,20 @@ namespace Sen::Kernel::Interface {
 	}
 
 	template <>
+	auto finalizer<StringList>(
+		StringList* ptr
+	) -> void
+	{
+		if (ptr != nullptr) {
+			for (auto i : Range{ptr->size}) {
+				clean_up<StringView>(ptr->value[i]);
+			}
+			delete[] ptr->value;
+			delete ptr;  
+		}
+	}
+
+	template <>
 	auto finalizer<StringView>(
 		StringView* ptr
 	) -> void
@@ -78,6 +92,7 @@ namespace Sen::Kernel::Interface {
 		if (ptr != nullptr) {
 			if (ptr->value != nullptr) {
 				delete[] ptr->value;  
+				ptr->value = nullptr;
 			}
 			delete ptr;
 		}

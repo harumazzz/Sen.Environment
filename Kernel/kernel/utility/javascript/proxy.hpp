@@ -240,7 +240,7 @@ namespace Sen::Kernel::JavaScript {
 
 		std::optional<JSValue> constructor;
 
-		inline static auto counter{0_size};
+		inline static thread_local auto counter = std::size_t{0};
 
 		inline auto static finalizer(
 			Pointer<JSRuntime> runtime, 
@@ -259,7 +259,7 @@ namespace Sen::Kernel::JavaScript {
 
 		Pointer<JSContext> context;
 
-		inline static ClassID class_id{};
+		inline static thread_local auto class_id = ClassID{};
 
 		Atom atom;
 		
@@ -330,7 +330,7 @@ namespace Sen::Kernel::JavaScript {
 			return thiz;
 		}
 
-		auto build(
+		inline auto build(
 			NamespaceBuilder& builder
 		) -> void
 		{

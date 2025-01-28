@@ -422,6 +422,16 @@ namespace Sen::Kernel::JavaScript {
 				return value;
 			}
 
+			auto call (
+
+			) -> JSValue
+			{
+				if (thiz.is_undefined()) {
+					return JS_UNDEFINED;
+				}
+				return JS_Call(thiz.context, thiz.value, JS_UNDEFINED, 0, nullptr);
+			}
+
 			auto set_property(
 				std::string_view name,
 				Value&& value
@@ -564,6 +574,13 @@ namespace Sen::Kernel::JavaScript {
 				auto result = thiz.value;
 				thiz.value = JS_UNINITIALIZED;
 				return result;
+			}
+
+			auto is_promise (
+
+			) -> bool
+			{
+				return static_cast<bool>(JS_IsPromise(thiz.value));
 			}
 	};
 

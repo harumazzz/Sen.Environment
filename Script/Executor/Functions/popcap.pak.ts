@@ -47,7 +47,7 @@ namespace Sen.Script.Executor.Functions.PopCap.PAK {
 				Kernel.Support.PopCap.Package.unpack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,

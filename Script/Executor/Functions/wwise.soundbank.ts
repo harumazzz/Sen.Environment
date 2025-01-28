@@ -47,7 +47,7 @@ namespace Sen.Script.Executor.Functions.WWise.SoundBank {
 				Kernel.Support.WWise.SoundBank.decode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,
@@ -76,7 +76,7 @@ namespace Sen.Script.Executor.Functions.WWise.SoundBank {
 				Kernel.Support.WWise.SoundBank.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, true);
 			},
 			is_enabled: true,

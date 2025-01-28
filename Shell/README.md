@@ -2,16 +2,11 @@
 
 -   `Shell` - FrontEnd, provides a command line interface.
 
--   This project is a cross-platform `Rust` project that support many operating systems such:
-    `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 7+`
-
--   The old `Shell` was written in `C++`. However, I believe that
-    [Rust](https://www.rust-lang.org/tools/install) is better in development, so the later was
-    rewritten in Rust.
+-   This project is a cross-platform `C++` project that support many operating systems such: `Windows x64+`, `Linux x64+`, `Macintosh x64+`, `iPhone iOS 10.0+`, `Android 7+`
 
 ## Development
 
--   [Meson](https://mesonbuild.com/)
+-   [CMake 3.8+](https://cmake.org/)
 
 -   [Powershell for Windows](https://learn.microsoft.com/en-us/powershell/)
 
@@ -28,3 +23,13 @@
 -   [Clang 14.0 for Android (NDK r26.1)](https://developer.android.com/ndk/downloads)
 
 -   [Clang 17.0 for iPhone](https://llvm.org/)
+
+## Dependencies
+
+-   [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/): Picking file, directory
+
+-   [cpp-httplib](https://github.com/yhirose/cpp-httplib): Provide Internet connection.
+
+# Acknowledgement
+
+-   [TwinStar](https://github.com/twinstar6980): The source code of the `pick_path` method has been adapted from the `ShellCLI` source code of this project.

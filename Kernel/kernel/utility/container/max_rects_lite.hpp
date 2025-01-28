@@ -227,7 +227,7 @@ namespace Sen::Kernel
                 {
                     if (r.width >= width && r.height >= height)
                     {
-                        areaFit = options.logic == PACKING_LOGIC::MAX_AREA ? r.width * r.height - width * height : (std::min)(r.width - width, r.height - height);
+                        areaFit = options.logic == PACKING_LOGIC::MAX_AREA ? r.width * r.height - width * height : std::min(r.width - width, r.height - height);
                         if (areaFit < score)
                         {
                             bestNode = Rectangle(width, height, r.x, r.y, r.source);
@@ -350,11 +350,11 @@ namespace Sen::Kernel
             {
                 for (auto &freeRect : freeRects)
                 {
-                    if (freeRect.x + freeRect.width >= (std::min)(width + padding - border, r_width))
+                    if (freeRect.x + freeRect.width >= std::min(width + padding - border, r_width))
                     {
                         freeRect.width = r_width - freeRect.x - border;
                     }
-                    if (freeRect.y + freeRect.height >= (std::min)(height + padding - border, r_height))
+                    if (freeRect.y + freeRect.height >= std::min(height + padding - border, r_height))
                     {
                         freeRect.height = r_height - freeRect.y - border;
                     }

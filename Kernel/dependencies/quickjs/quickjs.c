@@ -48522,6 +48522,13 @@ typedef struct JSPromiseReactionData {
     return s->promise_state;
 }
 
+JS_BOOL JS_IsPromise(JSValue val)
+{
+    if (JS_VALUE_GET_TAG(val) != JS_TAG_OBJECT)
+        return FALSE;
+    return JS_VALUE_GET_OBJ(val)->class_id == JS_CLASS_PROMISE;
+}
+
 JSValue JS_PromiseResult(JSContext *ctx, JSValue promise)
 {
     JSPromiseData *s = JS_GetOpaque(promise, JS_CLASS_PROMISE);

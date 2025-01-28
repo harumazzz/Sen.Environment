@@ -24,9 +24,7 @@ enum EventType {
 }
 
 T getType<T extends Enum>(String name, List<T> values) {
-  final eventType = values.firstWhere(
-      (e) => e.name.toLowerCase() == name.toLowerCase(),
-      orElse: () => values.first);
+  final eventType = values.firstWhere((e) => e.name.toLowerCase() == name.toLowerCase(), orElse: () => values.first);
   return eventType;
 }
 
@@ -147,7 +145,7 @@ class MapPieceItem {
       'm_scaleY': data.scaleY,
       'm_isArtFlipped': data.isArtFlipped,
       'm_rotationAngle': data.rotationAngle,
-      'm_rotationRate': data.rotationRate
+      'm_rotationRate': data.rotationRate,
     };
   }
 }
@@ -237,11 +235,9 @@ class MapEventItem {
       unlockedNarrationID: json['m_unlockedNarrationID'],
       completedNarrationID: json['m_completedNarrationID'],
       worldMapTutorial: json['m_worldMapTutorial'],
-      worldMapTutorialVisibleWhen: getType(
-          json['m_worldMapTutorialVisibleWhen'].toString(),
-          WorldMapEventStatus.values),
-      levelNodeType:
-          getType(json['m_levelNodeType'].toString(), LevelNodeType.values),
+      worldMapTutorialVisibleWhen:
+          getType(json['m_worldMapTutorialVisibleWhen'].toString(), WorldMapEventStatus.values),
+      levelNodeType: getType(json['m_levelNodeType'].toString(), LevelNodeType.values),
     );
   }
 
@@ -263,8 +259,7 @@ class MapEventItem {
       'm_unlockedNarrationID': data.unlockedNarrationID ?? '',
       'm_completedNarrationID': data.completedNarrationID ?? '',
       'm_worldMapTutorial': data.worldMapTutorial ?? '',
-      'm_worldMapTutorialVisibleWhen':
-          getName(data.worldMapTutorialVisibleWhen) ?? '',
+      'm_worldMapTutorialVisibleWhen': getName(data.worldMapTutorialVisibleWhen) ?? '',
       'm_levelNodeType': getName(data.levelNodeType) ?? '',
     };
   }
@@ -276,11 +271,7 @@ class BoundingRect {
   int width;
   int height;
 
-  BoundingRect(
-      {required this.x,
-      required this.y,
-      required this.width,
-      required this.height});
+  BoundingRect({required this.x, required this.y, required this.width, required this.height});
 
   BoundingRect clone() {
     return BoundingRect(
@@ -301,12 +292,7 @@ class BoundingRect {
   }
 
   static Map<String, dynamic> toJson(BoundingRect data) {
-    return {
-      'mX': data.x,
-      'mY': data.y,
-      'mWidth': data.width,
-      'mHeight': data.height
-    };
+    return {'mX': data.x, 'mY': data.y, 'mWidth': data.width, 'mHeight': data.height};
   }
 }
 
@@ -335,12 +321,8 @@ class WorldData {
         worldID: json['m_worldId'],
         resGroupID: json['m_resGroupID'],
         boundingRect: BoundingRect.fromJson(json['m_boundingRect']),
-        pieces: (json['m_mapPieces'] as List)
-            .map((e) => MapPieceItem.fromJson(e))
-            .toList(),
-        events: (json['m_eventList'] as List)
-            .map((e) => MapEventItem.fromJson(e))
-            .toList());
+        pieces: (json['m_mapPieces'] as List).map((e) => MapPieceItem.fromJson(e)).toList(),
+        events: (json['m_eventList'] as List).map((e) => MapEventItem.fromJson(e)).toList());
   }
 
   static Map<String, dynamic> toJson(WorldData data) {

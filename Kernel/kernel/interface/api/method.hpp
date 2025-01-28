@@ -36,29 +36,31 @@ namespace Sen::Kernel::Interface::API {
 		inline static auto is_gui (
 
 		) -> bool {
-			auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView{nullptr, 0}, finalizer<CStringView>);
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({std::string{"is_gui"}}), parameters.operator*());
 			Interface::Shell::callback(parameters.get(), is_gui.get());
-			return static_cast<bool>(Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell"));
+			auto result = static_cast<bool>(Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell"));
+			return result;
 		}
 		
 		inline static auto version (
 
 		) -> int {
-			auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView{nullptr, 0}, finalizer<CStringView>);
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({std::string{"version"}}), parameters.operator*());
 			Interface::Shell::callback(parameters.get(), shell_version.get());
-			return static_cast<int>(Converter::to_int32(std::string{ reinterpret_cast<const char*>(shell_version->value), static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
+			auto result = static_cast<int>(Converter::to_int32(std::string{ reinterpret_cast<const char*>(shell_version->value), static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
+			return result;
 		}
 
 		inline static auto callback(
 			JSContext* context,
 			JSValue& value
 		) -> JSValue {
-			auto destination = std::unique_ptr<CStringView, StringFinalizer>{ new CStringView(nullptr, 0), finalizer<CStringView> };
-			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>{ new CStringList(nullptr, 0), finalizer<CStringList> };
+			auto destination = std::unique_ptr<CStringView, StringFinalizer>{ new CStringView{nullptr, 0}, finalizer<CStringView> };
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>{ new CStringList{nullptr, 0}, finalizer<CStringList> };
 			JavaScript::to_string_list<CStringList, CStringView>(context, value, parameters.operator*());
 			Interface::Shell::callback(parameters.get(), destination.get());
 			return JavaScript::to_string<CStringView>(context, destination.get());
@@ -383,14 +385,15 @@ namespace Sen::Kernel::Interface::API {
 			JSContext* context
 		) -> JSValue
 		{
-			auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			auto wait_parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({ std::string{ "wait" } }), wait_parameters.operator*());
 			Interface::Shell::callback(wait_parameters.get(), nullptr);
-			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView(nullptr, 0), finalizer<CStringView>);
-			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList(nullptr, 0), finalizer<CStringList>);
+			auto destination = std::unique_ptr<CStringView, StringFinalizer>(new CStringView{nullptr, 0}, finalizer<CStringView>);
+			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::array<std::string, 1>{std::string{ "input" }}, parameters.operator*());
 			Interface::Shell::callback(parameters.get(), destination.get());
-			return JavaScript::to_string<CStringView>(context, destination.get());
+			auto result = JavaScript::to_string<CStringView>(context, destination.get());
+			return result;
 		}
 
 	}
@@ -641,12 +644,12 @@ namespace Sen::Kernel::Interface::API {
 	namespace JS {
 
 		inline static auto evaluate_fs(
-			JSContext* context,
+			Pointer<JSContext> context,
 			std::string& source
 		) -> JSValue
 		{
 			auto engine = static_cast<JavaScript::Engine*>(JS_GetContextOpaque(context));
-			return engine->evaluate_fs(source);
+			return engine->evaluate_fs<JavaScript::Value, JavaScript::Error>(source);
 		}
 
 	}

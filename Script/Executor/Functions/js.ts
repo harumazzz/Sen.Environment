@@ -29,7 +29,7 @@ namespace Sen.Script.Executor.Functions.JS {
 				Console.display(Kernel.Language.get('js.process.done'), result, 'green');
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,

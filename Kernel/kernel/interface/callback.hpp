@@ -22,25 +22,28 @@ namespace Sen::Kernel::Interface {
 
 		private:
 
-			JS::Engine runtime;
-
-			JS::NamespaceBuilder builder;
+			std::mutex m_mutex;
 
 		public:
 
 			explicit Runtime(
-			) : runtime{}, builder{runtime.context().value}
+			) : m_mutex{}
 			{
-				runtime.set_context_opaque(&runtime);
 			}
 
 			~Runtime(
 
 			) = default;
 
-			inline auto prepare(
+			static auto run (
+
 			) -> void
 			{
+				auto runtime = JS::Runtime::as_new_instance();
+				auto context = JS::Context{runtime};
+				auto engine = JS::Engine{runtime, context};
+				auto builder = JS::NamespaceBuilder{engine.context().value};
+				engine.context().set_context_opaque(&engine);
 				auto sen = builder.add_space("Sen");
 				auto shell = sen.add_space("Shell");
 				auto kernel = sen.add_space("Kernel");
@@ -305,49 +308,65 @@ namespace Sen::Kernel::Interface {
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
 					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::APNGMakerSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
-				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ runtime.context().value, "DataStreamView" };
+				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ engine.context().value, "DataStreamView" };
 				Interface::API::DataStreamView::register_class(DataStreamView, kernel);
-				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ runtime.context().value, "Clock" };
-				auto ImageView = JavaScript::ClassBuilder<Kernel::Image<Integer>>{ runtime.context().value, "ImageView" };
+				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ engine.context().value, "Clock" };
+				auto ImageView = JavaScript::ClassBuilder<Kernel::Image<Integer>>{ engine.context().value, "ImageView" };
 				Interface::API::ImageView::register_class(ImageView, kernel);
-				auto Canvas = JavaScript::ClassBuilder<canvas_ity::canvas>{ runtime.context().value, "Canvas" };
+				auto Canvas = JavaScript::ClassBuilder<canvas_ity::canvas>{ engine.context().value, "Canvas" };
 				Interface::API::Canvas::register_class(Canvas, kernel);
-				auto JsonWriter = JavaScript::ClassBuilder<Kernel::JsonWriter>{ runtime.context().value, "JsonWriter" };
+				auto JsonWriter = JavaScript::ClassBuilder<Kernel::JsonWriter>{ engine.context().value, "JsonWriter" };
 				Interface::API::JsonWriter::register_class(JsonWriter, kernel);
 				Interface::API::Clock::register_class(Clock, kernel);
 				// execute the script
-				runtime.evaluate_fs(construct_string(Executor::script));
+				engine.context().evaluate_fs<JavaScript::Value, JavaScript::Error>(construct_string(Executor::script));
 				// call main
-				runtime.evaluate("Sen.Script.main()"_sv, std::source_location::current().file_name());
-				// Execute other Promise
-				thiz.execute_promise_in_queue();
-				#ifdef DEBUG
-					runtime.dump_memory_usage();
-				#endif
-				return;
-			}
-
-			// Execute other Promise if quickjs found any
-
-			inline auto execute_promise_in_queue (
-
-			) -> void
-			{
-				while (runtime.has_promise()) {
-					runtime.execute_pending_job();
+				auto main = engine.context().evaluate<JavaScript::Value, JavaScript::Error>("Sen.Script.main()"_sv, std::source_location::current().file_name());
+				auto result = JavaScript::Value::as_new_reference(engine.context().value, main);
+				// Handle other promise
+				if (result.is_promise()) {
+					auto then = result.get_property("then").call(); 
+					auto rejected_promise = [&](){
+						if (static_cast<bool>(JS_IsException(then))) {
+							auto error = result.get_property("error").call();
+							engine.context().collect_garbage(error);
+							return true;
+						}
+						return false;
+					};
+					if (!rejected_promise()) {
+						while (!JS_IsUndefined(then)) {
+							engine.context().collect_garbage(then);
+							then = JavaScript::Value::as_new_reference(engine.context().value, then).call();
+							if (rejected_promise()) {
+								break;
+							}
+						}
+					}
+					engine.context().collect_garbage(then);
+					auto finally = result.get_property("finally").call();
+					engine.context().collect_garbage(finally);
 				}
-				return;
+				// Execute other Promise
+				while (engine.runtime().has_promise()) {
+					engine.runtime().execute_pending_job();
+				}
+				#ifdef DEBUG
+					engine.runtime().dump_memory_usage();
+				#endif
 			}
 
-			/**
-			 * Execute method
-			*/
-
-			inline auto execute(
-
+			auto execute(
 			) -> void
 			{
-				return;
+				auto thread = std::thread{
+					[this](){
+						thiz.m_mutex.lock();
+						Runtime::run();
+						thiz.m_mutex.unlock();
+					}
+				};
+				thread.join();
 			}
 	};
 }		

@@ -15,7 +15,6 @@ auto execute (
         Shell::callback = callback;
         Executor::register_external(&script, argument);
         auto kernel = Runtime{};
-        kernel.prepare();
         kernel.execute();
         Executor::unregister_external();
     }

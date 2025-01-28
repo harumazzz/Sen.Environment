@@ -107,7 +107,7 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 				);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,

@@ -392,7 +392,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
                                      double const &mutil,
                                      double const &offset) -> double
             {
-                return static_cast<double>((std::max)(0.0, (std::min)(255.0, mutil * 255.0 + offset)) / 255.0);
+                return static_cast<double>(std::max(0.0, std::min(255.0, mutil * 255.0 + offset)) / 255.0);
             };
             auto r = data->FindAttribute("redMultiplier");
             auto g = data->FindAttribute("greenMultiplier");

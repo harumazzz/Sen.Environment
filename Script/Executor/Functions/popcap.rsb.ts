@@ -125,7 +125,7 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,
@@ -250,7 +250,7 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,
@@ -280,7 +280,7 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				);
 				clock.stop_safe();
 			},
-			batch_forward(argument): void {
+			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
 			is_enabled: true,
