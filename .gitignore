@@ -444,5 +444,4 @@ KernelX
 Modding/android/app/src/main/jniLibs/arm64-v8a/libKernel.so
 Modding/android/app/src/main/jniLibs/arm64-v8a/libKernel.so
 Kernel/cmake-build-debug/
-Shell/cmake-build-debug/build.ninja
-Shell/cmake-build-debug/.cmake/api/v1/reply/toolchains-v1-f0ee7920122f31f59345.json
+Shell/cmake-build-debug
