@@ -252,7 +252,7 @@ class MapEventItem {
       'm_unlockedFrom': data.unlockedFrom,
       'm_visibleFrom': data.visibleFrom,
       'm_autoVisible': data.autoVisible,
-      'm_isArtFlipped': data.isArtFlipped,
+      'm_isArtFlipped': data.isArtFlipped ?? false,
       'm_cost': data.cost ?? 0,
       'm_parentEvent': data.parentEvent,
       'm_displayText': data.displayText ?? '',

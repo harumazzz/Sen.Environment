@@ -8,7 +8,8 @@ project(
 add_library(
 	${PROJECT_NAME} SHARED
 	./utility/macro.hpp
-	./utility/range.hpp
+	./utility/range/forward.hpp
+	./utility/range/reverse.hpp
 	./utility/library.hpp
 	./utility/literal.hpp
 	./utility/assert.hpp

@@ -34,7 +34,8 @@
 #include <condition_variable>
 #include "kernel/utility/assert.hpp"
 #include "kernel/utility/container/language.hpp"
-#include "kernel/utility/range.hpp"
+#include "kernel/utility/range/forward.hpp"
+#include "kernel/utility/range/reverse.hpp"
 #include "kernel/utility/literal.hpp"
 #include "kernel/dependencies/zlib.hpp"
 #include "kernel/dependencies/fmt.hpp"
