@@ -8,11 +8,15 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     
     struct Decode : Common
     {
+    private:
+
+        using Writer = Encoding::JSON::IndentWriter;
+        
     protected:
         template <auto write_key>
         inline static auto exchange_value(
             DataStreamView &stream,
-            JsonWriter &value,
+            Writer &value,
             List<std::string> &native_string_index,
             List<std::string> &unicode_string_index,
             TypeIdentifierEnumeration::Type const &type) -> void
@@ -341,7 +345,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     public:
         inline static auto process_whole(
             DataStreamView &stream,
-            JsonWriter &value) -> void
+            Writer &value) -> void
         {
             assert_conditional(stream.readString(4) == k_magic_identifier, fmt::format("{}", Kernel::Language::get("popcap.rton.decode.invalid_rton_magic")), "process_whole");
             {
@@ -360,8 +364,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             std::string_view definition) -> void
         {
             auto stream = DataStreamView{source};
-            auto writer = JsonWriter{};
-            writer.WriteIndent = true;
+            auto writer = Writer{};
             process_whole(stream, writer);
             FileSystem::write_file(definition, writer.to_string());
             return;

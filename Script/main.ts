@@ -276,7 +276,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 12 as const;
+	export const version = 13 as const;
 
 	/**
 	 * --------------------------------------------------

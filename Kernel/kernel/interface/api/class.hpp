@@ -303,11 +303,11 @@ namespace Sen::Kernel::Interface::API {
 	namespace JsonWriter {
 
 		inline auto register_class(
-			JavaScript::ClassBuilder<Kernel::JsonWriter>& builder,
+			JavaScript::ClassBuilder<Kernel::Encoding::JSON::IndentWriter>& builder,
 			JavaScript::NamespaceBuilder& class_builder
 		) -> void
 		{
-			using JsonWriter = Kernel::JsonWriter;
+			using JsonWriter = Kernel::Encoding::JSON::IndentWriter;
 			builder.add_constructor<[]() -> Pointer<JsonWriter> {
 				return new JsonWriter{};
 			}>()
@@ -347,11 +347,7 @@ namespace Sen::Kernel::Interface::API {
 			.template add_member_function<[](Pointer<JsonWriter> writer, double& value){
 				return writer->write_value(value);
 			}, void, double&>("writeNumber")
-			.template add_getter_setter<bool, [](Pointer<JsonWriter> writer){
-				return writer->WriteIndent;
-			}, [](Pointer<JsonWriter> writer, bool& value){
-				writer->WriteIndent = value;
-			}>("writeIndent").build(class_builder);
+			.build(class_builder);
 			return;
 		}
 

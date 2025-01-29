@@ -11,7 +11,8 @@ namespace Sen::Kernel {
 			const nlohmann::ordered_json &data
 		) -> List<std::string>
 		{
-			auto result = List<std::string>();
+			auto result = List<std::string>{};
+			result.reserve(data.size());
 			for(auto &[key, value] : data.items()){
 				result.push_back(key);
 			}
@@ -27,8 +28,9 @@ namespace Sen::Kernel {
 		) -> List<T>
 		{
 			auto keys = List<T>{};
+			keys.reserve(map.size());
 			for (auto & [key, value] : map) {
-				keys.emplace_back(key);
+				keys.push_back(key);
 			}
 			return keys;
 		}

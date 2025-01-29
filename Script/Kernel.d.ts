@@ -2865,20 +2865,6 @@ declare namespace Sen {
 			public constructor(): void;
 
 			/**
-			 * Gets a value indicating whether indentation is enabled.
-			 *
-			 * @returns True if indentation is enabled, false otherwise.
-			 */
-			public get writeIndent(): boolean;
-
-			/**
-			 * Sets a value to enable or disable indentation.
-			 *
-			 * @param value True to enable indentation, false to disable.
-			 */
-			public set writeIndent(value: boolean): void;
-
-			/**
 			 * Clears any previously written JSON data.
 			 */
 			public clear(): void;

@@ -16,7 +16,10 @@ add_library(
 	./utility/utility.hpp
 	./utility/container/filesystem.hpp
 	./utility/container/string.hpp
-	./utility/container/converter.hpp
+
+	./utility/converter/common.hpp
+	./utility/converter/converter.hpp
+
 	./utility/container/math.hpp
 	./utility/container/language.hpp
 	./utility/container/path.hpp
@@ -24,9 +27,14 @@ add_library(
 	./utility/container/image.hpp
 	./utility/container/json.hpp
 	./utility/container/buffer.hpp
-	./utility/container/array.hpp
+	./utility/container/array/common.hpp
+	./utility/container/array/array.hpp
+	./utility/container/array/byte_array.hpp
 	./utility/container/system.hpp
-	./utility/container/json_writer.hpp
+
+	./utility/encoding/json/common.hpp
+	./utility/encoding/json/helper.hpp
+	./utility/encoding/json/writer.hpp
 	./utility/container/apng_maker.hpp
 	./utility/container/utility.hpp
 	./utility/clock.hpp

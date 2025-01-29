@@ -65,8 +65,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                         }
                         else if (compare_string(extenstion, k_rton_extension_string))
                         {
+                            using Writer = Encoding::JSON::IndentWriter;
                             auto stream = DataStreamView{resource_data};
-                            auto writer = JsonWriter{};
+                            auto writer = Writer{};
                             Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
                             convert_whole.template operator()<true>(writer.to_string());
                             break;

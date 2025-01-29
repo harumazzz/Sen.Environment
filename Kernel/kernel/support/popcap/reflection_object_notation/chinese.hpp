@@ -12,9 +12,19 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     struct Chinese
     {
 
-        constexpr Chinese() = default;
+        private:
 
-        constexpr ~Chinese() = default;
+            using Writer = Encoding::JSON::IndentWriter;
+
+        public:
+
+        constexpr Chinese(
+
+        ) = default;
+
+        constexpr ~Chinese(
+
+        ) = default;
 
         inline static auto decrypt(
             DataStreamView &source,
@@ -57,8 +67,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             auto stream = DataStreamView{source};
             auto dest = DataStreamView{};
             decrypt(stream, dest, key, iv);
-            auto json = JsonWriter{};
-            json.WriteIndent = true;
+            auto json = Writer{};
             Decode::process_whole(dest, json);
             FileSystem::write_file(destination, json.to_string());
             return;

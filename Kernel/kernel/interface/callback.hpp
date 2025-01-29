@@ -315,7 +315,7 @@ namespace Sen::Kernel::Interface {
 				Interface::API::ImageView::register_class(ImageView, kernel);
 				auto Canvas = JavaScript::ClassBuilder<canvas_ity::canvas>{ engine.context().value, "Canvas" };
 				Interface::API::Canvas::register_class(Canvas, kernel);
-				auto JsonWriter = JavaScript::ClassBuilder<Kernel::JsonWriter>{ engine.context().value, "JsonWriter" };
+				auto JsonWriter = JavaScript::ClassBuilder<Kernel::Encoding::JSON::IndentWriter>{ engine.context().value, "JsonWriter" };
 				Interface::API::JsonWriter::register_class(JsonWriter, kernel);
 				Interface::API::Clock::register_class(Clock, kernel);
 				// execute the script

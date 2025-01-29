@@ -463,9 +463,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 {
                 case DataType::Data:
                 {
+                    using Writer = Encoding::JSON::IndentWriter;
                     assert_conditional(compare_string(extension, ".rton"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_rton_file")), resource_information.path), "decode_popcap_file");
-                    auto writer = JsonWriter{};
-                    writer.WriteIndent = true;
+                    auto writer = Writer{};
                     auto stream = DataStreamView{resource_data};
                     Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
                     exchange_path(resource_information.path, ".rton"_sv, ".json"_sv);

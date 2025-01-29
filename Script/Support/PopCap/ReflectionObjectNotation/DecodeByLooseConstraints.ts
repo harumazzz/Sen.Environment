@@ -386,7 +386,6 @@ namespace Sen.Script.Support.PopCap.ReflectionObjectNotation.DecodeByLooseConstr
 		stream.read_position += 8n; // skip RTON head and version;
 		//clear;
 		writer.clear();
-		writer.writeIndent = true;
 		r0x90_list.length = 0;
 		r0x92_list.length = 0;
 		read_object(stream);

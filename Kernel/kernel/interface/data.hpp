@@ -2,12 +2,9 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
-#include "kernel/utility/container/array.hpp"
+#include "kernel/utility/container/array/array.hpp"
 
 namespace Sen::Kernel::Interface {
-
-	template <typename T, std::size_t N>
-	using Array = std::array<T, N>;
 
 	struct StringView {
 
