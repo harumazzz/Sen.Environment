@@ -306,7 +306,7 @@ namespace Sen::Kernel::Interface {
 				auto miscellaneous = kernel.add_space("Miscellaneous");
 				{
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
-					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::APNGMakerSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
+					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::Encoding::APNG::DefaultSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
 				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ engine.context().value, "DataStreamView" };
 				Interface::API::DataStreamView::register_class(DataStreamView, kernel);

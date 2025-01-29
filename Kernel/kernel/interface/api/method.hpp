@@ -1707,10 +1707,10 @@ namespace Sen::Kernel::Interface::API {
 		inline static auto to_apng(
 			List<std::string>& image_path_list,
 			std::string& destination,
-			std::shared_ptr<Kernel::APNGMakerSetting>& setting
+			std::shared_ptr<Kernel::Encoding::APNG::DefaultSetting>& setting
 		) -> void
 		{
-			return Kernel::APNGMaker::process_fs(image_path_list, destination, setting.get());
+			return Kernel::Encoding::APNG::Writer::process_fs(image_path_list, destination, setting.get());
 		}
 
 		inline static auto make_copy(

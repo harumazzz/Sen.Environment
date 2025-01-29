@@ -4,7 +4,7 @@
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
 
-#include "kernel/utility/clock.hpp"
+#include "kernel/utility/miscellaneous/clock/clock.hpp"
 
 #include "kernel/utility/container/math.hpp"
 #include "kernel/utility/container/array/common.hpp"
@@ -22,7 +22,7 @@
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/container/buffer.hpp"
 #include "kernel/utility/container/system.hpp"
-#include "kernel/utility/container/apng_maker.hpp"
+#include "kernel/utility/encoding/apng/writer.hpp"
 #include "kernel/utility/container/max_rects_lite.hpp"
 #include "kernel/utility/container/utility.hpp"
 

@@ -58,9 +58,9 @@ namespace Sen::Kernel::Language
 			#if _WIN32
 			auto path = std::string{source.data(), source.size()};
 			std::replace(path.begin(), path.end(), '\\', '/');
-			throw Exception(fmt::format("Could not read language file: {}", path), std::source_location::current(), "read_language");
+			throw Exception{fmt::format("Could not read language file: {}", path), std::source_location::current(), "read_language"};
 			#else
-			throw Exception(fmt::format("Could not read language file: {}", source), std::source_location::current(), "read_language");
+			throw Exception{fmt::format("Could not read language file: {}", source), std::source_location::current(), "read_language"};
 			#endif
 		}
 		auto buffer = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

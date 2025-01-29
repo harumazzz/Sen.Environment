@@ -35,9 +35,12 @@ add_library(
 	./utility/encoding/json/common.hpp
 	./utility/encoding/json/helper.hpp
 	./utility/encoding/json/writer.hpp
-	./utility/container/apng_maker.hpp
+	./utility/encoding/apng/common.hpp
+	./utility/encoding/apng/setting.hpp
+	./utility/encoding/apng/writer.hpp
+	
 	./utility/container/utility.hpp
-	./utility/clock.hpp
+	./utility/miscellaneous/clock/clock.hpp
 
 	./utility/trait/trait.hpp
 

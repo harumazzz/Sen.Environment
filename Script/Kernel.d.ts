@@ -2503,64 +2503,56 @@ declare namespace Sen {
 			height: bigint;
 		}
 
-		/**
-		 * APNGMakerSetting Class
-		 *
-		 * This class likely represents a collection of settings used to configure the
-		 * generation of Animated Portable Network Graphics (APNG) images.
-		 *
-		 * These settings might control aspects like:
-		 *  - Quality (compression level)
-		 *  - Disposal method (how previous frames are handled)
-		 *  - Blending mode (how frames are combined)
-		 */
+		export namespace Encoding {
+			export namespace APNG {
+				export interface Setting {
+					/**
+					 * delay_frames_list: Array<bigint>
+					 *
+					 * Stores an array of bigint values representing the delay
+					 * (in milliseconds or some unit) between consecutive frames
+					 * in the APNG animation.
+					 */
+					delay_frames_list: Array<bigint>;
 
-		export interface APNGMakerSetting {
-			/**
-			 * delay_frames_list: Array<bigint>
-			 *
-			 * Stores an array of bigint values representing the delay
-			 * (in milliseconds or some unit) between consecutive frames
-			 * in the APNG animation.
-			 */
-			delay_frames_list: Array<bigint>;
+					/**
+					 * loop: bigint
+					 *
+					 * Stores a bigint value representing the number of times
+					 * the APNG animation should loop.
+					 *
+					 * A value of 0 indicates infinite looping, while any positive
+					 * value specifies the number of loops before stopping playback.
+					 */
+					loop: bigint;
 
-			/**
-			 * loop: bigint
-			 *
-			 * Stores a bigint value representing the number of times
-			 * the APNG animation should loop.
-			 *
-			 * A value of 0 indicates infinite looping, while any positive
-			 * value specifies the number of loops before stopping playback.
-			 */
-			loop: bigint;
+					/**
+					 * width: bigint
+					 *
+					 * Stores a bigint value representing the width of the APNG image
+					 * in pixels.
+					 */
+					width: bigint;
 
-			/**
-			 * width: bigint
-			 *
-			 * Stores a bigint value representing the width of the APNG image
-			 * in pixels.
-			 */
-			width: bigint;
+					/**
+					 * height: bigint
+					 *
+					 * Stores a bigint value representing the height of the APNG image
+					 * in pixels.
+					 */
+					height: bigint;
 
-			/**
-			 * height: bigint
-			 *
-			 * Stores a bigint value representing the height of the APNG image
-			 * in pixels.
-			 */
-			height: bigint;
-
-			/**
-			 * trim: boolean
-			 *
-			 * Indicates whether to trim any transparent pixels from the edges
-			 * of the APNG frames.
-			 *
-			 * A value of true enables trimming, while false keeps all pixels.
-			 */
-			trim: boolean;
+					/**
+					 * trim: boolean
+					 *
+					 * Indicates whether to trim any transparent pixels from the edges
+					 * of the APNG frames.
+					 *
+					 * A value of true enables trimming, while false keeps all pixels.
+					 */
+					trim: boolean;
+				}
+			}
 		}
 
 		/**
@@ -4647,14 +4639,14 @@ declare namespace Sen {
 			 *
 			 * @param image_path_list  An array of strings containing the paths to the individual image frames for the animation.
 			 * @param destination     The destination path (including filename) where the generated APNG image will be saved.
-			 * @param setting          A Kernel.APNGMakerSetting object containing configuration options for the APNG generation process.
+			 * @param setting          A Setting object containing configuration options for the APNG generation process.
 			 *                          This object likely controls aspects like quality, disposal method, and blending mode.
 			 * @throws                 An error if there are issues processing the images or saving the APNG file.
 			 */
 			export function to_apng(
 				image_path_list: Array<string>,
 				destination: string,
-				setting: Kernel.APNGMakerSetting,
+				setting: Kernel.Encoding.APNG.Setting,
 			): void;
 		}
 	}
