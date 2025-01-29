@@ -41,7 +41,10 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
 
   void _clearSelectedList(
       ClearSelectedList event, Emitter<SelectedState> emit) {
-    emit(SelectedState.initailize());
+    emit(SelectedState(
+      selectedList: const [],
+      copyList: state.copyList,
+    ));
   }
 
   void _selectedListUpdate(
@@ -52,8 +55,11 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
   void _copySelected(CopySelectedList event, Emitter<SelectedState> emit) {
     final newState = state.copyWith(
       selectedList: state.selectedList,
-      copyList: state.selectedList,
+      copyList: event.isCut
+          ? [...state.selectedList, 'paste_cut']
+          : state.selectedList,
     );
+
     emit(newState);
   }
 

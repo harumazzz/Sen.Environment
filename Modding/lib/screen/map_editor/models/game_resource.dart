@@ -11,7 +11,7 @@ enum ImageCommonType {
   spaceSpiral,
   spaceDust,
   readySeedBank,
-  readyPlant,
+  readyPacket,
   sprout,
   keygateFlag,
   infoIcon,
@@ -30,7 +30,8 @@ enum AnimationCommonType {
   missingArtPieceAnimation,
   stargate,
   sodRoll,
-  collectedUpgradeEffect
+  collectedUpgradeEffect,
+  readyPlant
 }
 
 class GameResource {
@@ -39,6 +40,7 @@ class GameResource {
       required this.commonAnimation,
       required this.uiUniverse,
       required this.seedBank,
+      required this.packet,
       required this.plant,
       required this.upgrade});
 
@@ -50,7 +52,9 @@ class GameResource {
 
   final HashMap<String, VisualImage?> seedBank;
 
-  final HashMap<String, VisualImage?> plant;
+  final HashMap<String, VisualImage?> packet;
+
+  final HashMap<String, VisualAnimation?> plant;
 
   // final HashMap<String, VisualImage> pinata;
 

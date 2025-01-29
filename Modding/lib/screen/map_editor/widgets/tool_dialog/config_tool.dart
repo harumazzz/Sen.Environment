@@ -23,7 +23,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
         shadowColor: Colors.transparent,
         child: SizedBox(
           width: 300,
-          height: 180,
+          height: 240,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
@@ -31,31 +31,48 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                 CheckBoxField(
                   label: los.play_single_animation_frame,
                   value: bloc.state.playSingleFrame,
-                  margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+                  margin: const EdgeInsets.only(
+                      left: 16, right: 16, bottom: 8, top: 16),
                   underline: false,
                   onChanged: (value) {
-                    bloc.add(SetPlaySingleFrame(playSingleFrame: value ?? false));
+                    bloc.add(
+                        SetPlaySingleFrame(playSingleFrame: value ?? false));
                     setState(() {});
                   },
                 ),
                 CheckBoxField(
                   label: los.mute_audio,
                   value: bloc.state.muteAudio,
-                  margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+                  margin: const EdgeInsets.only(
+                      left: 16, right: 16, bottom: 8, top: 16),
                   underline: false,
                   onChanged: (value) {
                     bloc.add(SetMuteAudio(muteAudio: value ?? false));
                     setState(() {});
                   },
                 ),
+                CheckBoxField(
+                  label: 'Plant Costume', //TODO: add locale
+                  value: bloc.state.plantCostume,
+                  margin: const EdgeInsets.only(
+                      left: 16, right: 16, bottom: 8, top: 16),
+                  underline: false,
+                  onChanged: (value) {
+                    bloc.add(SetPlantCostume(enabled: value ?? false));
+                    setState(() {});
+                  },
+                ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+                  padding: const EdgeInsets.only(
+                      left: 16, right: 16, bottom: 8, top: 8),
                   child: Row(
                     children: [
                       Text(los.filter_quality,
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSecondaryFixedVariant)),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
                       const Spacer(),
                       SizedBox(
                         width: 130,
@@ -67,7 +84,8 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                               decoration: BoxDecoration(
                                   border: Border(
                                       bottom: BorderSide(
-                            color: Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                             width: 0.8,
                           )))),
                           items: FilterQuality.values
@@ -98,7 +116,8 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
       actions: [
         ElevatedButton(
           style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)))),
           child: Text(los.submit),
           onPressed: () {
             // returnValue = true;

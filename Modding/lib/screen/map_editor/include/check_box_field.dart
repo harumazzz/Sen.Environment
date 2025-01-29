@@ -35,8 +35,7 @@ class CheckBoxField extends StatelessWidget {
           ? BoxDecoration(
               border: Border(
                   bottom: BorderSide(
-                      color:
-                          Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       width: 0.8)))
           : null,
       child: Row(
@@ -45,7 +44,7 @@ class CheckBoxField extends StatelessWidget {
             label,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSecondaryFixedVariant),
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const Spacer(),
           Checkbox(

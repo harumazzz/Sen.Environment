@@ -1,16 +1,12 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
-import 'package:sen/model/worldmap.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
+import 'package:sen/model/worldmap.dart';
+import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/selected/selected_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/screen/map_editor/include/display_text.dart';
@@ -26,46 +22,22 @@ import 'package:sen/screen/map_editor/widgets/animation_widget.dart';
 import 'package:sen/screen/map_editor/widgets/image_widget.dart';
 import 'package:sen/screen/map_editor/widgets/seedbank_widget.dart';
 
-part 'item_event.dart';
-part 'item_state.dart';
-
-class ItemBloc extends Bloc<ItemEvent, ItemState> {
-  ItemBloc(
-      {required this.cubit,
-      required this.stageBloc,
-      required this.canvasBloc,
-      required this.selectedBloc,
-      required this.resourceBloc,
-      required this.settingBloc,
-      required this.historyBloc})
-      : super(const ItemState(itemStore: {})) {
-    on<ItemStoreUpdated>(_storeUpdate);
-    on<ItemStoreClear>(_clear);
-  }
-
-  final MapEditorConfigurationCubit cubit;
-
-  final StageBloc stageBloc;
-
-  final CanvasBloc canvasBloc;
-
-  final SelectedBloc selectedBloc;
+class ItemStoreView extends StatelessWidget {
+  const ItemStoreView({
+    super.key,
+    required this.cubit,
+    required this.stageBloc,
+    required this.resourceBloc,
+    required this.settingBloc,
+  });
 
   final ResourceBloc resourceBloc;
 
+  final StageBloc stageBloc;
+
   final SettingBloc settingBloc;
 
-  // final LayerBloc layerBloc;
-
-  final HistoryBloc historyBloc;
-
-  void _clear(ItemStoreClear event, Emitter<ItemState> emit) {
-    emit(const ItemState(itemStore: {}));
-  }
-
-  double _getParallaxPos(int parallax) {
-    return MapConst.baseParallaxOffsets[parallax] ?? 1;
-  }
+  final MapEditorConfigurationCubit cubit;
 
   (VisualImage, bool) _getVisualImage(int id) {
     final items = resourceBloc.state.islandImage;
@@ -124,18 +96,24 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     }
   }
 
-  void _updatePieces({
-    required Rect viewportRect,
+  double _getParallaxPos(int parallax) {
+    return MapConst.baseParallaxOffsets[parallax] ?? 1;
+  }
+
+  Rect _makeRect(num width, num height,
+      {num left = 0, top = 0, double viewPortScale = 1}) {
+    return Rect.fromLTWH(left.toDouble(), top.toDouble(), width * viewPortScale,
+        height * viewPortScale);
+  }
+
+  void _updatePiecesStatic({
     required double itemStartPositionX,
     required double itemStartPositionY,
-    required double viewportScale,
-    required double cameraPosX,
     required List<MapEntry<String, MapPieceItem>> sortedEntries,
     required SplayTreeMap<int, ItemStore> pieceList,
     required SplayTreeMap<int, ItemStore> parallaxBottomList,
     required SplayTreeMap<int, ItemStore> parallaxTopList,
   }) {
-    final onSelectedList = selectedBloc.state.selectedList;
     final rasterizedInAnimation = resourceBloc.state.rasterizedInAnimation;
     const imageScaleRatio = MapConst.scaleResolution / MapConst.imageResolution;
     const animationScaleRatio =
@@ -150,7 +128,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
       var additionalParallaxPos = 0.0;
       if (isParallax) {
         final parallaxSpeed = _getParallaxPos(piece.parallax);
-        additionalParallaxPos = (parallaxSpeed * cameraPosX);
+        additionalParallaxPos = (parallaxSpeed * 1);
       }
       if (piece.pieceType == PieceType.animation) {
         final visualAnimation = _getVisualAnimation(piece.imageID);
@@ -173,11 +151,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
         final piecePosX =
             (itemStartPositionX + piece.position.x) + additionalParallaxPos;
         final piecePosY = itemStartPositionY + piece.position.y;
-        final selectRect = _makeRect(
-          visual.visualSize.width,
-          visual.visualSize.height,
-          viewPortScale: viewportScale,
-        );
+        const selectRect = Rect.zero;
         final rotateOrigin = usesRasterizedImagesInAnim
             ? const Offset(250, 250)
             : const Offset(195, 195);
@@ -190,43 +164,21 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             .rotate(-piece.rotationAngle.toDouble(), origin: rotateOrigin)
             .m;
         final rect = MatrixUtils.transformRect(matrix, selectRect);
-        final isVisible = viewportRect.overlaps(rect);
-        if (!isVisible && !onSelectedList.contains(entry.key)) {
-          continue;
-        }
-        final itemRect =
-            _makeRect(visual.visualSize.width, visual.visualSize.height);
-        itemProfile.itemRect = itemRect;
+        const itemRect = Rect.zero;
         itemProfile.matrix = matrix;
         itemProfile.selectRect = rect;
-        if (piece.rotationRate != 0) {
-          itemProfile.widget = AnimationRotateWidget(
-              matrix: matrix,
-              rotateOrigin: rotateOrigin,
-              rotationRate: piece.rotationRate,
-              child: AnimationWidget(
-                visual: visual,
-                labelPlay: const ['main'],
-                borderRect: itemRect,
-                borderColor: Colors.green,
-                borderWidth: editorSettingState.islandAnimationBorder ? 2.0 : 0,
-                filterQuality: filterQuality,
-                playSingleFrame: editorSettingState.playSingleFrame,
-              ));
-        } else {
-          itemProfile.widget = Transform(
-              alignment: Alignment.topLeft,
-              transform: matrix,
-              child: AnimationWidget(
-                visual: visual,
-                labelPlay: const ['main'],
-                borderRect: itemRect,
-                borderColor: Colors.green,
-                borderWidth: editorSettingState.islandAnimationBorder ? 2.0 : 0,
-                filterQuality: filterQuality,
-                playSingleFrame: editorSettingState.playSingleFrame,
-              ));
-        }
+        itemProfile.widget = Transform(
+            alignment: Alignment.topLeft,
+            transform: matrix,
+            child: AnimationWidget(
+              visual: visual,
+              labelPlay: const ['main'],
+              borderRect: itemRect,
+              borderColor: Colors.green,
+              borderWidth: 0,
+              filterQuality: filterQuality,
+              playSingleFrame: true,
+            ));
       } else {
         final visualImage = _getVisualImage(piece.imageID);
         if (hideMissingArt && !visualImage.$2) {
@@ -238,8 +190,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
         final piecePosX = (itemStartPositionX + piece.position.x + posXFactor) +
             additionalParallaxPos;
         final piecePosY = itemStartPositionY + piece.position.y;
-        final selectRect =
-            _makeRect(image.width, image.height, viewPortScale: viewportScale);
+        const selectRect = Rect.zero;
         final rotateFactor = piece.isArtFlipped
             ? piece.rotationAngle.toDouble()
             : -piece.rotationAngle.toDouble();
@@ -255,31 +206,16 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             .m;
 
         final rect = MatrixUtils.transformRect(matrix, selectRect);
-        final isVisible = viewportRect.overlaps(rect);
-        if (!isVisible && !onSelectedList.contains(entry.key)) {
-          continue;
-        }
         itemProfile.matrix = matrix;
-        itemProfile.itemRect = _makeRect(image.width, image.height);
+        itemProfile.itemRect = Rect.zero;
         itemProfile.selectRect = rect;
-        if (piece.rotationRate != 0) {
-          itemProfile.widget = ImageRotateWidget(
-            image: image,
-            matrix: matrix,
-            rotationRate: piece.rotationRate,
-            borderColor: Colors.white,
-            borderWidth: editorSettingState.islandImageBorder ? 2.0 : 0.0,
-            filterQuality: filterQuality,
-          );
-        } else {
-          itemProfile.widget = ImageWidget(
-            image: image,
-            matrix: matrix,
-            borderColor: Colors.white,
-            borderWidth: editorSettingState.islandImageBorder ? 2.0 : 0.0,
-            filterQuality: filterQuality,
-          );
-        }
+        itemProfile.widget = ImageWidget(
+          image: image,
+          matrix: matrix,
+          borderColor: Colors.white,
+          borderWidth: 0.0,
+          filterQuality: filterQuality,
+        );
       }
       final layer = piece.layer;
       final parallax = piece.parallax;
@@ -315,54 +251,15 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     }
   }
 
-  Rect _makeRect(num width, num height,
-      {num left = 0, top = 0, double viewPortScale = 1}) {
-    return Rect.fromLTWH(left.toDouble(), top.toDouble(), width * viewPortScale,
-        height * viewPortScale);
-  }
-
-  Rect? _makeEventRect(EventNodeType type) {
-    switch (type) {
-      case EventNodeType.stargate:
-        {
-          return const Rect.fromLTWH(80, 80, 220, 230);
-        }
-      case EventNodeType.keygate:
-        {
-          return const Rect.fromLTWH(0, 40, 400, 260);
-        }
-      case EventNodeType.giftbox:
-        {
-          return const Rect.fromLTWH(80, 60, 240, 200);
-        }
-      case EventNodeType.plant:
-        {
-          return const Rect.fromLTWH(90, 60, 200, 200);
-        }
-      case EventNodeType.normal:
-      case EventNodeType.minigame:
-      case EventNodeType.miniboss:
-      case EventNodeType.nonfinalboss:
-        {
-          return const Rect.fromLTWH(130, 110, 130, 130);
-        }
-      default:
-        return null;
-    }
-  }
-
-  void _updateEvents({
+  void _updateEventsStatic({
     required double itemStartPositionX,
     required double itemStartPositionY,
-    required double viewportScale,
-    required Rect viewportRect,
     required List<MapEntry<String, MapEventItem>> eventSortedEntries,
     required ItemStore pieceEventList,
     required ItemStore mapPathList,
     required ItemStore eventList,
   }) {
     var containBossEvent = false;
-    final onSelectedList = selectedBloc.state.selectedList;
     const imageScaleRatio = MapConst.scaleResolution / MapConst.imageResolution;
     const animationScaleRatio =
         MapConst.scaleResolution / MapConst.animationResolution;
@@ -374,7 +271,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     final editorSettingState = settingBloc.state;
     final mapCompleted = editorSettingState.mapCompleted;
     final filterQuality = editorSettingState.filterQuality;
-    final playSingleFrame = editorSettingState.playSingleFrame;
+    // final playSingleFrame = editorSettingState.playSingleFrame;
     final hideOldEvent = editorSettingState.hideOldEvent;
     for (final entry in eventSortedEntries) {
       final event = entry.value;
@@ -404,8 +301,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .scale(imageScaleRatio)
                 .translate(x: piecePosX, y: piecePosY)
                 .m;
-            final selectRect = _makeRect(image.width, image.height,
-                viewPortScale: viewportScale);
+            /*
+            const selectRect = Rect.zero;
             final rect = MatrixUtils.transformRect(matrix, selectRect);
             final isVisible = viewportRect.overlaps(rect);
             if (!isVisible && !onSelectedList.contains(entry.key)) {
@@ -414,6 +311,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = _makeRect(image.width, image.height);
             itemProfile.selectRect = rect;
+            */
             itemProfile.widget = ImageWidget(
               image: image,
               matrix: matrix,
@@ -440,6 +338,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .scale(imageScaleRatio)
                 .translate(x: piecePosX, y: piecePosY)
                 .m;
+            /*
             final selectRect = _makeRect(image.width, image.height,
                 viewPortScale: viewportScale);
             final rect = MatrixUtils.transformRect(matrix, selectRect);
@@ -450,11 +349,12 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = _makeRect(image.width, image.height);
             itemProfile.selectRect = rect;
+            */
             itemProfile.widget = ImageWidget(
               image: image,
               matrix: matrix,
               borderColor: Colors.blue,
-              borderWidth: editorSettingState.eventBorder ? 2.0 : 0.0,
+              borderWidth: 0.0,
               filterQuality: filterQuality,
             );
             eventList[entry.key] = itemProfile;
@@ -480,6 +380,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .m;
             final visual =
                 gameResource.commonAnimation[AnimationCommonType.stargate]!;
+            /*
             final itemRect = _makeEventRect(EventNodeType.stargate)!;
             final selectRect = _makeRect(itemRect.width, itemRect.height,
                 top: itemRect.top,
@@ -493,6 +394,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = itemRect;
             itemProfile.selectRect = rect;
+            */
             final playLabelEvent = event.isArtFlipped ?? false
                 ? eventAnimationLabel[EventNodeType.stargateLeft]!
                 : eventAnimationLabel[EventNodeType.stargate]!;
@@ -505,12 +407,12 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   forceLabelPlay: mapCompleted
                       ? playLabelEvent.$2.first
                       : playLabelEvent.$1.first,
-                  borderRect: itemRect,
+                  borderRect: Rect.zero,
                   visual: visual,
                   borderColor: Colors.blue,
-                  borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
+                  borderWidth: 0,
                   filterQuality: filterQuality,
-                  playSingleFrame: playSingleFrame,
+                  playSingleFrame: true,
                 ));
 
             eventList[entry.key] = itemProfile;
@@ -531,15 +433,16 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             final piecePosX = itemStartPositionX + event.position.x + 21;
             final piecePosY = itemStartPositionY + event.position.y + 1;
 
+            final matrix = Matrix4Transform()
+                .scale(imageScaleRatio)
+                .translate(x: piecePosX + posXFactor, y: piecePosY + posYFactor)
+                .m;
+            /*
             final itemRect = _makeEventRect(EventNodeType.keygate)!;
             final selectRect = _makeRect(itemRect.width, itemRect.height,
                 top: itemRect.top,
                 left: itemRect.left,
                 viewPortScale: viewportScale);
-            final matrix = Matrix4Transform()
-                .scale(imageScaleRatio)
-                .translate(x: piecePosX + posXFactor, y: piecePosY + posYFactor)
-                .m;
             final rect = MatrixUtils.transformRect(matrix, selectRect);
             final isVisible = viewportRect.overlaps(rect);
             if (!isVisible && !onSelectedList.contains(entry.key)) {
@@ -548,6 +451,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = itemRect;
             itemProfile.selectRect = rect;
+            */
             final isArtFlipped = event.isArtFlipped ?? false;
             final playLabelEvent = isArtFlipped
                 ? eventAnimationLabel[EventNodeType.keygate]!
@@ -625,6 +529,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                           strokeWidth: 3,
                           textColor: Colors.lightBlue.shade200,
                         )));
+            const itemRect = Rect.zero;
             itemProfile.widget = Stack(
               fit: StackFit.passthrough,
               children: [
@@ -642,7 +547,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                       borderColor: Colors.blue,
                       borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
                       filterQuality: filterQuality,
-                      playSingleFrame: playSingleFrame,
+                      playSingleFrame: true,
                     )),
                 costInfo,
               ],
@@ -665,6 +570,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .scale(imageScaleRatio)
                 .translate(x: piecePosX, y: piecePosY)
                 .m;
+            /*
             final selectRect = _makeRect(image.width, image.height,
                 viewPortScale: viewportScale);
             final rect = MatrixUtils.transformRect(matrix, selectRect);
@@ -675,6 +581,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = _makeRect(image.width, image.height);
             itemProfile.selectRect = rect;
+            */
             itemProfile.widget = editorSettingState.mapCompleted
                 ? Stack(
                     fit: StackFit.passthrough,
@@ -691,13 +598,13 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                             labelPlay: const ['main'],
                             borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       ImageWidget(
                         image: image,
                         matrix: matrix,
                         borderColor: Colors.blue,
-                        borderWidth: editorSettingState.eventBorder ? 2.0 : 0.0,
+                        borderWidth: 0.0,
                         filterQuality: filterQuality,
                       ),
                     ],
@@ -706,7 +613,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                     image: image,
                     matrix: matrix,
                     borderColor: Colors.blue,
-                    borderWidth: editorSettingState.eventBorder ? 2.0 : 0.0,
+                    borderWidth: 0.0,
                     filterQuality: filterQuality,
                   );
             eventList[entry.key] = itemProfile;
@@ -733,6 +640,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   .m;
               final visual = gameResource.plant[plantType] ??
                   gameResource.commonAnimation[AnimationCommonType.readyPlant]!;
+              /*
               final itemRect = _makeEventRect(EventNodeType.plant)!;
               final selectRect = _makeRect(itemRect.width, itemRect.height,
                   top: itemRect.top,
@@ -746,30 +654,31 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
               itemProfile.matrix = matrix;
               itemProfile.itemRect = itemRect;
               itemProfile.selectRect = rect;
-              itemProfile.widget = Stack(
-                fit: StackFit.passthrough,
-                children: [
-                  ImageWidget(
-                    image: gameResource.commonImage[ImageCommonType.sprout]!,
-                    matrix: matrix.multiplied(Matrix4Transform()
-                        .scaleBy(x: 0.4, y: 0.5)
-                        .translate(x: 150, y: 215)
-                        .m),
-                    borderColor: Colors.white,
-                    borderWidth: 0,
-                    filterQuality: filterQuality,
-                  ), Transform(
-                  alignment: Alignment.topLeft,
-                  transform: matrix,
-                  child: AnimationWidget(
-                    labelPlay: getIdlePlay(plantType, visual.labelInfo.keys),
-                    borderRect: itemRect,
-                    visual: visual,
-                    borderColor: Colors.blue,
-                    borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
-                    filterQuality: filterQuality,
-                    playSingleFrame: playSingleFrame,
-                  )) ]);
+              */
+              itemProfile.widget = Stack(fit: StackFit.passthrough, children: [
+                ImageWidget(
+                  image: gameResource.commonImage[ImageCommonType.sprout]!,
+                  matrix: matrix.multiplied(Matrix4Transform()
+                      .scaleBy(x: 0.4, y: 0.5)
+                      .translate(x: 150, y: 215)
+                      .m),
+                  borderColor: Colors.white,
+                  borderWidth: 0,
+                  filterQuality: filterQuality,
+                ),
+                Transform(
+                    alignment: Alignment.topLeft,
+                    transform: matrix,
+                    child: AnimationWidget(
+                      labelPlay: getIdlePlay(plantType, visual.labelInfo.keys),
+                      borderRect: Rect.zero,
+                      visual: visual,
+                      borderColor: Colors.blue,
+                      borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
+                      filterQuality: filterQuality,
+                      playSingleFrame: true,
+                    ))
+              ]);
 
               eventList[entry.key] = itemProfile;
             } else {
@@ -786,6 +695,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   .scale(imageScaleRatio * 0.75)
                   .translate(x: piecePosX, y: piecePosY)
                   .m;
+              /*
               final selectRect = _makeRect(
                   seedBankImage.width, seedBankImage.height,
                   viewPortScale: viewportScale);
@@ -798,6 +708,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
               itemProfile.itemRect =
                   _makeRect(seedBankImage.width, seedBankImage.height);
               itemProfile.selectRect = rect;
+              */
               itemProfile.widget = Stack(
                 fit: StackFit.passthrough,
                 children: [
@@ -839,6 +750,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .m;
             final visual =
                 gameResource.commonAnimation[AnimationCommonType.giftBox]!;
+            /*
             final itemRect = _makeEventRect(EventNodeType.giftbox)!;
             final selectRect = _makeRect(itemRect.width, itemRect.height,
                 top: itemRect.top,
@@ -852,6 +764,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = itemRect;
             itemProfile.selectRect = rect;
+            */
+            const itemRect = Rect.zero;
             final playLabelEvent = eventAnimationLabel[EventNodeType.giftbox]!;
             itemProfile.widget = Transform(
                 alignment: Alignment.topLeft,
@@ -862,9 +776,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   borderRect: itemRect,
                   visual: visual,
                   borderColor: Colors.blue,
-                  borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
+                  borderWidth: 0,
                   filterQuality: filterQuality,
-                  playSingleFrame: playSingleFrame,
+                  playSingleFrame: true,
                 ));
 
             eventList[entry.key] = itemProfile;
@@ -888,6 +802,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 .scale(imageScaleRatio)
                 .translate(x: piecePosX, y: piecePosY)
                 .m;
+            /*
             final selectRect = _makeRect(image.width, image.height,
                 viewPortScale: viewportScale);
             final rect = MatrixUtils.transformRect(matrix, selectRect);
@@ -898,11 +813,12 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
             itemProfile.matrix = matrix;
             itemProfile.itemRect = _makeRect(image.width, image.height);
             itemProfile.selectRect = rect;
+            */
             itemProfile.widget = ImageWidget(
               image: image,
               matrix: matrix,
               borderColor: Colors.blue,
-              borderWidth: editorSettingState.eventBorder ? 2.0 : 0.0,
+              borderWidth: 0.0,
               filterQuality: filterQuality,
             );
             eventList[entry.key] = itemProfile;
@@ -937,6 +853,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 {
                   final visual = gameResource
                       .commonAnimation[AnimationCommonType.levelNode]!;
+                  /*
                   final itemRect = _makeEventRect(EventNodeType.normal)!;
                   final selectRect = _makeRect(itemRect.width, itemRect.height,
                       top: itemRect.top,
@@ -950,6 +867,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   itemProfile.matrix = matrix;
                   itemProfile.itemRect = itemRect;
                   itemProfile.selectRect = rect;
+                  */
+                  const itemRect = Rect.zero;
                   final text = event.displayText ?? '';
                   final textLength = text.length * 12;
                   final playLabelEvent = isFirstLevel
@@ -969,10 +888,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                             visual: visual,
                             borderRect: itemRect,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       Transform(
                           alignment: Alignment.topLeft,
@@ -995,6 +913,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 {
                   final visual = gameResource
                       .commonAnimation[AnimationCommonType.levelNodeMinigame]!;
+                  /*
                   final itemRect = _makeEventRect(EventNodeType.minigame)!;
                   final selectRect = _makeRect(
                     itemRect.width,
@@ -1011,6 +930,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   itemProfile.matrix = matrix;
                   itemProfile.itemRect = itemRect;
                   itemProfile.selectRect = rect;
+                  */
+                  const itemRect = Rect.zero;
                   final text = event.displayText ?? '';
                   final textLength = text.length * 12;
                   final playLabelEvent = isFirstLevel
@@ -1030,10 +951,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                             visual: visual,
                             borderRect: itemRect,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       Transform(
                           alignment: Alignment.topLeft,
@@ -1056,6 +976,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 {
                   final visual = gameResource.commonAnimation[
                       AnimationCommonType.levelNodeGargantuar]!;
+                  /*
                   final itemRect = _makeEventRect(EventNodeType.miniboss)!;
                   final selectRect = _makeRect(
                     itemRect.width,
@@ -1072,6 +993,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   itemProfile.matrix = matrix;
                   itemProfile.itemRect = itemRect;
                   itemProfile.selectRect = rect;
+                  */
+                  const itemRect = Rect.zero;
                   final text = event.displayText ?? '';
                   final textLength = text.length * 12;
                   final playLabelEvent =
@@ -1090,10 +1013,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                             visual: visual,
                             borderRect: itemRect,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       Transform(
                           alignment: Alignment.topLeft,
@@ -1116,6 +1038,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                 {
                   final visual = gameResource.commonAnimation[
                       AnimationCommonType.levelNodeGargantuar]!;
+                  /*
                   final itemRect = _makeEventRect(EventNodeType.nonfinalboss)!;
                   final selectRect = _makeRect(
                     itemRect.width,
@@ -1132,6 +1055,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   itemProfile.matrix = matrix;
                   itemProfile.itemRect = itemRect;
                   itemProfile.selectRect = rect;
+                  */
+                  const itemRect = Rect.zero;
                   final playLabelEvent =
                       eventAnimationLabel[EventNodeType.nonfinalboss]!;
                   itemProfile.widget = Transform(
@@ -1146,7 +1071,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                         borderColor: Colors.blue,
                         borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
                         filterQuality: filterQuality,
-                        playSingleFrame: playSingleFrame,
+                        playSingleFrame: true,
                       ));
                   eventList[entry.key] = itemProfile;
                   break;
@@ -1161,6 +1086,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                           ResourceAnimationType.zombossNode] ??
                       missingArtPieceAnimation;
                   final matrixTop = matrix.clone();
+                  /*
                   final selectRect = _makeRect(
                     visualTop.visualSize.width,
                     visualTop.visualSize.height,
@@ -1171,13 +1097,16 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   if (!isVisible && !onSelectedList.contains(entry.key)) {
                     continue;
                   }
+                  */
                   matrix.scale(
                       MapConst.animationResolution / MapConst.imageResolution);
                   matrix.translate(50.0, 40.0);
+                  /*
                   itemProfile.matrix = matrixTop;
                   itemProfile.itemRect = _makeRect(
                       visualTop.visualSize.width, visualTop.visualSize.height);
                   itemProfile.selectRect = rect;
+                  */
                   final playLabelZombossNode =
                       eventAnimationLabel[EventNodeType.boss]!;
                   final playLabelHologram =
@@ -1197,10 +1126,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                                 : playLabelHologram.$1,
                             visual: visualHologram,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       Transform(
                           alignment: Alignment.topLeft,
@@ -1212,10 +1140,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                                 : playLabelEvent.$1.first,
                             visual: visualTop,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                     ],
                   );
@@ -1234,7 +1161,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                       borderColor: Colors.blue,
                       borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
                       filterQuality: filterQuality,
-                      playSingleFrame: playSingleFrame,
+                      playSingleFrame: true,
                     ),
                   );
                   pieceEventList[uuid.v4()] = zombossNodeProfile;
@@ -1247,6 +1174,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   final visual = resourceBloc.state.resourceAnimation[
                           ResourceAnimationType.dangerNode] ??
                       missingArtPieceAnimation;
+                  /*
                   final selectRect = _makeRect(
                     visual.visualSize.width,
                     visual.visualSize.height,
@@ -1257,10 +1185,13 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                   if (!isVisible && !onSelectedList.contains(entry.key)) {
                     continue;
                   }
+                  */
                   itemProfile.matrix = matrix;
+                  /*
                   itemProfile.itemRect = _makeRect(
                       visual.visualSize.width, visual.visualSize.height);
                   itemProfile.selectRect = rect;
+                  */
                   final text = event.displayText ?? '';
                   final textLength = text.length * 8;
                   final mapCompleted = editorSettingState.mapCompleted;
@@ -1281,10 +1212,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                                 : playLabelEvent.$1,
                             visual: visual,
                             borderColor: Colors.blue,
-                            borderWidth:
-                                editorSettingState.eventBorder ? 2.0 : 0,
+                            borderWidth: 0,
                             filterQuality: filterQuality,
-                            playSingleFrame: playSingleFrame,
+                            playSingleFrame: true,
                           )),
                       if (mapCompleted)
                         ImageWidget(
@@ -1387,7 +1317,7 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
                     visual: mapPathVisual,
                     borderWidth: 0,
                     filterQuality: filterQuality,
-                    playSingleFrame: playSingleFrame,
+                    playSingleFrame: true,
                   )));
           mapPathList[uuid.v4()] = itemProfile;
         }
@@ -1395,31 +1325,8 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     }
   }
 
-  void _storeUpdate(ItemStoreUpdated event, Emitter<ItemState> emit) {
+  List<Widget> itemStoreStaticUpdate() {
     final stageState = stageBloc.state;
-    final canvasState = canvasBloc.state;
-    const startPositionX = MapConst.safeAdditionalWidth / 2;
-    const startPositionY = MapConst.safeAdditionalHeight / 2;
-    final itemStartPositionX =
-        (-stageState.boundingRect.x + startPositionX).toDouble();
-    final itemStartPositionY =
-        (-stageState.boundingRect.y + startPositionY).toDouble();
-
-    final controllerTransform = canvasState.canvasController.matrix;
-    final viewportScale = controllerTransform.getMaxScaleOnAxis();
-    final view = WidgetsBinding.instance.platformDispatcher.views.first;
-    final screenWidth = view.physicalSize.width;
-    final screenHeight = view.physicalSize.height;
-    final viewportRect = Rect.fromLTWH(
-        -(controllerTransform[12] + MapConst.animationSizeCenter) /
-            viewportScale,
-        -(controllerTransform[13] + MapConst.animationSizeCenter) /
-            viewportScale,
-        (screenWidth + MapConst.animationSizeCenter) / viewportScale,
-        (screenHeight + MapConst.animationSizeCenter) / viewportScale);
-    final cameraPosX =
-        -(controllerTransform[12] / viewportScale + startPositionX);
-
     final pieceList = SplayTreeMap<int, ItemStore>();
     final parallaxBottomList = SplayTreeMap<int, ItemStore>((a, b) => b - a);
     final parallaxTopList = SplayTreeMap<int, ItemStore>((a, b) => b - a);
@@ -1428,12 +1335,12 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
     final ItemStore eventList = {};
     final sortedEntries = stageState.pieces.entries.toList()
       ..sort((a, b) => a.value.position.y.compareTo(b.value.position.y));
-    _updatePieces(
-        viewportRect: viewportRect,
+
+    final itemStartPositionX = -stageState.boundingRect.x.toDouble();
+    final itemStartPositionY = -stageState.boundingRect.y.toDouble();
+    _updatePiecesStatic(
         itemStartPositionX: itemStartPositionX,
         itemStartPositionY: itemStartPositionY,
-        viewportScale: viewportScale,
-        cameraPosX: cameraPosX,
         sortedEntries: sortedEntries,
         pieceList: pieceList,
         parallaxBottomList: parallaxBottomList,
@@ -1441,11 +1348,9 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
 
     final eventSortedEntries = stageState.events.entries.toList()
       ..sort((a, b) => b.value.position.x.compareTo(a.value.position.x));
-    _updateEvents(
+    _updateEventsStatic(
         itemStartPositionX: itemStartPositionX,
         itemStartPositionY: itemStartPositionY,
-        viewportScale: viewportScale,
-        viewportRect: viewportRect,
         eventSortedEntries: eventSortedEntries,
         pieceEventList: pieceEventList,
         mapPathList: mapPathList,
@@ -1465,6 +1370,19 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
       stackList.addAll(mapPathList);
     }
     stackList.addAll(eventList);
-    emit(ItemState(itemStore: stackList));
+    final list = <Widget>[];
+    for (final e in stackList.values) {
+      if (e.widget != null) {
+        list.add(e.widget!);
+      }
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: itemStoreStaticUpdate(),
+    );
   }
 }

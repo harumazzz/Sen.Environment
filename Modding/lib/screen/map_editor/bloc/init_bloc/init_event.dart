@@ -35,3 +35,12 @@ final class ShowAlertDialog extends InitEvent {
   @override
   List<Object?> get props => [type];
 }
+
+final class CreateTakeShootFunction extends InitEvent {
+  const CreateTakeShootFunction({required this.takeShoot});
+
+  final Future<Uint8List?> Function() takeShoot;
+
+  @override
+  List<Object?> get props => [takeShoot];
+}

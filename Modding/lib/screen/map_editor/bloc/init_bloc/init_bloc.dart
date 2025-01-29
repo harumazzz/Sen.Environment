@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,6 +11,7 @@ class InitBloc extends Bloc<InitEvent, InitState> {
     on<SetStatusEvent>(_setStatus);
     on<ShowSnackBarEvent>(_showSnackBar);
     on<ShowAlertDialog>(_showAlertDialog);
+    on<CreateTakeShootFunction>(_createTakeShoot);
   }
 
   _setStatus(SetStatusEvent event, Emitter<InitState> emit) {
@@ -25,5 +27,9 @@ class InitBloc extends Bloc<InitEvent, InitState> {
     final newState = state.copyWith();
     newState.alertDialogEnable[event.type] = event.enable;
     emit(newState);
+  }
+
+  _createTakeShoot(CreateTakeShootFunction event, Emitter<InitState> emit) {
+    emit(state.copyWith(takeShoot: event.takeShoot));
   }
 }

@@ -32,6 +32,8 @@ class CanvasController extends ChangeNotifier {
 
   PointerHoverEvent? _pointerHoverEvent;
 
+  Matrix4? _matrix4Catched;
+
   Matrix4 get matrix => transformationController.value;
   Offset mousePosition = Offset.zero;
   Offset? mouseDragStart;
@@ -98,24 +100,34 @@ class CanvasController extends ChangeNotifier {
     );
   }
 
+  void requestFocus() {
+    if (!focusNode.hasFocus) {
+      focusNode.requestFocus();
+    }
+  }
+
   void listenerPointerHover(PointerHoverEvent details) {
     _pointerHoverEvent = details;
   }
 
   void catchPointerHover() {
     _pointerHoverCatched = _pointerHoverEvent;
+    _matrix4Catched = transformationController.value.clone();
   }
 
   Offset getDetailsMove() {
-    if (_pointerHoverCatched != null && _pointerHoverEvent != null) {
+    if (_pointerHoverCatched != null &&
+        _pointerHoverEvent != null &&
+        _matrix4Catched != null) {
       final viewscalePort = matrix.getMaxScaleOnAxis();
+      final dx =
+          _pointerHoverEvent!.position.dx - _pointerHoverCatched!.position.dx;
+      final dy =
+          _pointerHoverEvent!.position.dy - _pointerHoverCatched!.position.dy;
+      final viewDx = matrix[12] - _matrix4Catched![12];
+      final viewDy = matrix[13] - _matrix4Catched![13];
       return Offset(
-          (_pointerHoverEvent!.position.dx -
-                  _pointerHoverCatched!.position.dx) /
-              viewscalePort,
-          (_pointerHoverEvent!.position.dy -
-                  _pointerHoverCatched!.position.dy) /
-              viewscalePort);
+          (dx - viewDx) / viewscalePort, (dy - viewDy) / viewscalePort);
     } else {
       return Offset.zero;
     }

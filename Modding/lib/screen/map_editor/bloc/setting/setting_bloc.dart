@@ -17,6 +17,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     on<SetEventBorder>(_setEventBorder);
     on<SetHideMissingArt>(_setHideMissingArt);
     on<SetHideOldEvent>(_setHideOldEvent);
+    on<SetPlantCostume>(_setPlantCostume);
     on<SetMapPath>(_setMapPath);
     on<SetMapCompleted>(_setLevelFinished);
     on<SetMapGrid>(_setMapGrid);
@@ -61,6 +62,10 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
   void _setHideOldEvent(SetHideOldEvent event, Emitter<SettingState> emit) {
     emit(state.copyWith(hideOldEvent: event.enabled));
+  }
+
+  void _setPlantCostume(SetPlantCostume event, Emitter<SettingState> emit) {
+    emit(state.copyWith(plantCostume: event.enabled));
   }
 
   void _setMapPath(SetMapPath event, Emitter<SettingState> emit) {

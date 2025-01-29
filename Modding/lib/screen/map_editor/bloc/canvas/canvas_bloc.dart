@@ -8,7 +8,7 @@ part 'canvas_event.dart';
 part 'canvas_state.dart';
 
 class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
-  CanvasBloc() : super(CanvasState.initailze()) {
+  CanvasBloc() : super(CanvasState.initialize()) {
     on<InitailizeState>(_initailize);
     on<InitCameraViewOffset>(_initCameraViewOffset);
     on<UpdateMarqueeEvent>(_updateMarquee);
@@ -16,12 +16,12 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   }
 
   void _initailize(InitailizeState event, Emitter<CanvasState> emit) {
-    emit(CanvasState.initailze());
+    emit(CanvasState.initialize());
   }
 
   void _initCameraViewOffset(
       InitCameraViewOffset event, Emitter<CanvasState> emit) {
-    //final newState = CanvasState.initailze();
+    //final newState = CanvasState.initialize();
     const startPositionX = -(MapConst.safeAdditionalWidth / 2) + 2;
     const startPositionY = -(MapConst.safeAdditionalHeight / 2) + 2;
     state.canvasController.transformationController.value = Matrix4.identity()

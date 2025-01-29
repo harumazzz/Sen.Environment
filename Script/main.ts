@@ -19,7 +19,7 @@ namespace Sen.Script {
 			message?: string,
 			color: Kernel.Color = 'default',
 		): void {
-			const is_gui = Shell.callback(['is_gui']) === '1';
+			const is_gui = Shell.is_gui();
 			const prefix = is_gui ? '' : '● ';
 			const new_tille = `${prefix}${title}`;
 			let msg = message ? message : '';
@@ -53,11 +53,10 @@ namespace Sen.Script {
 		 */
 
 		export function argument(str: any): void {
-			const title =
-				Shell.callback(['is_gui']) === '1'
-					? `${Kernel.Language.get('execution_argument')}:`
-					: `${Kernel.Language.get('execution_argument')}: ${str}`;
-			const message = Shell.callback(['is_gui']) === '1' ? str : '';
+			const title = Shell.is_gui()
+				? `${Kernel.Language.get('execution_argument')}:`
+				: `${Kernel.Language.get('execution_argument')}: ${str}`;
+			const message = Shell.is_gui() ? str : '';
 			return display(title, message, 'cyan');
 		}
 
@@ -232,7 +231,7 @@ namespace Sen.Script {
 				.split('\n')
 				.map((e) => e.replace(/(?<=\()(.*)(?=(Kernel|Script))/, ''))
 				.filter((e: string) => !/(\s)<eval>(\s)/m.test(e));
-			if (Shell.callback(['is_gui']) === '1') {
+			if (Shell.is_gui()) {
 				return base_stack.map((e) => e.trim().replaceAll('../', '')).join('\n');
 			}
 			return base_stack.join('\n');
@@ -258,7 +257,7 @@ namespace Sen.Script {
 		 */
 
 		export function make_exception(e: Error): string {
-			if (Shell.callback(['is_gui']) === '1') {
+			if (Shell.is_gui()) {
 				Console.error(e.message);
 				Console.display(
 					`${Kernel.Language.get('stack')}:`,
@@ -289,7 +288,7 @@ namespace Sen.Script {
 	export async function main(): Promise<void> {
 		const result: string = await launch();
 		Console.error(result);
-		if (Shell.callback(['is_gui']) === '1') {
+		if (Shell.is_gui()) {
 			Console.finished(
 				Kernel.Language.get('method_are_succeeded'),
 				Kernel.Language.get('js.relaunch_tool'),

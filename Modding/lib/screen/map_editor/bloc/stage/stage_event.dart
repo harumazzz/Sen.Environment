@@ -236,3 +236,17 @@ final class UpdateMapInformation extends StageEvent {
   @override
   List<Object> get props => [];
 }
+
+final class UpdateItemPosition extends StageEvent {
+  const UpdateItemPosition(
+      {required this.x, required this.y, required this.itemBloc});
+
+  final double x;
+
+  final double y;
+
+  final ItemBloc itemBloc;
+
+  @override
+  List<Object> get props => [x, y, itemBloc];
+}

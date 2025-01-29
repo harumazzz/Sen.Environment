@@ -19,44 +19,74 @@ class VisualAnimation {
 
   final List<(VisualImage, Matrix4)?> _imageList = [];
 
+  final List<int> _spriteDisable = [];
+
   FilterQuality _filterQuality = FilterQuality.high;
 
   String labelPlay = 'main';
 
   static Future<VisualAnimation> create(String animationPath, String mediaPath,
-      {FilterQuality? filterQuality}) async {
+      {FilterQuality? filterQuality, Iterable<String>? spriteDisable}) async {
     final component = VisualAnimation();
     if (filterQuality != null) {
       component.setFilterQuality(filterQuality);
     }
-    await component.load(animationPath, mediaPath);
+    await component.load(animationPath, mediaPath,
+        spriteDisable: spriteDisable);
     component.initSprite();
     return component;
   }
+
+  static Future<VisualAnimation> createByAnimation(model.SexyAnimation animation, String mediaPath,
+      {FilterQuality? filterQuality, Iterable<String>? spriteDisable}) async {
+    final component = VisualAnimation();
+    if (filterQuality != null) {
+      component.setFilterQuality(filterQuality);
+    }
+    await component.process(animation, mediaPath,
+        spriteDisable: spriteDisable);
+    component.initSprite();
+    return component;
+  }
+
 
   void setFilterQuality(FilterQuality filterQuality) {
     _filterQuality = filterQuality;
   }
 
-  Future<void> load(String animationPath, String mediaPath) async {
-    clear();
+  Future<void> load(String animationPath, String mediaPath,
+      {Iterable<String>? spriteDisable}) async {
     final animation = model.SexyAnimation.fromJson(
         FileHelper.readJson(source: animationPath));
+    await process(animation, mediaPath, spriteDisable: spriteDisable);
+    return;
+  }
+
+  Future<void> process(model.SexyAnimation animation, String mediaPath,
+      {Iterable<String>? spriteDisable}) async {
+        clear();
     visualSize = Size(animation.size.width, animation.size.height);
     frameRate = animation.frameRate;
     for (final image in animation.image) {
       await _loadImage(image, mediaPath);
     }
+    var index = 0;
     for (final sprite in animation.sprite) {
       _loadSprite(sprite);
+      if (spriteDisable != null && (spriteDisable.contains(sprite.name))) {
+        _spriteDisable.add(index);
+      }
+      ++index;
     }
     _loadSprite(animation.mainSprite);
     _loadLabel(animation.mainSprite);
-    return;
   }
 
   void _drawWidget(SpritePainter children, VisualLayer layer) {
     if (layer.spriteFrame != null) {
+      if (_spriteDisable.contains(layer.resource)) {
+        return;
+      }
       final sprite = _spriteList[layer.resource];
       var frameIndex = layer.spriteFrame!;
       while (frameIndex >= sprite.length) {

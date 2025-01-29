@@ -9,6 +9,7 @@ class HotkeyListener extends StatelessWidget {
     required this.controller,
     required this.child,
     this.onKeyDownEvent,
+    this.onKeyRepeatEvent,
     this.onKeyUpEvent,
   });
 
@@ -17,6 +18,8 @@ class HotkeyListener extends StatelessWidget {
   final CanvasController controller;
 
   final void Function(LogicalKeyboardKey)? onKeyDownEvent;
+
+  final void Function(LogicalKeyboardKey)? onKeyRepeatEvent;
 
   final void Function(LogicalKeyboardKey)? onKeyUpEvent;
 
@@ -34,14 +37,16 @@ class HotkeyListener extends StatelessWidget {
         focusNode: controller.focusNode,
         onKeyEvent: (event) async {
           if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.shiftLeft || event.logicalKey == LogicalKeyboardKey.shiftRight) {
+            if (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
+                event.logicalKey == LogicalKeyboardKey.shiftRight) {
               controller.shiftPressed = true;
             }
             if (event.logicalKey == LogicalKeyboardKey.controlLeft ||
                 event.logicalKey == LogicalKeyboardKey.controlRight) {
               controller.controlPressed = true;
             }
-            if (event.logicalKey == LogicalKeyboardKey.metaLeft || event.logicalKey == LogicalKeyboardKey.metaRight) {
+            if (event.logicalKey == LogicalKeyboardKey.metaLeft ||
+                event.logicalKey == LogicalKeyboardKey.metaRight) {
               controller.metaPressed = true;
             }
             if (event.logicalKey == LogicalKeyboardKey.space) {
@@ -53,15 +58,20 @@ class HotkeyListener extends StatelessWidget {
             if (onKeyDownEvent != null) {
               onKeyDownEvent!(event.logicalKey);
             }
-          }
-          if (event is KeyUpEvent) {
+          } else if (event is KeyRepeatEvent) {
+            if (onKeyRepeatEvent != null) {
+              onKeyRepeatEvent!(event.logicalKey);
+            }
+          } else if (event is KeyUpEvent) {
             if (onKeyUpEvent != null) {
               onKeyUpEvent!(event.logicalKey);
             }
-            if (event.logicalKey == LogicalKeyboardKey.shiftLeft || event.logicalKey == LogicalKeyboardKey.shiftRight) {
+            if (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
+                event.logicalKey == LogicalKeyboardKey.shiftRight) {
               controller.shiftPressed = false;
             }
-            if (event.logicalKey == LogicalKeyboardKey.metaLeft || event.logicalKey == LogicalKeyboardKey.metaRight) {
+            if (event.logicalKey == LogicalKeyboardKey.metaLeft ||
+                event.logicalKey == LogicalKeyboardKey.metaRight) {
               controller.metaPressed = false;
             }
             if (event.logicalKey == LogicalKeyboardKey.controlLeft ||

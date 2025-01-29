@@ -52,6 +52,7 @@ class MouseListener extends StatelessWidget {
       final controller = context.read<CanvasBloc>().state.canvasController;
       return Listener(
           onPointerHover: (details) {
+            controller.requestFocus();
             if (enable) {
               final controllerTransform =
                   controller.transformationController.value;
@@ -228,20 +229,11 @@ class MouseListener extends StatelessWidget {
             final viewportScale =
                 controller.transformationController.value.getMaxScaleOnAxis();
             void onPanUpdate() {
-              final stageState = context.read<StageBloc>();
-              for (final id in selectedList) {
-                final itemProfile = itemStore[id]!;
-                if (itemProfile.isEvent) {
-                  final event = stageState.state.events[id]!;
-                  event.position.x += details.delta.dx / viewportScale;
-                  event.position.y += details.delta.dy / viewportScale;
-                } else {
-                  final piece = stageState.state.pieces[id]!;
-                  piece.position.x += details.delta.dx / viewportScale;
-                  piece.position.y += details.delta.dy / viewportScale;
-                }
-                controller.selection.moved = true;
-              }
+              context.read<StageBloc>().add(UpdateItemPosition(
+                    x: details.delta.dx / viewportScale,
+                    y: details.delta.dy / viewportScale,
+                    itemBloc: itemBloc,
+                  ));
             }
 
             if (enable) {

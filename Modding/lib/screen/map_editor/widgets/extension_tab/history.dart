@@ -11,7 +11,10 @@ class HistoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.read<MapEditorConfigurationCubit>().state.extensionItem[ExtensionType.history]!;
+    final item = context
+        .read<MapEditorConfigurationCubit>()
+        .state
+        .extensionItem[ExtensionType.history]!;
 
     return SizedBox(
         width: 300,
@@ -19,14 +22,17 @@ class HistoryWidget extends StatelessWidget {
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding:
+                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                      Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          child: item.icon),
                       Text(
                         item.title,
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -34,9 +40,9 @@ class HistoryWidget extends StatelessWidget {
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          context
-                              .read<SectionBloc>()
-                              .add(const ExtensionToggled(type: ExtensionType.history, enabled: false));
+                          context.read<SectionBloc>().add(
+                              const ExtensionToggled(
+                                  type: ExtensionType.history, enabled: false));
                         },
                         icon: const Icon(Symbols.close),
                       ),
@@ -47,7 +53,8 @@ class HistoryWidget extends StatelessWidget {
                     child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Theme.of(context).colorScheme.secondaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
                         ),
                         child: const HistoryTree())),
               ],
@@ -73,7 +80,8 @@ class HistoryTree extends StatelessWidget {
                 final stackList = captureManager.stackList;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (captureManager.canUndo() && !captureManager.canRedo()) {
-                    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                    scrollController
+                        .jumpTo(scrollController.position.maxScrollExtent);
                   }
                 });
                 return ListView.builder(
@@ -83,7 +91,10 @@ class HistoryTree extends StatelessWidget {
                       final actionService = stackList[index];
                       return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: HistoryTile(actionService: actionService, notifierIndex: notifierIndex, index: index));
+                          child: HistoryTile(
+                              actionService: actionService,
+                              notifierIndex: notifierIndex,
+                              index: index));
                     });
               }));
     });
@@ -95,7 +106,11 @@ class HistoryTile extends StatelessWidget {
   final int notifierIndex;
   final int index;
 
-  const HistoryTile({super.key, required this.actionService, required this.notifierIndex, required this.index});
+  const HistoryTile(
+      {super.key,
+      required this.actionService,
+      required this.notifierIndex,
+      required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +123,10 @@ class HistoryTile extends StatelessWidget {
     } else if (notifierIndex < index) {
       color = colorScheme.outlineVariant;
     }
-    final actionTypeLocalization = context.read<MapEditorConfigurationCubit>().state.actionTypeLocalization;
+    final actionTypeLocalization = context
+        .read<MapEditorConfigurationCubit>()
+        .state
+        .actionTypeLocalization;
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
@@ -131,8 +149,11 @@ class HistoryTile extends StatelessWidget {
             : null,
         child: ListTile(
           dense: true,
-          leading: Icon(context.read<HistoryBloc>().getIconByType(actionService.actionType)),
-          title: Text(actionTypeLocalization[actionService.actionType] ?? 'null',
+          leading: Icon(context
+              .read<HistoryBloc>()
+              .getIconByType(actionService.actionType)),
+          title: Text(
+              actionTypeLocalization[actionService.actionType] ?? 'null',
               style: Theme.of(context).textTheme.titleSmall),
         ),
       ),

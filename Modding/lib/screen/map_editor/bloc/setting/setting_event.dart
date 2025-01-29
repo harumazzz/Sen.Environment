@@ -88,6 +88,15 @@ final class SetHideOldEvent extends SettingEvent {
   List<Object> get props => [enabled];
 }
 
+final class SetPlantCostume extends SettingEvent {
+  const SetPlantCostume({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  List<Object> get props => [enabled];
+}
+
 final class SetMapPath extends SettingEvent {
   const SetMapPath({required this.enabled});
 

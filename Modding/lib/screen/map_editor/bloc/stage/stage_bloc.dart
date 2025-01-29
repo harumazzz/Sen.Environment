@@ -56,6 +56,7 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     on<AddEventItemEvent>(_addEventItem);
     on<UpdateStageState>(_updateState);
     on<UpdateMapInformation>(_updateMapInformation);
+    on<UpdateItemPosition>(_updateItemPosition);
   }
 
   final MapEditorConfigurationCubit cubit;
@@ -105,6 +106,27 @@ class StageBloc extends Bloc<StageEvent, StageState> {
       worldId: event.worldId,
       resGroupId: event.resId,
     ));
+  }
+
+  void _updateItemPosition(UpdateItemPosition event, Emitter<StageState> emit) {
+    final selectedList = selectedBloc.state.selectedList;
+    final itemStore = event.itemBloc.state.itemStore;
+    for (final id in selectedList) {
+      if (!itemStore.containsKey(id)) {
+        continue;
+      }
+      final itemProfile = itemStore[id]!;
+      if (itemProfile.isEvent) {
+        final itemEvent = state.events[id]!;
+        itemEvent.position.x += event.x;
+        itemEvent.position.y += event.y;
+      } else {
+        final piece = state.pieces[id]!;
+        piece.position.x += event.x;
+        piece.position.y += event.y;
+      }
+      canvasBloc.state.canvasController.selection.moved = true;
+    }
   }
 
   void _changeWorldResource(
@@ -203,7 +225,7 @@ class StageBloc extends Bloc<StageEvent, StageState> {
         idList: [id], itemBloc: event.itemBloc, playSound: false));
   }
 
-  void _addEventItem(AddEventItemEvent event, Emitter<StageState> emit) {
+  void _addEventItem(AddEventItemEvent event, Emitter<StageState> emit) async {
     final position = _getScreenItemPosition();
     final eventId = (state.events.isNotEmpty
             ? (state.events.values
@@ -268,7 +290,18 @@ class StageBloc extends Bloc<StageEvent, StageState> {
       case EventNodeType.plant:
         {
           eventItem.eventType = EventType.plant;
-          eventItem.dataString = configModel.resource.plant.keys.firstOrNull;
+          final plantType = configModel.resource.plant.keys.firstOrNull;
+          eventItem.dataString = plantType;
+          if (plantType != null &&
+              !cubit.state.gameResource.plant.containsKey(plantType)) {
+            final settingPath = cubit.state.settingPath;
+            cubit.state.gameResource.plant[plantType] =
+                await cubit.loadPlantVisualAnimation(
+              '$settingPath/plant/$plantType',
+              plantType,
+              settingBloc.state.plantCostume,
+            );
+          }
           break;
         }
       case EventNodeType.giftbox:
@@ -523,6 +556,20 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     return property;
   }
 
+  Future<void> loadPlantAnimation(
+      Iterable<String> plantList, bool enableCostume,
+      {bool clear = false}) async {
+    if (clear) {
+      cubit.state.gameResource.plant.clear();
+    }
+    final settingPath = cubit.state.settingPath;
+    for (final plantType in plantList) {
+      cubit.state.gameResource.plant[plantType] =
+          await cubit.loadPlantVisualAnimation(
+              '$settingPath/plant/$plantType', plantType, enableCostume);
+    }
+  }
+
   Future<void> _loadWorld(
       LoadWorldEvent event, Emitter<StageState> emit) async {
     final worldData = event.worldData;
@@ -545,9 +592,18 @@ class StageBloc extends Bloc<StageEvent, StageState> {
       pieces[uuid.v4()] = piece;
     }
     _resortPiecesLayer(pieces);
+
+    final plantList = <String>[];
     for (final event in worldData.events) {
       events[uuid.v4()] = event;
+      if (event.eventType == EventType.plant) {
+        final plantType = event.dataString;
+        if (plantType != null && !plantList.contains(plantType)) {
+          plantList.add(plantType);
+        }
+      }
     }
+    loadPlantAnimation(plantList, clear: true, settingBloc.state.plantCostume);
     selectedBloc.add(const ClearSelectedList());
     event.layerBloc.add(const InitailizeTreeController());
     event.layerBloc.add(const InitailizeLayerNode());

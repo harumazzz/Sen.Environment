@@ -145,7 +145,7 @@ class MapPieceItem {
       'm_scaleY': data.scaleY,
       'm_isArtFlipped': data.isArtFlipped,
       'm_rotationAngle': data.rotationAngle,
-      'm_rotationRate': data.rotationRate,
+      'm_rotationRate': data.rotationRate
     };
   }
 }
@@ -253,7 +253,7 @@ class MapEventItem {
       'm_visibleFrom': data.visibleFrom,
       'm_autoVisible': data.autoVisible,
       'm_isArtFlipped': data.isArtFlipped,
-      'm_cost': data.cost,
+      'm_cost': data.cost ?? 0,
       'm_parentEvent': data.parentEvent,
       'm_displayText': data.displayText ?? '',
       'm_unlockedNarrationID': data.unlockedNarrationID ?? '',

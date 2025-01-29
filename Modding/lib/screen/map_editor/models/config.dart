@@ -5,32 +5,36 @@ enum BorderBackground { color, timeSpace, senLogo }
 class ConfigSetting {
   bool playSingleFrame;
   bool muteAudio;
+  bool plantCostume;
   FilterQuality filterQuality;
 //  final dimension.Dimension renderingSize;
 
-  ConfigSetting(
-      {required this.playSingleFrame,
-      required this.muteAudio,
-      required this.filterQuality,
-      });
+  ConfigSetting({
+    required this.playSingleFrame,
+    required this.muteAudio,
+    required this.plantCostume,
+    required this.filterQuality,
+  });
 
   factory ConfigSetting.fromJson(Map<String, dynamic> json) {
     return ConfigSetting(
-        playSingleFrame: (json['m_playSingleFrame']),
-        muteAudio: (json['m_muteAudio']),
-        filterQuality: FilterQuality.values[(json['m_filterQuality'])],
-        /*
+      playSingleFrame: (json['m_playSingleFrame']),
+      muteAudio: (json['m_muteAudio']),
+      plantCostume: (json['m_plantCostume']),
+      filterQuality: FilterQuality.values[(json['m_filterQuality'])],
+      /*
         renderingSize: dimension.Dimension(
             width: (json['m_renderingSize']['width']),
             height: (json['m_renderingSize']['height']))
             */
-            );
+    );
   }
 
   static Map<String, dynamic> toJson(ConfigSetting data) {
     return {
       'm_playSingleFrame': data.playSingleFrame,
       'm_muteAudio': data.muteAudio,
+      'm_plantCostume': data.plantCostume,
       'm_filterQuality': data.filterQuality.index,
     };
   }
@@ -112,7 +116,6 @@ class ConfigResource {
   }
   */
 }
-
 
 class ConfigModel {
   final ConfigSetting setting;

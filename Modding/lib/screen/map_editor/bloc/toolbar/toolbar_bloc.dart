@@ -5,7 +5,6 @@ import 'package:equatable/equatable.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';

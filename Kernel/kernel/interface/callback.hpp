@@ -8,7 +8,7 @@
 
 namespace Sen::Kernel::Interface {
 
-	namespace JS = Sen::Kernel::JavaScript;
+	namespace JS = JavaScript;
 	
 	template <typename ReturnType, typename... Args>
 	using FunctionProxy = JS::FunctionProxy<ReturnType, Args...>;

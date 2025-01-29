@@ -114,9 +114,14 @@ class CaptureManager<T> {
     while (canRedo()) {
       _stackList.removeLast();
     }
-
     _stackList.add(state);
-    ++notifier.value;
+    if (notifier.value < _maxMemory) {
+      ++notifier.value;
+    } else {
+      //To fix value listener
+      --notifier.value;
+      ++notifier.value;
+    }
     return;
   }
 

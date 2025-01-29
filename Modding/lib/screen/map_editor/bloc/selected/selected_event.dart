@@ -53,10 +53,12 @@ final class SelectedListUpdated extends SelectedEvent {
 }
 
 final class CopySelectedList extends SelectedEvent {
-  const CopySelectedList();
+  const CopySelectedList({required this.isCut});
+
+  final bool isCut;
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [isCut];
 }
 
 final class ClearCopyList extends SelectedEvent {

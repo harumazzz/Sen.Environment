@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pie_menu/pie_menu.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
@@ -20,6 +21,7 @@ import 'package:sen/screen/map_editor/bloc/suggestion/suggestion_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/ticker/ticker_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
 import 'package:sen/screen/map_editor/include/ticker.dart';
+import 'package:sen/screen/map_editor/view/map.dart';
 import 'package:sen/screen/map_editor/view/navigation.dart';
 import 'package:sen/screen/map_editor/view/option.dart';
 import 'package:sen/screen/map_editor/view/stage.dart';
@@ -48,9 +50,6 @@ class MainPage extends StatelessWidget {
       BlocProvider<SettingBloc>(
         create: (_) => SettingBloc(),
       ),
-      BlocProvider<InitBloc>(
-        create: (_) => InitBloc(),
-      ),
       BlocProvider<SectionBloc>(
         create: (_) => SectionBloc(),
       ),
@@ -61,7 +60,11 @@ class MainPage extends StatelessWidget {
         create: (_) => HistoryBloc(),
       ),
       BlocProvider<TickerBloc>(
-        create: (_) => TickerBloc(ticker: const Ticker(), tickStart: 0, tickEnd: 360 * 30, tickDuration: 30),
+        create: (_) => TickerBloc(
+            ticker: const Ticker(),
+            tickStart: 0,
+            tickEnd: 360 * 30,
+            tickDuration: 30),
       ),
       BlocProvider<CanvasBloc>(
         create: (_) {
@@ -135,17 +138,31 @@ class MainPageChild extends StatelessWidget {
 
   void _initBloc(BuildContext context) {
     context.read<CanvasBloc>().add(TransformControllerAddListener(
-          listener: () => context.read<ItemBloc>().add(const ItemStoreUpdated()),
+          listener: () =>
+              context.read<ItemBloc>().add(const ItemStoreUpdated()),
         ));
     context.read<SuggestionBloc>().add(InitailizeSuggestionList(
-          configModel: context.read<MapEditorConfigurationCubit>().state.configModel,
+          configModel:
+              context.read<MapEditorConfigurationCubit>().state.configModel,
         ));
+    context.read<InitBloc>().add(CreateTakeShootFunction(takeShoot: () async {
+      return ScreenshotController().captureFromLongWidget(
+          MapView(
+            stageBloc: context.read<StageBloc>(),
+            cubit: context.read<MapEditorConfigurationCubit>(),
+            settingBloc: context.read<SettingBloc>(),
+            resourceBloc: context.read<ResourceBloc>(),
+          ),
+          delay: const Duration(milliseconds: 100));
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
     if (context.read<InitBloc>().state.status == InitailizeStatus.initailize) {
-      context.read<InitBloc>().add(const SetStatusEvent(status: InitailizeStatus.success));
+      context
+          .read<InitBloc>()
+          .add(const SetStatusEvent(status: InitailizeStatus.success));
       _initBloc(context);
     }
     final colorScheme = Theme.of(context).colorScheme;
@@ -154,7 +171,9 @@ class MainPageChild extends StatelessWidget {
         : colorScheme.primaryFixedDim;
     final state = context.read<MapEditorConfigurationCubit>().state;
     return BlocListener<InitBloc, InitState>(
-      listenWhen: (prev, state) => prev.text != state.text || prev.alertDialogEnable != state.alertDialogEnable,
+      listenWhen: (prev, state) =>
+          prev.text != state.text ||
+          prev.alertDialogEnable != state.alertDialogEnable,
       listener: (context, state) async {
         if (state.text != null && state.text != 'null') {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -173,12 +192,14 @@ class MainPageChild extends StatelessWidget {
                 return const ClearToolWidget();
               });
           if (context.mounted) {
-            context.read<InitBloc>().add(const ShowAlertDialog(type: AlertDialogShowType.clear, enable: false));
+            context.read<InitBloc>().add(const ShowAlertDialog(
+                type: AlertDialogShowType.clear, enable: false));
             if (done == true) {
               final stageBloc = context.read<StageBloc>();
               context.read<ToolBarBloc>().add(ToolClearSubmitted(
                     stageBloc: stageBloc,
-                    itemUpdate: () => context.read<ItemBloc>().add(const ItemStoreUpdated()),
+                    itemUpdate: () =>
+                        context.read<ItemBloc>().add(const ItemStoreUpdated()),
                     layerBloc: context.read<LayerBloc>(),
                   ));
             }
@@ -193,7 +214,8 @@ class MainPageChild extends StatelessWidget {
                 );
               });
           if (context.mounted) {
-            context.read<InitBloc>().add(const ShowAlertDialog(type: AlertDialogShowType.config, enable: false));
+            context.read<InitBloc>().add(const ShowAlertDialog(
+                type: AlertDialogShowType.config, enable: false));
             if (done == true) {
               context.read<ToolBarBloc>().add(const ToolConfigSubmitted());
             }
@@ -205,16 +227,19 @@ class MainPageChild extends StatelessWidget {
                 return const ShortCutMenuWidget();
               });
           if (context.mounted) {
-            context.read<InitBloc>().add(const ShowAlertDialog(type: AlertDialogShowType.shortcut, enable: false));
+            context.read<InitBloc>().add(const ShowAlertDialog(
+                type: AlertDialogShowType.shortcut, enable: false));
           }
         }
       },
       child: PieCanvas(
           theme: PieTheme(
               buttonTheme: PieButtonTheme(
-                  backgroundColor: colorScheme.secondaryContainer, iconColor: colorScheme.inverseSurface),
-              buttonThemeHovered:
-                  PieButtonTheme(backgroundColor: backgroundColor, iconColor: colorScheme.inverseSurface),
+                  backgroundColor: colorScheme.secondaryContainer,
+                  iconColor: colorScheme.inverseSurface),
+              buttonThemeHovered: PieButtonTheme(
+                  backgroundColor: backgroundColor,
+                  iconColor: colorScheme.inverseSurface),
               delayDuration: Duration.zero,
               spacing: 4,
               radius: 60,
@@ -244,7 +269,8 @@ class MainPageChild extends StatelessWidget {
                         clipBehavior: Clip.antiAlias,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(16)),
-                            side: BorderSide(color: Color.fromRGBO(0, 0, 0, 0.3), width: 2)),
+                            side: BorderSide(
+                                color: Color.fromRGBO(0, 0, 0, 0.3), width: 2)),
                         child: Stack(
                           fit: StackFit.passthrough,
                           children: [
@@ -274,7 +300,8 @@ class MainPageChild extends StatelessWidget {
             const SizedBox(
               width: 280,
               child: Card(
-                  margin: EdgeInsets.only(top: 4, left: 4, right: 8, bottom: 12),
+                  margin:
+                      EdgeInsets.only(top: 4, left: 4, right: 8, bottom: 12),
                   shadowColor: Colors.transparent,
                   child: Padding(
                     padding: EdgeInsets.all(8),

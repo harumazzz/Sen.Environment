@@ -9,6 +9,7 @@ final class SettingState extends Equatable {
       required this.hideMissingArt,
       required this.hideOldEvent,
       required this.mapPath,
+      required this.plantCostume,
       required this.mapCompleted,
       required this.mapGrid,
       required this.boundingColor,
@@ -30,6 +31,8 @@ final class SettingState extends Equatable {
 
   final bool mapPath;
 
+  final bool plantCostume;
+
   final bool mapCompleted;
 
   final bool mapGrid;
@@ -44,13 +47,14 @@ final class SettingState extends Equatable {
 
   factory SettingState.initailize() {
     return const SettingState(
-      boundBackground: BorderBackground.timeSpace,
+      boundBackground: BorderBackground.color,
       islandImageBorder: true,
       islandAnimationBorder: true,
       eventBorder: true,
-      hideMissingArt: true,
+      hideMissingArt: false,
       hideOldEvent: true,
       mapPath: true,
+      plantCostume: true,
       mapCompleted: true,
       mapGrid: false,
       boundingColor: Colors.black,
@@ -68,6 +72,7 @@ final class SettingState extends Equatable {
       bool? hideMissingArt,
       bool? hideOldEvent,
       bool? mapPath,
+      bool? plantCostume,
       bool? mapCompleted,
       bool? mapGrid,
       Color? boundingColor,
@@ -77,11 +82,13 @@ final class SettingState extends Equatable {
     return SettingState(
         boundBackground: boundBackground ?? this.boundBackground,
         islandImageBorder: islandImageBorder ?? this.islandImageBorder,
-        islandAnimationBorder: islandAnimationBorder ?? this.islandAnimationBorder,
+        islandAnimationBorder:
+            islandAnimationBorder ?? this.islandAnimationBorder,
         eventBorder: eventBorder ?? this.eventBorder,
         hideMissingArt: hideMissingArt ?? this.hideMissingArt,
         hideOldEvent: hideOldEvent ?? this.hideOldEvent,
         mapPath: mapPath ?? this.mapPath,
+        plantCostume: plantCostume ?? this.plantCostume,
         mapCompleted: mapCompleted ?? this.mapCompleted,
         mapGrid: mapGrid ?? this.mapGrid,
         boundingColor: boundingColor ?? this.boundingColor,
@@ -98,6 +105,7 @@ final class SettingState extends Equatable {
         muteAudio,
         hideMissingArt,
         hideOldEvent,
+        plantCostume,
         mapPath,
         mapCompleted,
         eventBorder,

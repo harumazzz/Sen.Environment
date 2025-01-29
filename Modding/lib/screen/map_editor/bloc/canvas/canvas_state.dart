@@ -5,7 +5,7 @@ final class CanvasState extends Equatable {
 
   final CanvasController canvasController;
 
-  factory CanvasState.initailze() {
+  factory CanvasState.initialize() {
     return CanvasState(
         canvasController: CanvasController(
             transformationController: TransformationController()));

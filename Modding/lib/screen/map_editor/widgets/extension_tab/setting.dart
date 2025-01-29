@@ -14,21 +14,27 @@ class EditorSettingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.read<MapEditorConfigurationCubit>().state.extensionItem[ExtensionType.setting]!;
+    final item = context
+        .read<MapEditorConfigurationCubit>()
+        .state
+        .extensionItem[ExtensionType.setting]!;
     return SizedBox(
         width: 300,
-        height: 520,
+        height: 400,
         child: Card(
           color: Theme.of(context).colorScheme.surface,
           child: Padding(
-            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+            padding:
+                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                      Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          child: item.icon),
                       Text(
                         item.title,
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -36,9 +42,10 @@ class EditorSettingWidget extends StatelessWidget {
                       const Spacer(),
                       IconButton(
                           onPressed: () {
-                            context
-                                .read<SectionBloc>()
-                                .add(const ExtensionToggled(type: ExtensionType.setting, enabled: false));
+                            context.read<SectionBloc>().add(
+                                const ExtensionToggled(
+                                    type: ExtensionType.setting,
+                                    enabled: false));
                           },
                           icon: const Icon(Icons.close))
                     ],
@@ -48,7 +55,8 @@ class EditorSettingWidget extends StatelessWidget {
                     child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Theme.of(context).colorScheme.secondaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
                         ),
                         child: const EditorSettingState())),
               ],
@@ -85,14 +93,18 @@ class EditorSettingState extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = context.los;
     return BlocBuilder<SettingBloc, SettingState>(builder: (context, state) {
-      return Column(children: [
+      return SingleChildScrollView(
+          child: Column(children: [
         CheckBoxField(
           label: los.island_image_border,
           value: state.islandImageBorder,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+          margin:
+              const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetIslandImageBorder(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetIslandImageBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -102,7 +114,9 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetIslandAnimationBorder(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetIslandAnimationBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -112,7 +126,9 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetEventBorder(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetEventBorder(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -122,7 +138,9 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetHideMissingArt(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetHideMissingArt(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -132,7 +150,9 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetHideOldEvent(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetHideOldEvent(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -152,7 +172,9 @@ class EditorSettingState extends StatelessWidget {
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
           underline: false,
           onChanged: (value) {
-            context.read<SettingBloc>().add(SetMapCompleted(enabled: value ?? true));
+            context
+                .read<SettingBloc>()
+                .add(SetMapCompleted(enabled: value ?? true));
             context.read<ItemBloc>().add(const ItemStoreUpdated());
           },
         ),
@@ -167,14 +189,15 @@ class EditorSettingState extends StatelessWidget {
           },
         ),
         Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 2),
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 2),
             child: Row(
               children: [
                 Text(
                   los.background,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const Spacer(),
@@ -188,7 +211,7 @@ class EditorSettingState extends StatelessWidget {
                         decoration: BoxDecoration(
                             border: Border(
                                 bottom: BorderSide(
-                      color: Theme.of(context).colorScheme.onSecondaryFixedVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       width: 0.8,
                     )))),
                     items: BorderBackground.values
@@ -204,13 +227,15 @@ class EditorSettingState extends StatelessWidget {
                         .toList(),
                     onChanged: (value) {
                       final background = value ?? BorderBackground.color;
-                      context.read<SettingBloc>().add(SetBoundBackground(background: background));
+                      context
+                          .read<SettingBloc>()
+                          .add(SetBoundBackground(background: background));
                     },
                   ),
                 )
               ],
             )),
-      ]);
+      ]));
     });
   }
 }

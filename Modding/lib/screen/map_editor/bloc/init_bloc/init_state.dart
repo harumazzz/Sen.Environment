@@ -6,7 +6,11 @@ enum AlertDialogShowType { clear, config, shortcut }
 
 final class InitState extends Equatable {
   const InitState(
-      {required this.status, required this.alertDialogEnable, this.text});
+      {required this.status,
+      required this.alertDialogEnable,
+      //   required this.screenshotController,
+      this.text,
+      this.takeShoot});
 
   final InitailizeStatus status;
 
@@ -14,9 +18,14 @@ final class InitState extends Equatable {
 
   final HashMap<AlertDialogShowType, bool> alertDialogEnable;
 
+  // final ScreenshotController screenshotController;
+
+  final Future<Uint8List?> Function()? takeShoot;
+
   factory InitState.initailize() {
     return InitState(
         status: InitailizeStatus.initailize,
+        //    screenshotController: ScreenshotController(),
         alertDialogEnable: HashMap.from({
           AlertDialogShowType.clear: false,
           AlertDialogShowType.config: false,
@@ -27,6 +36,8 @@ final class InitState extends Equatable {
   InitState copyWith(
       {InitailizeStatus? status,
       String? text,
+      //  ScreenshotController? screenshotController,
+      Future<Uint8List?> Function()? takeShoot,
       HashMap<AlertDialogShowType, bool>? alertDialogEnable}) {
     final map = HashMap<AlertDialogShowType, bool>();
     for (final entry in (alertDialogEnable ?? this.alertDialogEnable).entries) {
@@ -34,10 +45,12 @@ final class InitState extends Equatable {
     }
     return InitState(
         status: status ?? this.status,
+        // screenshotController: screenshotController ?? this.screenshotController,
+        takeShoot: takeShoot ?? this.takeShoot,
         text: text ?? this.text,
         alertDialogEnable: map);
   }
 
   @override
-  List<Object?> get props => [status, text, alertDialogEnable];
+  List<Object?> get props => [status, text, alertDialogEnable, takeShoot];
 }
