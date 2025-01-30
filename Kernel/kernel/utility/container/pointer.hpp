@@ -23,9 +23,9 @@ namespace Sen::Kernel {
 	};
 
 	template <typename T>
-	constexpr std::add_lvalue_reference_t<T> as_lvalue(
+	constexpr auto as_lvalue(
 		T&& value
-	) noexcept 
+	)  noexcept -> std::add_lvalue_reference_t<T>
 	{
 		return value; 
 	}
@@ -40,9 +40,9 @@ namespace Sen::Kernel {
 
 	template <typename To, typename From>
 	 auto steal_reference(From& from) -> To& {
-			static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
-			return *reinterpret_cast<To*>(&from);
-		}
+		static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
+		return *reinterpret_cast<To*>(&from);
+	}
 
 	template <typename To, typename From>
 	auto steal_pointer(From* from) -> To* {

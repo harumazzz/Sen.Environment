@@ -22,14 +22,14 @@ namespace Sen::Kernel {
 
 		public:
 
-			explicit CArray(
+			constexpr explicit CArray(
 				const Size& size
 			) : _size{size}, value{new T[size]}
 			{
 
 			}
 
-			explicit CArray(
+			constexpr explicit CArray(
 				Pointer<T> const& source,
 				const Size& size
 			) : _size{size}, value{source}
@@ -37,43 +37,43 @@ namespace Sen::Kernel {
 
 			}
 
-			explicit CArray(
+			constexpr explicit CArray(
 
 			) = default;
 
-			auto data(
+			constexpr auto data(
 
 			) -> Pointer<T>&
 			{
 				return thiz.value;
 			}
 
-			auto begin(
+			constexpr auto begin(
 			) -> Pointer<T> {
 				return thiz.value;
 			}
 
-			auto rbegin(
+			constexpr auto rbegin(
 			) -> Pointer<T> {
 				return thiz.value + thiz._size - 1;
 			}
 
-			auto cbegin(
+			constexpr auto cbegin(
 			) -> Pointer<T> {
 				return thiz.value;
 			}
 
-			auto cend(
+			constexpr auto cend(
 			) -> Pointer<T> {
 				return thiz.value + thiz._size;
 			}
 
-			auto rend(
+			constexpr auto rend(
 			) -> Pointer<T> {
 				return thiz.value + thiz._size - 1;
 			}
 
-			auto release(
+			constexpr auto release(
 			) -> Pointer<T> {
 				auto raw = thiz.value;
 				thiz.value = nullptr;
@@ -81,7 +81,7 @@ namespace Sen::Kernel {
 				return raw;
 			}
 
-			auto end(
+			constexpr auto end(
 			) -> Pointer<T> {
 				return thiz.value + thiz._size;
 			}
@@ -115,7 +115,7 @@ namespace Sen::Kernel {
 				const CArray& other
 			) -> CArray& = delete;
 
-			explicit CArray(
+			constexpr explicit CArray(
 				CArray&& other
 			) noexcept : _size{ other._size }, value{ other.value }
 			{
@@ -123,7 +123,7 @@ namespace Sen::Kernel {
 				other._size = 0;
 			}
 
-			auto operator=(
+			constexpr auto operator=(
 				CArray&& other
 			) noexcept -> CArray& {
 				if (this != &other) {
@@ -136,7 +136,7 @@ namespace Sen::Kernel {
 				return *this;
 			}
 
-			auto operator [](
+			constexpr auto operator [](
 				Size const& index
 			) -> T&
 			{

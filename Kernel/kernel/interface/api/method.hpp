@@ -158,7 +158,7 @@ namespace Sen::Kernel::Interface::API {
 		{
 			auto result = Kernel::FileSystem::read_file_by_utf16(source);
 			auto converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
-			return std::string{ converter.to_bytes(result) };
+			return converter.to_bytes(result);
 		}
 
 		inline auto write_file (

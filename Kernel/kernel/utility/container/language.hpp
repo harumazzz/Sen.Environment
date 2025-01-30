@@ -1,21 +1,18 @@
 #pragma once
 
-#include <map>
 #include <string>
-#include <memory>
 #include <cstdio>
-#include <vector>
-#include <cstdarg>
 #include <string_view>
 #include <fstream>
-#include <codecvt>
-#include <iostream>
 #include "kernel/utility/assert.hpp"
 #include "kernel/subprojects/fmt.hpp"
 #include "kernel/subprojects/json.hpp"
 
-namespace Sen::Kernel::Language
-{
+#if WIN32
+#include <Windows.h>
+#endif
+
+namespace Sen::Kernel::Language {
 
 	/**
 	 * DO NOT USE THIS, THIS IS LANGUAGE CONTAINER
@@ -32,7 +29,6 @@ namespace Sen::Kernel::Language
 		if(f != nullptr)
 		{
 			std::fclose(f);
-			f = nullptr;
 		}
 		return;
 	};
@@ -47,8 +43,11 @@ namespace Sen::Kernel::Language
 		#if _WIN32
 		auto static constexpr utf8_to_utf16 = [](std::string_view str) -> std::wstring
 		{
-			auto myconv = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
-			return myconv.from_bytes(str.data(), str.data() + str.size());
+			auto size = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), nullptr, 0));
+			auto destination = std::wstring{};
+			destination.resize(size);
+			MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), &destination[0], size);
+			return destination;
 		};
 		auto file = std::ifstream(utf8_to_utf16(source));
 		#else
@@ -65,7 +64,6 @@ namespace Sen::Kernel::Language
 		}
 		auto buffer = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		language = nlohmann::json::parse(buffer);
-		return;
 	}
 
 
@@ -74,7 +72,7 @@ namespace Sen::Kernel::Language
 	 * The Script will obtain from here, also inner kernel method
 	*/
 
-	inline static auto get(
+	inline auto get(
 		std::string_view key
 	) -> std::string
 	{

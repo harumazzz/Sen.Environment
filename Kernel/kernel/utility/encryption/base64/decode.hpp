@@ -21,13 +21,13 @@ namespace Sen::Kernel::Encryption::Base64 {
             auto raw = source.begin();
             destination.allocate(original_size(source));
             auto ripe = destination.begin();
-            auto i = 0_size;
+            auto index = 0_size;
             while (raw != source.end()) {
                 if (*raw == '=') {
                     break;
                 }
-                a4[i++] = *(raw++);
-                if (i == 4) {
+                a4[index++] = *(raw++);
+                if (index == 4) {
                     for (auto& c : a4) {
                         c = position(c);
                     }
@@ -35,16 +35,16 @@ namespace Sen::Kernel::Encryption::Base64 {
                     for (auto& byte : a3) {
                         *ripe++ = byte;
                     }
-                    i = 0;
+                    index = 0;
                 }
             }
-            if (i != 0) {
-                std::fill(a4.begin() + i, a4.end(), '\0');
+            if (index != 0) {
+                std::fill(a4.begin() + index, a4.end(), '\0');
                 for (auto j : Range{4}) {
                     a4[j] = position(a4[j]);
                 }
                 a4_to_a3(a3.data(), a4.data());
-                for (auto j : Range{i - 1}) {
+                for (auto j : Range{index - 1}) {
                     *ripe++ = a3[j];
                 }
             }
