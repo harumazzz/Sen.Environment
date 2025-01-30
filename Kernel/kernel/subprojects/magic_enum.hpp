@@ -8,7 +8,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/lzma/LzmaLib.h"
+#include "subprojects/magic_enum/magic_enum_all.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,9 +17,8 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::lzma 
+namespace Sen::Kernel::Subprojects::magic_enum 
 {
 
-	// using deps
 
 }

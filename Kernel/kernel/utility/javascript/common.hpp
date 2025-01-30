@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/dependencies/quickjs.hpp"
+#include "kernel/subprojects/quickjs.hpp"
 #include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::JavaScript {

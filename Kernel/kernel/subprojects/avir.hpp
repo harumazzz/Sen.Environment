@@ -24,7 +24,7 @@
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 
-#include "dependencies/avir/avir.h"
+#include "subprojects/avir/avir.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -33,7 +33,7 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::avir {
+namespace Sen::Kernel::Subprojects::avir {
 
 	// use third
 

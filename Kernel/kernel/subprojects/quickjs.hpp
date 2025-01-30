@@ -3,9 +3,9 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 
-#include "dependencies/quickjs/quickjs.h"
+#include "subprojects/quickjs/quickjs.h"
 
-namespace Sen::Kernel::Dependencies::quickjs {
+namespace Sen::Kernel::Subprojects::quickjs {
 
 	// Use third
 

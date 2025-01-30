@@ -8,9 +8,8 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/libpng/png.h"
-#include "dependencies/libpng/pngstruct.h"
-#include "dependencies/libpng/pnginfo.h"
+#include "subprojects/SHA/SHA384.h"
+#include "subprojects/SHA/SHA512.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -19,8 +18,15 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::libpng {
+namespace Sen::Kernel::Subprojects::SHA {
 
-	// using third
+	// using sha512
+
+	using SHA512 = ::SHA512;
+
+	// using sha384
+
+	using SHA384 = ::SHA384;
+
 
 }

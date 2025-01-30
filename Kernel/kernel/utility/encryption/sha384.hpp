@@ -18,7 +18,7 @@ namespace Sen::Kernel::Encryption {
 				const std::string & message
 			) -> std::string 
 			{
-				auto sha384 = std::make_shared<Sen::Kernel::Dependencies::SHA::SHA384>();
+				auto sha384 = std::make_shared<Sen::Kernel::Subprojects::SHA::SHA384>();
 				auto result = sha384->hash(message);
 				return result;
 			}

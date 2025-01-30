@@ -18,10 +18,10 @@ namespace Sen::Kernel::Encryption::SHA256
 	) -> std::string
 	{
 
-		auto sha = std::make_shared<Sen::Kernel::Dependencies::SHA256::SHA256>();
+		auto sha = std::make_shared<Sen::Kernel::Subprojects::SHA256::SHA256>();
 		sha->update(message);
 		auto digest = static_cast<std::array<uint8_t, 32>>(sha->digest());
-		return Sen::Kernel::Dependencies::SHA256::SHA256::toString(digest);
+		return Sen::Kernel::Subprojects::SHA256::SHA256::toString(digest);
 	}
 
 	/**

@@ -8,7 +8,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/md5/md5.h"
+#include "subprojects/Rijndael/Rijndael.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,11 +17,12 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::md5 
+namespace Sen::Kernel::Subprojects::Rijndael 
 {
 
-	// class MD5 from MD5 library
-	
-	using MD5 = ::MD5;
 
+	// class Rijndael 
+	using CRijndael = ::CRijndael;
+
+	
 }

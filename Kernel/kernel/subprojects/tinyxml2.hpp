@@ -13,7 +13,7 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #endif
 
-#include "dependencies/tinyxml2/tinyxml2.h"
+#include "subprojects/tinyxml2/tinyxml2.h"
 
 
 #if defined MSVC_COMPILER
@@ -23,6 +23,6 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::tinyxml2 {
+namespace Sen::Kernel::Subprojects::tinyxml2 {
 	
 }

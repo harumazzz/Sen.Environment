@@ -3,7 +3,7 @@
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
 #include "kernel/utility/assert.hpp"
-#include "kernel/dependencies/Rijndael.hpp"
+#include "kernel/subprojects/Rijndael.hpp"
 
 namespace Sen::Kernel::Encryption 
 {
@@ -13,7 +13,7 @@ namespace Sen::Kernel::Encryption
 	struct Rijndael {
 
 		private:
-			using CRijndael = Sen::Kernel::Dependencies::Rijndael::CRijndael;
+			using CRijndael = Sen::Kernel::Subprojects::Rijndael::CRijndael;
 
 		protected:
 

@@ -8,10 +8,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-
-#include "dependencies/open_vcdiff/google/vcdecoder.h"
-#include "dependencies/open_vcdiff/google/vcencoder.h"
-#include "dependencies/open_vcdiff/google/output_string.h"
+#include "subprojects/lzma/LzmaLib.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -20,6 +17,9 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::open_vcdiff {
-	
+namespace Sen::Kernel::Subprojects::lzma 
+{
+
+	// using deps
+
 }

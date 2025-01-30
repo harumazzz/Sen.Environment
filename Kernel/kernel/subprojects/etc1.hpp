@@ -5,9 +5,10 @@
 #endif
 #if defined CLANG_COMPILER
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/zlib/zlib.h"
+#include "subprojects/etc1/etc1.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,9 +17,8 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::zlib 
-{
+namespace Sen::Kernel::Subprojects::etc1 {
 
-	
+	// using third
 
 }

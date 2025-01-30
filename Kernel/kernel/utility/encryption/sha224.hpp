@@ -14,7 +14,7 @@ namespace Sen::Kernel::Encryption::Sha224 {
 		const std::string & message
 	) -> std::string
 	{
-		auto sha224 = Dependencies::SHA224CryptoServiceProvider::sha224{};
+		auto sha224 = Subprojects::SHA224CryptoServiceProvider::sha224{};
 		auto result = sha224.Hashing(message);
 		return result;
 	}

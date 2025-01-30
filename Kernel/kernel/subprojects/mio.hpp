@@ -7,7 +7,7 @@
 #pragma clang diagnostic push
 #endif
 
-#include "dependencies/compile-time-regular-expressions/ctre.hpp"
+#include "subprojects/mio/mio.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,8 +16,9 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::ctre {
+namespace Sen::Kernel::Subprojects::mio 
+{
 
-	// use third
+	
 
 }

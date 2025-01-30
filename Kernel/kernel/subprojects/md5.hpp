@@ -5,9 +5,10 @@
 #endif
 #if defined CLANG_COMPILER
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/zip/zip.h"
+#include "subprojects/md5/md5.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,9 +17,11 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::zip 
+namespace Sen::Kernel::Subprojects::md5 
 {
 
+	// class MD5 from MD5 library
 	
+	using MD5 = ::MD5;
 
 }

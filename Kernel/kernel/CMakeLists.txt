@@ -78,32 +78,32 @@ add_library(
 	./utility/javascript/namespace_builder.hpp
 	
 
-	./dependencies/fmt.hpp
-	./dependencies/json.hpp
-	./dependencies/md5.hpp
-	./dependencies/zlib.hpp
-	./dependencies/SHA256.hpp
-	./dependencies/Rijndael.hpp
-	./dependencies/SHA224CryptoServiceProvider.hpp
-	./dependencies/libpng.hpp
-	./dependencies/etc1.hpp
-	./dependencies/tinyxml2.hpp
-	./dependencies/SHA.hpp
-	./dependencies/lzma.hpp
-	./dependencies/avir.hpp
-	./dependencies/open_vcdiff.hpp
-	./dependencies/bzip2.hpp
-	./dependencies/quickjs.hpp
-	./dependencies/zip.hpp
-	./dependencies/dirent.hpp
-	./dependencies/simdjson.hpp
-	./dependencies/magic_enum.hpp
-	./dependencies/canvas_ity.hpp
-	./dependencies/tsl.hpp
-	./dependencies/compile-time-regular-expressions.hpp
-	./dependencies/parallel-hashmap.hpp
-	./dependencies/mio.hpp
-	./dependencies/thread-pool.hpp
+	./subprojects/fmt.hpp
+	./subprojects/json.hpp
+	./subprojects/md5.hpp
+	./subprojects/zlib.hpp
+	./subprojects/SHA256.hpp
+	./subprojects/Rijndael.hpp
+	./subprojects/SHA224CryptoServiceProvider.hpp
+	./subprojects/libpng.hpp
+	./subprojects/etc1.hpp
+	./subprojects/tinyxml2.hpp
+	./subprojects/SHA.hpp
+	./subprojects/lzma.hpp
+	./subprojects/avir.hpp
+	./subprojects/open_vcdiff.hpp
+	./subprojects/bzip2.hpp
+	./subprojects/quickjs.hpp
+	./subprojects/zip.hpp
+	./subprojects/dirent.hpp
+	./subprojects/simdjson.hpp
+	./subprojects/magic_enum.hpp
+	./subprojects/canvas_ity.hpp
+	./subprojects/tsl.hpp
+	./subprojects/compile-time-regular-expressions.hpp
+	./subprojects/parallel-hashmap.hpp
+	./subprojects/mio.hpp
+	./subprojects/thread-pool.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
@@ -221,7 +221,7 @@ add_library(
 	./interface/interface.cpp
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/fmt)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/subprojects/fmt)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -260,7 +260,7 @@ target_compile_definitions(
 
 target_include_directories(
 	${PROJECT_NAME} PRIVATE
-	../dependencies/fmt
+	../subprojects/fmt
 )
 
 if (MSVC)

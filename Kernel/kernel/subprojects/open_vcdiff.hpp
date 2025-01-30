@@ -8,7 +8,10 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/json/json.hpp"
+
+#include "subprojects/open_vcdiff/google/vcdecoder.h"
+#include "subprojects/open_vcdiff/google/vcencoder.h"
+#include "subprojects/open_vcdiff/google/output_string.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,11 +20,6 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::json 
-{
-
-	// the namespace of json library is nlohmann
+namespace Sen::Kernel::Subprojects::open_vcdiff {
 	
-	using namespace ::nlohmann;
-
 }

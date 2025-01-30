@@ -1685,14 +1685,7 @@ namespace Sen::Kernel::Interface::API {
 			if (source->size != destination->size) {
 				return false;
 			}
-			auto is_same = true;
-			for (auto i : Range<std::size_t>(source->size)) {
-				if (source->value[i] != destination->value[i]) {
-					is_same = false;
-					break;
-				}
-			}
-			return is_same;
+			return std::memcmp(source->value, destination->value, source->size) == 0;
 		}
 
 		inline auto cast_ArrayBuffer_to_JS_WideString(

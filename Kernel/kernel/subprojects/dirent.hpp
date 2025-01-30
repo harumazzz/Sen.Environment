@@ -5,10 +5,14 @@
 #endif
 #if defined CLANG_COMPILER
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/magic_enum/magic_enum_all.hpp"
+// Because MSVC have no official support for dirent
+#if defined MSVC_COMPILER
+#include "subprojects/dirent/dirent.h"
+#else
+#include <dirent.h>
+#endif
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,8 +21,7 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::magic_enum 
-{
-
-
+namespace Sen::Kernel::Subprojects::dirent {
+	
 }
+

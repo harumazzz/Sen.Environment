@@ -7,7 +7,7 @@
 #pragma clang diagnostic push
 #endif
 
-#include "dependencies/parallel-hashmap/phmap.h"
+#include "subprojects/compile-time-regular-expressions/ctre.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,9 +16,8 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::phmap {
-	
-	using namespace phmap;
+namespace Sen::Kernel::Subprojects::ctre {
+
+	// use third
 
 }
-

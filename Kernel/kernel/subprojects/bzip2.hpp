@@ -1,13 +1,17 @@
 #pragma once
 
+#pragma once
+
 #if defined MSVC_COMPILER
 #pragma warning(push)
 #endif
 #if defined CLANG_COMPILER
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/thread-pool/BS_thread_pool.hpp"
+
+#include "subprojects/bzip2/bzlib.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,9 +20,6 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::thread_pool 
-{
-
+namespace Sen::Kernel::Subprojects::bzip2 {
 	
-
 }

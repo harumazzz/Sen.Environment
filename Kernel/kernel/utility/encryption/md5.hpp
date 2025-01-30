@@ -13,7 +13,7 @@ namespace Sen::Kernel::Encryption::MD5
 		const std::span<const byte> &message
 	) -> std::string
 	{
-		auto md5 = Dependencies::md5::MD5{ message };
+		auto md5 = Subprojects::md5::MD5{ message };
 		auto result = md5.toStr();
 		return result;
 	}

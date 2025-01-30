@@ -8,8 +8,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/SHA/SHA384.h"
-#include "dependencies/SHA/SHA512.h"
+#include "subprojects/SHA224CryptoServiceProvider/SHA224CryptoServiceProvider.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -18,15 +17,10 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::SHA {
+namespace Sen::Kernel::Subprojects::SHA224CryptoServiceProvider {
 
-	// using sha512
+	// using sha224 instead
 
-	using SHA512 = ::SHA512;
-
-	// using sha384
-
-	using SHA384 = ::SHA384;
-
+	using sha224 = ::SHA224CryptoServiceProvider;
 
 }

@@ -8,7 +8,9 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/SHA224CryptoServiceProvider/SHA224CryptoServiceProvider.h"
+#include "subprojects/libpng/png.h"
+#include "subprojects/libpng/pngstruct.h"
+#include "subprojects/libpng/pnginfo.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,10 +19,8 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::SHA224CryptoServiceProvider {
+namespace Sen::Kernel::Subprojects::libpng {
 
-	// using sha224 instead
-
-	using sha224 = ::SHA224CryptoServiceProvider;
+	// using third
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #if defined MSVC_COMPILER
 #pragma warning(push)
 #endif
@@ -8,7 +9,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/simdjson/simdjson.h"
+#include "subprojects/SHA256/SHA256.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,8 +18,11 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::simdjson {
+namespace Sen::Kernel::Subprojects::SHA256 {
 
-	// use third
+	// include deps
 
+	using SHA256 = ::SHA256;
+
+	
 }

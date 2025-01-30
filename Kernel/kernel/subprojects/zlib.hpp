@@ -7,7 +7,7 @@
 #pragma clang diagnostic push
 #endif
 
-#include "dependencies/mio/mio.hpp"
+#include "subprojects/zlib/zlib.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -16,7 +16,7 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::mio 
+namespace Sen::Kernel::Subprojects::zlib 
 {
 
 	

@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #if defined MSVC_COMPILER
 #pragma warning(push)
 #endif
@@ -10,8 +8,7 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-
-#include "dependencies/canvas_ity/canvas_ity.hpp"
+#include "subprojects/json/json.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -20,6 +17,11 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::canvas_ity {
+namespace Sen::Kernel::Subprojects::json 
+{
+
+	// the namespace of json library is nlohmann
 	
+	using namespace ::nlohmann;
+
 }

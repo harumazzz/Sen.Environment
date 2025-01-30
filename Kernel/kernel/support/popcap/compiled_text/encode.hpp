@@ -35,7 +35,11 @@ namespace Sen::Kernel::Support::PopCap::CompiledText {
 			decoded_base64.writeUint8(0x00);
 			decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.begin_pointer()), key, iv, buffer.size()));
 			auto encoded_base64 = DataStreamView{};
-			//encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
+			auto source_view = Uint8Array{decoded_base64.size()};
+			std::memcpy(source_view.data(), decoded_base64.value().data(), decoded_base64.size());
+			auto destination_view = Uint8Array{};
+			Base64::Encode::process(source_view, destination_view);
+			encoded_base64.fromString(std::string{reinterpret_cast<const char*>(destination_view.data()), destination_view.size()});
 			result.writeBytes(encoded_base64.getBytes(0, encoded_base64.size()));
 		}
 

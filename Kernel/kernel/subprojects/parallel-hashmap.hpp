@@ -1,15 +1,13 @@
 #pragma once
 
-
 #if defined MSVC_COMPILER
 #pragma warning(push)
 #endif
 #if defined CLANG_COMPILER
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/SHA256/SHA256.h"
+#include "subprojects/parallel-hashmap/phmap.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -18,11 +16,9 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::SHA256 {
-
-	// include deps
-
-	using SHA256 = ::SHA256;
-
+namespace Sen::Kernel::Subprojects::phmap {
 	
+	using namespace phmap;
+
 }
+

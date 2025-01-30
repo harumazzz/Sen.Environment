@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma once
+
 #if defined MSVC_COMPILER
 #pragma warning(push)
 #endif
@@ -8,7 +10,8 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-#include "dependencies/Rijndael/Rijndael.h"
+
+#include "subprojects/canvas_ity/canvas_ity.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -17,12 +20,6 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::Rijndael 
-{
-
-
-	// class Rijndael 
-	using CRijndael = ::CRijndael;
-
+namespace Sen::Kernel::Subprojects::canvas_ity {
 	
 }

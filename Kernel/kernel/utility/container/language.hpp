@@ -11,8 +11,8 @@
 #include <codecvt>
 #include <iostream>
 #include "kernel/utility/assert.hpp"
-#include "kernel/dependencies/fmt.hpp"
-#include "kernel/dependencies/json.hpp"
+#include "kernel/subprojects/fmt.hpp"
+#include "kernel/subprojects/json.hpp"
 
 namespace Sen::Kernel::Language
 {

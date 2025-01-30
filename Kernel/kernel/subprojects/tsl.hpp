@@ -10,8 +10,9 @@
 #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
 #endif
 
-
-#include "dependencies/bzip2/bzlib.h"
+#include "subprojects/tsl/include/tsl/ordered_hash.h"
+#include "subprojects/tsl/include/tsl/ordered_map.h"
+#include "subprojects/tsl/include/tsl/ordered_set.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -20,6 +21,6 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::bzip2 {
+namespace Sen::Kernel::Subprojects::tsl {
 	
 }

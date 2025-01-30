@@ -20,8 +20,8 @@
 #endif
 
 
-#include "dependencies/fmt/include/fmt/format.h"
-#include "dependencies/fmt/include/fmt/core.h"
+#include "subprojects/fmt/include/fmt/format.h"
+#include "subprojects/fmt/include/fmt/core.h"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -30,7 +30,7 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::fmt 
+namespace Sen::Kernel::Subprojects::fmt 
 {
 	
 	// the namespace of fmt library is fmt

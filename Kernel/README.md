@@ -25,7 +25,7 @@
 
 -   [Clang 19.1 for iPhone](https://llvm.org/)
 
-## Dependencies
+## Subprojects
 
 -   [quickjs](https://github.com/quickjs-ng/quickjs): JavaScript Engine used by `Kernel`
 

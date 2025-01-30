@@ -7,12 +7,7 @@
 #pragma clang diagnostic push
 #endif
 
-// Because MSVC have no official support for dirent
-#if defined MSVC_COMPILER
-#include "dependencies/dirent/dirent.h"
-#else
-#include <dirent.h>
-#endif
+#include "subprojects/thread-pool/BS_thread_pool.hpp"
 
 #if defined MSVC_COMPILER
 #pragma warning(pop)
@@ -21,7 +16,9 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Dependencies::dirent {
-	
-}
+namespace Sen::Kernel::Subprojects::thread_pool 
+{
 
+	
+
+}
