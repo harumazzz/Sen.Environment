@@ -8,7 +8,7 @@ namespace Sen::Kernel::Interface::API {
 	#pragma region proxy
 
 	template <typename Callable> requires std::is_invocable<Callable>::value
-	inline static auto proxy_wrapper(
+	inline auto proxy_wrapper(
 		JSContext* context,
 		std::string_view func_name,
 		Callable&& callable
@@ -33,7 +33,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Shell {
 
-		inline static auto is_gui (
+		inline auto is_gui (
 
 		) -> bool {
 			auto is_gui = std::unique_ptr<CStringView, StringFinalizer>(new CStringView{nullptr, 0}, finalizer<CStringView>);
@@ -44,7 +44,7 @@ namespace Sen::Kernel::Interface::API {
 			return result;
 		}
 		
-		inline static auto version (
+		inline auto version (
 
 		) -> int {
 			auto shell_version = std::unique_ptr<CStringView, StringFinalizer>(new CStringView{nullptr, 0}, finalizer<CStringView>);
@@ -55,7 +55,7 @@ namespace Sen::Kernel::Interface::API {
 			return result;
 		}
 
-		inline static auto callback(
+		inline auto callback(
 			JSContext* context,
 			JSValue& value
 		) -> JSValue {
@@ -72,19 +72,19 @@ namespace Sen::Kernel::Interface::API {
 
 	#pragma region information
 
-	inline static auto version(
+	inline auto version(
 
 	) -> int {
 		return Kernel::version;
 	}
 
-	inline static auto arguments(
+	inline auto arguments(
 		JSContext* context
 	) -> JSValue {
 		return JavaScript::to_array_of_string<CStringList, CStringView>(context, Executor::arguments);
 	}
 
-	inline static auto script(
+	inline auto script(
 
 	) -> std::string {
 		return String::to_posix_style(construct_string(Executor::script));
@@ -96,7 +96,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace JSON {
 
-		inline static auto deserialize(
+		inline auto deserialize(
 			JSContext* context,
 			std::string& source
 		) -> JSValue {
@@ -105,7 +105,7 @@ namespace Sen::Kernel::Interface::API {
 			return object;
 		}
 
-		inline static auto deserialize_fs(
+		inline auto deserialize_fs(
 			JSContext* context,
 			std::string& source
 		) -> JSValue {
@@ -114,7 +114,7 @@ namespace Sen::Kernel::Interface::API {
 			return object;
 		}
 
-		inline static auto serialize(
+		inline auto serialize(
 			JSContext* context,
 			JSValue& value,
 			int64_t& indent,
@@ -125,7 +125,7 @@ namespace Sen::Kernel::Interface::API {
 			return json.dump(indent, '\t', ensure_ascii);
 		}
 
-		inline static auto serialize_fs(
+		inline auto serialize_fs(
 			JSContext* context,
 			std::string& destination,
 			JSValue& value,
@@ -146,13 +146,13 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace FileSystem {
 
-		inline static auto read_file (
+		inline auto read_file (
 			std::string& source
 		) -> std::string {
 			return Kernel::FileSystem::read_file(source);
 		}
 
-		inline static auto read_file_encode_with_utf16le (
+		inline auto read_file_encode_with_utf16le (
 			std::string& source
 		) -> std::string
 		{
@@ -161,14 +161,14 @@ namespace Sen::Kernel::Interface::API {
 			return std::string{ converter.to_bytes(result) };
 		}
 
-		inline static auto write_file (
+		inline auto write_file (
 			std::string& destination,
 			std::string& data
 		) -> void {
 			return Kernel::FileSystem::write_file(destination, data);
 		}
 
-		inline static auto write_file_encode_with_utf16le (
+		inline auto write_file_encode_with_utf16le (
 			std::string& destination,
 			std::string& data
 		) -> void {
@@ -177,52 +177,52 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::FileSystem::write_file_by_utf16le(destination, result);
 		}
 
-		inline static auto read_current_directory (
+		inline auto read_current_directory (
 			std::string& source
 		) -> List<std::string> {
 			return Kernel::FileSystem::read_directory(source);
 		}
 
-		inline static auto read_directory_only_file(
+		inline auto read_directory_only_file(
 			std::string& source
 		) -> List<std::string> {
 			return Kernel::FileSystem::read_directory_only_file(source);
 		}
 
-		inline static auto read_directory_only_directory(
+		inline auto read_directory_only_directory(
 			std::string& source
 		) -> List<std::string> {
 			return Kernel::FileSystem::read_directory_only_directory(source);
 		}
 
-		inline static auto read_directory (
+		inline auto read_directory (
 			std::string& source
 		) -> List<std::string> {
 			return Kernel::FileSystem::read_whole_directory(source);
 		}
 
-		inline static auto create_directory(
+		inline auto create_directory(
 			std::string& destination
 		) -> void
 		{
 			return Kernel::FileSystem::create_directory(destination);
 		}
 
-		inline static auto is_file(
+		inline auto is_file(
 			std::string& source
 		) -> bool
 		{
 			return Kernel::FileSystem::is_file(source);
 		}
 
-		inline static auto is_directory(
+		inline auto is_directory(
 			std::string& source
 		) -> bool
 		{
 			return Kernel::FileSystem::is_directory(source);
 		}
 
-		inline static auto rename(
+		inline auto rename(
 			std::string& source,
 			std::string& destination
 		) -> void
@@ -230,7 +230,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::FileSystem::rename(source, destination);
 		}
 
-		inline static auto copy(
+		inline auto copy(
 			std::string& source,
 			std::string& destination
 		) -> void
@@ -238,7 +238,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::FileSystem::copy(source, destination);
 		}
 
-		inline static auto copy_directory(
+		inline auto copy_directory(
 			std::string& source,
 			std::string& destination
 		) -> void
@@ -246,14 +246,14 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::FileSystem::copy_directory(source, destination);
 		}
 
-		inline static auto remove(
+		inline auto remove(
 			std::string& source
 		) -> void
 		{
 			return Kernel::FileSystem::remove(source);
 		}
 
-		inline static auto remove_all(
+		inline auto remove_all(
 			std::string& source
 		) -> void
 		{
@@ -267,76 +267,76 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Path {
 
-		inline static auto join(
+		inline auto join(
 			List<std::string>& source
 		) -> std::string
 		{
 			return Kernel::Path::join(source);
 		}
 
-		inline static auto basename(
+		inline auto basename(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::basename(source);
 		}
 
-		inline static auto delimiter(
+		inline auto delimiter(
 		) -> std::string
 		{
 			return Kernel::Path::delimiter();
 		}
 
-		inline static auto dirname(
+		inline auto dirname(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::dirname(source);
 		}
 
-		inline static auto normalize(
+		inline auto normalize(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::normalize(source);
 		}
 
-		inline static auto base_without_extension(
+		inline auto base_without_extension(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::base_without_extension(source);
 		}
 
-		inline static auto except_extension(
+		inline auto except_extension(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::except_extension(source);
 		}
 
-		inline static auto resolve(
+		inline auto resolve(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::resolve(source);
 		}
 
-		inline static auto extname(
+		inline auto extname(
 			std::string& source
 		) -> std::string
 		{
 			return Kernel::Path::extname(source);
 		}
 
-		inline static auto is_absolute(
+		inline auto is_absolute(
 			std::string& source
 		) -> bool
 		{
 			return Kernel::Path::is_absolute(source);
 		}
 
-		inline static auto relative(
+		inline auto relative(
 			std::string& from,
 			std::string& to
 		) -> std::string
@@ -353,7 +353,7 @@ namespace Sen::Kernel::Interface::API {
 	namespace Console {
 
 
-		inline static auto print(
+		inline auto print(
 			List<std::string>& data
 		) -> void
 		{
@@ -381,7 +381,7 @@ namespace Sen::Kernel::Interface::API {
 			}
 		}
 
-		inline static auto readline(
+		inline auto readline(
 			JSContext* context
 		) -> JSValue
 		{
@@ -403,13 +403,13 @@ namespace Sen::Kernel::Interface::API {
 	
 	namespace Language {
 
-		inline static auto load_language (
+		inline auto load_language (
 			std::string& source
 		) -> void {
 			return Kernel::Language::read_language(source);
 		}
 
-		inline static auto get (
+		inline auto get (
 			std::string& key
 		) -> std::string {
 			return Kernel::Language::get(key);
@@ -422,28 +422,28 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Process {
 
-		inline static auto run(
+		inline auto run(
 			std::string& command
 		) -> void
 		{
 			return Kernel::Process::run(command);
 		}
 
-		inline static auto execute(
+		inline auto execute(
 			std::string& command
 		) -> std::string
 		{
 			return Kernel::Process::execute(command);
 		}
 
-		inline static auto is_exists_in_path_environment(
+		inline auto is_exists_in_path_environment(
 			std::string& source
 		) -> bool
 		{
 			return Kernel::Process::is_exists_in_path_environment(source);
 		}
 
-		inline static auto get_path_environment(
+		inline auto get_path_environment(
 			std::string& value
 		) -> std::string
 		{
@@ -457,14 +457,14 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Thread {
 
-		inline static auto sleep(
+		inline auto sleep(
 			int64_t& time
 		) -> void
 		{
 			return std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(time)));
 		}
 
-		inline static auto now(
+		inline auto now(
 		) -> double
 		{
 			return std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -477,7 +477,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace ArrayBuffer {
 
-		inline static auto random(
+		inline auto random(
 			std::shared_ptr<JavaScript::ArrayBuffer>& data
 		) -> void
 		{
@@ -497,7 +497,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace OperatingSystem {
 
-		inline static auto current(
+		inline auto current(
 		) -> std::string
 		{
 			#if WINDOWS
@@ -523,7 +523,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Image {
 
-		inline static auto resize_fs(
+		inline auto resize_fs(
 			std::string& source,
 			std::string& destination,
 			float& percentage
@@ -532,7 +532,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::ImageIO::resize_png(source, destination, percentage);
 		}
 
-		inline static auto open(
+		inline auto open(
 			std::string& source
 		) -> std::shared_ptr<JavaScript::ImageView>
 		{
@@ -552,7 +552,7 @@ namespace Sen::Kernel::Interface::API {
 			);
 		}
 
-		inline static auto write(
+		inline auto write(
 			std::string& destination,
 			std::shared_ptr<JavaScript::ImageView>& object
 		) -> void
@@ -562,7 +562,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::ImageIO::write_png(destination, image);
 		}
 
-		inline static auto join (
+		inline auto join (
 			std::shared_ptr<JavaScript::Dimension>& dimension,
 			List<std::shared_ptr<JavaScript::VImageView>>& images
 		) -> std::shared_ptr<JavaScript::ImageView>
@@ -591,7 +591,7 @@ namespace Sen::Kernel::Interface::API {
 			return destination;
 		}
 
-		inline static auto join_extend (
+		inline auto join_extend (
 			std::shared_ptr<JavaScript::Dimension>& dimension,
 			List<std::shared_ptr<JavaScript::VImageView>>& images
 		) -> std::shared_ptr<JavaScript::ImageView>
@@ -620,7 +620,7 @@ namespace Sen::Kernel::Interface::API {
 			return destination;
 		}
 
-		inline static auto cut_multiple_fs(
+		inline auto cut_multiple_fs(
 			std::string& source,
 			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
 		) -> void
@@ -628,7 +628,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::ImageIO::cut_pngs(source, positions);
 		}
 
-		inline static auto cut_multiple_fs_asynchronous(
+		inline auto cut_multiple_fs_asynchronous(
 			std::string& source,
 			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
 		) -> void
@@ -643,7 +643,7 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace JS {
 
-		inline static auto evaluate_fs(
+		inline auto evaluate_fs(
 			Pointer<JSContext> context,
 			std::string& source
 		) -> JSValue
@@ -668,7 +668,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace Uncompress {
 
-				inline static auto process(
+				inline auto process(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -688,7 +688,7 @@ namespace Sen::Kernel::Interface::API {
 
 		namespace Zlib {
 
-			inline static auto uncompress(
+			inline auto uncompress(
 				std::shared_ptr<JavaScript::ArrayBuffer>& source
 			) -> std::shared_ptr<JavaScript::ArrayBuffer>
 			{
@@ -714,7 +714,7 @@ namespace Sen::Kernel::Interface::API {
 
 		namespace Texture {
 
-			inline static auto decode_fs(
+			inline auto decode_fs(
 				std::string& source,
 				std::string& destination,
 				int64_t& width,
@@ -725,7 +725,7 @@ namespace Sen::Kernel::Interface::API {
 				return Kernel::Support::Texture::InvokeMethod::decode_fs(source, destination, static_cast<int>(width), static_cast<int>(height), static_cast<Kernel::Support::Texture::Format>(format));
 			}
 
-			inline static auto encode_fs(
+			inline auto encode_fs(
 				std::string& source,
 				std::string& destination,
 				int64_t& format
@@ -746,7 +746,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace DZip {
 
-				inline static auto unpack_fs(
+				inline auto unpack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -754,7 +754,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::Marmalade::DZip::Unpack::process_fs(source, destination);
 				}
 
-				inline static auto pack_fs(
+				inline auto pack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -778,7 +778,7 @@ namespace Sen::Kernel::Interface::API {
 			
 			namespace Package {
 
-				inline static auto unpack_fs(
+				inline auto unpack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -786,7 +786,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Package::Unpack::process_fs(source, destination);
 				}
 
-				inline static auto pack_fs(
+				inline auto pack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -802,7 +802,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace NewTypeObjectNotation {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -810,7 +810,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::NewTypeObjectNotation::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -826,7 +826,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace ReflectionObjectNotation {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -834,7 +834,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_fs(source, destination);
 				}
 
-				inline static auto decrypt_fs(
+				inline auto decrypt_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -844,7 +844,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::decrypt_fs(source, destination, key, iv);
 				}
 
-				inline static auto decrypt_and_decode_fs(
+				inline auto decrypt_and_decode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -854,7 +854,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::decrypt_and_decode_fs(source, destination, key, iv);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -862,7 +862,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_fs(source, destination);
 				}
 
-				inline static auto encrypt_fs(
+				inline auto encrypt_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -872,7 +872,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReflectionObjectNotation::Chinese::encrypt_fs(source, destination, key, iv);
 				}
 
-				inline static auto encode_and_encrypt_fs(
+				inline auto encode_and_encrypt_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -890,7 +890,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace Zlib {
 
-				inline static auto uncompress_fs(
+				inline auto uncompress_fs(
 					std::string& source,
 					std::string& destination,
 					bool use_64_bit_variant
@@ -904,7 +904,7 @@ namespace Sen::Kernel::Interface::API {
 					}
 				}
 
-				inline static auto compress_fs(
+				inline auto compress_fs(
 					std::string& source,
 					std::string& destination,
 					bool use_64_bit_variant
@@ -926,7 +926,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace CompiledText {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -937,7 +937,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::CompiledText::Decode::process_fs(source, destination, key, iv, use_64_bit_variant);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key,
@@ -956,7 +956,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace RenderEffects {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -964,7 +964,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::RenderEffects::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -980,7 +980,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace CryptData {
 
-				inline static auto decrypt_fs(
+				inline auto decrypt_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key
@@ -989,7 +989,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::CryptData::Decrypt::process_fs(source, destination, key);
 				}
 
-				inline static auto encrypt_fs(
+				inline auto encrypt_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& key
@@ -1007,7 +1007,7 @@ namespace Sen::Kernel::Interface::API {
 			namespace CharacterFontWidget2
 			{
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1015,7 +1015,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::CharacterFontWidget2::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1033,7 +1033,7 @@ namespace Sen::Kernel::Interface::API {
 			{
 				using Platform = Kernel::Support::PopCap::Particles::ParticlesPlatform;
 
-				inline static auto constexpr get_platform(
+				inline auto constexpr get_platform(
 					std::string_view platform
 				) -> Platform
 				{
@@ -1055,7 +1055,7 @@ namespace Sen::Kernel::Interface::API {
 						}
 				}
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1064,7 +1064,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Particles::Decode::process_fs(source, destination, get_platform(platform));
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1073,7 +1073,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Particles::Encode::process_fs(source, destination, get_platform(platform));
 				}
 
-				inline static auto to_xml(
+				inline auto to_xml(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1081,7 +1081,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Particles::ToXML::process_fs(source, destination);
 				}
 
-				inline static auto from_xml(
+				inline auto from_xml(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1098,7 +1098,7 @@ namespace Sen::Kernel::Interface::API {
 			namespace PlayerInfo
 			{
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1106,7 +1106,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::PlayerInfo::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1122,7 +1122,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace ResourceStreamBundle {
 
-				inline static auto unpack_fs(
+				inline auto unpack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1130,7 +1130,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamBundle::Unpack::process_fs(source, destination);
 				}
 
-				inline static auto pack_fs (
+				inline auto pack_fs (
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1138,7 +1138,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamBundle::Pack::process_fs(source, destination);
 				}
 
-				inline static auto unpack_cipher(
+				inline auto unpack_cipher(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1146,7 +1146,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
 				}
 
-				inline static auto unpack_resource(
+				inline auto unpack_resource(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1154,7 +1154,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous::UnpackCipher::process_fs(source, destination);
 				}
 
-				inline static auto pack_resource(
+				inline auto pack_resource(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1171,7 +1171,7 @@ namespace Sen::Kernel::Interface::API {
 			namespace ResourceStreamBundlePatch
 			{
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& before_file,
 					std::string& after_file,
 					std::string& patch_file
@@ -1180,7 +1180,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamBundlePatch::Encode::process_fs(before_file, after_file, patch_file);
 				}
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& before_file,
 					std::string& patch_file,
 					std::string& after_file
@@ -1198,7 +1198,7 @@ namespace Sen::Kernel::Interface::API {
 			namespace ResourceStreamGroup
 			{
 
-				inline static auto unpack_fs(
+				inline auto unpack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1206,7 +1206,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceStreamGroup::Unpack::process_fs(source, destination);
 				}
 
-				inline static auto pack_fs(
+				inline auto pack_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1221,7 +1221,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace Animation {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1229,7 +1229,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Animation::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1237,7 +1237,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::Animation::Encode::proces_fs(source, destination);
 				}
 
-				inline static auto to_flash (
+				inline auto to_flash (
 					std::string& source,
 					std::string& destination,
 					int64_t& resolution,
@@ -1252,7 +1252,7 @@ namespace Sen::Kernel::Interface::API {
 					}
 				}
 
-				inline static auto from_flash (
+				inline auto from_flash (
 					std::string& source,
 					std::string& destination,
 					bool use_label
@@ -1266,7 +1266,7 @@ namespace Sen::Kernel::Interface::API {
 					}
 				}
 
-				inline static auto decode_and_to_flash (
+				inline auto decode_and_to_flash (
 					std::string& source,
 					std::string& destination,
 					int64_t& resolution,
@@ -1281,7 +1281,7 @@ namespace Sen::Kernel::Interface::API {
 					}
 				}
 
-				inline static auto from_flash_and_encode (
+				inline auto from_flash_and_encode (
 					std::string& source,
 					std::string& destination,
 					bool use_label
@@ -1301,7 +1301,7 @@ namespace Sen::Kernel::Interface::API {
 
 				namespace Miscellaneous {
 
-					inline static auto resize_fs(
+					inline auto resize_fs(
 						std::string& source,
 						int64_t& resolution
 					) -> void
@@ -1315,7 +1315,7 @@ namespace Sen::Kernel::Interface::API {
 
 					using VDocument = Kernel::Support::PopCap::Animation::Miscellaneous::BasicDocument;
 
-					inline static auto dump_document(
+					inline auto dump_document(
 						JSContext* context,
 						std::string& source,
 						JSValue& destination
@@ -1330,7 +1330,7 @@ namespace Sen::Kernel::Interface::API {
 						value.define_property("action", JavaScript::to_value<List<std::string>>(context, doc.action));
 					}
 
-					inline static auto generate_document(
+					inline auto generate_document(
 						std::string& destination,
 						std::shared_ptr<VDocument>& document
 					) -> void
@@ -1338,7 +1338,7 @@ namespace Sen::Kernel::Interface::API {
 						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_document(destination, document.get());
 					}
 
-					inline static auto generate_image(
+					inline auto generate_image(
 						std::string& destination,
 						std::shared_ptr<VImage>& source
 					) -> void
@@ -1346,7 +1346,7 @@ namespace Sen::Kernel::Interface::API {
 						return Kernel::Support::PopCap::Animation::Miscellaneous::Generator::generate_image(destination, source.get());
 					}
 
-					inline static auto generate_sprite(
+					inline auto generate_sprite(
 						std::string& destination,
 						std::shared_ptr<VSprite>& source
 					) -> void
@@ -1367,7 +1367,7 @@ namespace Sen::Kernel::Interface::API {
 
 				using Platform = Kernel::Support::PopCap::ReAnimation::ReanimPlatform;
 
-				inline static auto constexpr exchange_platform(
+				inline auto constexpr exchange_platform(
 					std::string_view platform
 				) -> Platform
 				{
@@ -1389,7 +1389,7 @@ namespace Sen::Kernel::Interface::API {
 					}
 				}
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1398,7 +1398,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::Decode::process_fs(source, destination, exchange_platform(platform));
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1407,7 +1407,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::Encode::process_fs(source, destination, exchange_platform(platform));
 				}
 
-				inline static auto to_xml(
+				inline auto to_xml(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1415,7 +1415,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::ToXML::process_fs(source, destination);
 				}
 
-				inline static auto from_xml(
+				inline auto from_xml(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1423,7 +1423,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::FromXML::process_fs(source, destination);
 				}
 
-				inline static auto to_flash(
+				inline auto to_flash(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1431,7 +1431,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::Convert::ToFlash::process_fs(source, destination);
 				}
 
-				inline static auto from_flash(
+				inline auto from_flash(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1439,7 +1439,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ReAnimation::Convert::FromFlash::process_fs(source, destination);
 				}
 
-				inline static auto decode_and_to_flash(
+				inline auto decode_and_to_flash(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1449,7 +1449,7 @@ namespace Sen::Kernel::Interface::API {
 				}
 
 
-				inline static auto from_flash_and_encode(
+				inline auto from_flash_and_encode(
 					std::string& source,
 					std::string& destination,
 					std::string& platform
@@ -1468,7 +1468,7 @@ namespace Sen::Kernel::Interface::API {
 
 				using PathStyle = Kernel::Support::PopCap::ResourceGroup::PathStyle;
 
-				inline static auto split_fs(
+				inline auto split_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1476,7 +1476,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceGroup::Split::process_fs(source, destination);
 				}
 
-				inline static auto merge_fs(
+				inline auto merge_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1484,7 +1484,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResourceGroup::Merge::process_fs(source, destination);
 				}
 
-				inline static auto convert_fs(
+				inline auto convert_fs(
 					std::string& source,
 					std::string& destination,
 					int64_t& path_style
@@ -1510,7 +1510,7 @@ namespace Sen::Kernel::Interface::API {
 			namespace ResInfo
 			{
 
-				inline static auto split_fs(
+				inline auto split_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1518,7 +1518,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResInfo::Split::process_fs(source, destination);
 				}
 
-				inline static auto merge_fs(
+				inline auto merge_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1526,7 +1526,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::PopCap::ResInfo::Merge::process_fs(source, destination);
 				}
 
-				inline static auto convert_fs(
+				inline auto convert_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1549,7 +1549,7 @@ namespace Sen::Kernel::Interface::API {
 
 			namespace SoundBank {
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1557,7 +1557,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::WWise::SoundBank::Decode::process_fs(source, destination);
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination
 				) -> void
@@ -1565,7 +1565,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::WWise::SoundBank::Encode::process_fs(source, destination);
 				}
 
-				inline static auto hash(
+				inline auto hash(
 					std::string& value
 				) -> uint32_t
 				{
@@ -1591,14 +1591,14 @@ namespace Sen::Kernel::Interface::API {
 
 				using Setting = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Setting;
 
-				inline static auto check_scg_composite(
+				inline auto check_scg_composite(
 					std::string& source
 				) -> bool
 				{
 					return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Common::check_scg_composite(source);
 				}
 
-				inline static auto decode_fs(
+				inline auto decode_fs(
 					std::string& source,
 					std::string& destination,
 					std::shared_ptr<Setting>& setting
@@ -1607,7 +1607,7 @@ namespace Sen::Kernel::Interface::API {
 					return Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::Decode::process_fs(source, destination, setting.operator*());
 				}
 
-				inline static auto encode_fs(
+				inline auto encode_fs(
 					std::string& source,
 					std::string& destination,
 					std::shared_ptr<Setting>& setting
@@ -1626,7 +1626,7 @@ namespace Sen::Kernel::Interface::API {
 
 				using Setting = Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Setting;
 
-				inline static auto unpack_fs(
+				inline auto unpack_fs(
 					std::string& source,
 					std::string& destination,
 					std::shared_ptr<Setting>& setting
@@ -1635,7 +1635,7 @@ namespace Sen::Kernel::Interface::API {
 					Kernel::Support::Miscellaneous::Project::ResourceStreamBundle::Unpack::process_fs(source, destination, setting.operator*());
 				}
 
-				inline static auto pack_fs(
+				inline auto pack_fs(
 					std::string& source,
 					std::string& destination,
 					std::shared_ptr<Setting>& setting
@@ -1656,28 +1656,28 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Miscellaneous {
 
-		inline static auto cast_ArrayBuffer_to_JS_String(
+		inline auto cast_ArrayBuffer_to_JS_String(
 			std::shared_ptr<JavaScript::ArrayBuffer>& data
 		) -> std::string
 		{
 			return std::string{ reinterpret_cast<char*>(data->value), data->size};
 		}
 
-		inline static auto cast_movable_String_to_ArrayBuffer(
+		inline auto cast_movable_String_to_ArrayBuffer(
 			std::string& data
 		) -> std::shared_ptr<JavaScript::ArrayBuffer>
 		{
 			return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data.data()), data.size());
 		}
 
-		inline static auto copyArrayBuffer(
+		inline auto copyArrayBuffer(
 			std::shared_ptr<JavaScript::ArrayBuffer>& data
 		) -> std::shared_ptr<JavaScript::ArrayBuffer>
 		{
 			return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data->value), data->size);
 		}
 
-		inline static auto compareArrayBuffer(
+		inline auto compareArrayBuffer(
 			std::shared_ptr<JavaScript::ArrayBuffer>& source,
 			std::shared_ptr<JavaScript::ArrayBuffer>& destination
 		) -> bool
@@ -1695,7 +1695,7 @@ namespace Sen::Kernel::Interface::API {
 			return is_same;
 		}
 
-		inline static auto cast_ArrayBuffer_to_JS_WideString(
+		inline auto cast_ArrayBuffer_to_JS_WideString(
 			std::shared_ptr<JavaScript::ArrayBuffer>& source
 		) -> std::string
 		{
@@ -1704,7 +1704,7 @@ namespace Sen::Kernel::Interface::API {
 			return converter.to_bytes(utf16);
 		}
 
-		inline static auto to_apng(
+		inline auto to_apng(
 			List<std::string>& image_path_list,
 			std::string& destination,
 			std::shared_ptr<Kernel::Encoding::APNG::DefaultSetting>& setting
@@ -1713,7 +1713,7 @@ namespace Sen::Kernel::Interface::API {
 			return Kernel::Encoding::APNG::Writer::process_fs(image_path_list, destination, setting.get());
 		}
 
-		inline static auto make_copy(
+		inline auto make_copy(
 			JSContext* context,
 			JSValue& value
 		) -> JSValue

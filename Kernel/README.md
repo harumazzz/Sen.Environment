@@ -58,8 +58,6 @@
 
 -   [lzma](https://www.7-zip.org/sdk.html): lzma compress/uncompress
 
--   [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64): Base64 Encode/Decode
-
 -   [bzip2](https://sourceware.org/bzip2): Bzip2 Compress/Uncompress
 
 -   [avir](https://github.com/avaneev/avir): Image scaling algorithm

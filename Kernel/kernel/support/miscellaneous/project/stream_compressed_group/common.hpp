@@ -1074,10 +1074,13 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     .version = k_resource_content_information_version,
                     .information_string_size = static_cast<uint32_t>(content_data_string.size())};
                 subgroup_information.resource_content_information_offset = static_cast<uint32_t>(resource_packet_view_stored.write_pos);
-                auto compressed_data = Encryption::Base64::encode(content_data_string);
-                resource_content_information.information_compressed_size = static_cast<uint32_t>(compressed_data.size());
+                auto source_data = Uint8Array{content_data_string.size()};
+                std::memcpy(source_data.data(), content_data_string.data(), content_data_string.size());
+                auto destination_data = Uint8Array{};
+                Encryption::Base64::Encode::process(source_data, steal_reference<UCharacterArray>(destination_data));
+                resource_content_information.information_compressed_size = static_cast<uint32_t>(destination_data.size());
                 exchange_resouce_content_information(resource_content_information, resource_packet_view_stored);
-                resource_packet_view_stored.writeString(compressed_data);
+                resource_packet_view_stored.writeString(std::string{reinterpret_cast<const char*>(destination_data.data()), destination_data.size()});
                 exchange_padding_block(resource_packet_view_stored);
                 subgroup_information_list.emplace_back(subgroup_information);
             }
@@ -1154,9 +1157,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 assert_conditional(resource_content_information.magic == k_resource_content_information_magic_identifier, String::format(fmt::format("{}", Language::get("popcap.rsb.project.invalid_resource_content_magic")), std::to_string(resource_content_information.magic), std::to_string(k_resource_content_information_magic_identifier)), "exchange_stream_resource_group");
                 assert_conditional(resource_content_information.version == k_resource_content_information_version, String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 auto compressed_data = stream.readString(static_cast<size_t>(resource_content_information.information_compressed_size));
-                auto content_data_string = Encryption::Base64::decode(compressed_data);
-                assert_conditional(content_data_string.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
-                packet_subgroup.info = nlohmann::ordered_json::parse(content_data_string);
+                auto source_data = Uint8Array{compressed_data.size()};
+                std::memcpy(source_data.data(), compressed_data.data(), compressed_data.size());
+                auto content_data = Uint8Array{};
+                Encryption::Base64::Decode::process(steal_reference<UCharacterArray>(source_data), content_data);
+                assert_conditional(content_data.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
+                packet_subgroup.info = nlohmann::ordered_json::parse(std::string{reinterpret_cast<const char*>(content_data.data()), content_data.size()});
             }
             return;
         }

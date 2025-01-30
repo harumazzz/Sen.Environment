@@ -35,7 +35,7 @@ namespace Sen::Kernel::Support::PopCap::CompiledText {
 			decoded_base64.writeUint8(0x00);
 			decoded_base64.writeBytes(Rijndael::encrypt<std::uint64_t, Rijndael::Mode::CBC>(reinterpret_cast<char *>(buffer.begin_pointer()), key, iv, buffer.size()));
 			auto encoded_base64 = DataStreamView{};
-			encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
+			//encoded_base64.fromString(Base64::encode(decoded_base64.begin_pointer(), decoded_base64.size()));
 			result.writeBytes(encoded_base64.getBytes(0, encoded_base64.size()));
 		}
 

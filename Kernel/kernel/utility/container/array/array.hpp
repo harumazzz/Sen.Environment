@@ -30,6 +30,14 @@ namespace Sen::Kernel {
 			}
 
 			explicit CArray(
+				Pointer<T> const& source,
+				const Size& size
+			) : _size{size}, value{source}
+			{
+
+			}
+
+			explicit CArray(
 
 			) = default;
 
@@ -45,6 +53,34 @@ namespace Sen::Kernel {
 				return thiz.value;
 			}
 
+			auto rbegin(
+			) -> Pointer<T> {
+				return thiz.value + thiz._size - 1;
+			}
+
+			auto cbegin(
+			) -> Pointer<T> {
+				return thiz.value;
+			}
+
+			auto cend(
+			) -> Pointer<T> {
+				return thiz.value + thiz._size;
+			}
+
+			auto rend(
+			) -> Pointer<T> {
+				return thiz.value + thiz._size - 1;
+			}
+
+			auto release(
+			) -> Pointer<T> {
+				auto raw = thiz.value;
+				thiz.value = nullptr;
+				thiz._size = 0;
+				return raw;
+			}
+
 			auto end(
 			) -> Pointer<T> {
 				return thiz.value + thiz._size;
@@ -56,16 +92,19 @@ namespace Sen::Kernel {
 			{
 				if (thiz.value != nullptr) {
 					delete[] thiz.value;
-					thiz.value = new T[size];
-					thiz._size = size;
 				}
+				thiz.value = new T[size];
+				thiz._size = size;
 			}
 
 			~CArray(
 
 			)
 			{
-				delete[] value;
+				if (thiz.value != nullptr) {
+					delete[] value;
+					thiz.value = nullptr;
+				}
 			}
 
 			explicit CArray(
@@ -128,7 +167,7 @@ namespace Sen::Kernel {
 				const CArray& other
 			) -> bool const = delete;
 
-			auto size(
+			constexpr auto size(
 
 			) -> Size
 			{

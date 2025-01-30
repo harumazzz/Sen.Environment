@@ -347,7 +347,7 @@ namespace Sen::Kernel::FileSystem
 	template <typename T> requires CharacterBufferView<T> 
 	inline static auto read_binary(
 		std::string_view filepath
-	) -> List<T> const
+	) -> List<T>
 	{
 		#if WINDOWS
 		auto file = WindowsFileReader{String::utf8_to_utf16(fmt::format("\\\\?\\{}",
@@ -364,6 +364,7 @@ namespace Sen::Kernel::FileSystem
 		auto data = List<T>{};
 		data.reserve(size);
 		#if WINDOWS
+		data.resize(size);
 		auto bytes_read = DWORD{};
 		auto state = ReadFile(file.handle, data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
 		assert_conditional(static_cast<bool>(SUCCEEDED(state)), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");

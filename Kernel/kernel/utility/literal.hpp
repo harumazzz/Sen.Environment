@@ -1,15 +1,19 @@
 #pragma once
 
 namespace Sen::Kernel {
-	/**
-	 * Char literal
-	*/
 
 	inline constexpr auto operator "" _c(
 		char c
 	) -> char
 	{
 		return c;
+	}
+
+	inline constexpr auto operator "" _uc(
+		char c
+	) -> unsigned char
+	{
+		return static_cast<unsigned char>(c);
 	}
 
 	/**

@@ -1769,6 +1769,13 @@ namespace Sen::Kernel
             thiz.write_pos = 0_size;
             return;
         }
+
+        inline auto value (
+
+        ) -> List<uint8_t>&
+        {
+            return thiz.data;
+        }
     };
 
     using DataStreamView = Stream<false>;

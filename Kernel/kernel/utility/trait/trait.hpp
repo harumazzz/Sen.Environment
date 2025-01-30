@@ -160,4 +160,12 @@ namespace Sen::Kernel {
 		using key_type = Key;
 		using value_type = Value;
 	};
+
+	template <auto T>
+	struct TypeOf {
+		using type = decltype(T);
+	};
+
+	template <auto T>
+	using type_of = typename TypeOf<T>::type;
 }

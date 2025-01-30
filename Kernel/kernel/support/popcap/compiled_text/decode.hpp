@@ -13,8 +13,7 @@ namespace Sen::Kernel::Support::PopCap::CompiledText
 	template <auto UseVariant>
 	using Zlib = Sen::Kernel::Support::PopCap::Zlib::Uncompress<UseVariant>;
 
-	struct Decode
-	{
+	struct Decode {
 
 		constexpr explicit Decode(
 
@@ -33,7 +32,11 @@ namespace Sen::Kernel::Support::PopCap::CompiledText
 		) -> void
 		{
 			auto decoded_base64 = DataStreamView{};
-			decoded_base64.fromString(Base64::decode(source.toString()));
+			auto source_data = Uint8Array{source.size()};
+			std::memcpy(source_data.data(), source.value().data(), source.size());
+			auto destination_data = Uint8Array{};
+			Base64::Decode::process(steal_reference<UCharacterArray>(source_data), destination_data);
+			decoded_base64.fromString(std::string{reinterpret_cast<const char*>(destination_data.data()), destination_data.size()});
 			destination.append<unsigned char>(Zlib<UseVariant>::process(Rijndael::decrypt<std::uint64_t, Rijndael::Mode::CBC>(reinterpret_cast<char *>(decoded_base64.getBytes(0x02, decoded_base64.size()).data()), key, iv, decoded_base64.size() - 0x02)));
 			return;
 		}

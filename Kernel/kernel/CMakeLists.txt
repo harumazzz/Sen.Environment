@@ -48,10 +48,13 @@ add_library(
 	./utility/encryption/Rijndael.hpp
 	./utility/encryption/sha224.hpp
 	./utility/encryption/sha256.hpp
-	./utility/encryption/base64.hpp
 	./utility/encryption/xor.hpp
 	./utility/encryption/crc.hpp
 	./utility/encryption/fnv.hpp
+
+	./utility/encryption/base64/common.hpp
+	./utility/encryption/base64/encode.hpp
+	./utility/encryption/base64/decode.hpp
 
 	
 	./utility/platform/windows.hpp
@@ -73,6 +76,7 @@ add_library(
 	./utility/javascript/converter/xml.hpp
 	./utility/javascript/proxy.hpp
 	./utility/javascript/namespace_builder.hpp
+	
 
 	./dependencies/fmt.hpp
 	./dependencies/json.hpp
@@ -81,7 +85,6 @@ add_library(
 	./dependencies/SHA256.hpp
 	./dependencies/Rijndael.hpp
 	./dependencies/SHA224CryptoServiceProvider.hpp
-	./dependencies/cpp-base64.hpp
 	./dependencies/libpng.hpp
 	./dependencies/etc1.hpp
 	./dependencies/tinyxml2.hpp
@@ -276,7 +279,6 @@ target_link_libraries(
 	Rijndael
 	SHA224CryptoServiceProvider
 	SHA256
-	cpp-base64
 	libpng
 	etc1
 	tinyxml2
