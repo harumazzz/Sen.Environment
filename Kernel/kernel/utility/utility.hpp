@@ -12,6 +12,11 @@
 #include "kernel/utility/container/array/array.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
 
+
+#include "kernel/utility/container/list/common.hpp"
+#include "kernel/utility/container/list/list.hpp"
+#include "kernel/utility/container/list/byte_list.hpp"
+
 #include "kernel/utility/container/map/common.hpp"
 
 #include "kernel/utility/container/filesystem.hpp"

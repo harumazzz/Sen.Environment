@@ -29,6 +29,10 @@ add_library(
 	./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
+	./utility/container/list/common.hpp
+	./utility/container/list/list.hpp
+	./utility/container/list/byte_list.hpp
+
 	./utility/container/system.hpp
 	./utility/container/string/compile_string.hpp
 	./utility/container/string/basic_string.hpp

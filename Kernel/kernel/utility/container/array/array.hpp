@@ -7,7 +7,7 @@ namespace Sen::Kernel {
 	template <typename T>
 	class CArray {
 
-		private:
+		public:
 
 			using Size = std::size_t;
 
@@ -176,11 +176,33 @@ namespace Sen::Kernel {
 
 			auto clone (
 
-			) -> CArray<T>
+			) -> CArray
 			{
 				auto new_instance = new T[thiz._size];
-				std::memcpy(new_instance, thiz.value, thiz._size);
-				return CArray<T>{new_instance, thiz._size};
+				std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
+				return CArray{new_instance, thiz._size};
+			}
+
+			auto clear(
+
+			) -> void {
+				thiz._size = 0;
+				if (thiz.value != nullptr) {
+					delete[] thiz.value;
+					thiz.value = nullptr;
+				}
+			}
+
+			auto assign (
+				CArray& other
+			) -> void {
+				if (thiz.value != nullptr) {
+					delete[] thiz.value;
+				}
+				thiz.value = other.value;
+				thiz._size = other._size;
+				other.value = nullptr;
+				other._size = 0;
 			}
 	};
 

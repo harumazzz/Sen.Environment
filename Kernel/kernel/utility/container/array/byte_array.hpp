@@ -50,4 +50,6 @@ namespace Sen::Kernel {
 
 	using UCharacterArray = CArray<unsigned char>;
 
+    using ByteArray = Uint8Array;
+
 }

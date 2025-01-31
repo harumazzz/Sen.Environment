@@ -256,8 +256,8 @@ namespace Sen::Kernel {
 			return thiz._size;
 		}
 
-		constexpr auto max_size(
-		) const -> Size {
+		static constexpr auto max_size(
+		) -> Size {
 			return std::numeric_limits<Size>::max();
 		}
 

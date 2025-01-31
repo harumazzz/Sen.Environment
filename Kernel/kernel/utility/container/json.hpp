@@ -36,7 +36,4 @@ namespace Sen::Kernel {
 		}
 
 	};
-
-	template <typename T, typename U>
-	using Map = tsl::ordered_map<T, U>;
 }
