@@ -67,6 +67,10 @@ add_library(
 	./utility/compression/lzma.hpp
 	./utility/compression/bzip2.hpp
 
+	./utility/stream/base_stream.hpp
+	./utility/stream/read_stream.hpp
+	./utility/stream/write_stream.hpp
+
 	./utility/diff/vcdiff.hpp
 
 	./utility/javascript/common.hpp

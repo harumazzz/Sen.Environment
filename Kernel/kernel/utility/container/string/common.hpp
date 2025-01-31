@@ -41,7 +41,7 @@ namespace Sen::Kernel {
         return result;
     }
 
-    inline static auto split(
+    inline auto split(
         std::string_view str,
         std::string_view delimiter
     ) -> List<string>
@@ -58,7 +58,7 @@ namespace Sen::Kernel {
         return result;
     }
 
-    inline static auto join(
+    inline auto join(
         const List<string> &data,
         std::string_view delimiter
     ) -> std::string
@@ -125,7 +125,7 @@ namespace Sen::Kernel {
 
     template<typename... Args> requires (std::is_same<Args, std::string_view>::value && ...) or 
     (std::is_same<Args, std::string>::value && ...)
-    inline static auto format(
+    inline auto format(
         std::string str, 
         Args... args
     ) -> std::string

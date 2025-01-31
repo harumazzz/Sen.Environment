@@ -87,12 +87,13 @@ namespace Sen::Kernel {
 			}
 
 			constexpr auto release(
-			) -> Pointer<T> {
+			) -> std::tuple<Pointer<T>, Size> {
 				auto raw = thiz.value;
+				auto size = thiz._size;
 				thiz.value = nullptr;
 				thiz._size = 0_size;
 				thiz._capacity = 0_size;
-				return raw;
+				return std::make_tuple(raw, size);
 			}
 
 			constexpr auto end(
@@ -130,7 +131,7 @@ namespace Sen::Kernel {
 				const CList& other
 			) -> CList& = delete;
 
-			constexpr explicit CList(
+			constexpr CList(
 				CList&& other
 			) noexcept : value{ other.value }, _size{ other._size }, _capacity{other._capacity}
 			{
@@ -192,6 +193,14 @@ namespace Sen::Kernel {
 			{
 				return thiz._size;
 			}
+
+    	constexpr auto size(
+			const Size& new_size
+		) -> void
+		{
+			assert_conditional(new_size <= thiz._capacity, "Size must be smaller than current capacity", "size");
+			thiz._size = new_size;
+		}
 
 		    constexpr auto capacity(
 
@@ -290,7 +299,7 @@ namespace Sen::Kernel {
 				else {
 					static_assert(sizeof...(args) == 1, "Expected 1 argument only");
 					auto index = (std::forward<Args>(args), ...);
-					assert_conditional(index < _size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+					assert_conditional(index < _size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("pop", index));
 					std::memmove(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
 					--thiz._size;
 				}
@@ -300,7 +309,7 @@ namespace Sen::Kernel {
 				const Size& index,
 				T&& element
 			) -> void {
-				assert_conditional(index <= thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+				assert_conditional(index <= thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("insert", index));
 				if (thiz._size >= thiz._capacity) {
 					thiz.reallocate(_capacity * 2);
 				}

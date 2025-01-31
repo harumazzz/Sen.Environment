@@ -74,11 +74,12 @@ namespace Sen::Kernel {
 			}
 
 			constexpr auto release(
-			) -> Pointer<T> {
+			) -> std::tuple<Pointer<T>, Size> {
 				auto raw = thiz.value;
+				auto size = thiz._size;
 				thiz.value = nullptr;
 				thiz._size = 0;
-				return raw;
+				return std::make_tuple(raw, size);
 			}
 
 			constexpr auto end(
@@ -115,7 +116,7 @@ namespace Sen::Kernel {
 				const CArray& other
 			) -> CArray& = delete;
 
-			constexpr explicit CArray(
+			constexpr CArray(
 				CArray&& other
 			) noexcept : value{ other.value }, _size{ other._size }
 			{
