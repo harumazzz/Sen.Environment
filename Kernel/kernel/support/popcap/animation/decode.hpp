@@ -41,7 +41,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
             DataStreamView &stream,
             AnimationImage &value) -> void
         {
-            auto string_list = String{stream.readStringByUint16()}.split(vertical_bar);
+            auto string_list = split(stream.readStringByUint16(), vertical_bar);
             value.path = string_list[0];
             value.id = string_list[1];
             if (k_version >= 4_ui)

@@ -88,10 +88,10 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
                     {"id", key}
                 };
                 if constexpr (use_string_for_style) {
-                    resource["path"] = String::replaceAll(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle, ResourceGroup::Common::WindowStyle);
+                    resource["path"] = replace_all(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle, ResourceGroup::Common::WindowStyle);
                 }
                 else {
-                    resource["path"] = String::split(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle);
+                    resource["path"] = split(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle);
                 }
                 result["resources"].emplace_back(resource);
             }
@@ -124,10 +124,10 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
                     {"height", value["dimension"]["height"].get<int>()}
                 };
                 if constexpr (use_string_for_style) {
-                    resource["path"] = String::replaceAll(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle, ResourceGroup::Common::WindowStyle);
+                    resource["path"] = replace_all(value["path"].get<std::string>(), ResourceGroup::Common::PosixStyle, ResourceGroup::Common::WindowStyle);
                 }
                 else {
-                    resource["path"] = String::split(value["path"].get<std::string>(), Common::PosixStyle);
+                    resource["path"] = split(value["path"].get<std::string>(), Common::PosixStyle);
                 }
                 result["resources"].emplace_back(resource);
                 for (auto& [sub, sub_value] : value["data"].items()) {
@@ -138,10 +138,10 @@ namespace Sen::Kernel::Support::PopCap::ResInfo {
                         {"parent", key}
                     };
                     if constexpr (use_string_for_style) {
-                        sub_resource["path"] = String::replaceAll(sub_value["path"].get<std::string>(), Common::PosixStyle, ResourceGroup::Common::WindowStyle);
+                        sub_resource["path"] = replace_all(sub_value["path"].get<std::string>(), Common::PosixStyle, ResourceGroup::Common::WindowStyle);
                     }
                     else {
-                        sub_resource["path"] = String::split(sub_value["path"].get<std::string>(), Common::PosixStyle);
+                        sub_resource["path"] = split(sub_value["path"].get<std::string>(), Common::PosixStyle);
                     }
                     if (sub_value["default"].find("x") != sub_value["default"].end() && sub_value["default"]["x"].get<int>() != ResourceGroup::Common::DefaultCoordinateOffset) {
                         sub_resource["x"] = sub_value["default"]["x"].get<int>();

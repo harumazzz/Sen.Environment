@@ -166,7 +166,7 @@ namespace Sen::Kernel::Encoding::JSON {
                         }
                     }
                 }
-                assert_conditional(state == 0_byte, String::format(fmt::format("{}", Language::get("json_writer.incomplete_utf8_string")), std::to_string(output.at(output.size() - 1))), "write_escape_string");
+                assert_conditional(state == 0_byte, format(fmt::format("{}", Language::get("json_writer.incomplete_utf8_string")), std::to_string(output.at(output.size() - 1))), "write_escape_string");
                 return;
             }
 

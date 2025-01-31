@@ -1226,7 +1226,7 @@ namespace Sen::Kernel::Support::PopCap::PlayerInfo
                 }
                 default:
                 {
-                    assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.player_info.invalid_achievement_id")), std::to_string(static_cast<std::uint8_t>(achivement_id))), "exchange_challenge");
+                    assert_conditional(false, format(fmt::format("{}", Language::get("popcap.player_info.invalid_achievement_id")), std::to_string(static_cast<std::uint8_t>(achivement_id))), "exchange_challenge");
                 }
                 }
             }

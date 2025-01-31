@@ -3236,7 +3236,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             {
                 static_assert(std::is_enum<ReturnType>::value, "Return type must be enumeration type");
                 auto type = std::string_view{std::to_string(data)};
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("miscellaneous.shared.failed_cast_enum_index")), type, magic_enum::enum_type_name<ReturnType>()), "exchange_enumeration");
+                assert_conditional(false, format(fmt::format("{}", Language::get("miscellaneous.shared.failed_cast_enum_index")), type, magic_enum::enum_type_name<ReturnType>()), "exchange_enumeration");
             }
         }
 

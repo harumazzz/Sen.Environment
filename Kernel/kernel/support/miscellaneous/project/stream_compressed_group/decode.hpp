@@ -112,7 +112,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         definition.category.format = packet_info.additional.format;
                         for (auto &[resource_path, resource_data] : packet_value.resource_data_section_view_stored)
                         {
-                            if (compare_string(String::to_posix_style(resource_path), fmt::format("{}.ptx", packet_info.path)))
+                            if (compare_string(to_posix_style(resource_path), fmt::format("{}.ptx", packet_info.path)))
                             {
                                 image_info.path = fmt::format("atlases/{}", image_id_index);
                                 for (auto &[data_id, data_value] : image_info.data)
@@ -170,7 +170,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         {
                             for (auto &[resource_path, resource_data] : packet_value.resource_data_section_view_stored)
                             {
-                                if (compare_string(String::to_posix_style(resource_path), data_value.path))
+                                if (compare_string(to_posix_style(resource_path), data_value.path))
                                 {
                                     resource_information.path = resource_information.type == DataType::PopAnim ? exchange_animation_path(data_value.path) : data_value.path;
                                     trim_string(resource_information.path);
@@ -206,10 +206,10 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             trim_string(data_info.path);
             auto extension = Kernel::Path::getExtension(data_info.path);
-            assert_conditional(data_info.type == DataType::PopAnim, String::format(fmt::format("{}", Language::get("project.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
-            assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), data_info.path), "exchange_animation");
+            assert_conditional(data_info.type == DataType::PopAnim, format(fmt::format("{}", Language::get("project.scg.must_be_popanim_type")), data_info.path), "exchange_animation");
+            assert_conditional(compare_string(extension, ".pam"_sv), format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), data_info.path), "exchange_animation");
             auto stream = DataStreamView{resource_data};
-            assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), data_info.path), "exchange_animation");
+            assert_conditional(try_fix_popanim(stream), format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), data_info.path), "exchange_animation");
             auto animation = Sen::Kernel::Support::PopCap::Animation::SexyAnimation{};
             Sen::Kernel::Support::PopCap::Animation::Decode::process_whole(stream, animation);
             data_info.path = exchange_animation_path(data_info.path);
@@ -303,7 +303,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         definition.category.format = packet_info.additional.format;
                         for (auto &[resource_path, resource_data] : packet_value.resource_data_section_view_stored)
                         {
-                            if (compare_string(String::to_posix_style(resource_path), fmt::format("{}.ptx", packet_info.path)))
+                            if (compare_string(to_posix_style(resource_path), fmt::format("{}.ptx", packet_info.path)))
                             {
                                 auto image = Sen::Kernel::Support::Texture::InvokeMethod::decode_whole(resource_data, packet_info.dimension.width, packet_info.dimension.height, exchange_image_format(definition.texture_format_category, packet_info.additional.format));
                                 exchange_image_split(texture_sprite_view_stored, image, subgroup_id, packet_info);
@@ -340,7 +340,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         {
                             for (auto &[resource_path, resource_data] : packet_value.resource_data_section_view_stored)
                             {
-                                if (compare_string(String::to_posix_style(resource_path), data_value.path))
+                                if (compare_string(to_posix_style(resource_path), data_value.path))
                                 {
                                     switch (data_value.type)
                                     {
@@ -464,7 +464,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 case DataType::Data:
                 {
                     using Writer = Encoding::JSON::IndentWriter;
-                    assert_conditional(compare_string(extension, ".rton"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_rton_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".rton"_sv), format(fmt::format("{}", Language::get("project.scg.must_be_rton_file")), resource_information.path), "decode_popcap_file");
                     auto writer = Writer{};
                     auto stream = DataStreamView{resource_data};
                     Sen::Kernel::Support::PopCap::ReflectionObjectNotation::Decode::process_whole(stream, writer);
@@ -475,7 +475,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 case DataType::SoundBank:
                 case DataType::DecodedSoundBank:
                 {
-                    assert_conditional(compare_string(extension, ".bnk"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_bnk_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".bnk"_sv), format(fmt::format("{}", Language::get("project.scg.must_be_bnk_file")), resource_information.path), "decode_popcap_file");
                     auto stream = DataStreamView{resource_data};
                     exchange_path(resource_information.path, ".bnk"_sv, ""_sv);
                     auto soundbank_definition = Sen::Kernel::Support::WWise::SoundBank::SoundBankInformation{};
@@ -486,9 +486,9 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
                 case DataType::PopAnim:
                 {
-                    assert_conditional(compare_string(extension, ".pam"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(compare_string(extension, ".pam"_sv), format(fmt::format("{}", Language::get("project.scg.must_be_pam_file")), resource_information.path), "decode_popcap_file");
                     auto stream = DataStreamView{resource_data};
-                    assert_conditional(try_fix_popanim(stream), String::format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), resource_information.path), "decode_popcap_file");
+                    assert_conditional(try_fix_popanim(stream), format(fmt::format("{}", Language::get("project.scg.pam_is_corrupted")), resource_information.path), "decode_popcap_file");
                     auto animation = Sen::Kernel::Support::PopCap::Animation::SexyAnimation{};
                     Sen::Kernel::Support::PopCap::Animation::Decode::process_whole(stream, animation);
                     exchange_path(resource_information.path, ""_sv, ".json"_sv);
@@ -536,7 +536,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     {
                         for (auto &[resource_path, resource_data] : packet_value.resource_data_section_view_stored)
                         {
-                            if (compare_string(String::to_posix_style(resource_path), data_value.path))
+                            if (compare_string(to_posix_style(resource_path), data_value.path))
                             {
                                 switch (setting.decode_method)
                                 {

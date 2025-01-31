@@ -82,7 +82,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                     return TextureInformationVersion::SectionVersion2;
                 }
                 default: {
-                    assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_information_section_size")), std::to_string(texture_information_section_size)), "exchange_texture_information_version");
+                    assert_conditional(false, format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_information_section_size")), std::to_string(texture_information_section_size)), "exchange_texture_information_version");
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                     return k_texture_resource_information_section_block_size_version_2;
                 }
                 default: {
-                    assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.rsb.popcap.rsb.texture_information_version")), std::to_string(static_cast<int>(texture_information_version))), "exchange_texture_information_version");
+                    assert_conditional(false, format(fmt::format("{}", Language::get("popcap.rsb.popcap.rsb.texture_information_version")), std::to_string(static_cast<int>(texture_information_version))), "exchange_texture_information_version");
                 }
             }
         }
@@ -733,7 +733,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             std::string_view localization
         ) -> void
         {
-            assert_conditional(value1 == value2, String::format(fmt::format("{}", Language::get(localization)), where, std::to_string(value1), std::to_string(value2)), "compare_conditional");
+            assert_conditional(value1 == value2, format(fmt::format("{}", Language::get(localization)), where, std::to_string(value1), std::to_string(value2)), "compare_conditional");
             return;
         }
     };

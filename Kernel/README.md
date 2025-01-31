@@ -46,12 +46,6 @@
 -   [open_vcdiff](https://github.com/google/open-vcdiff): Diff two file and generate the different
     after compare
 
--   [SHA](https://github.com/pr0f3ss/SHA): SHA-384, SHA-512 Hash
-
--   [SHA256](https://github.com/System-Glitch/SHA256): Sha-256 Hash
-
--   [SHA224CryptoServiceProvider](https://github.com/redduxi/SHA-224): SHA-224 Hash
-
 -   [Rijndael](#): Rijndael encrypt/decrypt
 
 -   [zip](https://github.com/kuba--/zip): zip compress/uncompress
@@ -83,7 +77,6 @@
 
 -   All the modification has been made:
 
-|                           Library                           |               Modification                |
-| :---------------------------------------------------------: | :---------------------------------------: |
-|              [simdjson](https://simdjson.org)               | Fix issues with opening Unicode file path |
-| [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main) |  Fix some issues when assigning JS class  |
+|                           Library                           |              Modification               |
+| :---------------------------------------------------------: | :-------------------------------------: |
+| [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main) | Fix some issues when assigning JS class |

@@ -2,7 +2,7 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/assert.hpp"
-#include "kernel/utility/container/string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 
 namespace Sen::Kernel {
 
@@ -22,7 +22,7 @@ namespace Sen::Kernel {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr          
                 );
-                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileWriter");
+                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(utf16_to_utf8(path))), "WindowsFileWriter");
             }
 
             ~WindowsFileWriter() {
@@ -65,7 +65,7 @@ namespace Sen::Kernel {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr          
                 );
-                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(String::utf16_to_utf8(path))), "WindowsFileReader");
+                assert_conditional(handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(utf16_to_utf8(path))), "WindowsFileReader");
             }
 
             ~WindowsFileReader() {

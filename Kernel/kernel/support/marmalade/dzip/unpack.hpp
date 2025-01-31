@@ -50,7 +50,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
             for (auto resource_index : Range(information_structure.resource_information.size())) {
                 auto & resource_information_structure = information_structure.resource_information[resource_index];
                 auto & resource_definition = definition.resource[resource_index];
-                resource_definition.path = String::to_posix_style(fmt::format("{}/{}", information_structure.resource_directory[static_cast<size_t>(resource_information_structure.directory_index)], information_structure.resource_file[resource_index]));
+                resource_definition.path = to_posix_style(fmt::format("{}/{}", information_structure.resource_directory[static_cast<size_t>(resource_information_structure.directory_index)], information_structure.resource_file[resource_index]));
                 resource_definition.chunk.resize(resource_information_structure.chunk_index.size());
                 auto chunk_data_list = List<List<uint8_t>>{resource_information_structure.chunk_index.size()};
                 for (auto chunk_index : Range(resource_information_structure.chunk_index.size())) {
@@ -76,7 +76,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::zlib)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
                         chunk_ok = true;
-                        assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
+                        assert_conditional(chunk_size_compressed == chunk_data.size(), format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::zlib;
                         stream.read_pos += 10_size;
                         chunk_data = Compression::Zlib::uncompress_deflate(stream.readBytes(chunk_size_compressed - 10_size));
@@ -84,7 +84,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::bzip2)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
                         chunk_ok = true;
-                        assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
+                        assert_conditional(chunk_size_compressed == chunk_data.size(), format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::bzip2;
                         auto chunk_stream = DataStreamView{};
                         chunk_data = Compression::Bzip2::uncompress(stream.readBytes(chunk_size_compressed));
@@ -102,13 +102,13 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::zerod_out)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
                         chunk_ok = true;
-                        assert_conditional(chunk_size_compressed == k_none_size, String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
+                        assert_conditional(chunk_size_compressed == k_none_size, format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::zerod_out;
                     }
                     if (chunk_flag.test(ChunkFlag::copy_coded)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
                         chunk_ok = true;
-                        assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
+                        assert_conditional(chunk_size_compressed == chunk_data.size(), format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::copy_coded;
                         auto chunk_stream = DataStreamView{};
                         chunk_data = stream.readBytes(chunk_size_compressed);
@@ -116,7 +116,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                     if (chunk_flag.test(ChunkFlag::lzma)) {
                         assert_conditional(!chunk_ok, fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_test")), "process_package");
                         chunk_ok = true;
-                        assert_conditional(chunk_size_compressed == chunk_data.size(), String::format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
+                        assert_conditional(chunk_size_compressed == chunk_data.size(), format(fmt::format("{}", Language::get("marmalade.dzip.invalid_chunk_size")), std::to_string(chunk_size_compressed), std::to_string(chunk_data.size())), "process_package");
                         chunk_definition.flag = ChunkFlagEnum::lzma;
                         auto chunk_stream = DataStreamView{};
                         chunk_data = Compression::Lzma::uncompress<false>(stream.readBytes(chunk_size_compressed));

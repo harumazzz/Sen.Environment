@@ -24,7 +24,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             exchange_header(stream, information_structure_header);
             assert_conditional(information_structure_header.magic == k_magic_identifier, fmt::format("{}", Language::get("popcap.rsg.unpack.invalid_rsg_magic")), "process_package"); 
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(information_structure_header.version));
-            assert_conditional((index != k_version_list.end()),  String::format(fmt::format("{}", Language::get("popcap.rsg.invalid_version")), std::to_string(static_cast<int>(information_structure_header.version))), "process"); 
+            assert_conditional((index != k_version_list.end()),  format(fmt::format("{}", Language::get("popcap.rsg.invalid_version")), std::to_string(static_cast<int>(information_structure_header.version))), "process"); 
             definition.version = information_structure_header.version;
             auto resource_information_structure = std::map<std::string, ResourceInformation>{};
             CompiledMapData::decode(stream, information_structure_header.resource_information_section_offset, information_structure_header.resource_information_section_size, resource_information_structure, &exchange_to_resource_infomation);
@@ -75,7 +75,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             for (auto &[resource_path, resource_information] : resource_information_structure)
             {
                 auto resource_info = Resource{
-                    .path = String::to_posix_style(resource_path)};
+                    .path = to_posix_style(resource_path)};
                 auto resource_type_string = k_general_type_string;
                 if (resource_information.read_texture_additional)
                 {

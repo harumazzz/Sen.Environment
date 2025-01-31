@@ -40,7 +40,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					if constexpr (use_string_for_style) {
 						child = {
 							{"type", (*element)["type"].get<std::string>()},
-							{"path", String::replaceAll((*element)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)},
+							{"path", replace_all((*element)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)},
 							{"default", {
 								{"ax", (*element)["ax"].get<int>()},
 								{"ay", (*element)["ay"].get<int>()},
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					} else {
 						child = {
 							{"type", (*element)["type"].get<std::string>()},
-							{"path", String::join((*element)["path"].get<List<std::string>>(), Common::PosixStyle)},
+							{"path", join((*element)["path"].get<List<std::string>>(), Common::PosixStyle)},
 							{"default", {
 								{"ax", (*element)["ax"].get<int>()},
 								{"ay", (*element)["ay"].get<int>()},
@@ -90,8 +90,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 					auto atlas_data = nlohmann::ordered_json{
 						{"type", (*parent)["type"].get<std::string>()},
 						{"path", use_string_for_style
-									? String::replaceAll((*parent)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)
-									: String::join((*parent)["path"].get<List<std::string>>(), Common::PosixStyle)},
+									? replace_all((*parent)["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)
+									: join((*parent)["path"].get<List<std::string>>(), Common::PosixStyle)},
 						{"dimension", {
 							{"width", (*parent)["width"].get<int>()},
 							{"height", (*parent)["height"].get<int>()}
@@ -110,12 +110,12 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 				if constexpr (use_string_for_style) {
 					return {
 						{"type", element["type"].get<std::string>()},
-						{"path", String::replaceAll(element["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)}
+						{"path", replace_all(element["path"].get<std::string>(), Common::WindowStyle, Common::PosixStyle)}
 					};
 				} else {
 					return {
 						{"type", element["type"].get<std::string>()},
-						{"path", String::join(element["path"].get<List<std::string>>(), Common::PosixStyle)}
+						{"path", join(element["path"].get<List<std::string>>(), Common::PosixStyle)}
 					};
 				}
 			}
@@ -145,7 +145,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 						return element;
 					}
 				}
-				assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.resource_group.convert.cannot_find_id")), id), "first_where");
+				assert_conditional(false, format(fmt::format("{}", Language::get("popcap.resource_group.convert.cannot_find_id")), id), "first_where");
 			}
 
 		public:

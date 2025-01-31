@@ -5,7 +5,7 @@
 #include "kernel/utility/macro.hpp"
 #include "kernel/utility/container/array/array.hpp"
 #include "kernel/utility/container/buffer.hpp"
-#include "kernel/utility/container/string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 #include "kernel/utility/encryption/crc.hpp"
 
 namespace Sen::Kernel::Encoding::APNG {

@@ -92,7 +92,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 		) -> void {
 			auto subgroups_count = is_null_object(group, "subgroups") ? 0x00 : group["subgroups"].size();
 			auto resources_count = is_null_object(group, "resources") ? 0x00 : group["resources"].size();
-			stream.writeInt32(is_null_object(group, "res") ? 0x00 : Converter::to_int32(group["res"].get<std::string>(),String::format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")),group["res"].get<std::string>())));
+			stream.writeInt32(is_null_object(group, "res") ? 0x00 : Converter::to_int32(group["res"].get<std::string>(),format(fmt::format("{}", Language::get("popcap.newton.invalid_res_type")),group["res"].get<std::string>())));
 			stream.writeInt32(subgroups_count);
 			stream.writeInt32(resources_count);
 			stream.writeUint8(0x01);
@@ -117,7 +117,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 			for (auto& subgroup : group["subgroups"]) {
 				stream.writeInt32(is_null_object(subgroup, "res") ? 0x00 : Converter::to_int32(
 					subgroup["res"].get<std::string>(),
-					String::format(
+					format(
 						fmt::format("{}", Language::get("popcap.newton.invalid_res_type")),
 						subgroup["res"].get<std::string>()
 					)

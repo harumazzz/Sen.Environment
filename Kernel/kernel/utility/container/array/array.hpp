@@ -16,15 +16,15 @@ namespace Sen::Kernel {
 
 		protected:
 
-			Size _size{0};
-
 			Pointer<T> value{ nullptr };
+
+			Size _size{0};
 
 		public:
 
 			constexpr explicit CArray(
 				const Size& size
-			) : _size{size}, value{new T[size]}
+			) : value{new T[size]}, _size{size}
 			{
 
 			}
@@ -32,7 +32,7 @@ namespace Sen::Kernel {
 			constexpr explicit CArray(
 				Pointer<T> const& source,
 				const Size& size
-			) : _size{size}, value{source}
+			) : value{source}, _size{size}
 			{
 
 			}
@@ -117,7 +117,7 @@ namespace Sen::Kernel {
 
 			constexpr explicit CArray(
 				CArray&& other
-			) noexcept : _size{ other._size }, value{ other.value }
+			) noexcept : value{ other.value }, _size{ other._size }
 			{
 				other.value = nullptr;
 				other._size = 0;
@@ -128,12 +128,12 @@ namespace Sen::Kernel {
 			) noexcept -> CArray& {
 				if (this != &other) {
 					delete[] value;
-					_size = other._size;
-					value = other.value;
+					thiz._size = other._size;
+					thiz.value = other.value;
 					other.value = nullptr;
 					other._size = 0;
 				}
-				return *this;
+				return thiz;
 			}
 
 			constexpr auto operator [](
@@ -172,6 +172,15 @@ namespace Sen::Kernel {
 			) -> Size
 			{
 				return thiz._size;
+			}
+
+			auto clone (
+
+			) -> CArray<T>
+			{
+				auto new_instance = new T[thiz._size];
+				std::memcpy(new_instance, thiz.value, thiz._size);
+				return CArray<T>{new_instance, thiz._size};
 			}
 	};
 

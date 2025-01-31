@@ -15,7 +15,6 @@ add_library(
 	./utility/assert.hpp
 	./utility/utility.hpp
 	./utility/container/filesystem.hpp
-	./utility/container/string.hpp
 
 	./utility/converter/common.hpp
 	./utility/converter/converter.hpp
@@ -46,9 +45,6 @@ add_library(
 
 	./utility/encryption/md5.hpp
 	./utility/encryption/Rijndael.hpp
-	./utility/encryption/sha224.hpp
-	./utility/encryption/sha256.hpp
-	./utility/encryption/xor.hpp
 	./utility/encryption/crc.hpp
 	./utility/encryption/fnv.hpp
 
@@ -82,13 +78,10 @@ add_library(
 	./subprojects/json.hpp
 	./subprojects/md5.hpp
 	./subprojects/zlib.hpp
-	./subprojects/SHA256.hpp
 	./subprojects/Rijndael.hpp
-	./subprojects/SHA224CryptoServiceProvider.hpp
 	./subprojects/libpng.hpp
 	./subprojects/etc1.hpp
 	./subprojects/tinyxml2.hpp
-	./subprojects/SHA.hpp
 	./subprojects/lzma.hpp
 	./subprojects/avir.hpp
 	./subprojects/open_vcdiff.hpp
@@ -219,6 +212,9 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
+		utility/container/string/compile_string.hpp
+		utility/container/string/basic_string.hpp
+		utility/container/string/common.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/subprojects/fmt)
@@ -277,12 +273,9 @@ target_link_libraries(
 	json
 	fmt
 	Rijndael
-	SHA224CryptoServiceProvider
-	SHA256
 	libpng
 	etc1
 	tinyxml2
-	SHA
 	lzma
 	avir
 	open_vcdiff

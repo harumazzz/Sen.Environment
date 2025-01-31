@@ -3,7 +3,7 @@
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/assert.hpp"
 #include "kernel/utility/platform/windows.hpp"
-#include "kernel/utility/container/string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 #include "kernel/utility/container/path.hpp"
 #include "kernel/utility/trait/trait.hpp"
 
@@ -30,14 +30,14 @@ namespace Sen::Kernel::FileSystem
 	) -> std::string 
 	{
 		#if WINDOWS
-		auto file = std::ifstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data());
+		auto file = std::ifstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
+			to_windows_style(source.data()))).data());
 		#else
 		auto file = std::ifstream(source.data());
 		#endif
         if (!file.is_open()) {
 			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_file");
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), std::source_location::current(), "read_file");
 			#else
 			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_file");
 			#endif
@@ -57,7 +57,7 @@ namespace Sen::Kernel::FileSystem
 			}
 		};
 		#if WINDOWS
-		auto wide_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data())));
+		auto wide_path = utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(source.data())));
 		auto file = WindowsFileReader{ wide_path };
 		#else
 		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(std::fopen(std::string(source.data()).data(), "rb"), file_deleter);
@@ -76,11 +76,11 @@ namespace Sen::Kernel::FileSystem
 		#if WINDOWS
 		auto bytes_read = DWORD{ 0 };
 		auto state = ReadFile(file.handle, content.data(), static_cast<DWORD>(file_size), &bytes_read, nullptr);
-		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
-		assert_conditional(bytes_read == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
+		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
+		assert_conditional(bytes_read == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
 		#else
 		auto count = std::fread(content.data(), 1, file_size, file.get());
-		assert_conditional(count == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), "read_quick_file");
+		assert_conditional(count == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), "read_quick_file");
 		#endif
 		return content;
 	}
@@ -90,13 +90,13 @@ namespace Sen::Kernel::FileSystem
 	) -> nlohmann::ordered_json
 	{
 		#if WINDOWS
-		auto file = std::ifstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data(), std::ios::binary);
+		auto file = std::ifstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
+			to_windows_style(source.data()))).data(), std::ios::binary);
 		#else
 		auto file = std::ifstream(source.data(), std::ios::binary);
 		#endif
 		#if WINDOWS
-		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), "read_json");
+		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), "read_json");
 		#else
 		assert_conditional(file.is_open(), fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), "read_json");
 		#endif
@@ -111,13 +111,13 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(filepath.data()))).data(), L"w"), close_file);
+				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(filepath.data()))).data(), L"w"), close_file);
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		if (file == nullptr) {
 			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(filepath.data())), std::source_location::current(), "write_json");
+			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(filepath.data())), std::source_location::current(), "write_json");
 			#else
 			throw Exception(fmt::format("{}: {}", Language::get("write_file_error"), std::string{filepath.data(), filepath.size()}), std::source_location::current(), "write_json");
 			#endif
@@ -138,13 +138,13 @@ namespace Sen::Kernel::FileSystem
 				#if !defined MSVC_COMPILER
 						static_assert(false, "msvc compiler is required on windows");
 				#endif
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-					String::to_windows_style(filepath.data()))).data(), L"w"), close_file);
+				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(utf8_to_utf16(fmt::format("\\\\?\\{}",
+					to_windows_style(filepath.data()))).data(), L"w"), close_file);
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		#if WINDOWS
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
 		#else
 		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
 		#endif
@@ -163,13 +163,13 @@ namespace Sen::Kernel::FileSystem
 				#if !defined MSVC_COMPILER
 						static_assert(false, "msvc compiler is required on windows");
 				#endif
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-					String::to_windows_style(filepath.data()))).data(), L"w"), close_file);
+				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(utf8_to_utf16(fmt::format("\\\\?\\{}",
+					to_windows_style(filepath.data()))).data(), L"w"), close_file);
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		#if WINDOWS
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
 		#else
 		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
 		#endif
@@ -190,13 +190,13 @@ namespace Sen::Kernel::FileSystem
 				#if !defined MSVC_COMPILER
 						static_assert(false, "msvc compiler is required on windows");
 				#endif
-				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-					String::to_windows_style(filepath.data()))).data(), L"w"), close_file);
+				auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(utf8_to_utf16(fmt::format("\\\\?\\{}",
+					to_windows_style(filepath.data()))).data(), L"w"), close_file);
 		#else
 				auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		#if WINDOWS
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{filepath.data(), filepath.size()})), "write_json");
 		#else
 		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_json");
 		#endif
@@ -213,10 +213,10 @@ namespace Sen::Kernel::FileSystem
 	) -> std::wstring
 	{
 	#if WINDOWS
-		auto wif = std::wifstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data());
+		auto wif = std::wifstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
+			to_windows_style(source.data()))).data());
 		if (!wif.is_open()) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::view(String::to_posix_style(source.data()))), std::source_location::current(), "read_file_by_utf16");
+			throw Exception{fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), std::source_location::current(), "read_file_by_utf16"};
 		}
 		wif.imbue(std::locale(std::locale::empty(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::consume_header>));
 		auto content = std::wstring((std::istreambuf_iterator<wchar_t>(wif)), std::istreambuf_iterator<wchar_t>());
@@ -240,13 +240,13 @@ namespace Sen::Kernel::FileSystem
 		auto utf16le_locale = std::locale(std::locale::classic(), new std::codecvt_utf16<wchar_t, 0x10ffff,
 			(std::codecvt_mode)(std::little_endian | std::generate_header)>);
 		#if WINDOWS
-		auto file = std::wofstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data(), std::ios::binary);
+		auto file = std::wofstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
+			to_windows_style(source.data()))).data(), std::ios::binary);
 		#else
 		auto file = std::wofstream(source.data(), std::ios::binary);
 		#endif
 		if (!file.is_open()) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::view(String::to_posix_style(source.data()))), std::source_location::current(), "write_file_by_utf16le");
+			throw Exception{fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), std::source_location::current(), "write_file_by_utf16le"};
 		}
 		file.imbue(utf16le_locale);
 		file << data;
@@ -265,18 +265,18 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		if(fs::is_directory(String::utf8_to_utf16(path.data()))){
+		if(fs::is_directory(utf8_to_utf16(path.data()))){
 			return;
 		}
 		#else
-		if(fs::is_directory(String::to_posix_style(path.data()))){
+		if(fs::is_directory(to_posix_style(path.data()))){
 			return;
 		}
 		#endif
 		#if WINDOWS
-			fs::create_directories(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data()))));
+			fs::create_directories(utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(path.data()))));
 		#else
-			fs::create_directories(String::to_posix_style(path.data()));
+			fs::create_directories(to_posix_style(path.data()));
 		#endif
 		return;
 	}
@@ -293,17 +293,17 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		auto temporary = Path::to_posix_style(filepath.data());
-		auto data = String::split(temporary, "/"_sv);
+		auto data = split(temporary, "/"_sv);
 		data.erase(data.end() - 1, data.end());
-		auto c = String::join(data, "/"_sv);
+		auto c = join(data, "/"_sv);
 		create_directory(c);
 		#if WINDOWS
-		auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(filepath.data()))).data(), L"w"), close_file);
+		auto file = std::unique_ptr<FILE, decltype(close_file)>(_wfopen(utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(filepath.data()))).data(), L"w"), close_file);
 		#else
 		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(filepath.data(), "w"), close_file);
 		#endif
 		#if WINDOWS
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "write_file");
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{filepath.data(), filepath.size()})), "write_file");
 		#else
 		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), filepath), "write_file");
 		#endif
@@ -321,10 +321,10 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		auto temporary = Path::normalize(filePath.data());
-		auto data = String::split(temporary, "/"_sv);
+		auto data = split(temporary, "/"_sv);
 		auto& last = data.at(data.size() - 1);
 		data.pop_back();
-		create_directory(String::join(data, "/"_sv));
+		create_directory(join(data, "/"_sv));
 		write_file(filePath, content);
 		return;
 	}
@@ -350,14 +350,14 @@ namespace Sen::Kernel::FileSystem
 	) -> List<T>
 	{
 		#if WINDOWS
-		auto file = WindowsFileReader{String::utf8_to_utf16(fmt::format("\\\\?\\{}",
-				String::to_windows_style(filepath.data()))).data()};
+		auto file = WindowsFileReader{utf8_to_utf16(fmt::format("\\\\?\\{}",
+				to_windows_style(filepath.data()))).data()};
 		#else
 		auto file = std::unique_ptr<FILE, decltype(&std::fclose)>(std::fopen(filepath.data(), "rb"), &std::fclose);
-    	assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
+    	assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(filepath.data())), "read_binary");
 		#endif
 		#if WINDOWS
-		auto size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(filepath.data())});
+		auto size = std::filesystem::file_size(std::filesystem::path{utf8_to_utf16(filepath.data())});
 		#else
 		auto size = std::filesystem::file_size(std::filesystem::path{filepath});
 		#endif
@@ -367,11 +367,11 @@ namespace Sen::Kernel::FileSystem
 		data.resize(size);
 		auto bytes_read = DWORD{};
 		auto state = ReadFile(file.handle, data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
-		assert_conditional(static_cast<bool>(SUCCEEDED(state)), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
-		assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
+		assert_conditional(static_cast<bool>(SUCCEEDED(state)), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
+		assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
 		#else
 		auto bytes_read = std::fread(data.data(), sizeof(T), size, file.get());
-    	assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(filepath.data())), "read_binary");
+    	assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(filepath.data())), "read_binary");
 		#endif
 		return data;	
 	}
@@ -382,7 +382,7 @@ namespace Sen::Kernel::FileSystem
 	{
 		auto count = std::size_t{0};
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data()))) {
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data()))) {
 				++count;
 			}
 		#else
@@ -393,8 +393,8 @@ namespace Sen::Kernel::FileSystem
 		auto result = List<std::string>{};
 		result.reserve(count); 
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
-				result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data())))
+				result.emplace_back(Path::normalize(utf16_to_utf8(c.path().wstring())));
 		#else
 			for (auto& c : fs::directory_iterator(directory_path))
 				result.emplace_back(Path::normalize(c.path().string()));
@@ -409,7 +409,7 @@ namespace Sen::Kernel::FileSystem
 	{
 		auto count = std::size_t{0};
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data())))
 				if (c.is_regular_file()) {
 					++count;
 				}
@@ -422,9 +422,9 @@ namespace Sen::Kernel::FileSystem
 		auto result = List<std::string>{};
 		result.reserve(count);  
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data())))
 				if (c.is_regular_file()) {
-					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
+					result.emplace_back(Path::normalize(utf16_to_utf8(c.path().wstring())));
 				}
 		#else
 			for (auto& c : fs::directory_iterator(directory_path))
@@ -442,7 +442,7 @@ namespace Sen::Kernel::FileSystem
 	{
 		auto count = size_t{0};
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data())))
 				if (c.is_directory()) ++count;
 		#else
 			for (auto& c : fs::directory_iterator(directory_path))
@@ -451,9 +451,9 @@ namespace Sen::Kernel::FileSystem
 		auto result = List<std::string>{};
 		result.reserve(count); 
 		#if WINDOWS
-			for (auto& c : fs::directory_iterator(String::utf8_to_utf16(directory_path.data())))
+			for (auto& c : fs::directory_iterator(utf8_to_utf16(directory_path.data())))
 				if (c.is_directory()) {
-					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
+					result.emplace_back(Path::normalize(utf16_to_utf8(c.path().wstring())));
 				}
 		#else
 			for (auto& c : fs::directory_iterator(directory_path))
@@ -475,7 +475,7 @@ namespace Sen::Kernel::FileSystem
 			auto current_dir = directory.top();
 			directory.pop();
 			#if WINDOWS
-				for (auto& c : fs::directory_iterator(String::utf8_to_utf16(current_dir)))
+				for (auto& c : fs::directory_iterator(utf8_to_utf16(current_dir)))
 			#else
 				for (auto& c : fs::directory_iterator(current_dir))
 			#endif
@@ -484,7 +484,7 @@ namespace Sen::Kernel::FileSystem
 					directory.push(c.path().string());
 				}
 				#if WINDOWS
-					result.emplace_back(Path::normalize(String::utf16_to_utf8(c.path().wstring())));
+					result.emplace_back(Path::normalize(utf16_to_utf8(c.path().wstring())));
 				#else
 					result.emplace_back(Path::normalize(c.path().string()));
 				#endif
@@ -501,7 +501,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if defined(_WIN32) || defined(_WIN64)
-		auto file = WindowsFileWriter{String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style({path.data(), path.size()})))};
+		auto file = WindowsFileWriter{utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style({path.data(), path.size()})))};
 		auto bytesWritten = DWORD{0};
 		auto result = WriteFile(
 			file.handle, 
@@ -510,11 +510,11 @@ namespace Sen::Kernel::FileSystem
 			&bytesWritten, 
 			nullptr
 		);
-		assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "write_binary");
-        assert_conditional(bytesWritten == data.size(), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "write_binary");
+		assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "write_binary");
+        assert_conditional(bytesWritten == data.size(), fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "write_binary");
 		#else
-		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(String::to_posix_style(std::string{path.data(), path.size()}).data(), "wb"), close_file);
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(path.data())), "write_binary");
+		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(to_posix_style(std::string{path.data(), path.size()}).data(), "wb"), close_file);
+		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(path.data())), "write_binary");
 		std::fwrite(reinterpret_cast<const char *>(data.data()), sizeof(T), data.size(), file.get());
 		#endif
 		return;
@@ -617,18 +617,18 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		auto file = std::ifstream(String::utf8view_to_utf16(fmt::format("\\\\?\\{}",
-			String::to_windows_style(source.data()))).data());
+		auto file = std::ifstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
+			to_windows_style(source.data()))).data());
 		#else
 		auto file = std::ifstream(source.data());
 		#endif
         if (!file.is_open()) {
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(source.data())), std::source_location::current(), "read_xml");
+			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), std::source_location::current(), "read_xml");
         }
         auto buffer = std::stringstream{};
         buffer << file.rdbuf();
 		auto status_code = xml->Parse(buffer.str().data(), buffer.str().size());
-		assert_conditional(status_code == tinyxml2::XML_SUCCESS, fmt::format("{}: \"{}\". {}", Kernel::Language::get("xml.read_error"), String::view(String::to_posix_style(source.data())), make_xml_exception(status_code, xml->ErrorLineNum())), "read_xml");
+		assert_conditional(status_code == tinyxml2::XML_SUCCESS, fmt::format("{}: \"{}\". {}", Kernel::Language::get("xml.read_error"), to_posix_style(source.data()), make_xml_exception(status_code, xml->ErrorLineNum())), "read_xml");
 		return;
 	}
 
@@ -646,7 +646,7 @@ namespace Sen::Kernel::FileSystem
 	{
 		auto printer = tinyxml2::XMLPrinter{};
 		data->Print(&printer);
-		FileSystem::write_file(file_path, String::make_string_view(printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)));
+		FileSystem::write_file(file_path, std::string{printer.CStr(), static_cast<std::size_t>(printer.CStrSize() - 1)});
 		return;
 	}
 
@@ -655,7 +655,7 @@ namespace Sen::Kernel::FileSystem
 	) -> bool
 	{
 		#if WINDOWS
-		auto result = std::filesystem::is_regular_file(String::utf8_to_utf16(source.data()));
+		auto result = std::filesystem::is_regular_file(utf8_to_utf16(source.data()));
 		#else
 		auto result = std::filesystem::is_regular_file(source.data());
 		#endif
@@ -667,7 +667,7 @@ namespace Sen::Kernel::FileSystem
 	) -> bool
 	{
 		#if WINDOWS
-		auto result = std::filesystem::is_directory(String::utf8_to_utf16(source.data()));
+		auto result = std::filesystem::is_directory(utf8_to_utf16(source.data()));
 		#else
 		auto result = std::filesystem::is_directory(source.data());
 		#endif
@@ -680,7 +680,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		std::filesystem::rename(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) });
+		std::filesystem::rename(std::filesystem::path{ utf8_to_utf16(source.data()) }, std::filesystem::path{ utf8_to_utf16(destination.data()) });
 		#else
 		std::filesystem::rename(std::filesystem::path{ source.data() }, std::filesystem::path{ destination.data() });
 		#endif
@@ -693,7 +693,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		std::filesystem::copy(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) },
+		std::filesystem::copy(std::filesystem::path{ utf8_to_utf16(source.data()) }, std::filesystem::path{ utf8_to_utf16(destination.data()) },
 			std::filesystem::copy_options::recursive |
 			std::filesystem::copy_options::overwrite_existing);
 		#else
@@ -708,7 +708,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		std::filesystem::copy(std::filesystem::path{ String::utf8_to_utf16(source.data()) }, std::filesystem::path{ String::utf8_to_utf16(destination.data()) });
+		std::filesystem::copy(std::filesystem::path{ utf8_to_utf16(source.data()) }, std::filesystem::path{ utf8_to_utf16(destination.data()) });
 		#else
 		std::filesystem::copy(std::filesystem::path{ source.data() }, std::filesystem::path{ destination.data() });
 		#endif
@@ -720,7 +720,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		std::filesystem::remove(std::filesystem::path{ String::utf8_to_utf16(source.data()) });
+		std::filesystem::remove(std::filesystem::path{ utf8_to_utf16(source.data()) });
 		#else
 		std::filesystem::remove(std::filesystem::path{ source.data() });
 		#endif
@@ -732,7 +732,7 @@ namespace Sen::Kernel::FileSystem
 	) -> void
 	{
 		#if WINDOWS
-		std::filesystem::remove_all(std::filesystem::path{ String::utf8_to_utf16(source.data()) });
+		std::filesystem::remove_all(std::filesystem::path{ utf8_to_utf16(source.data()) });
 		#else
 		std::filesystem::remove_all(std::filesystem::path{ source.data() });
 		#endif

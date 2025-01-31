@@ -217,13 +217,13 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
                 auto k_sprite_state_test = false;
                 if (std::find(sprite_name.begin(), sprite_name.end(), '/') != sprite_name.end())
                 {
-                    auto string_list = String{sprite_name}.split("/");
+                    auto string_list = split(sprite_name, "/");
                     sprite_name = string_list.back();
                     k_sprite_state_test = true;
                 }
                 if (std::find(sprite_name.begin(), sprite_name.end(), '\\') != sprite_name.end())
                 {
-                    auto string_list = String{sprite_name}.split("\\");
+                    auto string_list = split(sprite_name, "\\");
                     sprite_name = string_list.back();
                     k_sprite_state_test = true;
                 }
@@ -287,7 +287,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             }
             else
             {
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_transform_size")), std::to_string(data.size())), "exchange_transform_from_variant_to_standard");
+                assert_conditional(false, format(fmt::format("{}", Language::get("popcap.animation.invalid_transform_size")), std::to_string(data.size())), "exchange_transform_from_variant_to_standard");
             }
             return;
         }
@@ -322,7 +322,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             List<double> const &data,
             Transform &value) -> void
         {
-            assert_conditional(data.size() == 3_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"3"}, std::to_string(data.size())), "exchange_tranform_from_rotate_to_standard");
+            assert_conditional(data.size() == 3_size, format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"3"}, std::to_string(data.size())), "exchange_tranform_from_rotate_to_standard");
             auto cos = std::cos(data[0]);
             auto sin = std::sin(data[0]);
             value = Transform{cos, sin, -sin, cos, data[1], data[2]};
@@ -356,7 +356,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             List<double> const &data,
             Transform &value) -> void
         {
-            assert_conditional(data.size() == 6_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
+            assert_conditional(data.size() == 6_size, format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
             value = Transform{data[0], data[1], data[2], data[3], data[4], data[5]};
             return;
         }
@@ -365,7 +365,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             Transform const &data,
             List<double> &value) -> void
         {
-            assert_conditional(data.size() == 6_size, String::format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
+            assert_conditional(data.size() == 6_size, format(fmt::format("{}", Language::get("popcap.animation.invalid_animation_transform_length")), std::string{"6"}, std::to_string(data.size())), "exchange_tranform_by_copy");
             value = List<double>{data[0], data[1], data[2], data[3], data[4], data[5]};
             return;
         }
@@ -380,7 +380,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             auto d = data->FindAttribute("d");
             auto tx = data->FindAttribute("tx");
             auto ty = data->FindAttribute("ty");
-            value = Transform{a != nullptr ? Converter::to_float64(a->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"a"}, std::string{a->Value()})) : 1, b != nullptr ? Converter::to_float64(b->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"b"}, std::string{b->Value()})) : 0, c != nullptr ? Converter::to_float64(c->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"c"}, std::string{c->Value()})) : 0, d != nullptr ? Converter::to_float64(d->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"d"}, std::string{d->Value()})) : 1, tx != nullptr ? Converter::to_float64(tx->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"tx"}, std::string{tx->Value()})) : 0, ty != nullptr ? Converter::to_float64(ty->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"ty"}, std::string{ty->Value()})) : 0};
+            value = Transform{a != nullptr ? Converter::to_float64(a->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"a"}, std::string{a->Value()})) : 1, b != nullptr ? Converter::to_float64(b->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"b"}, std::string{b->Value()})) : 0, c != nullptr ? Converter::to_float64(c->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"c"}, std::string{c->Value()})) : 0, d != nullptr ? Converter::to_float64(d->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"d"}, std::string{d->Value()})) : 1, tx != nullptr ? Converter::to_float64(tx->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"tx"}, std::string{tx->Value()})) : 0, ty != nullptr ? Converter::to_float64(ty->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.transform_is_not_a_valid_number")), std::string{"ty"}, std::string{ty->Value()})) : 0};
             return;
         }
 
@@ -403,10 +403,10 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
             auto b_pos = data->FindAttribute("blueOffset");
             auto a_pos = data->FindAttribute("alphaOffset");
             value = Color{
-                color_compute(r != nullptr ? Converter::to_float64(r->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"redMultiplier"}, std::string{r->Value()})) : 1, r_pos != nullptr ? Converter::to_float64(r_pos->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"redOffset"}, std::string{r_pos->Value()})) : 0),
-                color_compute(g != nullptr ? Converter::to_float64(g->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"greenMultiplier"}, std::string{g->Value()})) : 1, g_pos != nullptr ? Converter::to_float64(g_pos->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"greenOffset"}, std::string{g_pos->Value()})) : 0),
-                color_compute(b != nullptr ? Converter::to_float64(b->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"blueMultiplier"}, std::string{b->Value()})) : 1, b_pos != nullptr ? Converter::to_float64(b_pos->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"blueOffset"}, std::string{b_pos->Value()})) : 0),
-                color_compute(a != nullptr ? Converter::to_float64(a->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"alphaMultiplier"}, std::string{a->Value()})) : 1, a_pos != nullptr ? Converter::to_float64(a_pos->Value(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"alphaOffset"}, std::string{a_pos->Value()})) : 0),
+                color_compute(r != nullptr ? Converter::to_float64(r->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"redMultiplier"}, std::string{r->Value()})) : 1, r_pos != nullptr ? Converter::to_float64(r_pos->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"redOffset"}, std::string{r_pos->Value()})) : 0),
+                color_compute(g != nullptr ? Converter::to_float64(g->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"greenMultiplier"}, std::string{g->Value()})) : 1, g_pos != nullptr ? Converter::to_float64(g_pos->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"greenOffset"}, std::string{g_pos->Value()})) : 0),
+                color_compute(b != nullptr ? Converter::to_float64(b->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"blueMultiplier"}, std::string{b->Value()})) : 1, b_pos != nullptr ? Converter::to_float64(b_pos->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"blueOffset"}, std::string{b_pos->Value()})) : 0),
+                color_compute(a != nullptr ? Converter::to_float64(a->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"alphaMultiplier"}, std::string{a->Value()})) : 1, a_pos != nullptr ? Converter::to_float64(a_pos->Value(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.color_is_not_a_valid_number")), std::string{"alphaOffset"}, std::string{a_pos->Value()})) : 0),
             };
             return;
         }

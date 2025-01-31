@@ -434,7 +434,7 @@ namespace Sen::Kernel {
 					thiz.channels = 4;
 				}
 				else {
-					assert_conditional(false, fmt::format("{}: {}", Language::get("image_is_broken"), String::to_posix_style(std::string{source.data(), source.size()})), "normalize_32bit");
+					assert_conditional(false, fmt::format("{}: {}", Language::get("image_is_broken"), to_posix_style(std::string{source.data(), source.size()})), "normalize_32bit");
 				}
 				return;
 			}
@@ -669,7 +669,7 @@ namespace Sen::Kernel {
 			{
 				auto open_file = [](std::string_view path) -> std::unique_ptr<FILE, decltype(Language::close_file)> {
 				#if WINDOWS
-					auto windows_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data())));
+					auto windows_path = utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(path.data())));
 					return { _wfopen(windows_path.data(), L"rb"), Language::close_file };
 				#else
 					return { std::fopen(path.data(), "rb"), Language::close_file };
@@ -677,7 +677,7 @@ namespace Sen::Kernel {
 				};
 				auto file = open_file(source);
 				#if WINDOWS
-				assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("image.open_png_failed"), String::to_posix_style(std::string{ source.data(), source.size() })), "read_png");
+				assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("image.open_png_failed"), to_posix_style(std::string{ source.data(), source.size() })), "read_png");
 				#else
 				assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("image.open_png_failed"), source), "read_png");
 				#endif
@@ -739,7 +739,7 @@ namespace Sen::Kernel {
 			{
 				auto open_file = [](std::string_view path) -> std::unique_ptr<FILE, decltype(Language::close_file)> {
 				#if WINDOWS
-					auto windows_path = String::utf8view_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(path.data())));
+					auto windows_path = utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(path.data())));
 					return { _wfopen(windows_path.data(), L"wb"), Language::close_file };
 				#else
 					return { std::fopen(path.data(), "wb"), Language::close_file };

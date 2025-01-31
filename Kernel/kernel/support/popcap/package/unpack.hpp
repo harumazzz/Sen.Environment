@@ -53,12 +53,12 @@ namespace Sen::Kernel::Support::PopCap::Package
                 assert_conditional(false, fmt::format("{}", Language::get("popcap.package.invalid_xbfile")), "process_package"); 
             }
             default:
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.package.invalid_package_platform")), std::to_string(k_magic_package)), "process_package");
+                assert_conditional(false, format(fmt::format("{}", Language::get("popcap.package.invalid_package_platform")), std::to_string(k_magic_package)), "process_package");
             }
             assert_conditional(stream.readInt32() == k_magic_package_identifier, fmt::format("{}", Language::get("popcap.pak.unpack.invalid_pak_header")), "process_package");
             {
                 auto version = stream.readUint32();
-                assert_conditional(version == k_version, String::format(fmt::format("{}", Language::get("popcap.package.invalid_version")), std::to_string(version)), "process_package");
+                assert_conditional(version == k_version, format(fmt::format("{}", Language::get("popcap.package.invalid_version")), std::to_string(version)), "process_package");
             }
             auto resource_information_list = List<ResourceInformation>{};
             while (true)

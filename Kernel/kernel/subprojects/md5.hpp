@@ -19,8 +19,6 @@
 
 namespace Sen::Kernel::Subprojects::md5 
 {
-
-	// class MD5 from MD5 library
 	
 	using MD5 = ::MD5;
 

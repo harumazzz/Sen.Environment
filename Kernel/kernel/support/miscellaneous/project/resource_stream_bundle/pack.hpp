@@ -24,7 +24,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
         {
             auto duplicate_packet = List<string>{};
             find_duplicate_elements<string>(definition.packet, duplicate_packet);
-            assert_conditional(duplicate_packet.empty(), String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.duplicated_packet")), duplicate_packet[0]), "checking_info");
+            assert_conditional(duplicate_packet.empty(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.duplicated_packet")), duplicate_packet[0]), "checking_info");
             return;
         }
 
@@ -42,8 +42,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
             auto get_resfile = [](
                                    std::string const &path) -> std::string
             {
-                auto str = Sen::Kernel::String(path);
-                auto resfile = fmt::format("RESFILE_{}", String::join(str.split("\\"), "_"));
+                auto resfile = fmt::format("RESFILE_{}", join(split(path, "\\"), "_"));
                 return resfile.substr(k_begin_index, resfile.size() - ".rton"_sv.size());
             };
             auto packages_list = FileSystem::read_whole_directory(packages_source);
@@ -57,17 +56,17 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
             auto push_definition = [&](std::string const &path) -> void
             {
                 packet_definition.resource.emplace_back(Resource{
-                    .path = toupper_back(String::to_posix_style(path))});
+                    .path = toupper_back(to_posix_style(path))});
                 auto &data_info = packages_subgroup_info.general.data[get_resfile(path)];
                 data_info.type = Kernel::Support::Miscellaneous::Project::StreamCompressedGroup::DataType::File;
-                data_info.path = tolower_back(String::to_posix_style(path));
+                data_info.path = tolower_back(to_posix_style(path));
                 return;
             };
             auto read_rton = [&](
                                  std::string const &element) -> void
             {
                 auto pos = packages_source.size() - packages_name.size();
-                auto path = toupper_back(String::to_windows_style(element.substr(pos, (element.size() - pos))));
+                auto path = toupper_back(to_windows_style(element.substr(pos, (element.size() - pos))));
                 if (!resource_data_section_view_stored.contains(path))
                 {
                     resource_data_section_view_stored[path] = std::move(FileSystem::read_binary<uint8_t>(element));
@@ -84,7 +83,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                     if (compare_string(extension, ".json"_sv))
                     {
                         auto pos = packages_source.size() - packages_name.size();
-                        auto path = toupper_back(String::to_windows_style(element.substr(pos, (element.size() - pos - ".json"_sv.size())) + ".rton"));
+                        auto path = toupper_back(to_windows_style(element.substr(pos, (element.size() - pos - ".json"_sv.size())) + ".rton"));
                         try {
                             auto resource_stream = DataStreamView{};
                             Kernel::Support::PopCap::ReflectionObjectNotation::Encode::process_whole(resource_stream, FileSystem::read_file(element));
@@ -104,7 +103,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                         } catch (...) {
                             auto exception = parse_exception();
                             #if WINDOWS
-                            exception.arg += fmt::format(" JSON: {}", String::to_posix_style(element));
+                            exception.arg += fmt::format(" JSON: {}", to_posix_style(element));
                             #else
                             exception.arg += fmt::format(" JSON: {}", element);
                             #endif
@@ -166,7 +165,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                 auto &group_information = bundle.group[group_id];
                 group_information.composite = packet_original_information.composite;
                 resource_info.group[group_id].composite = packet_original_information.composite;
-                assert_conditional(packet_original_information.subgroup.size() != k_none_size, String::format(fmt::format("{}", Language::get("popcap.animation.from_flash.group_must_contain_at_least_one")), group_id), "exchange_packet");
+                assert_conditional(packet_original_information.subgroup.size() != k_none_size, format(fmt::format("{}", Language::get("popcap.animation.from_flash.group_must_contain_at_least_one")), group_id), "exchange_packet");
                 for (auto &[subgroup_id, subgroup_value] : packet_original_information.subgroup)
                 {
                     auto &subgroup_information = group_information.subgroup[subgroup_id] = Support::PopCap::ResourceStreamBundle::SubgroupInformation{
@@ -253,7 +252,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                 auto newton_path = fmt::format("PROPERTIES\\{}.NEWTON", resources_name);
                 resource_data_section_view_stored[newton_path] = std::move(stream.toBytes());
                 packet_definition.resource.emplace_back(Resource{
-                    .path = String::to_posix_style(newton_path)});
+                    .path = to_posix_style(newton_path)});
             }
             else
             {
@@ -262,7 +261,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                 auto rton_path = fmt::format("PROPERTIES\\{}.RTON", resources_name);
                 resource_data_section_view_stored[rton_path] = std::move(data_stream.toBytes());
                 packet_definition.resource.emplace_back(Resource{
-                    .path = String::to_posix_style(rton_path)});
+                    .path = to_posix_style(rton_path)});
             }
             auto packet_stream = DataStreamView{};
             Support::PopCap::ResourceStreamGroup::Pack::process_whole(packet_stream, packet_definition, resource_data_section_view_stored);

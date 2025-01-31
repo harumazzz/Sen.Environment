@@ -60,7 +60,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 					break;
 				}
 			}
-			assert_conditional(!subgroup_id.empty(), String::format(fmt::format("{}", Language::get("popcap.rsb.unpack_cipher.cannot_find_subgroup_index")), std::to_string(index)), "find_subgroup_id");
+			assert_conditional(!subgroup_id.empty(), format(fmt::format("{}", Language::get("popcap.rsb.unpack_cipher.cannot_find_subgroup_index")), std::to_string(index)), "find_subgroup_id");
 			value.erase(subgroup_id);
 			return subgroup_id;
 		}
@@ -86,7 +86,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 			Common::exchange_to_header(stream, information_structure.header);
 			assert_conditional(information_structure.header.magic == Common::k_magic_identifier, fmt::format("{}", Language::get("popcap.rsb.unpack_cipher.invalid_magic_header")), "process_package");
 			auto index = std::find(Common::k_version_list.begin(), Common::k_version_list.end(), static_cast<int>(information_structure.header.version));
-			assert_conditional((index != Common::k_version_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(static_cast<int>(information_structure.header.version))), "process");
+			assert_conditional((index != Common::k_version_list.end()), format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(static_cast<int>(information_structure.header.version))), "process");
 			definition.version = information_structure.header.version;
 			CompiledMapData::decode(stream, information_structure.header.group_id_section_offset, information_structure.header.group_id_section_size, information_structure.group_id, &Common::exchange_to_index);
 			CompiledMapData::decode(stream, information_structure.header.subgroup_id_section_offset, information_structure.header.subgroup_id_section_size, information_structure.subgroup_id, &Common::exchange_to_index);
@@ -226,7 +226,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 					if (subgroup_information.category.is_image && subgroup_information.category.resolution == static_cast<int>(k_none_size)) {
 						try 
 						{
-							auto string_list = String{subgroup_id}.split("_");
+							auto string_list = split(subgroup_id, "_");
 							auto resolution = Converter::to_int32(string_list.back(), fmt::format("{}", Language::get("popcap.rsb.unpack_cipher.cannot_convert_resolution")));
 							subgroup_information.category.resolution = resolution;
 						}

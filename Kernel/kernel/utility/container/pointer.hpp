@@ -31,15 +31,15 @@ namespace Sen::Kernel {
 	}
 
 	template <typename T>
-	constexpr std::remove_reference_t<T>&&  as_rvalue(
+	constexpr auto  as_rvalue(
 		T&& value
-	) noexcept 
+	) noexcept -> std::remove_reference_t<T>&&
 	{
-		return std::move(value); 
+		return std::forward<T>(value);
 	}
 
 	template <typename To, typename From>
-	 auto steal_reference(From& from) -> To& {
+	auto steal_reference(From& from) -> To& {
 		static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
 		return *reinterpret_cast<To*>(&from);
 	}

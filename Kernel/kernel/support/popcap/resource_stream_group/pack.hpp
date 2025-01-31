@@ -20,7 +20,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             Args &args) -> void
         {
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(definition.version));
-            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsg.invalid_version")), std::to_string(static_cast<int>(definition.version))), "process");
+            assert_conditional((index != k_version_list.end()), format(fmt::format("{}", Language::get("popcap.rsg.invalid_version")), std::to_string(static_cast<int>(definition.version))), "process");
             auto resource_information_structure = std::map<std::string, ResourceInformation>{};
             auto resource_data_section_view_stored = std::map<std::string_view, DataStreamView>{};
             /*
@@ -32,7 +32,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             auto texture_resource_index = static_cast<int>(k_begin_index);
             for (auto &resource_definition : definition.resource)
             {
-                auto resource_definition_path = toupper_back(String::to_windows_style(resource_definition.path));
+                auto resource_definition_path = toupper_back(to_windows_style(resource_definition.path));
                 auto resource_data = List<uint8_t>{};
                 if constexpr (std::is_same<Args, std::map<std::string, List<uint8_t>>>::value)
                 {

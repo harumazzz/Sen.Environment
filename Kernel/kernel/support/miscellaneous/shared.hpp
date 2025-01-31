@@ -251,7 +251,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
         std::string_view data) -> EnumrationType
     {
         auto value = magic_enum::enum_cast<EnumrationType>(data, magic_enum::case_insensitive);
-        assert_conditional(value.has_value(), String::format(fmt::format("{}", Language::get("miscellaneous.shared.failed_cast_enum")), data, magic_enum::enum_type_name<EnumrationType>()), "magic_enum_cast");
+        assert_conditional(value.has_value(), format(fmt::format("{}", Language::get("miscellaneous.shared.failed_cast_enum")), data, magic_enum::enum_type_name<EnumrationType>()), "magic_enum_cast");
         return value.value();
     }
 

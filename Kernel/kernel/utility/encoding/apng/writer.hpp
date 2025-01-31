@@ -52,9 +52,9 @@ namespace Sen::Kernel::Encoding::APNG {
 				{
 					auto stream = DataStreamViewBigEndian{image_path};
 					#if WINDOWS
-					assert_conditional(stream.readString(4, 0xC_size) == "IHDR", String::format(fmt::format("{}", Language::get("mismatch_image_magic")), String::to_posix_style(image_path)), "load_image_path");
+					assert_conditional(stream.readString(4, 0xC_size) == "IHDR", format(fmt::format("{}", Language::get("mismatch_image_magic")), to_posix_style(image_path)), "load_image_path");
 					#else
-					assert_conditional(stream.readString(4, 0xC_size) == "IHDR", String::format(fmt::format("{}", Language::get("mismatch_image_magic")), image_path), "load_image_path");
+					assert_conditional(stream.readString(4, 0xC_size) == "IHDR", format(fmt::format("{}", Language::get("mismatch_image_magic")), image_path), "load_image_path");
 					#endif
 					auto image_data = ImageData{
 						.meta_data = ImageHeader{

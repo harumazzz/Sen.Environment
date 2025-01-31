@@ -197,7 +197,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             uint32_t const &chuck_size) -> void
         {
             auto version = stream.readUint32();
-            assert_conditional(version > 72_ui, String::format(fmt::format("{}", Language::get("wwise.soundbank.decode.unsupported_bank_version")), std::to_string(version)), "exchange_bank_header");
+            assert_conditional(version > 72_ui, format(fmt::format("{}", Language::get("wwise.soundbank.decode.unsupported_bank_version")), std::to_string(version)), "exchange_bank_header");
             k_version = version;
             value.version = version;
             value.soundbank_id = stream.readUint32();
@@ -3642,7 +3642,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
                         }
                         default: {
                             auto pos = std::string_view{std::to_string(data.read_pos)};
-                            assert_conditional(false, String::format(fmt::format("{}", Language::get("wwise.soundbank.decode.invalid_hierarchy_type")), magic_enum::enum_name(value.type), pos), "exchange_hierarchy");
+                            assert_conditional(false, format(fmt::format("{}", Language::get("wwise.soundbank.decode.invalid_hierarchy_type")), magic_enum::enum_name(value.type), pos), "exchange_hierarchy");
                         }
                     }
                     assert_conditional(data.read_pos == next_item_pos, fmt::format("invalid_pos. current: {} | next : {}", data.read_pos, next_item_pos), "exchange_hierarchy"); }, stream.readUint32());

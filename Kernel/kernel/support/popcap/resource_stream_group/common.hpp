@@ -166,7 +166,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             data_bit.set(PacketCompressionFlag::texture, value.texture);
             data = static_cast<uint32_t>(data_bit.to_ullong());
             auto index = std::find(k_compression_list.begin(), k_compression_list.end(), static_cast<uint32_t>(data));
-            assert_conditional((index != k_compression_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsg.invalid_rsg_compression")), std::to_string(static_cast<uint32_t>(data))), "packet_compression_to_data");
+            assert_conditional((index != k_compression_list.end()), format(fmt::format("{}", Language::get("popcap.rsg.invalid_rsg_compression")), std::to_string(static_cast<uint32_t>(data))), "packet_compression_to_data");
             return;
         }
 
@@ -175,7 +175,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             PacketCompression &value) -> void
         {
             auto index = std::find(Common::k_compression_list.begin(), Common::k_compression_list.end(), static_cast<uint32_t>(data));
-            assert_conditional((index != Common::k_compression_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsg.invalid_rsg_compression")), std::to_string(static_cast<uint32_t>(data))), "packet_compression_from_data");
+            assert_conditional((index != Common::k_compression_list.end()), format(fmt::format("{}", Language::get("popcap.rsg.invalid_rsg_compression")), std::to_string(static_cast<uint32_t>(data))), "packet_compression_from_data");
             auto data_bit = std::bitset<k_packet_compression_flag_count>(static_cast<uint8_t>(data));
             value.general = data_bit.test(PacketCompressionFlag::general);
             value.texture = data_bit.test(PacketCompressionFlag::texture);

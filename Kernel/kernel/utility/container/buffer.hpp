@@ -71,7 +71,7 @@ namespace Sen::Kernel
         ) : read_pos{0}, write_pos{0}
         {
             #if WINDOWS
-            auto file = WindowsFileReader(String::utf8_to_utf16(fmt::format("\\\\?\\{}", String::to_windows_style(source.data()))).data());
+            auto file = WindowsFileReader(utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(source.data()))).data());
             #else
             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(source.data(), "rb"), close_file);
             #endif
@@ -79,7 +79,7 @@ namespace Sen::Kernel
             assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source), "Stream");
             #endif
             #if WINDOWS
-            auto size = std::filesystem::file_size(std::filesystem::path{String::utf8_to_utf16(source.data())});
+            auto size = std::filesystem::file_size(std::filesystem::path{utf8_to_utf16(source.data())});
             #else
             auto size = std::filesystem::file_size(std::filesystem::path{source});
             #endif
@@ -91,8 +91,8 @@ namespace Sen::Kernel
             #if WINDOWS
             auto bytes_read = DWORD{};
             auto read_success = ReadFile(file.handle, thiz.data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
-            assert_conditional(SUCCEEDED(read_success), fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
-            assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), String::to_posix_style(std::string{source.data(), source.size()})), "Stream");
+            assert_conditional(SUCCEEDED(read_success), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{source.data(), source.size()})), "Stream");
+            assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{source.data(), source.size()})), "Stream");
             #else
             std::fread(thiz.data.data(), 1, size, file.get());
             #endif
@@ -221,7 +221,7 @@ namespace Sen::Kernel
             const std::size_t &pos
         ) const -> void
         {
-            assert_conditional(pos <= thiz.size(), String::format(fmt::format("{}: {}", Language::get("read_position_cannot_be_smaller_than_size"), thiz.file_path), std::to_string(pos), std::to_string(thiz.size())), "position");
+            assert_conditional(pos <= thiz.size(), format(fmt::format("{}: {}", Language::get("read_position_cannot_be_smaller_than_size"), thiz.file_path), std::to_string(pos), std::to_string(thiz.size())), "position");
             thiz.read_pos = pos;
             return;
         }
@@ -277,7 +277,7 @@ namespace Sen::Kernel
         ) const -> void
         {
             #if defined(_WIN32) || defined(_WIN64)
-            auto filePath = std::filesystem::path{String::utf8_to_utf16(String::to_windows_style(path.data()))};
+            auto filePath = std::filesystem::path{utf8_to_utf16(to_windows_style(path.data()))};
             #else
             auto filePath = std::filesystem::path{path};
             #endif
@@ -285,7 +285,7 @@ namespace Sen::Kernel
                 std::filesystem::create_directories(filePath.parent_path());
             }
             #if defined(_WIN32) || defined(_WIN64)
-            auto file = WindowsFileWriter{String::utf8_to_utf16(String::to_windows_style(path.data()))};
+            auto file = WindowsFileWriter{utf8_to_utf16(to_windows_style(path.data()))};
             #else
             auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(path.data(), "wb"), close_file);
             assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");
@@ -294,8 +294,8 @@ namespace Sen::Kernel
             #if defined(_WIN32) || defined(_WIN64)
             auto bytesWritten = DWORD{};
             auto result = WriteFile(file.handle, thiz.data.data(), static_cast<DWORD>(dataSize), &bytesWritten, nullptr);
-            assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
-            assert_conditional(bytesWritten == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), String::to_posix_style(std::string{path.data(), path.size()})), "out_file");
+            assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "out_file");
+            assert_conditional(bytesWritten == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "out_file");
             #else
             auto written = std::fwrite(thiz.data.data(), 1, dataSize, file.get());
             assert_conditional(written == dataSize, fmt::format("{}: {}", Language::get("write_file_error"), path), "out_file");

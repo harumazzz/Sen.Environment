@@ -350,7 +350,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             assert_conditional(stream.readString(4) == k_magic_identifier, fmt::format("{}", Kernel::Language::get("popcap.rton.decode.invalid_rton_magic")), "process_whole");
             {
                 auto version = stream.readUint32();
-                assert_conditional(version == k_version, String::format(fmt::format("{}", Language::get("popcap.rton.version_is_invalid")), std::to_string(version)), "process_whole");
+                assert_conditional(version == k_version, format(fmt::format("{}", Language::get("popcap.rton.version_is_invalid")), std::to_string(version)), "process_whole");
             }
             auto native_string_index = List<std::string>{};
             auto unicode_string_index = List<std::string>{};

@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "kernel/utility/macro.hpp"
 #include "kernel/utility/library.hpp"
 
 namespace Sen::Kernel

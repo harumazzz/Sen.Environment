@@ -72,7 +72,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                     {
                         auto resource_detail_manifest_information_structure = ResourceBasicDetailManifestInformation{};
                         resource_detail_manifest_information_structure.id_offset = set_string(resource_id);
-                        resource_detail_manifest_information_structure.path_offset = set_string(String::to_windows_style(resource_manifest.path));
+                        resource_detail_manifest_information_structure.path_offset = set_string(to_windows_style(resource_manifest.path));
                         resource_detail_manifest_information_structure.header_size = 0x1C_size;
                         resource_detail_manifest_information_structure.type = resource_manifest.type;
                         auto resource_image_property_detail_manifest_information_structure = ResourceImagePropertyDetailManifestInformation{};
@@ -97,7 +97,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                             {
                                 auto resource_property_information_structure = ResourcePropertyDetailManifestInformation{};
                                 resource_property_information_structure.key_offset = set_string(property_id);
-                                resource_property_information_structure.value_offset = set_string(String::to_windows_style(property_value.get<std::string>()));
+                                resource_property_information_structure.value_offset = set_string(to_windows_style(property_value.get<std::string>()));
                                 resource_property_information_structure_list.emplace_back(resource_property_information_structure);
                             }
                         }
@@ -140,9 +140,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             Args &args) -> void
         {
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(definition.version));
-            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(definition.version)), "process_package");
+            assert_conditional((index != k_version_list.end()), format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(definition.version)), "process_package");
             auto block_index = std::find(k_texture_resource_information_section_block_size_list.begin(), k_texture_resource_information_section_block_size_list.end(), definition.texture_information_section_size);
-            assert_conditional((block_index != k_texture_resource_information_section_block_size_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_information_section_size")), std::to_string(definition.texture_information_section_size)), "process_package"); 
+            assert_conditional((block_index != k_texture_resource_information_section_block_size_list.end()), format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_information_section_size")), std::to_string(definition.texture_information_section_size)), "process_package"); 
             auto information_structure = Information{};
             auto global_group_index = k_begin_index;
             auto global_subgroup_index = k_begin_index;
@@ -200,7 +200,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                     for (auto &resource_information : subgroup_information.resource)
                     {
                         auto &resource_path = resource_information.path;
-                        information_structure.resource_path[String::to_windows_style(toupper_back(resource_path))] = static_cast<uint32_t>(global_subgroup_index);
+                        information_structure.resource_path[to_windows_style(toupper_back(resource_path))] = static_cast<uint32_t>(global_subgroup_index);
                         auto packet_resource_index = k_begin_index;
                         for (packet_resource_index; packet_resource_index < packet_structure.resource.size(); ++packet_resource_index)
                         {
@@ -209,7 +209,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                                 break;
                             }
                         }
-                        assert_conditional(packet_resource_index + 1_size <= packet_structure.resource.size(), String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_packet_resource_index")), std::to_string(packet_resource_index), std::to_string(packet_structure.resource.size() - 1)), "process_package");
+                        assert_conditional(packet_resource_index + 1_size <= packet_structure.resource.size(), format(fmt::format("{}", Language::get("popcap.rsb.invalid_packet_resource_index")), std::to_string(packet_resource_index), std::to_string(packet_structure.resource.size() - 1)), "process_package");
                         auto &packet_structure_resource = packet_structure.resource[packet_resource_index];
                         compare_conditional(resource_information.use_texture_additional_instead, packet_structure_resource.use_texture_additional_instead, subgroup_id, "popcap.rsb.mismatch_texture_additional"_sv);
                         if (!resource_information.use_texture_additional_instead)
@@ -235,7 +235,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                                 texture_information_structure.alpha_size = resource_information.texture_additional.value.texture_infomation.alpha_size;
                                 texture_information_structure.scale = resource_information.texture_additional.value.texture_infomation.scale;
                             }
-                            assert_conditional(packet_structure_resource.texture_additional.value.index >= static_cast<int>(k_none_size), String::format(fmt::format("{}", Language::get("popcap.rsb.index_must_higher_than_zero")), std::to_string(packet_structure_resource.texture_additional.value.index)), "process_package");
+                            assert_conditional(packet_structure_resource.texture_additional.value.index >= static_cast<int>(k_none_size), format(fmt::format("{}", Language::get("popcap.rsb.index_must_higher_than_zero")), std::to_string(packet_structure_resource.texture_additional.value.index)), "process_package");
                             auto texture_resource_information_index = global_texture_resource_index + static_cast<size_t>(packet_structure_resource.texture_additional.value.index);
                             assert_conditional(!information_structure.texture_resource_information.contains(texture_resource_information_index), fmt::format("{}", Language::get("popcap.rsb.invalid_texture_resource_information_index")), "process_package");
                             information_structure.texture_resource_information[texture_resource_information_index] = texture_information_structure;
@@ -245,10 +245,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                         packet_structure.resource.erase(packet_structure.resource.begin() + packet_resource_index);
                     }
                     if (texture_resource_count != k_none_size) {
-                        assert_conditional(texture_resource_index_total == ((texture_resource_count - 1_size) * texture_resource_count / 2_size), String::format(fmt::format("{}", Language::get("popcap.rsb.pack.invalid_index")), subgroup_id), "process_package");
+                        assert_conditional(texture_resource_index_total == ((texture_resource_count - 1_size) * texture_resource_count / 2_size), format(fmt::format("{}", Language::get("popcap.rsb.pack.invalid_index")), subgroup_id), "process_package");
                         global_texture_resource_index += texture_resource_count;
                     }
-                    assert_conditional(packet_structure.resource.size() == k_none_size, String::format(fmt::format("{}", Language::get("popcap.rsb.packet_resource_mismatch_size")), std::to_string(k_none_size), std::to_string(packet_structure.resource.size())), "process_package");
+                    assert_conditional(packet_structure.resource.size() == k_none_size, format(fmt::format("{}", Language::get("popcap.rsb.packet_resource_mismatch_size")), std::to_string(k_none_size), std::to_string(packet_structure.resource.size())), "process_package");
                     basic_subgroup_information_structure.resource_data_section_compression = packet_header_structure.resource_data_section_compression;
                     basic_subgroup_information_structure.information_section_size = packet_header_structure.information_section_size;
                     basic_subgroup_information_structure.general_resource_data_section_offset = packet_header_structure.general_resource_data_section_offset;
@@ -278,7 +278,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                 information_structure.group_information.emplace_back(simple_group_information_structure);
                 ++global_group_index;
             }
-            assert_conditional(information_structure.texture_resource_information.size() == global_texture_resource_index, String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_count")), std::to_string(information_structure.texture_resource_information.size()), std::to_string(global_texture_resource_index)), "process_package");
+            assert_conditional(information_structure.texture_resource_information.size() == global_texture_resource_index, format(fmt::format("{}", Language::get("popcap.rsb.invalid_texture_count")), std::to_string(information_structure.texture_resource_information.size()), std::to_string(global_texture_resource_index)), "process_package");
             auto k_use_resource_manifest_information = definition.version <= 3_ui;
             stream.writeNull(!k_use_resource_manifest_information ? information_header_section_size - stream.write_pos : information_header_section_size - stream.write_pos - k_block_size);
             information_structure.header.resource_path_section_offset = stream.write_pos;

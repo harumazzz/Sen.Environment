@@ -65,7 +65,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                         exchange_to_resource_basic(resource_manifest_information_data_stream, resource_detail_manifest_information_structure);
                         auto manifest_resource = ManifestResource{};
                         auto manifest_resource_id = get_string(resource_detail_manifest_information_structure.id_offset);
-                        manifest_resource.path = String::to_posix_style(get_string(resource_detail_manifest_information_structure.path_offset));
+                        manifest_resource.path = to_posix_style(get_string(resource_detail_manifest_information_structure.path_offset));
                         manifest_resource.type = resource_detail_manifest_information_structure.type;
                         if (resource_detail_manifest_information_structure.image_property_information_offset != 0_ui)
                         {
@@ -89,7 +89,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
                         {
                             auto resource_property_detail_information_manifest_structure = ResourcePropertyDetailManifestInformation{};
                             exchange_to_resource_property(resource_manifest_information_data_stream, resource_property_detail_information_manifest_structure);
-                            manifest_resource.property[get_string(resource_property_detail_information_manifest_structure.key_offset)] = String::to_posix_style(get_string(resource_property_detail_information_manifest_structure.value_offset));
+                            manifest_resource.property[get_string(resource_property_detail_information_manifest_structure.key_offset)] = to_posix_style(get_string(resource_property_detail_information_manifest_structure.value_offset));
                         }
                         subgroup_manifest.resource[manifest_resource_id] = manifest_resource;
                     }
@@ -112,9 +112,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
             static_assert(unpack_for_work == true || unpack_for_work == false, "unpack_for_work must be true or false");
             auto information_structure = Information{};
             exchange_to_header(stream, information_structure.header);
-            assert_conditional(information_structure.header.magic == k_magic_identifier, String::format(fmt::format("{}", Language::get("popcap.rsb.unpack.invalid_rsb_magic")), std::to_string(definition.version)), "process_package");
+            assert_conditional(information_structure.header.magic == k_magic_identifier, format(fmt::format("{}", Language::get("popcap.rsb.unpack.invalid_rsb_magic")), std::to_string(definition.version)), "process_package");
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(information_structure.header.version));
-            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(static_cast<int>(information_structure.header.version))), "process"); 
+            assert_conditional((index != k_version_list.end()), format(fmt::format("{}", Language::get("popcap.rsb.invalid_rsb_version")), std::to_string(static_cast<int>(information_structure.header.version))), "process"); 
             definition.version = information_structure.header.version;
             CompiledMapData::decode(stream, information_structure.header.group_id_section_offset, information_structure.header.group_id_section_size, information_structure.group_id, &exchange_to_index);
             // CompiledMapData::decode(stream, information_structure.header.subgroup_id_section_offset, information_structure.header.subgroup_id_section_size, information_structure.subgroup_id, &exchange_to_index);

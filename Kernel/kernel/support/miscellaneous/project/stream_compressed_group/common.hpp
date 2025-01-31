@@ -136,11 +136,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 value.data[id].type = exchange_data_type(resource["type"].get<std::string>());
                 if constexpr (use_string_for_style)
                 {
-                    value.data[id].path = String::replaceAll(resource["path"].get<std::string>(), k_windows_style, k_posix_style);
+                    value.data[id].path = replace_all(resource["path"].get<std::string>(), k_windows_style, k_posix_style);
                 }
                 else
                 {
-                    value.data[id].path = String::join(resource["path"].get<List<std::string>>(), k_posix_style);
+                    value.data[id].path = join(resource["path"].get<List<std::string>>(), k_posix_style);
                 }
             }
             return;
@@ -166,11 +166,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 auto &atlas_data = value.packet[parent["id"].get<std::string>()];
                 if constexpr (use_string_for_style)
                 {
-                    atlas_data.path = String::replaceAll(parent["path"].get<std::string>(), k_windows_style, k_posix_style);
+                    atlas_data.path = replace_all(parent["path"].get<std::string>(), k_windows_style, k_posix_style);
                 }
                 else
                 {
-                    atlas_data.path = String::join(parent["path"].get<List<std::string>>(), k_posix_style);
+                    atlas_data.path = join(parent["path"].get<List<std::string>>(), k_posix_style);
                 }
                 atlas_data.dimension.width = parent["width"].get<int>();
                 atlas_data.dimension.height = parent["height"].get<int>();
@@ -187,11 +187,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     auto &children_data = atlas_data.data[element["id"].get<std::string>()];
                     if constexpr (use_string_for_style)
                     {
-                        children_data.path = String::replaceAll(element["path"].get<std::string>(), k_windows_style, k_posix_style);
+                        children_data.path = replace_all(element["path"].get<std::string>(), k_windows_style, k_posix_style);
                     }
                     else
                     {
-                        children_data.path = String::join(element["path"].get<List<std::string>>(), k_posix_style);
+                        children_data.path = join(element["path"].get<List<std::string>>(), k_posix_style);
                     }
                     children_data.type = exchange_data_type(element["type"].get<std::string>());
                     children_data.texture_info.ax = element["ax"].get<int>();
@@ -230,7 +230,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             {
                 if (res.is_string())
                 {
-                    return Converter::to_int32(res.get<std::string>(), String::format(fmt::format("{}", Language::get("project.scg.exchange_custom_resource_info.invalid_convert")), res.get<std::string>()));
+                    return Converter::to_int32(res.get<std::string>(), format(fmt::format("{}", Language::get("project.scg.exchange_custom_resource_info.invalid_convert")), res.get<std::string>()));
                 }
                 else if (res.is_number())
                 {
@@ -368,11 +368,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     {"id", data_id}};
                 if constexpr (use_string_for_style)
                 {
-                    resource["path"] = String::replaceAll(data_value.path, k_posix_style, k_windows_style);
+                    resource["path"] = replace_all(data_value.path, k_posix_style, k_windows_style);
                 }
                 else
                 {
-                    resource["path"] = String::split(data_value.path, k_posix_style);
+                    resource["path"] = split(data_value.path, k_posix_style);
                 }
                 value["resources"].emplace_back(resource);
             }
@@ -398,11 +398,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     {"height", packet_value.dimension.height}};
                 if constexpr (use_string_for_style)
                 {
-                    resource["path"] = String::replaceAll(packet_value.path, k_posix_style, k_windows_style);
+                    resource["path"] = replace_all(packet_value.path, k_posix_style, k_windows_style);
                 }
                 else
                 {
-                    resource["path"] = String::split(packet_value.path, k_posix_style);
+                    resource["path"] = split(packet_value.path, k_posix_style);
                 }
                 value["resources"].emplace_back(resource);
                 for (auto &[data_id, data_value] : packet_value.data)
@@ -414,11 +414,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         {"parent", packet_id}};
                     if constexpr (use_string_for_style)
                     {
-                        sub_resource["path"] = String::replaceAll(data_value.path, k_posix_style, k_windows_style);
+                        sub_resource["path"] = replace_all(data_value.path, k_posix_style, k_windows_style);
                     }
                     else
                     {
-                        sub_resource["path"] = String::split(data_value.path, k_posix_style);
+                        sub_resource["path"] = split(data_value.path, k_posix_style);
                     }
                     sub_resource["ax"] = data_value.texture_info.ax;
                     sub_resource["ay"] = data_value.texture_info.ay;
@@ -536,11 +536,11 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             if (data["type"] != nullptr)
             {
-                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), String::format(fmt::format("{}", Language::get("project.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
+                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), format(fmt::format("{}", Language::get("project.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
                 for (auto &[packet_id, packet_value] : data["packet"].items())
                 {
                     auto &packet = value.texture.packet[packet_id];
-                    assert_conditional(hash_string(packet_value["type"].get<std::string>()) == hash_string("Image"_sv), String::format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
+                    assert_conditional(hash_string(packet_value["type"].get<std::string>()) == hash_string("Image"_sv), format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), packet_id), "exchange_subgroup_compression_info");
                     packet.path = packet_value["path"].get<std::string>();
                     packet.dimension.width = packet_value["dimension"]["width"].get<int>();
                     packet.dimension.height = packet_value["dimension"]["height"].get<int>();
@@ -822,7 +822,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
             }
             default:
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
+                assert_conditional(false, format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
             }
         }
 
@@ -854,7 +854,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 }
             }
             default:
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
+                assert_conditional(false, format(fmt::format("{}", Language::get("project.scg.invalid_image_format")), std::to_string(data)), "exchange_image_format");
             }
         }
 
@@ -913,7 +913,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         inline static auto exchange_image_path(
             std::string const &path) -> std::string
         {
-            auto string_list = Sen::Kernel::String(path).split("/"_sv);
+            auto string_list = split(path, "/"_sv);
             if (string_list.size() == k_none_size && string_list.size() < 2_size)
             {
                 return path;
@@ -922,7 +922,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             {
                 string_list.erase(string_list.begin() + 1);
             }
-            return String::join(string_list, "/"_sv);
+            return join(string_list, "/"_sv);
         }
 
         inline static auto exchange_animation_path(
@@ -936,12 +936,12 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             std::string const &path,
             int const &resolution) -> std::string
         {
-            auto string_list = Sen::Kernel::String(path).split("/"_sv);
+            auto string_list = split(path, "/"_sv);
             if (compare_string(string_list.front(), "images"_sv))
             {
                 string_list.insert(string_list.begin() + 1, std::to_string(resolution));
             }
-            return String::join(string_list, "/"_sv);
+            return join(string_list, "/"_sv);
         }
 
         inline static auto restore_animation_path(
@@ -964,7 +964,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             for (auto &[data_id, data_value] : image_info.data)
             {
-                assert_conditional(data_value.type == DataType::Image, String::format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), data_id), "exchange_image");
+                assert_conditional(data_value.type == DataType::Image, format(fmt::format("{}", Language::get("project.scg.must_be_image_type")), data_id), "exchange_image");
                 auto rectangle = RectangleFileIO<int>(
                     data_value.texture_info.ax,
                     data_value.texture_info.ay,
@@ -1119,7 +1119,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             exchange_head_information(stream, header_information);
             assert_conditional(header_information.magic == k_magic_identifier, fmt::format("{}", Language::get("project.scg.invalid_scg_magic")), "exchange_stream_resource_group");
             auto index = std::find(k_version_list.begin(), k_version_list.end(), static_cast<int>(header_information.version));
-            assert_conditional((index != k_version_list.end()), String::format(fmt::format("{}", Language::get("project.scg.invalid_scg_version")), std::to_string(header_information.version)), "exchange_stream_resource_group");
+            assert_conditional((index != k_version_list.end()), format(fmt::format("{}", Language::get("project.scg.invalid_scg_version")), std::to_string(header_information.version)), "exchange_stream_resource_group");
             packet_information.version = static_cast<int>(header_information.version);
             auto composite_flag = CompositeFlag{};
             exchange_composite_flag(header_information.composite_flag, composite_flag);
@@ -1154,14 +1154,14 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                 stream.read_pos = static_cast<size_t>(subgroup.resource_content_information_offset);
                 auto resource_content_information = ResourceContentInformation{};
                 exchange_resouce_content_information(stream, resource_content_information);
-                assert_conditional(resource_content_information.magic == k_resource_content_information_magic_identifier, String::format(fmt::format("{}", Language::get("popcap.rsb.project.invalid_resource_content_magic")), std::to_string(resource_content_information.magic), std::to_string(k_resource_content_information_magic_identifier)), "exchange_stream_resource_group");
-                assert_conditional(resource_content_information.version == k_resource_content_information_version, String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
+                assert_conditional(resource_content_information.magic == k_resource_content_information_magic_identifier, format(fmt::format("{}", Language::get("popcap.rsb.project.invalid_resource_content_magic")), std::to_string(resource_content_information.magic), std::to_string(k_resource_content_information_magic_identifier)), "exchange_stream_resource_group");
+                assert_conditional(resource_content_information.version == k_resource_content_information_version, format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_version")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 auto compressed_data = stream.readString(static_cast<size_t>(resource_content_information.information_compressed_size));
                 auto source_data = Uint8Array{compressed_data.size()};
                 std::memcpy(source_data.data(), compressed_data.data(), compressed_data.size());
                 auto content_data = Uint8Array{};
                 Encryption::Base64::Decode::process(steal_reference<UCharacterArray>(source_data), content_data);
-                assert_conditional(content_data.size() == static_cast<size_t>(resource_content_information.information_string_size), String::format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
+                assert_conditional(content_data.size() == static_cast<size_t>(resource_content_information.information_string_size), format(fmt::format("{}", Language::get("project.scg.invalid_resource_content_size")), std::to_string(resource_content_information.version), std::to_string(k_resource_content_information_version)), "exchange_stream_resource_group");
                 packet_subgroup.info = nlohmann::ordered_json::parse(std::string{reinterpret_cast<const char*>(content_data.data()), content_data.size()});
             }
             return;

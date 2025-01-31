@@ -246,7 +246,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
             }
             default:
             {
-                assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.rton.invalid_type"))), "exchange_value"); 
+                assert_conditional(false, format(fmt::format("{}", Language::get("popcap.rton.invalid_type"))), "exchange_value"); 
             }
             }
         }

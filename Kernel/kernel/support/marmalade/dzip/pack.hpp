@@ -29,7 +29,7 @@ namespace Sen::Kernel::Support::Marmalade::DZip
                 auto &resource_definition = definition.resource[resource_index];
                 auto &resource_information_structure = information_structure.resource_information[resource_index];
                 auto resource_path = fmt::format("{}/{}", resource_directory, resource_definition.path);
-                auto resource_directory_string = String::to_windows_style(Path::getParents(resource_definition.path));
+                auto resource_directory_string = to_windows_style(Path::getParents(resource_definition.path));
                 information_structure.resource_file.emplace_back(Path::getFileName(resource_definition.path));
                 if (auto index = std::find(information_structure.resource_directory.begin(), information_structure.resource_directory.end(), resource_directory_string); index != information_structure.resource_directory.end())
                 {

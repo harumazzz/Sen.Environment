@@ -55,7 +55,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 			for (const auto& [subgroup, subgroup_value] : parent_value["subgroups"].items()) {
 				auto resource_json_path = fmt::format("{}/subgroup/{}.json", source, subgroup);
 				auto resource_content = FileSystem::read_json(resource_json_path);
-				assert_conditional(resource_content.find("resources") != resource_content.end(), String::format(fmt::format("{}", Language::get("popcap.resource_group.property_cannot_be_null")), std::string{"groups"}), "process_subgroup_resources");
+				assert_conditional(resource_content.find("resources") != resource_content.end(), format(fmt::format("{}", Language::get("popcap.resource_group.property_cannot_be_null")), std::string{"groups"}), "process_subgroup_resources");
 				resources.emplace_back(std::move(resource_content));
 			}
 			return resources;

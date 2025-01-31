@@ -6,24 +6,13 @@
 
 namespace Sen::Kernel::Encryption::MD5 
 {
-
-	using byte = unsigned char;
 	
 	inline static auto hash(
-		const std::span<const byte> &message
+		const std::span<const uint8_t> &message
 	) -> std::string
 	{
 		auto md5 = Subprojects::md5::MD5{ message };
-		auto result = md5.toStr();
-		return result;
-	}
-
-	inline static auto hash_fs(
-		std::string_view source
-	) -> std::string
-	{
-		auto str = FileSystem::read_binary<unsigned char>(source);
-		auto result = Encryption::MD5::hash(str);
+		auto result = std::string{ reinterpret_cast<const char*>(md5.getDigest()), 16_size };
 		return result;
 	}
 

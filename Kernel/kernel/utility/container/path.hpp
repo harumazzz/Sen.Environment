@@ -2,7 +2,7 @@
 
 #include "kernel/utility/macro.hpp"
 #include "kernel/utility/library.hpp"
-#include "kernel/utility/container/string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 
 namespace Sen::Kernel::Path 
 {
@@ -13,14 +13,14 @@ namespace Sen::Kernel::Path
 		const std::string & source
 	) -> std::string const
 	{
-		return String::to_windows_style(source);
+		return to_windows_style(source);
 	}
 
 	inline auto to_posix_style(
 		const std::string & source
 	) -> std::string const
 	{
-		return String::to_posix_style(source);
+		return to_posix_style(source);
 	}
 
 	inline auto absolute(
@@ -28,7 +28,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::absolute(String::utf8_to_utf16(source)).wstring());
+		return utf16_to_utf8(fs::absolute(utf8_to_utf16(source)).wstring());
 		#else
 		return fs::absolute(source).string();
 		#endif
@@ -39,7 +39,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(String::utf8_to_utf16(source)).parent_path().wstring());
+		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).parent_path().wstring());
 		#else
 		return fs::path(source).parent_path().string();
 		#endif
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(String::utf8_to_utf16(source)).filename().wstring());
+		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).filename().wstring());
 		#else
 		return fs::path(source).filename().string();
 		#endif
@@ -62,7 +62,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(String::utf8_to_utf16(source)).parent_path().filename().wstring());
+		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).parent_path().filename().wstring());
 		#else
 		return fs::path(source).parent_path().filename().string();
 		#endif
@@ -73,7 +73,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(String::utf8_to_utf16(source)).extension().wstring());
+		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).extension().wstring());
 		#else
 		return fs::path(source).extension().string();
 		#endif
@@ -84,7 +84,7 @@ namespace Sen::Kernel::Path
 	) -> std::string const
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(String::utf8_to_utf16(source)).stem().wstring());
+		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).stem().wstring());
 		#else
 		return fs::path(source).stem().string();
 		#endif
@@ -95,7 +95,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(fs::path(source).wstring());
+		return utf16_to_utf8(fs::path(source).wstring());
 		#else
 		return fs::path(source).string();
 		#endif
@@ -108,9 +108,9 @@ namespace Sen::Kernel::Path
 		#if WINDOWS
 		auto path = fs::path{ std::wstring{} };
 		for(auto & element : list){
-			path.append(String::utf8_to_utf16(element));
+			path.append(utf8_to_utf16(element));
 		}
-		return String::utf16_to_utf8(path.wstring());
+		return utf16_to_utf8(path.wstring());
 		#else
 		auto path = fs::path{std::string{}};
 		for(auto & element : list){
@@ -131,7 +131,7 @@ namespace Sen::Kernel::Path
 		auto result = std::filesystem::path{};
 		(result /= ... /= args);
 		#if WINDOWS
-		return String::utf16_to_utf8(result.wstring());
+		return utf16_to_utf8(result.wstring());
 		#else
 		return result.string();
 		#endif
@@ -143,7 +143,7 @@ namespace Sen::Kernel::Path
 	{
 		auto result = std::filesystem::path{};
 		for (auto& arg : args) {
-			result /= String::utf8_to_utf16(arg);
+			result /= utf8_to_utf16(arg);
 		}
 		#if WINDOWS
 		auto posix_string = result.wstring();
@@ -153,7 +153,7 @@ namespace Sen::Kernel::Path
 		std::replace(posix_string.begin(), posix_string.end(), '\\', '/');
 		#endif
 		#if WINDOWS
-		return String::utf16_to_utf8(result.wstring());
+		return utf16_to_utf8(result.wstring());
 		#else
 		return result.string();
 		#endif
@@ -164,7 +164,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.filename().wstring());
+		return utf16_to_utf8(std::filesystem::path{ utf8_to_utf16(source) }.filename().wstring());
 		#else
 		return std::filesystem::path{ source }.filename().string();
 		#endif
@@ -175,7 +175,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.stem().wstring());
+		return utf16_to_utf8(std::filesystem::path{ utf8_to_utf16(source) }.stem().wstring());
 		#else
 		return std::filesystem::path{ source }.stem().string();
 		#endif
@@ -208,7 +208,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.parent_path().wstring());
+		return utf16_to_utf8(std::filesystem::path{ utf8_to_utf16(source) }.parent_path().wstring());
 		#else
 		return std::filesystem::path{ source }.parent_path().string();
 		#endif
@@ -219,7 +219,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.lexically_normal().wstring());
+		return utf16_to_utf8(std::filesystem::path{ utf8_to_utf16(source) }.lexically_normal().wstring());
 		#else
 		return std::filesystem::path{ source }.lexically_normal().string();
 		#endif
@@ -230,7 +230,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::absolute(String::utf8_to_utf16(source)).wstring());
+		return utf16_to_utf8(std::filesystem::absolute(utf8_to_utf16(source)).wstring());
 		#else
 		return std::filesystem::absolute(source).string();
 		#endif
@@ -241,7 +241,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::path{ String::utf8_to_utf16(source) }.extension().wstring());
+		return utf16_to_utf8(std::filesystem::path{ utf8_to_utf16(source) }.extension().wstring());
 		#else
 		return std::filesystem::path{ source }.extension().string();
 		#endif
@@ -252,7 +252,7 @@ namespace Sen::Kernel::Path
 	) -> bool
 	{
 		#if WINDOWS
-		return source == String::utf16_to_utf8(std::filesystem::path(String::utf8_to_utf16(source)).extension().wstring());
+		return source == utf16_to_utf8(std::filesystem::path(utf8_to_utf16(source)).extension().wstring());
 		#else
 		return source == std::filesystem::path(source).string();
 		#endif
@@ -264,7 +264,7 @@ namespace Sen::Kernel::Path
 	) -> std::string
 	{
 		#if WINDOWS
-		return String::utf16_to_utf8(std::filesystem::relative(String::utf8_to_utf16(to), String::utf8_to_utf16(from)).wstring());
+		return utf16_to_utf8(std::filesystem::relative(utf8_to_utf16(to), utf8_to_utf16(from)).wstring());
 		#else
 		return std::filesystem::relative(to, from).string();
 		#endif

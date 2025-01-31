@@ -4,7 +4,7 @@
 #include "kernel/support/popcap/re_animation/definition.hpp"
 #include "kernel/support/popcap/re_animation/common.hpp"
 #include "kernel/support/popcap/zlib/uncompress.hpp"
-#include "kernel/utility/container/string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ReAnimation
 {
@@ -39,7 +39,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             reanim.fps = stream.readFloat();
             stream.read_pos += 4_size;
             auto c_magic = stream.readUint32();
-            assert_conditional(c_magic == 0xC, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_pc_reanim_magic")), String::decimal_to_hexadecimal(c_magic)), "decode_pc");
+            assert_conditional(c_magic == 0xC, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_pc_reanim_magic")), decimal_to_hexadecimal(c_magic)), "decode_pc");
             for (auto i : Range<int>(track_size))
             {
                 stream.read_pos += 8;
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 track.name = stream.readStringByUint32();
                 auto c_track = stream.readUint32();
-                assert_conditional(c_track == 0x2C, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_pc_reanim_track")), String::decimal_to_hexadecimal(c_track)), "decode_pc");
+                assert_conditional(c_track == 0x2C, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_pc_reanim_track")), decimal_to_hexadecimal(c_track)), "decode_pc");
                 for (auto &transform : track.transforms)
                 {
                     auto tfloat = stream.readFloat();
@@ -128,7 +128,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             reanim.fps = stream.readFloat();
             stream.read_pos += 4;
             auto c_magic = stream.readUint32();
-            assert_conditional(c_magic == 0x14, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_tv_reanim_magic")), String::decimal_to_hexadecimal(c_magic)), "decode_tv");
+            assert_conditional(c_magic == 0x14, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_tv_reanim_magic")), decimal_to_hexadecimal(c_magic)), "decode_tv");
             for (auto i : Range<int>(track_size))
             {
                 stream.read_pos += 12;
@@ -141,7 +141,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 track.name = stream.readStringByUint32();
                 auto c_track = stream.readUint32();
-                assert_conditional(c_track == 0x30, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_tv_reanim_track")), String::decimal_to_hexadecimal(c_track)), "decode_tv");
+                assert_conditional(c_track == 0x30, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_tv_reanim_track")), decimal_to_hexadecimal(c_track)), "decode_tv");
                 for (auto &transform : track.transforms)
                 {
                     auto tfloat = stream.readFloat();
@@ -230,7 +230,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         {
             auto magic = stream.readInt32();
             auto version = stream.readUint16();
-            assert_conditional(magic == reanim_xmb_head && version == reanim_xmb_version, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_wp_reanim_magic")), String::decimal_to_hexadecimal(magic), String::decimal_to_hexadecimal(version)), "decode_wp");
+            assert_conditional(magic == reanim_xmb_head && version == reanim_xmb_version, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_wp_reanim_magic")), decimal_to_hexadecimal(magic), decimal_to_hexadecimal(version)), "decode_wp");
             stream.read_pos += 4;
             auto info = stream.readBytes(0x26);
             for (auto i : Range<int>(0x26))
@@ -320,7 +320,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             reanim.fps = stream.readFloat();
             stream.read_pos += 4;
             auto c_magic = stream.readUint32();
-            assert_conditional(c_magic == 0x10, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_32_reanim_magic")), String::decimal_to_hexadecimal(c_magic)), "decode_phone_32");
+            assert_conditional(c_magic == 0x10, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_32_reanim_magic")), decimal_to_hexadecimal(c_magic)), "decode_phone_32");
             for (auto i : Range<int>(track_size))
             {
                 stream.read_pos += 12;
@@ -332,7 +332,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 track.name = stream.readStringByUint32();
                 auto c_track = stream.readUint32();
-                assert_conditional(c_track == 0x2C, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_32_reanim_track")), String::decimal_to_hexadecimal(c_track)), "decode_phone_32");
+                assert_conditional(c_track == 0x2C, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_32_reanim_track")), decimal_to_hexadecimal(c_track)), "decode_phone_32");
                 for (auto &transform : track.transforms)
                 {
                     auto tfloat = stream.readFloat();
@@ -409,7 +409,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             reanim.fps = stream.readFloat();
             stream.read_pos += 8;
             auto c_magic = stream.readUint32();
-            assert_conditional(c_magic == 0x20, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_64_reanim_magic")), String::decimal_to_hexadecimal(c_magic)), "decode_phone_64");
+            assert_conditional(c_magic == 0x20, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_64_reanim_magic")), decimal_to_hexadecimal(c_magic)), "decode_phone_64");
             for (auto i : Range<int>(track_size))
             {
                 stream.read_pos += 24;
@@ -422,7 +422,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 track.name = stream.readStringByUint32();
                 auto c_track = stream.readUint32();
-                assert_conditional(c_track == 0x38, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_64_reanim_track")), String::decimal_to_hexadecimal(c_track)), "decode_phone_64");
+                assert_conditional(c_track == 0x38, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_64_reanim_track")), decimal_to_hexadecimal(c_track)), "decode_phone_64");
                 for (auto &transform : track.transforms)
                 {
                     auto tfloat = stream.readFloat();
@@ -501,7 +501,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             reanim.fps = stream_big.readFloat();
             stream_big.read_pos += 4;
             auto c_magic = stream_big.readUint32();
-            assert_conditional(c_magic == 0xC, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_game_console_reanim_magic")), String::decimal_to_hexadecimal(c_magic)), "decode_game_console");
+            assert_conditional(c_magic == 0xC, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_game_console_reanim_magic")), decimal_to_hexadecimal(c_magic)), "decode_game_console");
             for (auto i : Range<int>(track_size))
             {
                 stream_big.read_pos += 8;
@@ -513,7 +513,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 track.name = stream_big.readStringByUint32();
                 auto c_track = stream_big.readUint32();
-                assert_conditional(c_track == 0x2C, String::format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_game_console_reanim_track")), String::decimal_to_hexadecimal(c_track)), "decode_game_console");
+                assert_conditional(c_track == 0x2C, format(fmt::format("{}", Language::get("popcap.reanim.decode.invalid_game_console_reanim_track")), decimal_to_hexadecimal(c_track)), "decode_game_console");
                 for (auto &transform : track.transforms)
                 {
                     auto tfloat = stream_big.readFloat();

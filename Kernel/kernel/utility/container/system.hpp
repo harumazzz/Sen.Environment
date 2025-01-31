@@ -33,7 +33,7 @@ namespace Sen::Kernel {
 		) -> void
 		{
 			#if WINDOWS
-			_wsystem(String::utf8view_to_utf16(command).data());
+			_wsystem(utf8_to_utf16(command).data());
 			#else
 			std::system(command.data());
 			#endif
@@ -41,10 +41,10 @@ namespace Sen::Kernel {
 
 		static auto get_environment(
 			std::string_view str
-		)
+		) 
 		{
 			#if WINDOWS
-			return _wgetenv(String::utf8view_to_utf16(str).data());
+			return _wgetenv(utf8_to_utf16(str).data());
 			#else
 			return std::getenv(str.data());
 			#endif
@@ -71,7 +71,7 @@ namespace Sen::Kernel {
 		{
 			auto environment = get_environment(str);
 			#if WINDOWS
-			return String::utf16_to_utf8({environment, wcslen(environment)});
+			return utf16_to_utf8({environment, wcslen(environment)});
 			#else
 			return std::string{environment, std::strlen(environment)};
 			#endif
@@ -102,7 +102,7 @@ namespace Sen::Kernel {
 			    si.dwFlags |= STARTF_USESTDHANDLES;
 			    if (!CreateProcessW(
 			            nullptr,
-			            const_cast<wchar_t*>(String::utf8view_to_utf16(command).data()),
+			            const_cast<wchar_t*>(utf8_to_utf16(command).data()),
 			            nullptr,
 			            nullptr,
 			            TRUE,

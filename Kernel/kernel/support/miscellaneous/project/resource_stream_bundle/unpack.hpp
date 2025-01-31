@@ -81,7 +81,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
                     return;
                 }
             }
-            assert_conditional(false, String::format(fmt::format("{}", Language::get("popcap.rsb.custom.cannot_find_manifest"))), "exchange_manifest_group");
+            assert_conditional(false, format(fmt::format("{}", Language::get("popcap.rsb.custom.cannot_find_manifest"))), "exchange_manifest_group");
         }
 
         inline static auto exchange_packages(

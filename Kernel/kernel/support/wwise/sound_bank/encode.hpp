@@ -3282,7 +3282,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
             DataStreamView &stream,
             BankHeader const &value) -> void
         {
-            assert_conditional(value.version > 52_ui, String::format(fmt::format("{}", Language::get("wwise.soundbank.decode.unsupported_bank_version")), std::to_string(value.version)), "exchange_bank_header");
+            assert_conditional(value.version > 52_ui, format(fmt::format("{}", Language::get("wwise.soundbank.decode.unsupported_bank_version")), std::to_string(value.version)), "exchange_bank_header");
             stream.writeUint32(value.version);
             k_version = value.version;
             stream.writeUint32(value.soundbank_id);
@@ -3592,7 +3592,7 @@ namespace Sen::Kernel::Support::WWise::SoundBank
                             break;
                         }
                         default: {
-                            assert_conditional(false,  String::format(fmt::format("{}", Language::get("wwise.soundbank.encode.invalid_hierarchy_type")), magic_enum::enum_name(value.type)), "exchange_hierarchy");
+                            assert_conditional(false,  format(fmt::format("{}", Language::get("wwise.soundbank.encode.invalid_hierarchy_type")), magic_enum::enum_name(value.type)), "exchange_hierarchy");
                         }
                     }
 				auto current_pos = data.write_pos;

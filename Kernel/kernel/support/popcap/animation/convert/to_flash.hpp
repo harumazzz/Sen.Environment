@@ -511,7 +511,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 					dom_frame->SetAttribute("index", std::to_string(frame_index).data());
 					auto action_script = value.NewElement("Actionscript");
 					auto script = value.NewElement("script");
-					auto cdata_string = value.NewText(String::join(action_command_list, "\n"_sv).data());
+					auto cdata_string = value.NewText(join(action_command_list, "\n"_sv).data());
 					cdata_string->SetCData(true);
 					script->InsertEndChild(cdata_string);
 					auto elements = value.NewElement("elements");
@@ -632,7 +632,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 				auto image_is_changed = false;
 				if (std::find(image_name.begin(), image_name.end(), '/') != image_name.end())
 				{
-					auto string_list = String{image_name}.split("/"_sv);
+					auto string_list = split(image_name, "/"_sv);
 					image_name = string_list.back();
 					image_is_changed = true;
 				}
