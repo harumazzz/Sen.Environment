@@ -19,7 +19,7 @@ add_library(
 	./utility/converter/common.hpp
 	./utility/converter/converter.hpp
 
-	./utility/container/math.hpp
+	./utility/algorithm/math.hpp
 	./utility/container/language.hpp
 	./utility/container/path.hpp
 	./utility/container/pointer.hpp
@@ -30,6 +30,10 @@ add_library(
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
 	./utility/container/system.hpp
+	./utility/container/string/compile_string.hpp
+	./utility/container/string/basic_string.hpp
+	./utility/container/string/common.hpp
+	./utility/container/map/common.hpp
 
 	./utility/encoding/json/common.hpp
 	./utility/encoding/json/helper.hpp
@@ -212,9 +216,6 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
-		utility/container/string/compile_string.hpp
-		utility/container/string/basic_string.hpp
-		utility/container/string/common.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/subprojects/fmt)

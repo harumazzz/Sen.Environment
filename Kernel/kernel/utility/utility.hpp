@@ -6,10 +6,14 @@
 
 #include "kernel/utility/miscellaneous/clock/clock.hpp"
 
-#include "kernel/utility/container/math.hpp"
+#include "kernel/utility/algorithm/math.hpp"
+
 #include "kernel/utility/container/array/common.hpp"
 #include "kernel/utility/container/array/array.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
+
+#include "kernel/utility/container/map/common.hpp"
+
 #include "kernel/utility/container/filesystem.hpp"
 #include "kernel/utility/container/pointer.hpp"
 #include "kernel/utility/container/string/compile_string.hpp"

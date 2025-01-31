@@ -5,6 +5,10 @@
 
 namespace Sen::Kernel {
 
+	class BasicString;
+
+	using String = BasicString;
+
     class BasicString {
 
 	public:
@@ -290,7 +294,7 @@ namespace Sen::Kernel {
 			Pointer<const char> str,
 			const Size& len
 		) -> void {
-			assert(index < thiz._size);
+			assert_conditional(index < thiz._size, fmt::format("Inserted index is larger than the size of the string"), "insert");
 			auto new_size = thiz._size + len;
 			auto raw = new Character[new_size + 1];
 			std::memcpy(raw, thiz.value, index);
@@ -321,7 +325,7 @@ namespace Sen::Kernel {
 			const Size& index,
 			const Size& len
 		) -> BasicString& {
-			assert(index < thiz._size);
+			assert_conditional(index < thiz._size, fmt::format("Erased index is larger than the size of the string"), "erase");
 			return erase(thiz.value + index, thiz.value + std::min(index + len, thiz._size));
 		}
 
@@ -329,9 +333,9 @@ namespace Sen::Kernel {
 			Iterator first,
 			Iterator last
 		) -> BasicString& {
-			assert(first >= thiz.value && first <= thiz.end());
-			assert(last >= thiz.value && last <= thiz.end());
-			assert(first <= last);
+			assert_conditional(first >= thiz.value && first <= thiz.end(), fmt::format("Erase begin iterator is outside bounds of the String iterator"), "erase");
+			assert_conditional(last >= thiz.value && last <= thiz.end(), fmt::format("Erase end iterator is outside bounds of the String iterator"), "erase");
+			assert_conditional(first <= last, fmt::format("Cannot erase if the first iterator is larger than last iterator"), "erase");
 			auto erase_len = static_cast<Size>(last - first);
 			auto new_size = thiz._size - erase_len;
 			std::memcpy(first, last, thiz.end() - last);
@@ -412,7 +416,7 @@ namespace Sen::Kernel {
 			const Size& pos,
 			const Size& count = none
 		) -> BasicString& {
-			assert(pos <= str._size);
+			assert_conditional(pos <= str._size, fmt::format("Cannot append if the position is larger than the size of the string. The position: {}, String size: {}", pos, str._size), "append");
 			return append(str.value + pos, std::min(count, str._size - pos));
 		}
 
@@ -454,7 +458,7 @@ namespace Sen::Kernel {
 			const Size& pos2,
 			const Size& count2 = none
 		) -> BasicString& {
-			assert(pos2 <= str._size);
+			assert_conditional(pos2 <= str._size, fmt::format("Cannot replace if the position is larger than the size of the string. The position: {}, String size: {}", pos2, str._size), "replace");
 			return replace(pos, count, str.value + pos2, std::min(count2, str._size - pos2));
 		}
 
