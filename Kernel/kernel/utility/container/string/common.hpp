@@ -123,27 +123,27 @@ namespace Sen::Kernel {
         return myconv.to_bytes(wstr.data(), wstr.data() + wstr.size());
     }
 
-    template<typename... Args> requires (std::is_same<Args, std::string_view>::value && ...) or 
-    (std::is_same<Args, std::string>::value && ...)
+    template<typename... Args>
     inline auto format(
-        std::string str, 
-        Args... args
+        const std::string& str, 
+        Args&&... args
     ) -> std::string
     {
+        auto destination = std::string{str.data(), str.size()};
         auto placeholder = "{}"_sv;
-        auto replacePlaceholder = [&](auto arg) -> void {
-            auto pos = str.find(placeholder);
+        auto replacePlaceholder = [&](auto&& arg) -> void {
+            auto pos = destination.find(placeholder);
             if (pos != std::string::npos) {
-                str.replace(pos, placeholder.length(), arg);
+                destination.replace(pos, placeholder.length(), arg);
             }
         };
         (replacePlaceholder(args), ...);
-        return str;
+        return destination;
     }
 
     template <typename T> requires std::is_integral<T>::value || std::is_floating_point<T>::value
     inline auto decimal_to_hexadecimal (
-        T decNumber
+        const T& decNumber
     ) -> std::string 
     {
         auto ss = std::stringstream{};

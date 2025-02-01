@@ -10,7 +10,7 @@ namespace Sen::Kernel {
     template <typename T>
 	class CList : public Common {
 
-		private:
+		protected:
 
     		using Common = Common;
 
@@ -72,17 +72,17 @@ namespace Sen::Kernel {
 			}
 
 			constexpr auto cbegin(
-			) -> Pointer<T> {
+			) const -> Pointer<T> {
 				return thiz.value;
 			}
 
 			constexpr auto cend(
-			) -> Pointer<T> {
+			) const -> Pointer<T> {
 				return thiz.value + thiz._size;
 			}
 
 			constexpr auto rend(
-			) -> Pointer<T> {
+			) const -> Pointer<T> {
 				return thiz.value + thiz._size - 1;
 			}
 
@@ -101,7 +101,7 @@ namespace Sen::Kernel {
 				return thiz.value + thiz._size;
 			}
 
-			auto allocate(
+		    auto allocate(
 				Size const& size
 			) -> void
 			{

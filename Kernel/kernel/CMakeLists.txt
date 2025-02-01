@@ -7,6 +7,32 @@ project(
 
 add_library(
 	${PROJECT_NAME} SHARED
+
+	./subprojects/fmt.hpp
+	./subprojects/json.hpp
+	./subprojects/md5.hpp
+	./subprojects/zlib.hpp
+	./subprojects/Rijndael.hpp
+	./subprojects/libpng.hpp
+	./subprojects/etc1.hpp
+	./subprojects/tinyxml2.hpp
+	./subprojects/lzma.hpp
+	./subprojects/avir.hpp
+	./subprojects/open_vcdiff.hpp
+	./subprojects/bzip2.hpp
+	./subprojects/quickjs.hpp
+	./subprojects/zip.hpp
+	./subprojects/dirent.hpp
+	./subprojects/simdjson.hpp
+	./subprojects/magic_enum.hpp
+	./subprojects/canvas_ity.hpp
+	./subprojects/tsl.hpp
+	./subprojects/compile-time-regular-expressions.hpp
+	./subprojects/parallel-hashmap.hpp
+	./subprojects/mio.hpp
+	./subprojects/thread-pool.hpp
+	./subprojects/mscharconv.hpp
+
 	./utility/macro.hpp
 	./utility/range/forward.hpp
 	./utility/range/reverse.hpp
@@ -34,9 +60,10 @@ add_library(
 	./utility/container/list/byte_list.hpp
 
 	./utility/container/system.hpp
+	./utility/container/string/common.hpp
 	./utility/container/string/compile_string.hpp
 	./utility/container/string/basic_string.hpp
-	./utility/container/string/common.hpp
+	./utility/container/string/string_parser.hpp
 	./utility/container/map/common.hpp
 
 	./utility/encoding/json/common.hpp
@@ -84,31 +111,6 @@ add_library(
 	./utility/javascript/converter/xml.hpp
 	./utility/javascript/proxy.hpp
 	./utility/javascript/namespace_builder.hpp
-	
-
-	./subprojects/fmt.hpp
-	./subprojects/json.hpp
-	./subprojects/md5.hpp
-	./subprojects/zlib.hpp
-	./subprojects/Rijndael.hpp
-	./subprojects/libpng.hpp
-	./subprojects/etc1.hpp
-	./subprojects/tinyxml2.hpp
-	./subprojects/lzma.hpp
-	./subprojects/avir.hpp
-	./subprojects/open_vcdiff.hpp
-	./subprojects/bzip2.hpp
-	./subprojects/quickjs.hpp
-	./subprojects/zip.hpp
-	./subprojects/dirent.hpp
-	./subprojects/simdjson.hpp
-	./subprojects/magic_enum.hpp
-	./subprojects/canvas_ity.hpp
-	./subprojects/tsl.hpp
-	./subprojects/compile-time-regular-expressions.hpp
-	./subprojects/parallel-hashmap.hpp
-	./subprojects/mio.hpp
-	./subprojects/thread-pool.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp

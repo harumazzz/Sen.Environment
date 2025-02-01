@@ -22,6 +22,7 @@
 #include "kernel/utility/container/pointer.hpp"
 #include "kernel/utility/container/string/compile_string.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
+#include "kernel/utility/container/string/string_parser.hpp"
 #include "kernel/utility/diff/vcdiff.hpp"
 #include "kernel/utility/container/path.hpp"
 #include "kernel/utility/converter/common.hpp"

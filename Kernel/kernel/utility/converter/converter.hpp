@@ -4,7 +4,7 @@
 
 namespace Sen::Kernel::Converter {
 
-	inline static auto constexpr to_int8(
+	inline auto constexpr to_int8(
 		std::string_view str,
 		std::string_view error
 	) -> std::int8_t

@@ -82,9 +82,7 @@ namespace Sen::Kernel {
 			Size const& size
 		) -> void
 		{
-			if (thiz.value != nullptr) {
-				delete[] thiz.value;
-			}
+			delete[] thiz.value;
 			thiz.value = new Character[size + 1];
 			thiz._size = size;
 			std::memset(thiz.value, 0, size + 1);
@@ -100,7 +98,7 @@ namespace Sen::Kernel {
 			}
 		}
 
-		explicit BasicString(
+    	BasicString(
 			const BasicString& other
 		) = delete;
 
@@ -108,7 +106,7 @@ namespace Sen::Kernel {
 			const BasicString& other
 		)->BasicString & = delete;
 
-		explicit BasicString(
+    	BasicString(
 			BasicString&& other
 		) noexcept : value{ other.value }, _size{ other._size }
 		{
@@ -131,15 +129,14 @@ namespace Sen::Kernel {
 
 		constexpr auto operator [](
 			Size const& index
-		) -> Character&
+		) const -> Character&
 		{
 			return thiz.value[index];
 		}
 
-		constexpr auto operator == (
-			const BasicString& other
-		) -> bool const
-		{
+		constexpr auto operator ==(
+			const BasicString &other
+		) const -> bool {
 			if (thiz._size != other._size) {
 				return false;
 			}
@@ -148,7 +145,7 @@ namespace Sen::Kernel {
 
 		constexpr auto operator != (
 			const BasicString& other
-		) -> bool const
+		) const -> bool
 		{
 			return !(thiz.operator==(other));
 		}
@@ -206,12 +203,12 @@ namespace Sen::Kernel {
 		}
 
 		constexpr auto cbegin(
-		) -> Pointer<char> {
+		) const -> Pointer<char> {
 			return thiz.value;
 		}
 
 		constexpr auto cend(
-		) -> Pointer<char> {
+		) const -> Pointer<char> {
 			return thiz.value + thiz._size;
 		}
 
@@ -224,7 +221,7 @@ namespace Sen::Kernel {
 
 		constexpr auto string(
 
-		) -> std::string
+		) const -> std::string
 		{
 			return std::string{ thiz.value, thiz._size };
 		}
@@ -263,19 +260,20 @@ namespace Sen::Kernel {
 
 		auto clone(
 
-		) -> BasicString
+		) const -> BasicString
 		{
 			return BasicString{ thiz.value, thiz._size };
 		}
 
 		constexpr auto release(
 
-		) -> Pointer<char>
+		) -> std::tuple<Pointer<char>, Size>
 		{
 			auto raw = thiz.value;
+			auto size = thiz._size;
 			thiz.value = nullptr;
 			thiz._size = 0;
-			return raw;
+			return std::make_tuple(raw, size);
 		}
 
 		auto clear(
