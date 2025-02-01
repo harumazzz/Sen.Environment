@@ -181,7 +181,9 @@ namespace Sen::Kernel {
             thiz.string(value);
         }
 
-        auto string_null_terminal(String &value) -> void {
+        auto string_null_terminator(
+            String &value
+        ) -> void {
             thiz.string(value);
             thiz.u8(0_byte);
         }

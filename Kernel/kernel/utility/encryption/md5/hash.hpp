@@ -168,7 +168,16 @@ namespace Sen::Kernel::Encryption::MD5 {
 			std::memcpy(count.data(), old_count.data(), sizeof(u32) * count.size());
 		}
 
-
     };
+
+	inline auto quick_hash (
+		Uint8Array& source,
+		String& destination
+	) -> void {
+		destination.allocate(compute_size());
+		auto temporary = Uint8Array{compute_size()};
+		Hash::process(source, temporary);
+		make_string(temporary, destination);
+	}
 
 }
