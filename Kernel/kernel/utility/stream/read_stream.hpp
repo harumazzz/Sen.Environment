@@ -40,72 +40,72 @@ namespace Sen::Kernel {
                 ReadStream &&
         ) -> ReadStream & = delete;
 
-        constexpr auto u8(
+        auto u8(
 
-        ) -> u8 {
+        ) -> uint8_t {
             return thiz.read<uint8_t>();
         }
 
-        constexpr auto i8(
+        auto i8(
 
-        ) -> i8 {
+        ) -> int8_t {
             return thiz.read<int8_t>();
         }
 
-        constexpr auto u16(
+        auto u16(
 
-        ) -> u16 {
+        ) -> uint16_t {
             return thiz.read<uint16_t>();
         }
 
-        constexpr auto i16(
+        auto i16(
 
-        ) -> i16 {
+        ) -> int16_t {
             return thiz.read<int16_t>();
         }
 
-        constexpr auto u24(
+        auto u24(
 
-        ) -> u32 {
+        ) -> uint32_t {
             return thiz.read<uint32_t>(3_size);
         }
 
-        constexpr auto i24(
+        auto i24(
 
-        ) -> i32 {
+        ) -> int32_t {
             return thiz.read<int32_t>(3_size);
         }
 
-        constexpr auto u32(
+        auto u32(
 
-        ) -> u32 {
+        ) -> uint32_t {
             return thiz.read<uint32_t>();
         }
 
-        constexpr auto i32(
+        auto i32(
 
-        ) -> i32 {
+        ) -> int32_t {
             return thiz.read<int32_t>();
         }
 
-        constexpr auto u64(
+        auto u64(
 
-        ) -> u64 {
+        ) -> uint64_t {
             return thiz.read<uint64_t>();
         }
 
-        constexpr auto i64(
+        auto i64(
 
-        ) -> i64 {
+        ) -> int64_t {
             return thiz.read<int64_t>();
         }
 
         //integer_variable_length_unsigned_32
         auto v32(
 
-        ) -> u32 {
+        ) -> uint32_t {
             auto value = 0_ui;
-            for (auto shift_count: Range<size_t>(0, 32, 7)) {
+            for (auto shift_count: Range<size_t>{0, 32, 7}) {
                 auto byte = thiz.u8();
                 if ((byte & 128_byte) != 0_byte) {
                     value |= static_cast<uint32_t>(byte & 127) << shift_count;
@@ -120,9 +120,9 @@ namespace Sen::Kernel {
         //integer_variable_length_unsigned_64
         auto v64(
 
-        ) -> u64 {
+        ) -> uint64_t {
             auto value = 0_ul;
-            for (auto shift_count: Range<size_t>(0, 64, 7)) {
+            for (auto shift_count: Range<size_t>{0, 64, 7}) {
                 auto byte = thiz.u8();
                 if ((byte & 128_byte) != 0_byte) {
                     value |= static_cast<uint64_t>(byte & 127) << shift_count;
@@ -137,7 +137,7 @@ namespace Sen::Kernel {
         //zigzag_32
         auto z32(
 
-        ) -> i32 {
+        ) -> int32_t {
             auto value = thiz.v32();
             return static_cast<int32_t>(value >> 1_size) ^ -static_cast<int32_t>(value & 1_ui);
         }
@@ -145,7 +145,7 @@ namespace Sen::Kernel {
         //zigzag_64
         auto z64(
 
-        ) -> i64 {
+        ) -> int64_t {
             auto value = thiz.v64();
             return static_cast<int64_t>(value >> 1_size) ^ -static_cast<int64_t>(value & 1_ul);
         }
@@ -234,7 +234,7 @@ namespace Sen::Kernel {
 
         constexpr auto current_position(
 
-        ) -> usize {
+        ) const -> usize {
             return thiz.m_position;
         }
 

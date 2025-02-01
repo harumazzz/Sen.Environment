@@ -226,6 +226,8 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
+		utility/filesystem/file_handler.hpp
+		utility/encoding/image/color.hpp
 
 )
 
@@ -314,6 +316,7 @@ if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
 endif()
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(

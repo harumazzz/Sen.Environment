@@ -116,7 +116,7 @@ namespace Sen::Kernel {
 
 		constexpr auto operator=(
 			BasicString&& other
-			) noexcept -> BasicString& {
+		) noexcept -> BasicString& {
 			if (this != &other) {
 				delete[] thiz.value;
 				thiz._size = other._size;
@@ -168,7 +168,7 @@ namespace Sen::Kernel {
 
 		constexpr auto size(
 
-		) -> Size
+		) const -> Size
 		{
 			return thiz._size;
 		}
@@ -181,13 +181,13 @@ namespace Sen::Kernel {
 		}
 
 		constexpr auto front(
-		) -> Pointer<char> {
+		) const -> Pointer<char> {
 			return thiz.value;
 		}
 
 		constexpr auto back(
 
-		) -> Pointer<char>
+		) const -> Pointer<char>
 		{
 			return thiz.value + thiz._size;
 		}
@@ -214,9 +214,9 @@ namespace Sen::Kernel {
 
 		constexpr auto empty(
 
-		) -> bool
+		) const -> bool
 		{
-			return thiz._size = 0;
+			return thiz._size == 0;
 		}
 
 		constexpr auto string(
@@ -228,7 +228,7 @@ namespace Sen::Kernel {
 
 		auto wstring(
 
-		) -> std::wstring
+		) const -> std::wstring
 		{
 			#if _WIN32
 			auto size = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), nullptr, 0));
@@ -242,13 +242,13 @@ namespace Sen::Kernel {
 			#endif
 		}
 
-		constexpr operator std::string_view() {
+		constexpr operator std::string_view() const {
 			return std::string_view{ thiz.value, thiz._size };
 		}
 
 		constexpr auto length(
 
-		) -> Size
+		) const -> Size
 		{
 			return thiz._size;
 		}
@@ -356,7 +356,6 @@ namespace Sen::Kernel {
 			}
 			thiz.value = new_value;
 			thiz._size = new_size;
-			return;
 		}
 
 		constexpr auto pop(
@@ -544,7 +543,7 @@ namespace Sen::Kernel {
 		auto copy(
 			Pointer<Character> source,
 			const Size& size
-		) -> void
+		) const -> void
 		{
 			std::memcpy(source, thiz.value, size);
 		}
@@ -622,6 +621,11 @@ namespace Sen::Kernel {
 			thiz.value = new_value;
 			thiz._size = new_size;
 			return thiz;
+		}
+
+    	auto view (
+    	) const -> std::string_view {
+			return std::string_view{ thiz.value, thiz._size };
 		}
 
 	};

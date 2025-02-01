@@ -46,7 +46,7 @@ namespace Sen::Kernel {
 
         constexpr auto current_position(
 
-        ) -> usize {
+        ) const -> usize {
             return thiz.m_position;
         }
 
@@ -81,14 +81,14 @@ namespace Sen::Kernel {
         }
 
         constexpr auto set_position(
-                const usize &index
+            const usize &index
         ) -> void {
             assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than capacity", "set_position");
             thiz.m_position = index;
         }
 
         auto allocate_full(
-                const usize &new_size
+            const usize &new_size
         ) -> void {
             if (new_size > thiz.m_data.capacity()) {
                 thiz.m_data.reallocate(new_size);
@@ -139,32 +139,34 @@ namespace Sen::Kernel {
             thiz.write<int64_t>(value);
         }
         
-        auto v32(const u32& value) -> void {
-            while (value >= 128_ui) {
-                thiz.u8(static_cast<uint8_t>(value ) & 127_byte | 128_byte);
-                value >>= 7_size;
+        auto v32(const uint32_t& value) -> void {
+            auto temporary = value;
+            while (temporary >= 128_ui) {
+                thiz.u8(static_cast<uint8_t>(temporary) & 127_byte | 128_byte);
+                temporary >>= 7_ui;
             }
-            thiz.u8(static_cast<uint8_t>(value));
+            thiz.u8(static_cast<uint8_t>(temporary));
         }
 
-        auto v64(const u64& value) -> void {
-            while (value >= 128_ul) {
-                thiz.u8(static_cast<uint8_t>(value ) & 127_byte | 128_byte);
-                value >>= 7_size;
+        auto v64(const uint64_t& value) -> void {
+            auto temporary = value;
+            while (temporary >= 128_ul) {
+                thiz.u8(static_cast<uint8_t>(temporary) & 127_byte | 128_byte);
+                temporary >>= 7_size;
             }
-            thiz.u8(static_cast<uint8_t>(value));
+            thiz.u8(static_cast<uint8_t>(temporary));
         }
 
-        constexpr auto z32(const i32 &value) -> void {
+        auto z32(const int32_t &value) -> void {
             thiz.v32(static_cast<uint32_t>(value << 1_size ^ value >> 31_size));
         }
 
-        constexpr auto z64(const i64 &value) -> void {
+        auto z64(const int64_t &value) -> void {
             thiz.v64(static_cast<uint64_t>(value << 1_size ^ value >> 63_size));
         }
 
-        constexpr auto bytes(Uint8List &value) -> void {
-            thiz.write(value);
+        auto bytes(Uint8List & value) -> void {
+            thiz.write<Uint8List>(value);
         }
 
         auto string(String &value) -> void {
@@ -175,7 +177,7 @@ namespace Sen::Kernel {
             thiz.set_position(temporary);
         }
 
-        template<class T>
+        template<typename T>
         auto string_of(String &value) -> void {
             thiz.write<T>(static_cast<T>(value.size()));
             thiz.string(value);
@@ -188,7 +190,10 @@ namespace Sen::Kernel {
             thiz.u8(0_byte);
         }
 
-        auto raw(uint8_t* data, const usize &size) {
+        auto raw(
+            uint8_t* data,
+            const usize &size
+        ) -> void {
             auto temporary = size + thiz.m_position;
             thiz.allocate_full(temporary);
             thiz.m_data.size(thiz.m_data.size() + size);
@@ -204,7 +209,7 @@ namespace Sen::Kernel {
         template<typename T>
         requires std::is_arithmetic_v<T>
         auto write(
-                const T &value
+            const T &value
         ) -> void {
             constexpr auto sz = sizeof(T);
             auto temporary = thiz.m_position + sz;
@@ -216,7 +221,7 @@ namespace Sen::Kernel {
 
         template<typename T> requires (std::is_same_v<T, Uint8Array> or std::is_same_v<T, Uint8List>) && requires(T a) {
             { a.size() } -> std::convertible_to<usize>;
-            { a.begin() } -> std::convertible_to<u8 *>;
+            { a.begin() } -> std::convertible_to<uint8_t*>;
         }
         auto write(
             T &value
