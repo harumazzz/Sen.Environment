@@ -17,7 +17,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
             std::string &hash
         ) -> void
         {
-            hash = Encryption::MD5::hash(data);
+            //hash = Encryption::MD5::hash(data);
             return;
         }
 

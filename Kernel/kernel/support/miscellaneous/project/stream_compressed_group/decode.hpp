@@ -228,7 +228,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         }
 
         inline static auto exchange_image_sprite(
-            std::map<string, ImageSpriteInfo> &texture_sprite_view_stored,
+            std::map<std::string, ImageSpriteInfo> &texture_sprite_view_stored,
             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo &extra,
             std::string const &destination) -> void
         {
@@ -285,7 +285,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             auto highest_resolution = definition.category.resolution.front();
             auto packet_compression = PacketCompression{};
-            auto texture_sprite_view_stored = std::map<string, ImageSpriteInfo>{};
+            auto texture_sprite_view_stored = std::map<std::string, ImageSpriteInfo>{};
             auto common_subgroup_id_list = List<std::string>{};
             for (auto &[id, packet_value] : packet_information)
             {

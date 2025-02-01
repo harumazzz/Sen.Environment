@@ -208,7 +208,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         std::string path;
         ImageDimension dimension;
         TextureResourceAdditional additional;
-        tsl::ordered_map<string, DataCompressedInfo> data;
+        tsl::ordered_map<std::string, DataCompressedInfo> data;
     };
 
     inline auto to_json(

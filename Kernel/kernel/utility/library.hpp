@@ -40,7 +40,6 @@
 #include "kernel/subprojects/zlib.hpp"
 #include "kernel/subprojects/fmt.hpp"
 #include "kernel/subprojects/json.hpp"
-#include "kernel/subprojects/md5.hpp"
 #include "kernel/subprojects/Rijndael.hpp"
 #include "kernel/subprojects/libpng.hpp"
 #include "kernel/subprojects/etc1.hpp"

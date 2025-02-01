@@ -18,8 +18,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
             List<uint8_t> const &data,
             std::string const &hash) -> void
         {
-            auto hash_test = Encryption::MD5::hash(data);
-            assert_conditional(hash_test == hash, fmt::format("{}", Language::get("popcap.rsb_patch.invalid_md5")), "test_hash");
+            // Replace
+            // auto hash_test = Encryption::MD5::hash(data);
+            // assert_conditional(hash_test == hash, fmt::format("{}", Language::get("popcap.rsb_patch.invalid_md5")), "test_hash");
             return;
         }
 

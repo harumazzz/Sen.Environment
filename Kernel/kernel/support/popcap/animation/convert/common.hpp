@@ -122,8 +122,8 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 
         struct AnimationNameList
         {
-            List<string> image;
-            List<string> sprite;
+            List<std::string> image;
+            List<std::string> sprite;
         };
 
         struct LabelInfo

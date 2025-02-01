@@ -22,8 +22,8 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
         inline static auto checking_info(
             InformationStructure const &definition) -> void
         {
-            auto duplicate_packet = List<string>{};
-            find_duplicate_elements<string>(definition.packet, duplicate_packet);
+            auto duplicate_packet = List<std::string>{};
+            find_duplicate_elements<std::string>(definition.packet, duplicate_packet);
             assert_conditional(duplicate_packet.empty(), format(fmt::format("{}", Language::get("popcap.animation.from_flash.duplicated_packet")), duplicate_packet[0]), "checking_info");
             return;
         }

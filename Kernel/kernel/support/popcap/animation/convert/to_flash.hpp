@@ -625,7 +625,7 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 		{
 			exchange_simple_extra(definition, extra);
 			exchange_default_extra(extra);
-			auto image_duplicate_stored = std::map<std::string, List<string>>{};
+			auto image_duplicate_stored = std::map<std::string, List<std::string>>{};
 			for (auto &image : definition.image)
 			{
 				auto image_name = image.path;

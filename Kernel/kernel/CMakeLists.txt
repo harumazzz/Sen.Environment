@@ -10,7 +10,6 @@ add_library(
 
 	./subprojects/fmt.hpp
 	./subprojects/json.hpp
-	./subprojects/md5.hpp
 	./subprojects/zlib.hpp
 	./subprojects/Rijndael.hpp
 	./subprojects/libpng.hpp
@@ -78,7 +77,6 @@ add_library(
 
 	./utility/trait/trait.hpp
 
-	./utility/encryption/md5.hpp
 	./utility/encryption/Rijndael.hpp
 	./utility/encryption/crc.hpp
 	./utility/encryption/fnv.hpp
@@ -86,6 +84,8 @@ add_library(
 	./utility/encryption/base64/common.hpp
 	./utility/encryption/base64/encode.hpp
 	./utility/encryption/base64/decode.hpp
+	./utility/encryption/md5/common.hpp
+	./utility/encryption/md5/hash.hpp
 
 	
 	./utility/platform/windows.hpp
@@ -226,6 +226,7 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
+
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/subprojects/fmt)
@@ -279,7 +280,6 @@ endif()
 
 target_link_libraries(
 	${PROJECT_NAME} PRIVATE
-	md5
 	zlib
 	json
 	fmt

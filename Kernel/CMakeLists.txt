@@ -25,7 +25,6 @@ endif()
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build can only be Release" FORCE)
 
-add_subdirectory("./subprojects/md5")
 add_subdirectory("./subprojects/json")
 add_subdirectory("./subprojects/zlib")
 add_subdirectory("./subprojects/fmt")

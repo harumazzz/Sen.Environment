@@ -44,7 +44,7 @@ namespace Sen::Kernel {
     inline auto split(
         std::string_view str,
         std::string_view delimiter
-    ) -> List<string>
+    ) -> List<std::string>
     {
         auto result = List<std::string>{};
         auto pos = 0;
@@ -59,7 +59,7 @@ namespace Sen::Kernel {
     }
 
     inline auto join(
-        const List<string> &data,
+        const List<std::string> &data,
         std::string_view delimiter
     ) -> std::string
     {

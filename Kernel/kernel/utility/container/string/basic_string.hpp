@@ -129,7 +129,7 @@ namespace Sen::Kernel {
 
 		constexpr auto operator [](
 			Size const& index
-		) const -> Character&
+		) -> Character&
 		{
 			return thiz.value[index];
 		}

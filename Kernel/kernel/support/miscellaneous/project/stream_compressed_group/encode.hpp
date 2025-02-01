@@ -46,7 +46,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         // ----------------------------------------------------------------------------------------------------------------------
 
         inline static auto exchange_image_merge(
-            std::map<string, ImageSpriteInfo> &texture_sprite_view_stored,
+            std::map<std::string, ImageSpriteInfo> &texture_sprite_view_stored,
             PacketInformation &packet_info,
             TextureFormatCategory const &texture_format_category,
             int const &format,
@@ -166,7 +166,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         }
 
         inline static auto exchange_image_sprite(
-            std::map<string, ImageSpriteInfo> &texture_sprite_view_stored,
+            std::map<std::string, ImageSpriteInfo> &texture_sprite_view_stored,
             Sen::Kernel::Support::PopCap::Animation::Convert::ExtraInfo &extra,
             std::string const &resource_source,
             std::string const &path) -> void
@@ -279,7 +279,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                     general_subgroup[subgroup_id] = packet_value;
                     continue;
                 }
-                auto texture_sprite_view_stored = std::map<string, ImageSpriteInfo>{};
+                auto texture_sprite_view_stored = std::map<std::string, ImageSpriteInfo>{};
                 for (auto &[resource_id, resource_info] : packet_value.resource)
                 {
                     switch (resource_info.type)
@@ -413,7 +413,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
                         auto image_information = SubgroupCompressedInfo{};
                         exchange_subgroup_compression_info(FileSystem::read_json(fmt::format("{}/{}", resource_source, resource_info.path)), image_information);
                         auto image_index = k_begin_index;
-                        auto texture_sprite_view_stored = std::map<string, ImageSpriteInfo>{};
+                        auto texture_sprite_view_stored = std::map<std::string, ImageSpriteInfo>{};
                         for (auto &[image_id, image_info] : image_information.texture.packet)
                         {
                             auto image = ImageIO::read_png(fmt::format("{}/{}.png", resource_source, image_info.path));

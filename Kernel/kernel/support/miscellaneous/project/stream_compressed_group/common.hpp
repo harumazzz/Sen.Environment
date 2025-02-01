@@ -536,7 +536,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         {
             if (data["type"] != nullptr)
             {
-                value.texture.resolution = Converter::to_int32(data["type"].get<string>(), format(fmt::format("{}", Language::get("project.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
+                value.texture.resolution = Converter::to_int32(data["type"].get<std::string>(), format(fmt::format("{}", Language::get("project.scg.exchange_subgroup_compression_info.invalid_convert")), data["type"].get<std::string>()));
                 for (auto &[packet_id, packet_value] : data["packet"].items())
                 {
                     auto &packet = value.texture.packet[packet_id];
@@ -754,7 +754,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
 
         struct SubgroupInformation
         {
-            string id;
+            std::string id;
             bool is_image;
             uint32_t resource_group_stream_section_offset;
             uint32_t resource_group_stream_section_block_size;
@@ -765,7 +765,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
             DataStreamView &stream,
             SubgroupInformation &value) -> void
         {
-            value.id = Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::exchange_string_block<Sen::Kernel::Support::PopCap::ResourceStreamBundle::Common::k_subgroup_name_string_block_size>(stream);
+            value.id = Support::PopCap::ResourceStreamBundle::Common::exchange_string_block<Support::PopCap::ResourceStreamBundle::Common::k_subgroup_name_string_block_size>(stream);
             value.is_image = static_cast<bool>(stream.readUint32());
             value.resource_group_stream_section_offset = stream.readUint32();
             value.resource_group_stream_section_block_size = stream.readUint32();
@@ -957,7 +957,7 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::StreamCompressedGroup
         }
 
         inline static auto exchange_image_split(
-            std::map<string, ImageSpriteInfo> &texture_sprite_view_stored,
+            std::map<std::string, ImageSpriteInfo> &texture_sprite_view_stored,
             Image<int> const &image,
             std::string const &subgroup_id,
             TexturePacketCompressedInfo const &image_info) -> void

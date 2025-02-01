@@ -41,8 +41,6 @@
 
 -   [simdjson](https://simdjson.org/): JSON Deserialize
 
--   [md5](https://github.com/JieweiWei/md5): MD5 Hash
-
 -   [open_vcdiff](https://github.com/google/open-vcdiff): Diff two file and generate the different
     after compare
 
