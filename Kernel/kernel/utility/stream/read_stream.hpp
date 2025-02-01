@@ -14,9 +14,8 @@ namespace Sen::Kernel {
 
     public:
 
-
         explicit ReadStream(
-            Uint8Array& source
+            Uint8Array &source
         ) : m_data{}, m_position{0_size} {
             m_data.assign(source);
         }
@@ -26,27 +25,195 @@ namespace Sen::Kernel {
         ) = default;
 
         ReadStream(
-            const ReadStream& other
+                const ReadStream &other
         ) = delete;
 
         auto operator=(
-            const ReadStream& other
+                const ReadStream &other
         ) -> ReadStream & = delete;
 
         ReadStream(
-            ReadStream&& other
+                ReadStream &&other
         ) = delete;
 
         auto operator=(
-            ReadStream&&
-        ) -> ReadStream& = delete;
+                ReadStream &&
+        ) -> ReadStream & = delete;
 
-        template <typename T>
+        constexpr auto u8(
+
+        ) -> u8 {
+            return thiz.read<uint8_t>();
+        }
+
+        constexpr auto i8(
+
+        ) -> i8 {
+            return thiz.read<int8_t>();
+        }
+
+        constexpr auto u16(
+
+        ) -> u16 {
+            return thiz.read<uint16_t>();
+        }
+
+        constexpr auto i16(
+
+        ) -> i16 {
+            return thiz.read<int16_t>();
+        }
+
+        constexpr auto u24(
+
+        ) -> u32 {
+            return thiz.read<uint32_t>(3_size);
+        }
+
+        constexpr auto i24(
+
+        ) -> i32 {
+            return thiz.read<int32_t>(3_size);
+        }
+
+        constexpr auto u32(
+
+        ) -> u32 {
+            return thiz.read<uint32_t>();
+        }
+
+        constexpr auto i32(
+
+        ) -> i32 {
+            return thiz.read<int32_t>();
+        }
+
+        constexpr auto u64(
+
+        ) -> u64 {
+            return thiz.read<uint64_t>();
+        }
+
+        constexpr auto i64(
+
+        ) -> i64 {
+            return thiz.read<int64_t>();
+        }
+
+        //integer_variable_length_unsigned_32
+        auto v32(
+
+        ) -> u32 {
+            auto value = 0_ui;
+            for (auto shift_count: Range<size_t>(0, 32, 7)) {
+                auto byte = thiz.u8();
+                if ((byte & 128_byte) != 0_byte) {
+                    value |= static_cast<uint32_t>(byte & 127) << shift_count;
+                } else {
+                    value |= static_cast<uint32_t>(byte) << shift_count;
+                    break;
+                }
+            }
+            return value;
+        }
+
+        //integer_variable_length_unsigned_64
+        auto v64(
+
+        ) -> u64 {
+            auto value = 0_ul;
+            for (auto shift_count: Range<size_t>(0, 64, 7)) {
+                auto byte = thiz.u8();
+                if ((byte & 128_byte) != 0_byte) {
+                    value |= static_cast<uint64_t>(byte & 127) << shift_count;
+                } else {
+                    value |= static_cast<uint64_t>(byte) << shift_count;
+                    break;
+                }
+            }
+            return value;
+        }
+
+        //zigzag_32
+        auto z32(
+
+        ) -> i32 {
+            auto value = thiz.v32();
+            return static_cast<int32_t>(value >> 1_size) ^ -static_cast<int32_t>(value & 1_ui);
+        }
+
+        //zigzag_64
+        auto z64(
+
+        ) -> i64 {
+            auto value = thiz.v64();
+            return static_cast<int64_t>(value >> 1_size) ^ -static_cast<int64_t>(value & 1_ul);
+        }
+
+        auto boolean(
+
+        ) -> bool {
+            return thiz.u8() == 1_byte;
+        }
+
+         auto string( 
+            const usize &size
+        ) -> String {
+            auto value = thiz.bytes(size);
+            return String{reinterpret_cast<const char *>(value.data()), size};
+        }
+
+        template<class T>
+        auto string_of(
+
+        ) -> String {
+            return thiz.string(static_cast<usize>(thiz.read<T>()));
+        }
+
+        auto string_v32(
+
+        ) -> String {
+            return thiz.string(static_cast<usize>(thiz.v32()));
+        }
+
+        auto string_null_terminator(
+
+        ) -> String {
+            auto value = String{};
+            while (true) {
+                auto byte = thiz.i8();
+                if (byte == 0) {
+                    break;
+                }
+                value += byte;
+            }
+            return value;
+        }
+
+        auto bytes(
+            const usize &size
+        )  -> Uint8Array  {
+            return thiz.read(thiz.m_position, thiz.m_position += size);
+        }
+
+        template<typename T>
+        auto read(
+            const usize &size
+        ) -> T {
+            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream",
+                               "read");
+            auto value = T{};
+            std::memcpy(&value, thiz.m_data.begin() + thiz.m_position, size);
+            thiz.m_position += size;
+            return value;
+        }
+
+        template<typename T>
         auto read(
 
-        )  -> T
-        {
-            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream", "read");
+        ) -> T {
+            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream",
+                               "read");
             auto value = T{};
             std::memcpy(&value, thiz.m_data.begin() + thiz.m_position, sizeof(T));
             thiz.m_position += sizeof(T);
@@ -54,10 +221,9 @@ namespace Sen::Kernel {
         }
 
         auto read(
-            const usize& from,
-            const usize& to
-        ) -> Uint8Array
-        {
+            const usize &from,
+            const usize &to
+        ) -> Uint8Array {
             assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
             assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
             assert_conditional(from < to, "From index must be smaller than To index", "read");
@@ -66,38 +232,41 @@ namespace Sen::Kernel {
             return destination;
         }
 
-        auto current_position(
+        constexpr auto current_position(
 
-        ) -> usize
-        {
+        ) -> usize {
             return thiz.m_position;
         }
 
-        auto size(
+        constexpr auto size(
 
-        ) -> usize
-        {
+        ) -> usize {
             return thiz.m_data.size();
         }
 
-        auto current_iterator(
+        constexpr auto current_iterator(
 
-        ) -> decltype(thiz.m_data.begin() + thiz.m_position)
-        {
+        ) -> decltype(thiz.m_data.begin() + thiz.m_position) {
             return thiz.m_data.begin() + thiz.m_position;
+        }
+
+        constexpr auto begin() -> decltype(thiz.m_data.begin()) {
+            return thiz.m_data.begin();
+        }
+
+        constexpr auto end() -> decltype(thiz.m_data.end()) {
+            return thiz.m_data.end();
         }
 
         auto view(
 
-        ) -> Uint8Array&
-        {
+        ) -> Uint8Array & {
             return thiz.m_data;
         }
 
-        auto set_position(
-            const usize& index
-        ) -> void
-        {
+        constexpr auto set_position(
+            const usize &index
+        ) -> void {
             assert_conditional(index < thiz.m_data.size(), "Index must be smaller than data size", "set_position");
             thiz.m_position = index;
         }
