@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/interface/script.hpp"
 #include "kernel/interface/api/method.hpp"
 #include "kernel/interface/api/class.hpp"
 #include "kernel/interface/version.hpp"
@@ -62,10 +61,6 @@ namespace Sen::Kernel::Interface {
 				}
 				auto json = kernel.add_space("JSON");
 				{
-					json.add_function("deserialize"_sv, SpecialFunctionProxy<JSValue, std::string&>::template as_function<Interface::API::JSON::deserialize>)
-					.add_function("serialize"_sv, SpecialFunctionProxy<std::string, JSValue&, int64_t&, bool>::template as_function<Interface::API::JSON::serialize>)
-					.add_function("deserialize_fs"_sv, SpecialFunctionProxy<JSValue, std::string&>::template as_function<Interface::API::JSON::deserialize_fs>)
-					.add_function("serialize_fs"_sv, SpecialFunctionProxy<void, std::string&, JSValue&, int64_t&, bool>::template as_function<Interface::API::JSON::serialize_fs>);
 				}
 				auto home = kernel.add_space("Home");
 				{
@@ -109,13 +104,6 @@ namespace Sen::Kernel::Interface {
 				}
 				auto image = kernel.add_space("Image");
 				{
-					image.add_function("join"_sv, FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::shared_ptr<JavaScript::Dimension>&, List<std::shared_ptr<JavaScript::VImageView>>&>::template as_function<Interface::API::Image::join>)
-					.add_function("join_extend"_sv, FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::shared_ptr<JavaScript::Dimension>&, List<std::shared_ptr<JavaScript::VImageView>>&>::template as_function<Interface::API::Image::join_extend>)
-					.add_function("resize_fs"_sv, FunctionProxy<void, std::string&, std::string&, float&>::template as_function<Interface::API::Image::resize_fs>)
-					.add_function("cut_multiple_fs"_sv, FunctionProxy<void, std::string&, List<std::shared_ptr<JavaScript::ExtendedRectangle>>&>::template as_function<Interface::API::Image::cut_multiple_fs>)
-					.add_function("cut_multiple_fs_asynchronous"_sv, FunctionProxy<void, std::string&, List<std::shared_ptr<JavaScript::ExtendedRectangle>>&>::template as_function<Interface::API::Image::cut_multiple_fs_asynchronous>)
-					.add_function("open"_sv, FunctionProxy<std::shared_ptr<JavaScript::ImageView>, std::string&>::template as_function<Interface::API::Image::open>)
-					.add_function("write"_sv, FunctionProxy<void, std::string&, std::shared_ptr<JavaScript::ImageView>&>::template as_function<Interface::API::Image::write>);
 				}
 				auto javascript = kernel.add_space("JavaScript");
 				{
@@ -280,13 +268,11 @@ namespace Sen::Kernel::Interface {
 				}
                  */
 				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ engine.context().value, "Clock" };
-				auto ImageView = JavaScript::ClassBuilder<Kernel::Image<Integer>>{ engine.context().value, "ImageView" };
-				Interface::API::ImageView::register_class(ImageView, kernel);
+				Interface::API::Clock::register_class(Clock, kernel);
 				auto Canvas = JavaScript::ClassBuilder<canvas_ity::canvas>{ engine.context().value, "Canvas" };
 				Interface::API::Canvas::register_class(Canvas, kernel);
 				auto JsonWriter = JavaScript::ClassBuilder<Kernel::Encoding::JSON::IndentWriter>{ engine.context().value, "JsonWriter" };
 				Interface::API::JsonWriter::register_class(JsonWriter, kernel);
-				Interface::API::Clock::register_class(Clock, kernel);
 				// execute the script
 				engine.context().evaluate_fs<JavaScript::Value, JavaScript::Error>(construct_string(Executor::script));
 				// call main

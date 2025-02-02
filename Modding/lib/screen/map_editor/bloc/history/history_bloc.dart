@@ -39,6 +39,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       case ActionType.eventChangeDisplayText:
       case ActionType.eventChangeNarUnlocked:
       case ActionType.eventChangeNarCompleted:
+      case ActionType.eventChangeTutorial:
       case ActionType.eventChangeTutorialUnlocked:
       case ActionType.eventChangeLevelToggle:
       case ActionType.eventChangePlantType:

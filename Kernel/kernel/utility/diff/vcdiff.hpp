@@ -3,7 +3,6 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
-#include "kernel/utility/container/filesystem.hpp"
 
 namespace Sen::Kernel::Diff {
 

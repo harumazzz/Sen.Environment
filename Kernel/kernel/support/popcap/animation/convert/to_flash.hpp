@@ -8,11 +8,6 @@ namespace Sen::Kernel::Support::PopCap::Animation::Convert
 {
 	struct ToFlash : Common
 	{
-		 static auto process_whole(
-			ExtraInfo &extra,
-			std::string_view destination) -> void
-		{
-		}
 
 		 static auto process_fs(
 			std::string_view source,

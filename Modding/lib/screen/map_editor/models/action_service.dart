@@ -18,6 +18,7 @@ enum ActionType {
   eventChangeDisplayText,
   eventChangeNarUnlocked,
   eventChangeNarCompleted,
+  eventChangeTutorial,
   eventChangeTutorialUnlocked,
   eventChangeLevelToggle,
   eventChangePlantType,

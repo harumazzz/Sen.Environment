@@ -72,11 +72,6 @@ namespace Sen::Kernel {
 	template <typename T>
 	struct is_map : std::false_type {};
 
-	template <typename Key, typename Value, typename Compare, typename Alloc>
-	struct is_map<std::map<Key, Value, Compare, Alloc>> : std::false_type {
-		static_assert(false, "Do not use std::map");
-	};
-
 	template <typename Key, typename Value, typename Hash, typename KeyEqual, typename Alloc>
 	struct is_map<std::unordered_map<Key, Value, Hash, KeyEqual, Alloc>> : std::false_type {
 		static_assert(false, "Do not use std::unordered_map");
@@ -145,12 +140,6 @@ namespace Sen::Kernel {
 
 	template <typename Key, typename Value>
 	struct map_traits<tsl::ordered_map<Key, Value>> {
-		using key_type = Key;
-		using value_type = Value;
-	};
-
-	template <typename Key, typename Value>
-	struct map_traits<std::map<Key, Value>> {
 		using key_type = Key;
 		using value_type = Value;
 	};

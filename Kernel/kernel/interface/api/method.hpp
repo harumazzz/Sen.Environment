@@ -96,47 +96,47 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace JSON {
 
-		inline auto deserialize(
-			JSContext* context,
-			std::string& source
-		) -> JSValue {
-			auto json = nlohmann::ordered_json::parse(source);
-			auto object = JavaScript::to(context, json);
-			return object;
-		}
+		// inline auto deserialize(
+		// 	JSContext* context,
+		// 	std::string& source
+		// ) -> JSValue {
+		// 	auto json = nlohmann::ordered_json::parse(source);
+		// 	auto object = JavaScript::to(context, json);
+		// 	return object;
+		// }
 
-		inline auto deserialize_fs(
-			JSContext* context,
-			std::string& source
-		) -> JSValue {
-			auto json = Kernel::FileSystem::read_json(source);
-			auto object = JavaScript::to(context, json);
-			return object;
-		}
+		// inline auto deserialize_fs(
+		// 	JSContext* context,
+		// 	std::string& source
+		// ) -> JSValue {
+		// 	auto json = Kernel::FileSystem::read_json(source);
+		// 	auto object = JavaScript::to(context, json);
+		// 	return object;
+		// }
 
-		inline auto serialize(
-			JSContext* context,
-			JSValue& value,
-			int64_t& indent,
-			bool ensure_ascii
-		) -> std::string {
-			auto reference_value = JavaScript::Value::as_new_reference(context, value);
-			auto json = JavaScript::from(reference_value);
-			return json.dump(indent, '\t', ensure_ascii);
-		}
+		// inline auto serialize(
+		// 	JSContext* context,
+		// 	JSValue& value,
+		// 	int64_t& indent,
+		// 	bool ensure_ascii
+		// ) -> std::string {
+		// 	auto reference_value = JavaScript::Value::as_new_reference(context, value);
+		// 	auto json = JavaScript::from(reference_value);
+		// 	return json.dump(indent, '\t', ensure_ascii);
+		// }
 
-		inline auto serialize_fs(
-			JSContext* context,
-			std::string& destination,
-			JSValue& value,
-			int64_t& indent,
-			bool ensure_ascii
-		) -> void {
-			auto reference_value = JavaScript::Value::as_new_reference(context, value);
-			auto json = JavaScript::from(reference_value);
-			auto result = json.dump(indent, '\t', ensure_ascii);
-			return Kernel::FileSystem::write_file(destination, result);
-		}
+		// inline auto serialize_fs(
+		// 	JSContext* context,
+		// 	std::string& destination,
+		// 	JSValue& value,
+		// 	int64_t& indent,
+		// 	bool ensure_ascii
+		// ) -> void {
+		// 	auto reference_value = JavaScript::Value::as_new_reference(context, value);
+		// 	auto json = JavaScript::from(reference_value);
+		// 	auto result = json.dump(indent, '\t', ensure_ascii);
+		// 	return Kernel::FileSystem::write_file(destination, result);
+		// }
 
 	}
 
@@ -145,114 +145,6 @@ namespace Sen::Kernel::Interface::API {
 	#pragma region filesystem
 
 	namespace FileSystem {
-
-		inline auto read_file_encode_with_utf16le (
-			std::string& source
-		) -> std::string
-		{
-			auto result = Kernel::FileSystem::read_file_by_utf16(source);
-			auto converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
-			return converter.to_bytes(result);
-		}
-
-		inline auto write_file (
-			std::string& destination,
-			std::string& data
-		) -> void {
-			return Kernel::FileSystem::write_file(destination, data);
-		}
-
-		inline auto write_file_encode_with_utf16le (
-			std::string& destination,
-			std::string& data
-		) -> void {
-			auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
-			auto result = std::wstring{ converter.from_bytes(data) };
-			return Kernel::FileSystem::write_file_by_utf16le(destination, result);
-		}
-
-		inline auto read_current_directory (
-			std::string& source
-		) -> List<std::string> {
-			return Kernel::FileSystem::read_directory(source);
-		}
-
-		inline auto read_directory_only_file(
-			std::string& source
-		) -> List<std::string> {
-			return Kernel::FileSystem::read_directory_only_file(source);
-		}
-
-		inline auto read_directory_only_directory(
-			std::string& source
-		) -> List<std::string> {
-			return Kernel::FileSystem::read_directory_only_directory(source);
-		}
-
-		inline auto read_directory (
-			std::string& source
-		) -> List<std::string> {
-			return Kernel::FileSystem::read_whole_directory(source);
-		}
-
-		inline auto create_directory(
-			std::string& destination
-		) -> void
-		{
-			return Kernel::FileSystem::create_directory(destination);
-		}
-
-		inline auto is_file(
-			std::string& source
-		) -> bool
-		{
-			return Kernel::FileSystem::is_file(source);
-		}
-
-		inline auto is_directory(
-			std::string& source
-		) -> bool
-		{
-			return Kernel::FileSystem::is_directory(source);
-		}
-
-		inline auto rename(
-			std::string& source,
-			std::string& destination
-		) -> void
-		{
-			return Kernel::FileSystem::rename(source, destination);
-		}
-
-		inline auto copy(
-			std::string& source,
-			std::string& destination
-		) -> void
-		{
-			return Kernel::FileSystem::copy(source, destination);
-		}
-
-		inline auto copy_directory(
-			std::string& source,
-			std::string& destination
-		) -> void
-		{
-			return Kernel::FileSystem::copy_directory(source, destination);
-		}
-
-		inline auto remove(
-			std::string& source
-		) -> void
-		{
-			return Kernel::FileSystem::remove(source);
-		}
-
-		inline auto remove_all(
-			std::string& source
-		) -> void
-		{
-			return Kernel::FileSystem::remove_all(source);
-		}
 
 	}
 	#pragma endregion
@@ -516,119 +408,6 @@ namespace Sen::Kernel::Interface::API {
 	#pragma region image
 
 	namespace Image {
-
-		inline auto resize_fs(
-			std::string& source,
-			std::string& destination,
-			float& percentage
-		) -> void
-		{
-			return Kernel::ImageIO::resize_png(source, destination, percentage);
-		}
-
-		inline auto open(
-			std::string& source
-		) -> std::shared_ptr<JavaScript::ImageView>
-		{
-			auto image = Kernel::ImageIO::read_png(source);
-			return std::make_unique<JavaScript::ImageView>(
-				image.width, 
-				image.height,
-				image.bit_depth,
-				image.color_type,
-				image.interlace_type,
-				image.channels,
-				image.rowbytes,
-				JavaScript::ArrayBuffer {
-					.value = const_cast<uint8_t*>(image.data().data()),
-					.size = image.data().size(),
-				}
-			);
-		}
-
-		inline auto write(
-			std::string& destination,
-			std::shared_ptr<JavaScript::ImageView>& object
-		) -> void
-		{
-			using Image = Kernel::Image<int>;
-			auto image = Image{ 0, 0, static_cast<int>(object->width), static_cast<int>(object->height), static_cast<int>(object->bit_depth), static_cast<int>(object->color_type), static_cast<int>(object->interlace_type), static_cast<int>(object->channels), static_cast<int>(object->rowbytes), std::move(Kernel::make_list(object->data.value, object->data.size)) };
-			return Kernel::ImageIO::write_png(destination, image);
-		}
-
-		inline auto join (
-			std::shared_ptr<JavaScript::Dimension>& dimension,
-			List<std::shared_ptr<JavaScript::VImageView>>& images
-		) -> std::shared_ptr<JavaScript::ImageView>
-		{
-			using Image = Kernel::Image<int>;
-			auto images_list = List<Image>{};
-			images_list.reserve(images.size());
-			for (auto & image : images) {
-				images_list.emplace_back(Image{ image->x, image->y, image->width, image->height, std::move(Kernel::make_list(image->data.value, image->data.size))});
-			}
-			auto temporary_image = Image::transparent(dimension.operator*());
-			Kernel::ImageIO::join(temporary_image, images_list);
-			auto destination = std::make_shared<JavaScript::ImageView>(
-				temporary_image.width,
-				temporary_image.height,
-				temporary_image.bit_depth,
-				temporary_image.color_type,
-				temporary_image.interlace_type,
-				temporary_image.channels,
-				temporary_image.rowbytes,
-				JavaScript::ArrayBuffer {
-					.value = const_cast<uint8_t*>(temporary_image.data().data()),
-					.size = temporary_image.data().size(),
-				}
-			);
-			return destination;
-		}
-
-		inline auto join_extend (
-			std::shared_ptr<JavaScript::Dimension>& dimension,
-			List<std::shared_ptr<JavaScript::VImageView>>& images
-		) -> std::shared_ptr<JavaScript::ImageView>
-		{
-			using Image = Kernel::Image<int>;
-			auto images_list = List<Image>{};
-			images_list.reserve(images.size());
-			for (auto& image : images) {
-				images_list.emplace_back(Image{ image->x, image->y, image->width, image->height, std::move(Kernel::make_list(image->data.value, image->data.size)) });
-			}
-			auto temporary_image = Image::transparent(dimension.operator*());
-			Kernel::ImageIO::join_extend(temporary_image, images_list);
-			auto destination = std::make_shared<JavaScript::ImageView>(
-				temporary_image.width,
-				temporary_image.height,
-				temporary_image.bit_depth,
-				temporary_image.color_type,
-				temporary_image.interlace_type,
-				temporary_image.channels,
-				temporary_image.rowbytes,
-				JavaScript::ArrayBuffer{
-					.value = const_cast<uint8_t*>(temporary_image.data().data()),
-					.size = temporary_image.data().size(),
-				}
-			);
-			return destination;
-		}
-
-		inline auto cut_multiple_fs(
-			std::string& source,
-			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
-		) -> void
-		{
-			return Kernel::ImageIO::cut_pngs(source, positions);
-		}
-
-		inline auto cut_multiple_fs_asynchronous(
-			std::string& source,
-			List<std::shared_ptr<JavaScript::ExtendedRectangle>>& positions
-		) -> void
-		{
-			return Kernel::ImageIO::cut_pngs_asynchronous(source, positions);
-		}
 	}
 
 	#pragma endregion

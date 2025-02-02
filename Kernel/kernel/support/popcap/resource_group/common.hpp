@@ -6,13 +6,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 
 	struct Common {
 
-		inline static auto rewrite_slot_count(
-			nlohmann::ordered_json& resource
-		) -> void
-		{
-			return;
-		}
-
 		constexpr explicit Common(
 
 		) noexcept = default;

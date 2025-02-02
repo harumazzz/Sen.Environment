@@ -528,6 +528,34 @@ class EventConfigTab extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
                         child: SizedBox(
                           width: double.infinity,
+                          child: DropdownButtonField<WorldMapEventTutorial>(
+                            label: 'Level Tutorial',
+                            value: event.worldMapTutorial ??
+                                WorldMapEventTutorial.none,
+                            items: WorldMapEventTutorial.values
+                                .map((e) =>
+                                    DropdownMenuItem<WorldMapEventTutorial>(
+                                      value: e,
+                                      child: Text(
+                                        e.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              event.worldMapTutorial = value;
+                              captureEvent(ActionType.eventChangeTutorial);
+                              controller.requestFocus();
+                            },
+                          ),
+                        )),
+                  if (event.eventType == EventType.level)
+                    Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
+                        child: SizedBox(
+                          width: double.infinity,
                           child: DropdownButtonField<WorldMapEventStatus>(
                             label: los.level_tutorial_when,
                             value: event.worldMapTutorialVisibleWhen ??
@@ -670,6 +698,7 @@ class EventConfigTab extends StatelessWidget {
                             },
                           ),
                         )),
+                    
                   if (event.eventType == EventType.upgrade)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
@@ -796,6 +825,12 @@ class EventConfigTab extends StatelessWidget {
                             },
                           );
                         }),
+                        const Padding(
+                        padding: EdgeInsets.fromLTRB(12, 12, 20, 12),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 300,
+                        )),
                 ],
               ),
             ),

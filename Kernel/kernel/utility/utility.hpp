@@ -19,8 +19,6 @@
 
 #include "kernel/utility/container/map/common.hpp"
 
-#include "kernel/utility/container/filesystem.hpp"
-
 #include "kernel/utility/filesystem/utility.hpp"
 
 #include "kernel/utility/container/pointer.hpp"
@@ -32,7 +30,6 @@
 #include "kernel/utility/converter/common.hpp"
 #include "kernel/utility/converter/converter.hpp"
 #include "kernel/utility/container/image.hpp"
-#include "kernel/utility/container/json.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/container/system.hpp"

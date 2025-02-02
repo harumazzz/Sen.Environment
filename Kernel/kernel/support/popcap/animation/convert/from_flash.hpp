@@ -6,11 +6,7 @@
 
 namespace Sen::Kernel::Support::PopCap::Animation::Convert {
     class FromFlash : Common {
-        static auto process_whole(
-                ExtraInfo const &extra,
-                std::string_view source) -> void {
-            return;
-        }
+        
 
         static  auto process_fs(
                 std::string_view source,

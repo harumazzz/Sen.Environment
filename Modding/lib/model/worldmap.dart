@@ -1,17 +1,33 @@
+// ignore_for_file: constant_identifier_names
+
 const int kVersion = 1;
 
 enum LevelNodeType { normal, minigame, miniboss, nonfinalboss, boss, danger }
+
+enum WorldMapEventTutorial {
+  none,
+  map_intro,
+  challenge_intro,
+  almanac_intro,
+  continue_epygt,
+  store_intro,
+  quest_intro,
+  questlog,
+  elder_quest_intro,
+  elder_quest_outro,
+  elder_almanac_intro,
+  elder_almanac_outro,
+  elder_store_intro,
+  elder_store_outro,
+}
 
 enum WorldMapEventStatus { none, undiscovered, locked, unlocked, cleared }
 
 enum EventType {
   none,
   doodad,
-  // ignore: constant_identifier_names
   path_node,
-  // ignore: constant_identifier_names
   star_gate,
-  // ignore: constant_identifier_names
   key_gate,
   powerup,
   upgrade,
@@ -24,7 +40,9 @@ enum EventType {
 }
 
 T getType<T extends Enum>(String name, List<T> values) {
-  final eventType = values.firstWhere((e) => e.name.toLowerCase() == name.toLowerCase(), orElse: () => values.first);
+  final eventType = values.firstWhere(
+      (e) => e.name.toLowerCase() == name.toLowerCase(),
+      orElse: () => values.first);
   return eventType;
 }
 
@@ -34,6 +52,26 @@ String? getName<T extends Enum>(T? type) {
 
 bool checkRange(num min, num max, num value) {
   return value >= min && value < max;
+}
+
+int parseString(dynamic value) {
+  if (value is String) {
+    return int.tryParse(value) ?? 0;
+  } else if (value is int) {
+    return value;
+  } else {
+    return 0;
+  }
+}
+
+bool parseBool(dynamic value) {
+  if (value is String) {
+    return value.toLowerCase() == "true";
+  } else if (value is bool) {
+    return value;
+  } else {
+    return false;
+  }
 }
 
 class Position {
@@ -100,17 +138,13 @@ class MapPieceItem {
   }
 
   factory MapPieceItem.fromJson(Map<String, dynamic> json) {
-    var imageID = json['m_imageID'] ?? 0;
+    var imageID = parseString(json['m_imageID']);
     var type = PieceType.invaild;
     if (checkRange(0, 100, imageID)) {
       type = PieceType.image;
     } else if (checkRange(100, 1000, imageID)) {
       type = PieceType.animation;
       imageID -= 100;
-    }
-    var isArtFlipped = json['m_isArtFlipped'] ?? false;
-    if (isArtFlipped is String) {
-      isArtFlipped = isArtFlipped.toLowerCase() == 'true';
     }
     return MapPieceItem(
       imageID: ++imageID,
@@ -120,7 +154,7 @@ class MapPieceItem {
       layer: json['m_drawLayer'] ?? 0,
       scaleX: (json['m_scaleX'] ?? 1).toDouble(),
       scaleY: (json['m_scaleY'] ?? 1).toDouble(),
-      isArtFlipped: isArtFlipped,
+      isArtFlipped: parseBool(json['m_isArtFlipped']),
       rotationAngle: json['m_rotationAngle'] ?? 0,
       rotationRate: (json['m_rotationRate'] ?? 0.0).toDouble(),
     );
@@ -164,9 +198,10 @@ class MapEventItem {
   String? unlockedNarrationID;
   String? completedNarrationID;
   bool autoVisible;
+  bool? isChallengeType;
   bool? isArtFlipped;
   int? cost;
-  String? worldMapTutorial;
+  WorldMapEventTutorial? worldMapTutorial;
   WorldMapEventStatus? worldMapTutorialVisibleWhen;
   LevelNodeType? levelNodeType;
 
@@ -181,6 +216,7 @@ class MapEventItem {
       required this.visibleFrom,
       required this.parentEvent,
       required this.autoVisible,
+      this.isChallengeType,
       this.isArtFlipped,
       this.cost,
       this.displayText,
@@ -202,6 +238,7 @@ class MapEventItem {
       visibleFrom: visibleFrom,
       parentEvent: parentEvent,
       autoVisible: autoVisible,
+      isChallengeType: isChallengeType,
       isArtFlipped: isArtFlipped,
       cost: cost,
       displayText: displayText,
@@ -214,30 +251,30 @@ class MapEventItem {
   }
 
   factory MapEventItem.fromJson(Map<String, dynamic> json) {
-    var eventID = json['m_eventId'] ?? 0;
-    if (eventID is String) {
-      eventID = int.tryParse(eventID) ?? 0;
-    }
     return MapEventItem(
       eventType: getType(json['m_eventType'].toString(), EventType.values),
-      eventID: eventID,
+      eventID: parseString(json['m_eventId']),
       position: Position.fromJson(json['m_position']),
       name: json['m_name'] ?? '',
       toggleName: json['m_toggleName'],
       dataString: json['m_dataString'],
       unlockedFrom: json['m_unlockedFrom'] ?? '',
       visibleFrom: json['m_visibleFrom'] ?? '',
-      autoVisible: json['m_autoVisible'] ?? false,
-      isArtFlipped: json['m_isArtFlipped'],
+      isChallengeType: parseBool(json['m_isChallengeType']),
+      autoVisible: parseBool(json['m_autoVisible']),
+      isArtFlipped: parseBool(json['m_isArtFlipped']),
       cost: json['m_cost'],
       parentEvent: json['m_parentEvent'] ?? '',
       displayText: json['m_displayText'] ?? '',
       unlockedNarrationID: json['m_unlockedNarrationID'],
       completedNarrationID: json['m_completedNarrationID'],
-      worldMapTutorial: json['m_worldMapTutorial'],
-      worldMapTutorialVisibleWhen:
-          getType(json['m_worldMapTutorialVisibleWhen'].toString(), WorldMapEventStatus.values),
-      levelNodeType: getType(json['m_levelNodeType'].toString(), LevelNodeType.values),
+      worldMapTutorial: getType(
+          json['m_worldMapTutorial'].toString(), WorldMapEventTutorial.values),
+      worldMapTutorialVisibleWhen: getType(
+          json['m_worldMapTutorialVisibleWhen'].toString(),
+          WorldMapEventStatus.values),
+      levelNodeType:
+          getType(json['m_levelNodeType'].toString(), LevelNodeType.values),
     );
   }
 
@@ -252,14 +289,16 @@ class MapEventItem {
       'm_unlockedFrom': data.unlockedFrom,
       'm_visibleFrom': data.visibleFrom,
       'm_autoVisible': data.autoVisible,
+      'm_isChallengeType': data.isChallengeType ?? false,
       'm_isArtFlipped': data.isArtFlipped ?? false,
       'm_cost': data.cost ?? 0,
       'm_parentEvent': data.parentEvent,
       'm_displayText': data.displayText ?? '',
       'm_unlockedNarrationID': data.unlockedNarrationID ?? '',
       'm_completedNarrationID': data.completedNarrationID ?? '',
-      'm_worldMapTutorial': data.worldMapTutorial ?? '',
-      'm_worldMapTutorialVisibleWhen': getName(data.worldMapTutorialVisibleWhen) ?? '',
+      'm_worldMapTutorial': getName(data.worldMapTutorial) ?? '',
+      'm_worldMapTutorialVisibleWhen':
+          getName(data.worldMapTutorialVisibleWhen) ?? '',
       'm_levelNodeType': getName(data.levelNodeType) ?? '',
     };
   }
@@ -271,7 +310,11 @@ class BoundingRect {
   int width;
   int height;
 
-  BoundingRect({required this.x, required this.y, required this.width, required this.height});
+  BoundingRect(
+      {required this.x,
+      required this.y,
+      required this.width,
+      required this.height});
 
   BoundingRect clone() {
     return BoundingRect(
@@ -292,7 +335,12 @@ class BoundingRect {
   }
 
   static Map<String, dynamic> toJson(BoundingRect data) {
-    return {'mX': data.x, 'mY': data.y, 'mWidth': data.width, 'mHeight': data.height};
+    return {
+      'mX': data.x,
+      'mY': data.y,
+      'mWidth': data.width,
+      'mHeight': data.height
+    };
   }
 }
 
@@ -321,8 +369,12 @@ class WorldData {
         worldID: json['m_worldId'],
         resGroupID: json['m_resGroupID'],
         boundingRect: BoundingRect.fromJson(json['m_boundingRect']),
-        pieces: (json['m_mapPieces'] as List).map((e) => MapPieceItem.fromJson(e)).toList(),
-        events: (json['m_eventList'] as List).map((e) => MapEventItem.fromJson(e)).toList());
+        pieces: (json['m_mapPieces'] as List)
+            .map((e) => MapPieceItem.fromJson(e))
+            .toList(),
+        events: (json['m_eventList'] as List)
+            .map((e) => MapEventItem.fromJson(e))
+            .toList());
   }
 
   static Map<String, dynamic> toJson(WorldData data) {

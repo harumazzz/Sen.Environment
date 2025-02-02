@@ -33,13 +33,12 @@
 #include <bitset>
 #include <condition_variable>
 #include "kernel/utility/assert.hpp"
-#include "kernel/utility/container/language.hpp"
 #include "kernel/utility/range/forward.hpp"
 #include "kernel/utility/range/reverse.hpp"
+#include "kernel/utility/miscellaneous/language/language.hpp"
 #include "kernel/utility/literal.hpp"
 #include "kernel/subprojects/zlib.hpp"
 #include "kernel/subprojects/fmt.hpp"
-#include "kernel/subprojects/json.hpp"
 #include "kernel/subprojects/Rijndael.hpp"
 #include "kernel/subprojects/libpng.hpp"
 #include "kernel/subprojects/etc1.hpp"
@@ -50,7 +49,6 @@
 #include "kernel/subprojects/bzip2.hpp"
 #include "kernel/subprojects/zip.hpp"
 #include "kernel/subprojects/dirent.hpp"
-#include "kernel/subprojects/simdjson.hpp"
 #include "kernel/subprojects/magic_enum.hpp"
 #include "kernel/subprojects/canvas_ity.hpp"
 #include "kernel/subprojects/tsl.hpp"

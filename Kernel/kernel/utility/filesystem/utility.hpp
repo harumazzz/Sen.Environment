@@ -42,4 +42,34 @@ namespace Sen::Kernel::FileSystem {
         #endif
     }
 
+    inline auto exists (
+        const String& path
+    ) -> bool {
+        #if WINDOWS
+        return std::filesystem::exists(path.wstring());
+        #else
+        return std::filesystem::exists(path.string());
+        #endif
+    }
+
+    inline auto is_file (
+        const String& path
+    ) -> bool {
+        #if WINDOWS
+        return exists(path) && std::filesystem::is_regular_file(path.wstring());
+        #else
+        return exists(path) && std::filesystem::is_regular_file(path.string());
+        #endif
+    }
+
+    inline auto is_directory (
+        const String& path
+    ) -> bool {
+        #if WINDOWS
+        return exists(path) && std::filesystem::is_directory(path.wstring());
+        #else
+        return exists(path) && std::filesystem::is_directory(path.string());
+        #endif
+    }
+
 }

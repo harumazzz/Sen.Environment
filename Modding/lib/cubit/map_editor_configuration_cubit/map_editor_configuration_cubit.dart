@@ -526,6 +526,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       ActionType.eventChangeDisplayText: 'Change Display Text',
       ActionType.eventChangeNarUnlocked: 'Change Narration Unlocked',
       ActionType.eventChangeNarCompleted: 'Change Narration Completed',
+      ActionType.eventChangeTutorial: 'Change Level Tutorial',
       ActionType.eventChangeTutorialUnlocked: 'Change Tutorial Unlocked',
       ActionType.eventChangeLevelToggle: 'Change Level Toggle',
       ActionType.eventChangePlantType: 'Change Plant Type',

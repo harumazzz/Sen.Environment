@@ -9,7 +9,6 @@ add_library(
 	${PROJECT_NAME} SHARED
 
 	./subprojects/fmt.hpp
-	./subprojects/json.hpp
 	./subprojects/zlib.hpp
 	./subprojects/Rijndael.hpp
 	./subprojects/libpng.hpp
@@ -22,7 +21,6 @@ add_library(
 	./subprojects/quickjs.hpp
 	./subprojects/zip.hpp
 	./subprojects/dirent.hpp
-	./subprojects/simdjson.hpp
 	./subprojects/magic_enum.hpp
 	./subprojects/canvas_ity.hpp
 	./subprojects/tsl.hpp
@@ -38,7 +36,6 @@ add_library(
 	./utility/literal.hpp
 	./utility/assert.hpp
 	./utility/utility.hpp
-	./utility/container/filesystem.hpp
 
 	./utility/converter/common.hpp
 	./utility/converter/converter.hpp
@@ -46,11 +43,10 @@ add_library(
 	./utility/algorithm/math.hpp
 	./utility/algorithm/string_helper.hpp
 
-	./utility/container/language.hpp
+	./utility/miscellaneous/language/language.hpp
 	./utility/container/path.hpp
 	./utility/container/pointer.hpp
 	./utility/container/image.hpp
-	./utility/container/json.hpp
 	./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
@@ -232,10 +228,9 @@ add_library(
 	./interface/shell.hpp
 	./interface/api/method.hpp
 	./interface/api/class.hpp
-	./interface/script.hpp
 	./interface/interface.cpp
-		utility/filesystem/utility.hpp
-		utility/filesystem/path.hpp
+	./utility/filesystem/utility.hpp
+	./utility/filesystem/path.hpp
 
 
 )
@@ -292,7 +287,6 @@ endif()
 target_link_libraries(
 	${PROJECT_NAME} PRIVATE
 	zlib
-	json
 	fmt
 	Rijndael
 	libpng
@@ -304,7 +298,6 @@ target_link_libraries(
 	bzip2
 	quickjs
 	zip
-	simdjson
 	canvas_ity
 	tsl
 	compile-time-regular-expressions

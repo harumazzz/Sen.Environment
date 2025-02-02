@@ -37,37 +37,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) = default;
 	};
 
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block1 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2},
-			{"unknown_3", block.unknown_3},
-			{"unknown_4", block.unknown_4},
-			{"unknown_5", block.unknown_5},
-			{"unknown_6", block.unknown_6}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block1 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("unknown_3").get_to(block.unknown_3);
-		json.at("unknown_4").get_to(block.unknown_4);
-		json.at("unknown_5").get_to(block.unknown_5);
-		json.at("unknown_6").get_to(block.unknown_6);
-		return;
-	}
-		
-
 	#pragma endregion
 
 	#pragma region Block2
@@ -94,28 +63,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) = default;
 	};
 
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block2 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block2 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		return;
-	}
-
 	#pragma endregion
 
 	#pragma region Block3
@@ -141,28 +88,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block3 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_2", block.unknown_2},
-			{"string", block.string}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block3 & block
-	) -> void
-	{
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("string").get_to(block.string);
-		return;
-	}
 
 	#pragma endregion
 
@@ -196,34 +121,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block4 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2},
-			{"unknown_3", block.unknown_3},
-			{"unknown_4", block.unknown_4},
-			{"unknown_5", block.unknown_5}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block4 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("unknown_3").get_to(block.unknown_3);
-		json.at("unknown_4").get_to(block.unknown_4);
-		json.at("unknown_5").get_to(block.unknown_5);
-		return;
-	}
 
 	#pragma endregion
 
@@ -261,38 +158,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block5 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2},
-			{"unknown_3", block.unknown_3},
-			{"unknown_4", block.unknown_4},
-			{"unknown_5", block.unknown_5},
-			{"unknown_6", block.unknown_6},
-			{"unknown_7", block.unknown_7}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block5 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("unknown_3").get_to(block.unknown_3);
-		json.at("unknown_4").get_to(block.unknown_4);
-		json.at("unknown_5").get_to(block.unknown_5);
-		json.at("unknown_6").get_to(block.unknown_6);
-		json.at("unknown_7").get_to(block.unknown_7);
-		return;
-	}
 		
 
 	#pragma endregion
@@ -328,34 +193,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 			) = default;
 	};
 
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block6 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2},
-			{"unknown_3", block.unknown_3},
-			{"unknown_4", block.unknown_4},
-			{"unknown_5", block.unknown_5}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block6 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("unknown_3").get_to(block.unknown_3);
-		json.at("unknown_4").get_to(block.unknown_4);
-		json.at("unknown_5").get_to(block.unknown_5);
-		return;
-	}
-
 	#pragma endregion
 
 	#pragma region Block7
@@ -381,28 +218,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block7 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block7 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		return;
-	}
 
 	#pragma endregion
 
@@ -436,34 +251,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const Block8 & block
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"unknown_1", block.unknown_1},
-			{"unknown_2", block.unknown_2},
-			{"unknown_3", block.unknown_3},
-			{"unknown_4", block.unknown_4},
-			{"unknown_5", block.unknown_5}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json, 
-		Block8 & block
-	) -> void
-	{
-		json.at("unknown_1").get_to(block.unknown_1);
-		json.at("unknown_2").get_to(block.unknown_2);
-		json.at("unknown_3").get_to(block.unknown_3);
-		json.at("unknown_4").get_to(block.unknown_4);
-		json.at("unknown_5").get_to(block.unknown_5);
-		return;
-	}
 
 	#pragma endregion
 
@@ -510,40 +297,6 @@ namespace Sen::Kernel::Support::PopCap::RenderEffects {
 
 			) = default;
 	};
-
-	inline static auto to_json(
-		nlohmann::ordered_json & json,
-		const PopCapRenderEffects & p
-	) -> void
-	{
-		json = nlohmann::ordered_json{
-			{"block_1", p.block_1},
-			{"block_2", p.block_2},
-			{"block_3", p.block_3},
-			{"block_4", p.block_4},
-			{"block_5", p.block_5},
-			{"block_6", p.block_6},
-			{"block_7", p.block_7},
-			{"block_8", p.block_8}
-		};
-		return;
-	}
-
-	inline static auto from_json(
-		const nlohmann::ordered_json & json,
-		PopCapRenderEffects & p
-	) -> void
-	{
-		json.at("block_1").get_to(p.block_1);
-		json.at("block_2").get_to(p.block_2);
-		json.at("block_3").get_to(p.block_3);
-		json.at("block_4").get_to(p.block_4);
-		json.at("block_5").get_to(p.block_5);
-		json.at("block_6").get_to(p.block_6);
-		json.at("block_7").get_to(p.block_7);
-		json.at("block_8").get_to(p.block_8);
-		return;
-	}
 
 	#pragma endregion
 }

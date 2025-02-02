@@ -2,7 +2,6 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
-#include "kernel/utility/container/filesystem.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
 
 namespace Sen::Kernel::Encryption::Base64 {

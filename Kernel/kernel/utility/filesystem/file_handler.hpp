@@ -2,6 +2,7 @@
 
 #include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
+#include "kernel/utility/container/string/common.hpp"
 
 namespace Sen::Kernel::FileSystem {
 
