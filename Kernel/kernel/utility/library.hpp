@@ -57,7 +57,6 @@
 #include "kernel/subprojects/compile-time-regular-expressions.hpp"
 #include "kernel/subprojects/parallel-hashmap.hpp"
 #include "kernel/subprojects/thread-pool.hpp"
-#include "kernel/subprojects/mio.hpp"
 #include "kernel/subprojects/mscharconv.hpp"
 
 namespace Sen::Kernel {

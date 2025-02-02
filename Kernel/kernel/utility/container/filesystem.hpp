@@ -2,7 +2,6 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/assert.hpp"
-#include "kernel/utility/platform/windows.hpp"
 #include "kernel/utility/container/string/common.hpp"
 #include "kernel/utility/container/path.hpp"
 #include "kernel/utility/trait/trait.hpp"
@@ -21,69 +20,6 @@ namespace Sen::Kernel::FileSystem
 		}
 		return;
 	};
-
-	// give file path to open
-	// return: the file data as string
-
-	inline static auto read_file(
-		std::string_view source
-	) -> std::string 
-	{
-		#if WINDOWS
-		auto file = std::ifstream(utf8_to_utf16(fmt::format("\\\\?\\{}",
-			to_windows_style(source.data()))).data());
-		#else
-		auto file = std::ifstream(source.data());
-		#endif
-        if (!file.is_open()) {
-			#if WINDOWS
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), std::source_location::current(), "read_file");
-			#else
-			throw Exception(fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{source.data(), source.size()}), std::source_location::current(), "read_file");
-			#endif
-        }
-        auto buffer = std::stringstream{};
-        buffer << file.rdbuf();
-		return buffer.str();
-	}
-
-	inline static auto read_quick_file (
-		std::string_view source
-	) -> std::string 
-	{
-		auto file_deleter = [](FILE* file) {
-			if (file != nullptr) {
-				std::fclose(file);
-			}
-		};
-		#if WINDOWS
-		auto wide_path = utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style(source.data())));
-		auto file = WindowsFileReader{ wide_path };
-		#else
-		auto file = std::unique_ptr<FILE, decltype(file_deleter)>(std::fopen(std::string(source.data()).data(), "rb"), file_deleter);
-		#endif
-		#if WINDOWS
-		#else
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), std::string{ source.data(), source.size() }), "read_quick_file");
-		#endif
-		#if WINDOWS
-		auto file_path = std::filesystem::path{wide_path};
-		#else
-		auto file_path = std::filesystem::path{std::string(source)};
-		#endif
-    	auto file_size = std::filesystem::file_size(file_path);
-		auto content = std::string(file_size, '\0');
-		#if WINDOWS
-		auto bytes_read = DWORD{ 0 };
-		auto state = ReadFile(file.handle, content.data(), static_cast<DWORD>(file_size), &bytes_read, nullptr);
-		assert_conditional(SUCCEEDED(state), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
-		assert_conditional(bytes_read == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{ source.data(), source.size() })), "read_quick_file");
-		#else
-		auto count = std::fread(content.data(), 1, file_size, file.get());
-		assert_conditional(count == file_size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source.data())), "read_quick_file");
-		#endif
-		return content;
-	}
 
 	inline static auto read_json(
 		std::string_view source
@@ -342,40 +278,6 @@ namespace Sen::Kernel::FileSystem
 		return;
 	}
 
-	// -------------------------------------------------
-	
-	template <typename T> requires CharacterBufferView<T> 
-	inline static auto read_binary(
-		std::string_view filepath
-	) -> List<T>
-	{
-		#if WINDOWS
-		auto file = WindowsFileReader{utf8_to_utf16(fmt::format("\\\\?\\{}",
-				to_windows_style(filepath.data()))).data()};
-		#else
-		auto file = std::unique_ptr<FILE, decltype(&std::fclose)>(std::fopen(filepath.data(), "rb"), &std::fclose);
-    	assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(filepath.data())), "read_binary");
-		#endif
-		#if WINDOWS
-		auto size = std::filesystem::file_size(std::filesystem::path{utf8_to_utf16(filepath.data())});
-		#else
-		auto size = std::filesystem::file_size(std::filesystem::path{filepath});
-		#endif
-		auto data = List<T>{};
-		data.reserve(size);
-		#if WINDOWS
-		data.resize(size);
-		auto bytes_read = DWORD{};
-		auto state = ReadFile(file.handle, data.data(), static_cast<DWORD>(size), &bytes_read, nullptr);
-		assert_conditional(static_cast<bool>(SUCCEEDED(state)), fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
-		assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(std::string{filepath.data(), filepath.size()})), "read_binary");
-		#else
-		auto bytes_read = std::fread(data.data(), sizeof(T), size, file.get());
-    	assert_conditional(bytes_read == size, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(filepath.data())), "read_binary");
-		#endif
-		return data;	
-	}
-
 	inline static auto read_directory(
 		std::string_view directory_path
 	) -> List<std::string>
@@ -492,32 +394,6 @@ namespace Sen::Kernel::FileSystem
 		}
 
 		return result;
-	}
-
-	template <typename T> requires CharacterBufferView<T>
-	inline static auto write_binary(
-		std::string_view path,
-		const List<T> & data
-	) -> void
-	{
-		#if defined(_WIN32) || defined(_WIN64)
-		auto file = WindowsFileWriter{utf8_to_utf16(fmt::format("\\\\?\\{}", to_windows_style({path.data(), path.size()})))};
-		auto bytesWritten = DWORD{0};
-		auto result = WriteFile(
-			file.handle, 
-			data.data(), 
-			static_cast<DWORD>(data.size()), 
-			&bytesWritten, 
-			nullptr
-		);
-		assert_conditional(SUCCEEDED(result), fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "write_binary");
-        assert_conditional(bytesWritten == data.size(), fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(std::string{path.data(), path.size()})), "write_binary");
-		#else
-		auto file = std::unique_ptr<FILE, decltype(close_file)>(std::fopen(to_posix_style(std::string{path.data(), path.size()}).data(), "wb"), close_file);
-		assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(path.data())), "write_binary");
-		std::fwrite(reinterpret_cast<const char *>(data.data()), sizeof(T), data.size(), file.get());
-		#endif
-		return;
 	}
 
 	inline static auto make_xml_exception(

@@ -185,7 +185,7 @@ namespace Sen::Kernel::Encryption::MD5 {
 
     };
 
-	struct StringBuilder {
+	namespace Detail {
 
 		inline static constexpr auto Table = std::array<char, 16>{
 			'0', '1', '2', '3',
@@ -207,8 +207,8 @@ namespace Sen::Kernel::Encryption::MD5 {
 	) -> void {
 		destination.allocate(compute_size());
 		for (auto & e : source) {
-			destination.append(1, StringBuilder::Table[e / 16]);
-			destination.append(1, StringBuilder::Table[e % 16]);
+			destination.append(1, Detail::Table[e / 16]);
+			destination.append(1, Detail::Table[e % 16]);
 		}
 	}
 }

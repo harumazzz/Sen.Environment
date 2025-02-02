@@ -9,14 +9,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
     
 
     struct PackResource
-    { static auto process_whole(
-            DataStreamView &stream,
-            BundleStructure const &definition,
-            ManifestStructure const &manifest,
-            std::string_view source) -> void
-        {
-            return;
-        }
+    { 
 
          static auto process_fs(
             std::string_view source,

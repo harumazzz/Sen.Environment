@@ -43,7 +43,6 @@ add_subdirectory("./subprojects/canvas_ity")
 add_subdirectory("./subprojects/tsl")
 add_subdirectory("./subprojects/compile-time-regular-expressions")
 add_subdirectory("./subprojects/parallel-hashmap")
-add_subdirectory("./subprojects/mio")
 add_subdirectory("./subprojects/thread-pool")
 
 if (MSVC)

@@ -28,7 +28,6 @@ add_library(
 	./subprojects/tsl.hpp
 	./subprojects/compile-time-regular-expressions.hpp
 	./subprojects/parallel-hashmap.hpp
-	./subprojects/mio.hpp
 	./subprojects/thread-pool.hpp
 	./subprojects/mscharconv.hpp
 
@@ -52,7 +51,6 @@ add_library(
 	./utility/container/pointer.hpp
 	./utility/container/image.hpp
 	./utility/container/json.hpp
-	./utility/container/buffer.hpp
 	./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
@@ -96,10 +94,9 @@ add_library(
 
 
 	./utility/filesystem/file_handler.hpp
+	./utility/filesystem/windows_file_handler.hpp
 	./utility/encoding/image/color.hpp
 	./utility/encoding/image/rectangle.hpp
-	
-	./utility/platform/windows.hpp
 
 	./utility/compression/zlib.hpp
 	./utility/compression/lzma.hpp
@@ -237,6 +234,8 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
+		utility/filesystem/utility.hpp
+		utility/filesystem/path.hpp
 
 
 )
@@ -310,7 +309,6 @@ target_link_libraries(
 	tsl
 	compile-time-regular-expressions
 	parallel-hashmap
-	mio
 	thread-pool
 )
 

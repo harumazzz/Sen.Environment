@@ -8,12 +8,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
 
     struct Unpack : Common
-    {static auto process_whole(
-            DataStreamView &stream,
-            PacketStructure &definition) -> void
-        {
-            return;
-        }
+    {
 
          static auto process_fs(
             std::string_view source,

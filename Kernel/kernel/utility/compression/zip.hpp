@@ -106,8 +106,9 @@ namespace Sen::Kernel::Compression::Zip {
 					std::replace(zip_path.begin(), zip_path.end(), '\\', '/');
 					zip_entry_open(zip.get(), zip_path.data());
 					{
-						auto current_data = FileSystem::read_binary<char>(file);
-						zip_entry_write(zip.get(), current_data.data(), current_data.size());
+						// TODO : change
+						// auto current_data = FileSystem::read_binary<char>(file);
+						//zip_entry_write(zip.get(), current_data.data(), current_data.size());
 					}
 					zip_entry_close(zip.get());
 				}

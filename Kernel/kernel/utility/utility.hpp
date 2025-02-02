@@ -20,6 +20,9 @@
 #include "kernel/utility/container/map/common.hpp"
 
 #include "kernel/utility/container/filesystem.hpp"
+
+#include "kernel/utility/filesystem/utility.hpp"
+
 #include "kernel/utility/container/pointer.hpp"
 #include "kernel/utility/container/string/compile_string.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
@@ -32,7 +35,6 @@
 #include "kernel/utility/container/json.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
-#include "kernel/utility/container/buffer.hpp"
 #include "kernel/utility/container/system.hpp"
 #include "kernel/utility/encoding/apng/writer.hpp"
 #include "kernel/utility/container/max_rects_lite.hpp"

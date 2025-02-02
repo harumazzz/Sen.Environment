@@ -89,12 +89,13 @@ namespace Sen::Kernel::JavaScript {
 			char const* module_name,
 			void* opaque
 		) -> JSModuleDef* {
-			auto source = std::string{module_name, std::strlen(module_name)};
+			auto source = String{module_name};
 			if (!FileSystem::is_file(source)) {
 				JS_ThrowInternalError(context, "Cannot read module, import file is missing, path: %s", module_name);
 				return nullptr;
 			}
-			auto file = FileSystem::read_file(source);
+			auto file = String{};
+			FileSystem::read_file(source, steal_reference<Uint8Array>(file));
 			auto value = JS_Eval(context, file.data(), file.size(), module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY | JS_EVAL_FLAG_STRICT);
 			if (JS_IsException(value)) {
 				JS_ThrowInternalError(context, "Cannot read module: %s", module_name);
@@ -181,10 +182,12 @@ namespace Sen::Kernel::JavaScript {
 
 		template <typename Value, typename Error> requires (std::is_class<Value>::value && !std::is_pointer<Value>::value && std::is_class<Error>::value && !std::is_pointer<Error>::value)
 		inline auto evaluate_fs (
-			std::string_view source
+			const String& source
 		) -> JSValue
 		{
-			return thiz.evaluate<Value, Error>(FileSystem::read_quick_file(source), source);
+			auto value = BasicString{};
+			FileSystem::read_file(source, steal_reference<Uint8Array>(value));
+			return thiz.evaluate<Value, Error>(value, source);
 		}
 
 		template <typename Value, typename Error> requires (std::is_class<Value>::value && !std::is_pointer<Value>::value && std::is_class<Error>::value && !std::is_pointer<Error>::value)

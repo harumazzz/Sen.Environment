@@ -8,12 +8,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
     
 
     struct Pack : Common
-    { static auto process_whole(
-            DataStreamView &stream,
-            BundleStructure const &definition,
-            ManifestStructure const &manifest) -> void
-        {
-        }
+    { 
 
          static auto process_fs(
             std::string_view source,

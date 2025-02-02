@@ -65,7 +65,8 @@ namespace Sen::Kernel::JavaScript
 				std::string& source
 			) -> JSValue
 			{
-				return thiz.m_context.evaluate_fs<Value, Error>(source);
+				auto source_str = String{source.data(), source.size()};
+				return thiz.m_context.evaluate_fs<Value, Error>(source_str);
 			}
 
 			~Engine(

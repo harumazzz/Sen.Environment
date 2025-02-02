@@ -8,14 +8,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle::Miscellaneous
 {
 
 	struct UnpackCipher
-	{ static auto process_whole(
-			DataStreamView &stream,
-			BundleStructure &definition,
-			ManifestStructure &manifest,
-			std::string_view destination) -> void
-		{
-			return;
-		}
+	{ 
 
 		 static auto process_fs(
 			std::string_view source,

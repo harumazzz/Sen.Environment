@@ -37,24 +37,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
         return;
     }
 
-    inline auto write_bytes(
-        std::string const &destination,
-        List<uint8_t> const &data
-    ) -> void
-    {
-        FileSystem::create_directory(Path::getParents(destination));
-        FileSystem::write_binary(destination, data);
-        return;
-    }
-
-    inline static auto write_json(
-        std::string const &destination,
-        nlohmann::ordered_json const &content) -> void
-    {
-        FileSystem::create_directory(Path::getParents(destination));
-        FileSystem::write_json(destination, content);
-    }
-
     inline static auto dump_json(
         nlohmann::ordered_json const &content) -> std::string
     {
@@ -255,47 +237,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
         return value.value();
     }
 
-    template <typename Type, typename Exchanger, typename... Size>
-        requires true && ((std::is_same<Size, std::size_t>::value || std::is_arithmetic<Size>::value) && ...) && (!std::is_void_v<Type>) && (!std::is_void_v<Exchanger>) &&
-                     (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
-    inline static auto exchange_list(
-        DataStreamView &stream,
-        List<Type> &value,
-        Exchanger const &exchanger,
-        Size... size) -> void
-    {
-        static_assert(sizeof...(Size) == 1 || sizeof...(Size) == 0, "Expected 0 or 1 argument only");
-        if constexpr (sizeof...(Size) == 1)
-        {
-            value.resize(std::get<0>(std::make_tuple(size...)));
-        }
-        for (auto &element : value)
-        {
-            exchanger(stream, element);
-        }
-        return;
-    }
-
-    template <auto WriteSize, typename Size, typename Type, typename Exchanger>
-        requires true && (!std::is_void_v<Type>) && (!std::is_void_v<Exchanger>) && (std::is_arithmetic_v<Size>) &&
-                     (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
-    inline static auto exchange_list(
-        DataStreamView &stream,
-        List<Type> const &value,
-        Exchanger const &exchanger) -> void
-    {
-        static_assert(WriteSize == true || WriteSize == false, "WriteSize must be true or false");
-        if constexpr (WriteSize)
-        {
-            stream.write_of<Size>(static_cast<Size>(value.size()));
-        }
-        for (const auto &element : value)
-        {
-            exchanger(stream, element);
-        }
-        return;
-    }
-
     namespace CompiledMapData
     {
         inline auto get_common_size(
@@ -365,126 +306,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Shared
             return block_count * k_block_size;
         }
 
-        template <typename ResourceType, typename Exchanger>
-            requires true && (!std::is_void_v<ResourceType>) && (!std::is_void_v<Exchanger>) &&
-                         (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
-        inline auto encode(
-            DataStreamView &stream,
-            std::map<std::string, ResourceType> const &value,
-            Exchanger const &exchanger) -> void
-        {
-            struct WorkOption
-            {
-                size_t inherit_length;
-                size_t parent_offset;
-                bool has;
-            };
-            auto resource_information_section_offset = stream.write_pos;
-            auto string_list = List<std::string>{};
-            string_list.reserve(value.size());
-            for (auto &element : value)
-            {
-                string_list.emplace_back(element.first);
-            }
-            auto work_option = List<WorkOption>(string_list.size());
-            if (!string_list.empty())
-            {
-                work_option[0] = WorkOption{
-                    .inherit_length = k_none_size,
-                    .parent_offset = k_begin_index,
-                    .has = true};
-                for (auto index : Range(string_list.size()))
-                {
-                    auto &element_key = string_list[index];
-                    auto current_string_has_child = List<bool>(element_key.size() + 1);
-                    for (auto index_1 : Range(static_cast<size_t>(index + 1), string_list.size(), size_t{1}))
-                    {
-                        if (!work_option[index_1].has)
-                        {
-                            auto common_size = get_common_size(element_key, string_list[index_1]);
-                            if (!current_string_has_child.at(common_size) && common_size >= work_option[index].inherit_length)
-                            {
-                                current_string_has_child[common_size] = true;
-                                work_option[index_1] = WorkOption{
-                                    .inherit_length = common_size,
-                                    .parent_offset = (stream.write_pos / k_block_size + (common_size - work_option[index].inherit_length)),
-                                    .has = true};
-                            }
-                        }
-                    }
-                    auto character_index = k_none_size;
-                    if (work_option[index].has)
-                    {
-                        character_index += work_option[index].inherit_length;
-                        auto current_postion = stream.write_pos;
-                        auto parent_position = work_option[index].parent_offset * k_block_size;
-                        auto composite_value = stream.readUint32(parent_position) | ((current_postion - resource_information_section_offset) / k_block_size) << 8;
-                        stream.writeUint32(composite_value, parent_position);
-                        stream.write_pos = current_postion;
-                        work_option[index] = WorkOption{};
-                    }
-                    while (character_index < element_key.size())
-                    {
-                        stream.writeUint8(static_cast<uint8_t>(element_key[character_index]));
-                        stream.write_pos += 3;
-                        ++character_index;
-                    }
-                    stream.writeNull(k_block_size);
-                    exchanger(stream, value.at(element_key));
-                }
-            }
-            // stream.write_pos = before_postion;
-            return;
-        }
-
-        template <typename ResourceType, typename Exchanger>
-            requires true && (!std::is_void_v<ResourceType>) && (!std::is_void_v<Exchanger>) &&
-                         (!std::is_reference_v<Exchanger>) && (std::is_same_v<Exchanger, std::remove_cvref_t<Exchanger>>)
-        inline auto decode(
-            DataStreamView &stream,
-            size_t const &resource_information_section_offset,
-            size_t const &resource_information_section_size,
-            std::map<std::string, ResourceType> &value,
-            Exchanger const &exchanger) -> void
-        {
-            auto before_pos = stream.read_pos;
-            stream.read_pos = resource_information_section_offset;
-            auto offset_limit = resource_information_section_offset + resource_information_section_size;
-            auto parent_string = std::map<size_t, std::string>{};
-            while (stream.read_pos < offset_limit)
-            {
-                auto key = std::string{};
-                auto position = static_cast<size_t>((stream.read_pos - resource_information_section_offset) / k_block_size);
-                if (parent_string.find(position) != parent_string.end())
-                {
-                    key += parent_string[position];
-                    parent_string.erase(position);
-                }
-                while (true)
-                {
-                    auto current_character = stream.readUint8();
-                    auto child_string_offset = stream.readUint24();
-                    if (child_string_offset != uint32_t{0})
-                    {
-                        parent_string[static_cast<size_t>(child_string_offset)] = key;
-                    }
-                    if (current_character == 0)
-                    {
-                        break;
-                    }
-                    key += static_cast<char>(current_character);
-                }
-                if (key.empty())
-                {
-                    break;
-                }
-                //
-                auto resource_information = ResourceType{};
-                exchanger(stream, resource_information);
-                value.emplace(key, resource_information);
-            }
-            stream.read_pos = before_pos;
-            return;
-        }
+        
     }
 };

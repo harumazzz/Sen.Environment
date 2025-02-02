@@ -2,7 +2,7 @@
 
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"
-#include "kernel/utility/container/array/array.hpp"
+#include "kernel/utility/container/string/basic_string.hpp"
 
 namespace Sen::Kernel::Interface {
 
@@ -120,9 +120,9 @@ namespace Sen::Kernel::Interface {
 
 	inline static auto construct_string(
 		StringView* that
-	) -> std::string
+	) -> Kernel::BasicString
 	{
-		return std::string {
+		return Kernel::BasicString {
 			reinterpret_cast<const char*>(that->value),
 			that->size,
 		};

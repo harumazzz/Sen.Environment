@@ -17,8 +17,9 @@
 #endif
 
 namespace Sen::Kernel::Subprojects::phmap {
-	
-	using namespace phmap;
+
+	template <typename Key, typename Value>
+	using flat_hash_map = ::phmap::flat_hash_map<Key, Value>;
 
 }
 

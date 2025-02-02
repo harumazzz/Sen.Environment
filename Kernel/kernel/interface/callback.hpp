@@ -59,10 +59,6 @@ namespace Sen::Kernel::Interface {
 				auto xml = kernel.add_space("XML");
 				// TODO : Later
 				{
-					xml.add_function("deserialize"_sv, Script::XML::deserialize)
-						.add_function("deserialize_fs"_sv, Script::XML::deserialize_fs)
-						.add_function("serialize"_sv, Script::XML::serialize)
-						.add_function("serialize_fs"_sv, Script::XML::serialize_fs);
 				}
 				auto json = kernel.add_space("JSON");
 				{
@@ -77,36 +73,11 @@ namespace Sen::Kernel::Interface {
 				}
 				auto filesystem = kernel.add_space("FileSystem");
 				{
-					filesystem.add_function("read_file"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::FileSystem::read_file>)
-					.add_function("read_file_encode_with_utf16le"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::FileSystem::read_file_encode_with_utf16le>)
-					.add_function("write_file"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::write_file>)
-					.add_function("write_file_encode_with_utf16le"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::write_file_encode_with_utf16le>)
-					.add_function("read_current_directory"_sv, FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_current_directory>)
-					.add_function("read_directory_only_file"_sv, FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory_only_file>)
-					.add_function("read_directory_only_directory"_sv, FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory_only_directory>)
-					.add_function("read_directory"_sv, FunctionProxy<List<std::string>, std::string&>::template as_function<Interface::API::FileSystem::read_directory>)
-					.add_function("create_directory"_sv, FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::create_directory>)
-					.add_function("is_file"_sv, FunctionProxy<bool, std::string&>::template as_function<Interface::API::FileSystem::is_file>)
-					.add_function("is_directory"_sv, FunctionProxy<bool, std::string&>::template as_function<Interface::API::FileSystem::is_directory>)
-					.add_function("rename"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::rename>)
-					.add_function("remove"_sv, FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::remove>)
-					.add_function("remove_all"_sv, FunctionProxy<void, std::string&>::template as_function<Interface::API::FileSystem::remove_all>)
-					.add_function("copy"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::copy>)
-					.add_function("copy_directory"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::FileSystem::copy_directory>);
+					
 				}
 				auto path = kernel.add_space("Path");
 				{
-					path.add_function("join"_sv, FunctionProxy<std::string, List<std::string>&>::template as_function<Interface::API::Path::join>)
-					.add_function("basename"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::basename>)
-					.add_function("delimiter"_sv, FunctionProxy<std::string>::as_function<Interface::API::Path::delimiter>)
-					.add_function("dirname"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::dirname>)
-					.add_function("normalize"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::normalize>)
-					.add_function("resolve"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::resolve>)
-					.add_function("relative"_sv, FunctionProxy<std::string, std::string&, std::string&>::template as_function<Interface::API::Path::relative>)
-					.add_function("extname"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::extname>)
-					.add_function("is_absolute"_sv, FunctionProxy<bool, std::string&>::template as_function<Interface::API::Path::is_absolute>)
-					.add_function("base_without_extension"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::base_without_extension>)
-					.add_function("except_extension"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Path::except_extension>);
+					
 				}
 				auto console = kernel.add_space("Console");
 				{
@@ -308,8 +279,6 @@ namespace Sen::Kernel::Interface {
 					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::Encoding::APNG::DefaultSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
                  */
-				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ engine.context().value, "DataStreamView" };
-				Interface::API::DataStreamView::register_class(DataStreamView, kernel);
 				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ engine.context().value, "Clock" };
 				auto ImageView = JavaScript::ClassBuilder<Kernel::Image<Integer>>{ engine.context().value, "ImageView" };
 				Interface::API::ImageView::register_class(ImageView, kernel);

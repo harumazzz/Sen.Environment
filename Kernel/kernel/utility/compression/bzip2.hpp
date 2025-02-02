@@ -113,35 +113,5 @@ namespace Sen::Kernel::Compression {
 				BZ2_bzDecompressEnd(&strm);
 				return result;
 			}
-
-			/**
-			 * @param source: source file
-			 * @param destination: output file
-			 * @return: compressed file
-			*/
-
-			inline static auto compress_fs(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				FileSystem::write_binary<unsigned char>(destination, Bzip2::compress<int>(FileSystem::read_binary<unsigned char>(source), Bzip2::BLOCK_SIZE, Bzip2::WORK_FACTOR));
-				return;
-			}
-
-			/**
-			 * @param source: source file
-			 * @param destination: destination file
-			 * @return: uncompressed file
-			*/
-
-			inline static auto uncompress_fs(
-				std::string_view source,
-				std::string_view destination
-			) -> void
-			{
-				FileSystem::write_binary<unsigned char>(destination, Bzip2::uncompress(FileSystem::read_binary<unsigned char>(source)));
-				return;
-			}
 		};
 }

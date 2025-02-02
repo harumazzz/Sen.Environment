@@ -10,8 +10,8 @@ namespace Sen::Kernel::Support::Marmalade::DZip
     {
 
          static auto process_whole(
-            DataStreamView &stream,
-            std::string_view source) -> void
+            std::string_view source
+            ) -> void
         {
         }
 

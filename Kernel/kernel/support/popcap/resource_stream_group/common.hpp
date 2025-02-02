@@ -67,53 +67,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             int height;
         };
 
-        inline static auto exchange_header(
-            DataStreamView &stream,
-            HeaderInformaiton &value) -> void
-        {
-            stream.read_pos = k_begin_index;
-            value.magic = stream.readUint32();
-            value.version = stream.readUint32();
-            stream.read_pos += 8_size;
-            value.resource_data_section_compression = stream.readUint32();
-            value.information_section_size = stream.readUint32();
-            value.general_resource_data_section_offset = stream.readUint32();
-            value.general_resource_data_section_size = stream.readUint32();
-            value.general_resource_data_section_size_original = stream.readUint32();
-            stream.read_pos += 4_size;
-            value.texture_resource_data_section_offset = stream.readUint32();
-            value.texture_resource_data_section_size = stream.readUint32();
-            value.texture_resource_data_section_size_original = stream.readUint32();
-            stream.read_pos += 20_size;
-            value.resource_information_section_size = stream.readUint32();
-            value.resource_information_section_offset = stream.readUint32();
-            stream.read_pos += 12_size;
-            return;
-        }
-
-        inline static auto exchange_header(
-            HeaderInformaiton const &value,
-            DataStreamView &stream) -> void
-        {
-            stream.write_pos = k_begin_index;
-            stream.writeUint32(value.magic);
-            stream.writeUint32(value.version);
-            stream.writeNull(8_size);
-            stream.writeUint32(value.resource_data_section_compression);
-            stream.writeUint32(value.information_section_size);
-            stream.writeUint32(value.general_resource_data_section_offset);
-            stream.writeUint32(value.general_resource_data_section_size);
-            stream.writeUint32(value.general_resource_data_section_size_original);
-            stream.writeNull(4_size);
-            stream.writeUint32(value.texture_resource_data_section_offset);
-            stream.writeUint32(value.texture_resource_data_section_size);
-            stream.writeUint32(value.texture_resource_data_section_size_original);
-            stream.writeNull(20_size);
-            stream.writeUint32(value.resource_information_section_size);
-            stream.writeUint32(value.resource_information_section_offset);
-            return;
-        }
-
         struct ResourceInformation
         {
             uint32_t resource_data_section_size;
@@ -121,41 +74,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             bool read_texture_additional;
             TextureInfo texture_value;
         };
-
-        inline static auto exchange_to_resource_infomation(
-            DataStreamView &stream,
-            ResourceInformation &value) -> void
-        {
-            auto read_texture_additional = static_cast<bool>(stream.readUint32());
-            value.resource_data_section_offset = stream.readUint32();
-            value.resource_data_section_size = stream.readUint32();
-            if (read_texture_additional)
-            {
-                value.read_texture_additional = read_texture_additional;
-                value.texture_value.index = stream.readUint32();
-                stream.read_pos += information_resource_texture_unknown_bytes_size;
-                value.texture_value.width = stream.readUint32();
-                value.texture_value.height = stream.readUint32();
-            }
-            return;
-        }
-
-        inline static auto exchange_from_resource_infomation(
-            DataStreamView &stream,
-            ResourceInformation const &value) -> void
-        {
-            stream.writeUint32(static_cast<uint32_t>(value.read_texture_additional));
-            stream.writeUint32(value.resource_data_section_offset);
-            stream.writeUint32(value.resource_data_section_size);
-            if (value.read_texture_additional)
-            {
-                stream.writeUint32(value.texture_value.index);
-                stream.writeNull(information_resource_texture_unknown_bytes_size);
-                stream.writeUint32(value.texture_value.width);
-                stream.writeUint32(value.texture_value.height);
-            }
-            return;
-        }
 
         inline static auto packet_compression_to_data(
             uint32_t &data,

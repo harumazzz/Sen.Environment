@@ -9,13 +9,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
     
 
     struct Encode : Common
-    { static auto process_whole(
-            DataStreamView &stream_before,
-            DataStreamView &stream_after,
-            DataStreamView &stream_patch
-        ) -> void
-        {
-        }
+    { 
 
 
          static auto process_fs(

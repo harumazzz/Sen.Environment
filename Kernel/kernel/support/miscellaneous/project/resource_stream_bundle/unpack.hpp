@@ -10,11 +10,6 @@ namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle
 
     struct Unpack : Common
     {
-     static auto process_whole(
-            DataStreamView &stream,
-            std::string_view destination) -> void
-        {
-        }
 
         inline static auto process_fs(
             std::string_view source,

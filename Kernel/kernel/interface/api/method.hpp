@@ -146,12 +146,6 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace FileSystem {
 
-		inline auto read_file (
-			std::string& source
-		) -> std::string {
-			return Kernel::FileSystem::read_file(source);
-		}
-
 		inline auto read_file_encode_with_utf16le (
 			std::string& source
 		) -> std::string

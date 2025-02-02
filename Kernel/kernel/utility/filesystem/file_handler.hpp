@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
 
 namespace Sen::Kernel::FileSystem {
@@ -65,7 +66,7 @@ namespace Sen::Kernel::FileSystem {
                 thiz.value = other.value;
                 other.value = nullptr;
             }
-            return thiz;
+            return *this;
         }
 
         auto operator = (
@@ -75,6 +76,28 @@ namespace Sen::Kernel::FileSystem {
         auto data(
         ) const -> Pointer<File> {
             return thiz.value;
+        }
+
+        template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+            { t.size() } -> std::convertible_to<usize>;
+            { t.begin() } -> std::convertible_to<u8*>;
+        }
+        auto read (
+            T& data
+        ) -> void {
+            auto count = std::fread(data.begin(), sizeof(u8), data.size(), thiz.value);
+            assert_conditional(count == data.size(), fmt::format("{}: {}", "Missing bytes when reading the file"), "read");
+        }
+
+        template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+            { t.size() } -> std::convertible_to<usize>;
+            { t.begin() } -> std::convertible_to<u8*>;
+        }
+        auto write (
+            T& data
+        ) -> void {
+            auto count = std::fwrite(data.begin(), sizeof(u8), data.size(), thiz.value);
+            assert_conditional(count == data.size(), fmt::format("{}: {}", "Missing bytes when writing the file"), "write");
         }
 
     };

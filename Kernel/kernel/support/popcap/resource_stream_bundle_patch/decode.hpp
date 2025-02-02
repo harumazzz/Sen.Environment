@@ -9,13 +9,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundlePatch
     
 
     struct Decode : Common
-    { static auto process_whole(
-            DataStreamView &stream_patch,
-            DataStreamView &stream_before,
-            DataStreamView &stream_after) -> void
-        {
-            return;
-        }
+    { 
 
          static auto process_fs(
             std::string_view source_patch,

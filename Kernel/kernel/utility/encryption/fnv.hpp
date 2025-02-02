@@ -76,15 +76,6 @@ namespace Sen::Kernel::Encryption::FNV {
 				}
 				return value;
 			}
-
-			static auto hash_fs (
-				std::string_view source
-			) -> Hash::Type
-			{
-				auto hash = Hash<T>{};
-				auto destination = hash.make_hash(FileSystem::read_file(source).data());
-				return destination;
-			}
 	};
 	
 
