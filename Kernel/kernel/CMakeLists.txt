@@ -45,6 +45,8 @@ add_library(
 	./utility/converter/converter.hpp
 
 	./utility/algorithm/math.hpp
+	./utility/algorithm/string_helper.hpp
+
 	./utility/container/language.hpp
 	./utility/container/path.hpp
 	./utility/container/pointer.hpp
@@ -71,6 +73,11 @@ add_library(
 	./utility/encoding/apng/common.hpp
 	./utility/encoding/apng/setting.hpp
 	./utility/encoding/apng/writer.hpp
+
+	./utility/encoding/image/basic_image.hpp
+	./utility/encoding/image/read.hpp
+	./utility/encoding/image/common.hpp
+	./utility/encoding/image/write.hpp
 	
 	./utility/container/utility.hpp
 	./utility/miscellaneous/clock/clock.hpp
@@ -230,10 +237,7 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
-		utility/encoding/image/basic_image.hpp
-		utility/encoding/image/read.hpp
-		utility/encoding/image/common.hpp
-		utility/encoding/image/write.hpp
+
 
 )
 

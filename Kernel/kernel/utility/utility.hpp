@@ -7,6 +7,7 @@
 #include "kernel/utility/miscellaneous/clock/clock.hpp"
 
 #include "kernel/utility/algorithm/math.hpp"
+#include "kernel/utility/algorithm/string_helper.hpp"
 
 #include "kernel/utility/container/array/common.hpp"
 #include "kernel/utility/container/array/array.hpp"

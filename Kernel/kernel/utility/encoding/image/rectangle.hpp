@@ -72,7 +72,7 @@ namespace Sen::Kernel::Encoding::Image {
         constexpr auto operator*(
             const BasicRectangle& other
         ) const -> BasicRectangle {
-            return BasicRectangle(width * other.width, height * other.height);
+            return BasicRectangle{width * other.width, height * other.height};
         }
 
         constexpr auto operator/(
@@ -84,24 +84,24 @@ namespace Sen::Kernel::Encoding::Image {
         constexpr auto operator&(
             const BasicRectangle& other
         ) const -> BasicRectangle {
-            return BasicRectangle(width & other.width, height & other.height);
+            return BasicRectangle{width & other.width, height & other.height};
         }
 
         constexpr auto operator|(
             const BasicRectangle& other
         ) const -> BasicRectangle {
-            return BasicRectangle(width | other.width, height | other.height);
+            return BasicRectangle{width | other.width, height | other.height};
         }
 
         constexpr auto operator^(
             const BasicRectangle& other
         ) const -> BasicRectangle {
-            return BasicRectangle(width ^ other.width, height ^ other.height);
+            return BasicRectangle{width ^ other.width, height ^ other.height};
         }
 
         constexpr auto operator~(
         ) const -> BasicRectangle {
-            return BasicRectangle(~width, ~height);
+            return BasicRectangle{~width, ~height};
         }
 
         friend auto operator << (

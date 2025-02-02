@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/utility/macro.hpp"
-#include "kernel/utility/container/string/common.hpp"
+#include "kernel/utility/container/array/byte_array.hpp"
 
 namespace Sen::Kernel {
 
@@ -133,6 +133,13 @@ namespace Sen::Kernel {
 		{
 			return thiz.value[index];
 		}
+
+    	constexpr auto operator [](
+			Size const& index
+		) const -> Character
+    	{
+    		return thiz.value[index];
+    	}
 
 		constexpr auto operator ==(
 			const BasicString &other
@@ -627,6 +634,162 @@ namespace Sen::Kernel {
     	) const -> std::string_view {
 			return std::string_view{ thiz.value, thiz._size };
 		}
+
+    	auto substring (
+    		const Size& from,
+			const Size& to
+		) const -> String {
+			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
+			assert_conditional(from <= to, "From index must be smaller than To index", "substring");
+			auto result = String{to - from};
+			std::memcpy(result.begin(), thiz.value, to - from);
+			return result;
+		}
+
+    protected:
+
+		static auto build_longest_prefab_suffix(
+			const String& pattern,
+			const usize& m,
+			SizeArray& lps
+		) -> void {
+    		auto len = 0_size;
+    		auto i = 1_size;
+    		while (i < m) {
+    			if (pattern[i] == pattern[len]) {
+    				len++;
+    				lps[i] = len;
+    				++i;
+    			}
+    			else {
+    				if (len != 0) {
+    					len = lps[len - 1];
+    				}
+    				else {
+    					lps[i] = 0;
+    					++i;
+    				}
+    			}
+    		}
+    	}
+
+    public:
+
+    	auto find(
+			const String& pattern,
+			const Size& pos = 0
+		) const -> Size {
+    		auto m = pattern._size;
+    		auto n = thiz._size;
+    		if (m == 0_size) return pos;
+    		if (n < m || pos >= n) return none;
+    		auto lps = SizeArray{m};
+    		build_longest_prefab_suffix(pattern, m, lps);
+    		auto i = pos;
+    		auto j = 0_size;
+    		while (i < n) {
+    			if (pattern[j] == thiz.value[i]) {
+    				++i;
+    				++j;
+    			}
+    			if (j == m) {
+    				return i - j;
+    			}
+    			if (i < n && pattern[j] != thiz.value[i]) {
+    				if (j != 0) {
+    					j = lps[j - 1];
+    				}
+    				else {
+    					++i;
+    				}
+    			}
+    		}
+    		return none;
+    	}
+
+    	auto rfind(
+			const String& pattern,
+			const Size& pos = none
+		) const -> Size {
+    		auto m = pattern._size;
+    		auto n = thiz._size;
+    		if (m == 0_size) return pos;
+    		if (n < m) return none;
+    		auto bad_character = std::array<size_t, 256>{};
+    		for (auto i = 0_size; i < m; ++i) {
+    			bad_character[pattern[i]] = i;
+    		}
+    		auto start = (pos == none) ? n - m : std::min(pos, n - m);
+    		for (auto i = start; i >= m - 1; --i) {
+    			auto j = m - 1;
+    			while (pattern[j] == value[i + j]) {
+    				if (j == 0_size) {
+    					return i;
+    				}
+    				--j;
+    			}
+    			auto shift = m - 1 - bad_character[value[i]];
+    			if (shift < 1_size) shift = 1;
+    			i -= shift;
+    		}
+    		return none;
+    	}
+
+    	auto starts_with (
+			const char* pattern,
+			const Size& m
+		) const -> bool {
+    		if (m > thiz._size) {
+    			return false;
+    		}
+    		return std::memcmp(thiz.value, pattern, m) == 0;
+    	}
+
+    	auto starts_with (
+			const std::string_view& value
+		) const -> bool {
+    		return thiz.starts_with(value.data(), value.size());
+    	}
+
+    	auto starts_with (
+			const String& value
+		) const -> bool {
+    		return thiz.starts_with(value.cbegin(), value.size());
+    	}
+
+    	auto ends_with (
+			const char* pattern,
+			const Size& m
+		) const -> bool {
+    		if (m > thiz._size) {
+    			return false;
+    		}
+    		return std::memcmp(thiz.value + thiz._size - m, pattern, m) == 0;
+    	}
+
+    	auto ends_with (
+			const std::string_view& value
+		) const -> bool {
+    		return thiz.ends_with(value.data(), value.size());
+    	}
+
+    	auto ends_with (
+			const String& value
+		) const -> bool {
+    		return thiz.ends_with(value.cbegin(), value.size());
+    	}
+
+    	auto contains (
+    		const String& pattern
+    	) const -> bool {
+    		return thiz.find(pattern) != none;
+    	}
+
+    	auto rcontains (
+			const String& pattern
+		) const -> bool {
+    		return thiz.rfind(pattern) != none;
+    	}
 
 	};
 

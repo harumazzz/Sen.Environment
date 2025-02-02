@@ -168,4 +168,12 @@ namespace Sen::Kernel {
 
 	template <auto T>
 	using type_of = typename TypeOf<T>::type;
+
+	template <typename T, T Value>
+	struct is_greater_than_zero {
+		static constexpr auto value = (Value > 0);
+	};
+
+	template <auto Value>
+	constexpr auto is_greater_than_zero_v = is_greater_than_zero<type_of<Value>, Value>::value;
 }

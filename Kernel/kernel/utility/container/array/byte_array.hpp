@@ -22,6 +22,8 @@ namespace Sen::Kernel {
 
 	using usize = std::size_t;
 
+	using uchar = unsigned char;
+
 	using f32 = float;
 
 	using f64 = double;
@@ -51,5 +53,7 @@ namespace Sen::Kernel {
 	using UCharacterArray = CArray<unsigned char>;
 
     using ByteArray = Uint8Array;
+
+	using SizeArray = CArray<usize>;
 
 }
