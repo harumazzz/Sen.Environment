@@ -1,6 +1,6 @@
 project(
 	test
-	VERSION 0
+	VERSION 1
 	LANGUAGES CXX
 )
 

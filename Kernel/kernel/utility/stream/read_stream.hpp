@@ -271,6 +271,28 @@ namespace Sen::Kernel {
             thiz.m_position = index;
         }
 
+        auto operator + (
+            const usize& index
+        ) -> ReadStream& {
+			assert_conditional(index <= thiz.m_data.size(), "Index must be smaller than data size", "operator_plus");
+            thiz.m_position += index;
+            return thiz;
+        }
+
+        auto operator -(
+            const usize& index
+        ) -> ReadStream& {
+            assert_conditional(index <= thiz.m_data.size(), "Index must be smaller than data size", "operator_minus");
+            thiz.m_position -= index;
+            return thiz;
+        }
+
+        auto has_space(
+            const usize& index
+        ) -> bool {
+            return thiz.m_position + index <= thiz.m_data.size();
+        }
+
     };
 
 }

@@ -41,13 +41,11 @@ namespace Sen::Kernel::Encoding::Image {
         ) : m_red{red}, m_green{green}, m_blue{blue}, m_alpha{alpha} {
         }
 
-        constexpr explicit BasicColor(
+        constexpr BasicColor(
             const BasicColor& other
-        ) : m_red{other.m_red}, m_green{other.m_green}, m_blue{other.m_blue}, m_alpha{other.m_alpha} {
+        ) = default;
 
-        }
-
-        constexpr explicit BasicColor(
+        constexpr BasicColor(
             const BasicColor&& other
         ) noexcept : m_red{other.m_red}, m_green{other.m_green}, m_blue{other.m_blue}, m_alpha{other.m_alpha} {
             other.m_red = 0;
@@ -89,6 +87,30 @@ namespace Sen::Kernel::Encoding::Image {
             const BasicColor& other
         ) -> BasicColor {
             return BasicColor{m_red / other.m_red, m_green / other.m_green, m_blue / other.m_blue, m_alpha / other.m_alpha};
+        }
+
+        auto operator&(
+            const BasicColor& other
+        ) const -> BasicColor {
+            return BasicColor{m_red & other.m_red, m_green & other.m_green, m_blue & other.m_blue, m_alpha & other.m_alpha};
+        }
+
+        auto operator|(
+            const BasicColor& other
+        ) const -> BasicColor {
+            return BasicColor{m_red | other.m_red, m_green | other.m_green, m_blue | other.m_blue, m_alpha | other.m_alpha};
+        }
+
+        auto operator^(
+            const BasicColor& other
+        ) const -> BasicColor {
+            return BasicColor{m_red ^ other.m_red, m_green ^ other.m_green, m_blue ^ other.m_blue, m_alpha ^ other.m_alpha};
+        }
+
+        auto operator~(
+
+        ) const -> BasicColor {
+            return BasicColor{~m_red, ~m_green, ~m_blue, ~m_alpha};
         }
 
     protected:
@@ -147,6 +169,14 @@ namespace Sen::Kernel::Encoding::Image {
         ) -> void
         {
             thiz.m_alpha = thiz.clamp(value);
+        }
+
+        friend auto operator <<(
+            std::ostream& os,
+            const BasicColor& color
+        ) -> std::ostream& {
+            os << "Color" << "(" << color.m_red << ", " << color.m_green << ", " << color.m_blue << ", " << color.m_alpha << ")";
+            return os;
         }
     };
 

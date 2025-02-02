@@ -125,15 +125,13 @@ namespace Sen::Kernel::Interface {
 					.add_function("is_exists_in_path_environment"_sv, FunctionProxy<bool, std::string&>::template as_function<Interface::API::Process::is_exists_in_path_environment>)
 					.add_function("get_path_environment"_sv, FunctionProxy<std::string, std::string&>::template as_function<Interface::API::Process::get_path_environment>);
 				}
+                /*
 				auto arrayBuffer = kernel.add_space("ArrayBuffer");
 				{
 					arrayBuffer.add_function("random"_sv, FunctionProxy<void, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::ArrayBuffer::random>)
-					.add_function("cast_ArrayBuffer_to_JS_String"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_String>)
-					.add_function("cast_ArrayBuffer_to_JS_WideString"_sv, FunctionProxy<std::string, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Miscellaneous::cast_ArrayBuffer_to_JS_WideString>)
-					.add_function("cast_movable_String_to_ArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::string&>::template as_function<Interface::API::Miscellaneous::cast_movable_String_to_ArrayBuffer>)
-					.add_function("copyArrayBuffer"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Miscellaneous::copyArrayBuffer>)
 					.add_function("compareArrayBuffer"_sv, FunctionProxy<bool, std::shared_ptr<JS::ArrayBuffer>&, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Miscellaneous::compareArrayBuffer>);
 				}
+                 */
 				auto operatingSystem = kernel.add_space("OperatingSystem");
 				{
 					operatingSystem.add_function("current"_sv, FunctionProxy<std::string>::template as_function<Interface::API::OperatingSystem::current>);
@@ -161,6 +159,7 @@ namespace Sen::Kernel::Interface {
 				{
 					zlib.add_function("uncompress"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Compression::Zlib::uncompress>);
 				}
+                /*
 				auto support = kernel.add_space("Support");
 				auto texture = support.add_space("Texture");
 				{
@@ -308,6 +307,7 @@ namespace Sen::Kernel::Interface {
 					miscellaneous.add_function("make_copy"_sv, SpecialFunctionProxy<JSValue, JSValue&>::as_function<Interface::API::Miscellaneous::make_copy>)
 					.add_function("to_apng"_sv, FunctionProxy<void, List<std::string>&, std::string&, std::shared_ptr<Kernel::Encoding::APNG::DefaultSetting>&>::template as_function<Interface::API::Miscellaneous::to_apng>);
 				}
+                 */
 				auto DataStreamView = JavaScript::ClassBuilder<Kernel::DataStreamView>{ engine.context().value, "DataStreamView" };
 				Interface::API::DataStreamView::register_class(DataStreamView, kernel);
 				auto Clock = JavaScript::ClassBuilder<Kernel::Clock>{ engine.context().value, "Clock" };

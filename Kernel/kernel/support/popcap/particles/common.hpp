@@ -5,56 +5,25 @@
 namespace Sen::Kernel::Support::PopCap::Particles
 {
 
-	struct Common
-	{
-		inline static auto constexpr k_32bit_magic = 1092589901;
+    struct Common
+    {
+        inline static auto constexpr zlib_magic = -559022380;
 
-		inline static auto constexpr k_64bit_magic = -527264279;
+        inline static auto constexpr zlib_magic_big = -721506850;
 
-		inline static auto constexpr k_32bit_block_byte_1 = 0x164;
+        inline static constexpr auto transform_tfloat_end = -10000.0f;
 
-		inline static auto constexpr k_32bit_block_byte_2 = 0x14;
+        // inline static constexpr auto transform_wp_tfloat_end = -99999.0f;
 
-		inline static auto constexpr k_64bit_block_byte_1 = 0x2B0;
+        inline static constexpr auto reanim_compress_head = -559022380;
 
-		inline static auto constexpr k_64bit_block_byte_2 = 0x28;
+        inline static constexpr auto reanim_pc_head = -1282165568;
 
-		inline static auto constexpr zlib_magic = -559022380;
+        inline static constexpr auto reanim_xmb_head = 1833061976;
 
-		inline static auto constexpr zlib_magic_big = -721506850;
+        inline static constexpr auto reanim_xmb_version = 5;
 
-		inline static auto constexpr use_64_bit_variant = false;
+        inline static constexpr auto reanim_xmb_info = std::array<uint8_t, 0x26>{0x01, 0x1E, 0x53, 0x65, 0x78, 0x79, 0x2E, 0x54, 0x6F, 0x64, 0x4C, 0x69, 0x62, 0x2E, 0x52, 0x65, 0x61, 0x6E, 0x69, 0x6D, 0x52, 0x65, 0x61, 0x64, 0x65, 0x72, 0x2C, 0x20, 0x4C, 0x41, 0x57, 0x4E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    };
 
-		inline static auto constexpr trail_enum = std::array<std::string_view, 14>{"Constant"_sv, "Linear"_sv, "EaseIn"_sv, "EaseOut"_sv, "EaseInOut"_sv, "EaseInOutWeak"_sv, "FastInOut"_sv, "FastInOutWeak"_sv, "WeakFastInOut"_sv, "Bounce"_sv, "BounceFastMiddle"_sv, "BounceSlowMiddle"_sv, "SinWave"_sv, "EaseSinWave"_sv};
-
-		inline static auto constexpr emitter_type = std::array<std::string_view, 5>{"Circle"_sv, "Box"_sv, "BoxPath"_sv, "CirclePath"_sv, "CircleEvenSpacing"_sv};
-
-		inline static auto constexpr field_type = std::array<std::string_view, 12>{"Invalid"_sv, "Friction"_sv, "Acceleration"_sv, "Attractor"_sv, "MaxVelocity"_sv, "Velocity"_sv, "Position"_sv, "SystemPosition"_sv, "GroundConstraint"_sv, "Shake"_sv, "Circle"_sv, "Away"_sv};
-
-		// trim from start (in place)
-        inline static auto ltrim(std::string &s) -> void
-        {
-            s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch)
-                                            { return !std::isspace(ch); }));
-            return;
-        }
-
-        // trim from end (in place)
-        inline static auto rtrim(std::string &s) -> void
-        {
-            s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch)
-                                 { return !std::isspace(ch); })
-                        .base(),
-                    s.end());
-            return;
-        }
-
-        inline static auto trim(
-            std::string &s) -> void
-        {
-            ltrim(s);
-            rtrim(s);
-            return;
-        }
-	};
 }

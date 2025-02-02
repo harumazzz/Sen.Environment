@@ -176,30 +176,6 @@ declare namespace Sen {
 			export function random(value: ArrayBuffer): void;
 
 			/**
-			 * Converts an ArrayBuffer containing UTF-16 encoded text into a JavaScript string.
-			 *
-			 * @param value - The ArrayBuffer holding the UTF-16 encoded text data.
-			 * @returns A JavaScript string representing the decoded text.
-			 */
-			export function cast_ArrayBuffer_to_JS_WideString(value: ArrayBuffer): string;
-
-			/**
-			 * Converts an ArrayBuffer containing UTF-8 encoded text into a JavaScript string.
-			 *
-			 * @param value - The ArrayBuffer holding the UTF-8 encoded text data.
-			 * @returns A JavaScript string representing the decoded text.
-			 */
-			export function cast_ArrayBuffer_to_JS_String(value: ArrayBuffer): string;
-
-			/**
-			 * Converts a JavaScript string into an ArrayBuffer containing UTF-16 encoded text.
-			 *
-			 * @param value - The JavaScript string to be encoded as UTF-16.
-			 * @returns An ArrayBuffer holding the UTF-16 encoded text data.
-			 */
-			export function cast_movable_String_to_ArrayBuffer(value: string): ArrayBuffer;
-
-			/**
 			 * copyArrayBuffer function
 			 *
 			 * This function creates a deep copy of the provided ArrayBuffer.

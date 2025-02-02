@@ -4,30 +4,12 @@
 
 namespace Sen::Kernel::Support::PopCap::ResourceGroup {
 
-	using namespace nlohmann;
-
 	struct Common {
 
 		inline static auto rewrite_slot_count(
 			nlohmann::ordered_json& resource
 		) -> void
 		{
-			auto slot_group = tsl::ordered_map<std::string, size_t>{};
-			for (auto& e : resource["groups"]) {
-				if (e.find("resources") == e.end()) {
-					continue;
-				}
-				for (auto& c : e["resources"]) {
-					if (slot_group.find(c["id"]) == slot_group.end()) {
-						c["slot"] = slot_group.size();
-						slot_group.insert({ c["id"], slot_group.size() });
-					}
-					else {
-						c["slot"] = slot_group[c["id"]];
-					}
-				}
-			}
-			resource["slot_count"] = slot_group.size();
 			return;
 		}
 

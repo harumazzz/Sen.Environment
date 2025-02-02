@@ -165,8 +165,8 @@ namespace Sen::Kernel {
             thiz.v64(static_cast<uint64_t>(value << 1_size ^ value >> 63_size));
         }
 
-        auto bytes(Uint8List & value) -> void {
-            thiz.write<Uint8List>(value);
+        auto bytes(Uint8Array & value) -> void {
+            thiz.write<Uint8Array>(value);
         }
 
         auto string(String &value) -> void {
@@ -231,6 +231,28 @@ namespace Sen::Kernel {
             thiz.m_data.size(thiz.m_data.size() + value.size());
             std::memcpy(&thiz.m_data[thiz.m_position], value.begin(), value.size());
             thiz.set_position(temporary);
+        }
+
+        auto operator + (
+            const usize& index
+        ) -> WriteStream& {
+            assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_plus");
+            thiz.m_position += index;
+            return thiz;
+        }
+
+        auto operator -(
+            const usize& index
+        ) -> WriteStream& {
+            assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_minus");
+            thiz.m_position -= index;
+            return thiz;
+        }
+
+        auto has_space(
+            const usize& index
+        ) -> bool {
+            return thiz.m_position + index <= thiz.m_data.capacity();
         }
     };
 

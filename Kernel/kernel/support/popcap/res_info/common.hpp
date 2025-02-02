@@ -5,8 +5,5 @@
 namespace Sen::Kernel::Support::PopCap::ResInfo {
 
 	struct Common {
-
-		using json = nlohmann::ordered_json;
-
 	};
 }

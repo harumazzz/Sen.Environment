@@ -1,6 +1,9 @@
 $source = "$PSScriptRoot".Replace('\', '/')
 $target = Join-Path $source "./build"
 
+# Delete build folder
+Remove-Item -LiteralPath $target -Force -Recurse
+
 # Copy JSON files
 Get-ChildItem $source -recurse -Filter "*.json" | ForEach-Object {
     $item = $_.FullName.Replace('\', '/')
@@ -14,58 +17,6 @@ Get-ChildItem $source -recurse -Filter "*.json" | ForEach-Object {
         }
         Copy-Item -Path $item -Destination $destination
     }
-}
-
-# Copy XML files
-Get-ChildItem $source -recurse -Filter "*.xml" | ForEach-Object {
-    $item = $_.FullName.Replace('\', '/')
-    $relativePath = $_.FullName.Substring($source.Length).Replace('\', '/')
-    $destination = Join-Path $target $relativePath
-    Write-Host "Copying: $relativePath"
-    $destinationDir = Split-Path -Path $destination
-    if (!(Test-Path -Path $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force
-    }
-    Copy-Item -Path $item -Destination $destination
-}
-
-# Copy Lua files
-Get-ChildItem $source -recurse -Filter "*.lua" | ForEach-Object {
-    $item = $_.FullName.Replace('\', '/')
-    $relativePath = $_.FullName.Substring($source.Length).Replace('\', '/')
-    $destination = Join-Path $target $relativePath
-    Write-Host "Copying: $relativePath"
-    $destinationDir = Split-Path -Path $destination
-    if (!(Test-Path -Path $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force
-    }
-    Copy-Item -Path $item -Destination $destination
-}
-
-# Copy Png files
-Get-ChildItem $source -recurse -Filter "*.png" | ForEach-Object {
-    $item = $_.FullName.Replace('\', '/')
-    $relativePath = $_.FullName.Substring($source.Length).Replace('\', '/')
-    $destination = Join-Path $target $relativePath
-    Write-Host "Copying: $relativePath"
-    $destinationDir = Split-Path -Path $destination
-    if (!(Test-Path -Path $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force
-    }
-    Copy-Item -Path $item -Destination $destination
-}
-
-# Copy Bin files
-Get-ChildItem $source -recurse -Filter "*.bin" | ForEach-Object {
-    $item = $_.FullName.Replace('\', '/')
-    $relativePath = $_.FullName.Substring($source.Length).Replace('\', '/')
-    $destination = Join-Path $target $relativePath
-    Write-Host "Copying: $relativePath"
-    $destinationDir = Split-Path -Path $destination
-    if (!(Test-Path -Path $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force
-    }
-    Copy-Item -Path $item -Destination $destination
 }
 
 # Run tsc

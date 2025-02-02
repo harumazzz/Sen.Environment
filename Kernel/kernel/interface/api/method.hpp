@@ -707,7 +707,7 @@ namespace Sen::Kernel::Interface::API {
 	#pragma endregion
 
 	#pragma region support
-
+    /*
 	namespace Support {
 
 		#pragma region texture
@@ -1656,20 +1656,6 @@ namespace Sen::Kernel::Interface::API {
 
 	namespace Miscellaneous {
 
-		inline auto cast_ArrayBuffer_to_JS_String(
-			std::shared_ptr<JavaScript::ArrayBuffer>& data
-		) -> std::string
-		{
-			return std::string{ reinterpret_cast<char*>(data->value), data->size};
-		}
-
-		inline auto cast_movable_String_to_ArrayBuffer(
-			std::string& data
-		) -> std::shared_ptr<JavaScript::ArrayBuffer>
-		{
-			return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(data.data()), data.size());
-		}
-
 		inline auto copyArrayBuffer(
 			std::shared_ptr<JavaScript::ArrayBuffer>& data
 		) -> std::shared_ptr<JavaScript::ArrayBuffer>
@@ -1686,15 +1672,6 @@ namespace Sen::Kernel::Interface::API {
 				return false;
 			}
 			return std::memcmp(source->value, destination->value, source->size) == 0;
-		}
-
-		inline auto cast_ArrayBuffer_to_JS_WideString(
-			std::shared_ptr<JavaScript::ArrayBuffer>& source
-		) -> std::string
-		{
-			auto utf16 = std::wstring(reinterpret_cast<wchar_t*>(source->value), source->size / sizeof(wchar_t));
-			auto converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{};
-			return converter.to_bytes(utf16);
 		}
 
 		inline auto to_apng(
@@ -1715,6 +1692,6 @@ namespace Sen::Kernel::Interface::API {
 		}
 
 	}
-
+    */
 	#pragma endregion
 }

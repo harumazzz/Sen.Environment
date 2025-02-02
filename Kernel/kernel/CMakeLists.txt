@@ -87,6 +87,10 @@ add_library(
 	./utility/encryption/md5/common.hpp
 	./utility/encryption/md5/hash.hpp
 
+
+	./utility/filesystem/file_handler.hpp
+	./utility/encoding/image/color.hpp
+	./utility/encoding/image/rectangle.hpp
 	
 	./utility/platform/windows.hpp
 
@@ -226,8 +230,10 @@ add_library(
 	./interface/api/class.hpp
 	./interface/script.hpp
 	./interface/interface.cpp
-		utility/filesystem/file_handler.hpp
-		utility/encoding/image/color.hpp
+		utility/encoding/image/basic_image.hpp
+		utility/encoding/image/read.hpp
+		utility/encoding/image/common.hpp
+		utility/encoding/image/write.hpp
 
 )
 
