@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 #include <exception>
 #include <fstream>
 #include <filesystem>
@@ -14,10 +14,10 @@
 #include <codecvt>
 #include <type_traits>
 #include <chrono>
-#include <math.h>
 #include <cmath>
-#include <string.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include <regex>
 #include <source_location>
 #include <functional>
@@ -51,7 +51,6 @@
 #include "kernel/subprojects/dirent.hpp"
 #include "kernel/subprojects/magic_enum.hpp"
 #include "kernel/subprojects/canvas_ity.hpp"
-#include "kernel/subprojects/tsl.hpp"
 #include "kernel/subprojects/compile-time-regular-expressions.hpp"
 #include "kernel/subprojects/parallel-hashmap.hpp"
 #include "kernel/subprojects/thread-pool.hpp"

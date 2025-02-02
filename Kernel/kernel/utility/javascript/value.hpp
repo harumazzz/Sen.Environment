@@ -532,41 +532,6 @@ namespace Sen::Kernel::JavaScript {
 				return static_cast<T>(result);
 			}
 
-
-			auto collect_object_properties(
-
-			) -> tsl::ordered_map<std::string, Value>
-			{
-				auto property_enum = std::add_pointer_t<JSPropertyEnum>{nullptr};
-				auto property_count = std::uint32_t{};
-				JS_GetOwnPropertyNames(thiz.context, &property_enum, &property_count, thiz.value, JS_GPN_STRING_MASK);
-				auto map = tsl::ordered_map<std::string, Value>{ property_count };
-				for (auto element = property_enum; element < property_enum + property_count; ++element) {
-					auto name = JS_AtomToString(thiz.context, element->atom);
-					auto size = std::size_t{};
-					auto key = JS_ToCStringLen(thiz.context, &size, name);
-					map.insert({ std::string{ key, size }, as_new_instance(thiz.context, JS_GetProperty(thiz.context, thiz.value, element->atom)) });
-					JS_FreeValue(thiz.context, name);
-					JS_FreeCString(thiz.context, key);
-				}
-				JS_FreePropertyEnum(thiz.context, property_enum, property_count);
-				return map;
-			}
-
-			auto collect_array(
-
-			) -> List<Value>
-			{
-				auto map = thiz.collect_object_properties();
-				auto length = static_cast<std::size_t>(map["length"].get_number<double>());
-				auto result = List<Value>{  };
-				result.reserve(length);
-				for (auto index : Range{ length }) {
-					result.push_back(std::move(map.at(std::to_string(index))));
-				}
-				return result;
-			}
-
 			auto release (
 
 			) -> JSValue

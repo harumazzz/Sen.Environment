@@ -12,7 +12,6 @@
 |                                  float, double                                   |   number    |
 |                                struct ArrayBuffer                                | ArrayBuffer |
 |    List<T> (only primitives type, other please write your own implementation)    |  Array<T>   |
-|                                 tsl::ordered_map                                 |   object    |
 
 -   Please notice that you do not want to assign `std::string_view` to JS function, otherwise memory
     issues will happens.

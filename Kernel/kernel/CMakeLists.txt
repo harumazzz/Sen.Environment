@@ -23,7 +23,6 @@ add_library(
 	./subprojects/dirent.hpp
 	./subprojects/magic_enum.hpp
 	./subprojects/canvas_ity.hpp
-	./subprojects/tsl.hpp
 	./subprojects/compile-time-regular-expressions.hpp
 	./subprojects/parallel-hashmap.hpp
 	./subprojects/thread-pool.hpp
@@ -299,7 +298,6 @@ target_link_libraries(
 	quickjs
 	zip
 	canvas_ity
-	tsl
 	compile-time-regular-expressions
 	parallel-hashmap
 	thread-pool

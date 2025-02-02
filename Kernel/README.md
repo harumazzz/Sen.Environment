@@ -58,9 +58,6 @@
 
 -   [canvas_ity](https://github.com/a-e-k/canvas_ity/tree/main): canvas for drawing image
 
--   [tsl](https://github.com/Tessil/ordered-map): Actual ordered map for C++ comes with support of
-    First-in-first-out
-
 -   [etc1](https://developer.android.com/guide/playcore/asset-delivery/texture-compression): Google
     Standard ETC1 for encode/decode image
 

@@ -77,9 +77,6 @@ namespace Sen::Kernel {
 		static_assert(false, "Do not use std::unordered_map");
 	};
 
-	template <typename Key, typename Value>
-	struct is_map<tsl::ordered_map<Key, Value>> : std::true_type {};
-
 	template <typename T>
 	struct get_type;
 
@@ -137,12 +134,6 @@ namespace Sen::Kernel {
 
 	template <typename T>
 	struct map_traits;
-
-	template <typename Key, typename Value>
-	struct map_traits<tsl::ordered_map<Key, Value>> {
-		using key_type = Key;
-		using value_type = Value;
-	};
 
 	template <typename Key, typename Value>
 	struct map_traits<std::unordered_map<Key, Value>> {
