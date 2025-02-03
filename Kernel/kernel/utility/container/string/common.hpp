@@ -91,8 +91,8 @@ namespace Sen::Kernel {
     ) -> std::string
     {
         auto destination = std::string{str.data(), str.size()};
-        auto placeholder = "{}"_sv;
         auto replacePlaceholder = [&](auto&& arg) -> void {
+            auto placeholder = "{}"_sv;
             auto pos = destination.find(placeholder);
             if (pos != std::string::npos) {
                 destination.replace(pos, placeholder.length(), arg);
@@ -102,14 +102,33 @@ namespace Sen::Kernel {
         return destination;
     }
 
-    template <typename T> requires std::is_integral_v<T> || std::is_floating_point_v<T>
-    inline auto decimal_to_hexadecimal (
-        const T& decNumber
-    ) -> std::string 
-    {
-        auto ss = std::stringstream{};
-        ss << std::hex << decNumber;
-        return ss.str();
+    namespace Detail {
+
+        inline static auto constexpr Table = std::array<char, 16>{
+            '0', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', 'a', 'b', 'c', 'd', 'e', 'f',
+        };
+
+    }
+
+    template <typename T> requires std::is_integral_v<T>
+    inline constexpr auto decimal_to_hexadecimal(
+        const T& number
+    ) -> std::array<char, sizeof(T) * 2 + 1> {
+        auto buffer = std::array<char, sizeof(T) * 2 + 1>{};
+        auto value = static_cast<std::make_unsigned_t<T>>(number);
+        if (value == 0) {
+            buffer[0] = '0';
+            buffer[1] = '\0';
+            return buffer;
+        }
+        auto index = buffer.size() - 2;
+        while (value > 0) {
+            buffer[index--] = Detail::Table[value % 16];
+            value /= 16;
+        }
+        buffer[buffer.size() - 1] = '\0';
+        return buffer;
     }
 
     template <typename T> requires std::is_integral_v<T>

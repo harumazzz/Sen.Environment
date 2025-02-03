@@ -40,7 +40,7 @@ namespace Sen::Kernel::Interface::API {
 			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({std::string{"is_gui"}}), parameters.operator*());
 			Interface::Shell::callback(parameters.get(), is_gui.get());
-			auto result = static_cast<bool>(Converter::to_int32(std::string{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell"));
+			auto result = static_cast<bool>(StringParser::to_int32(String{reinterpret_cast<const char*>(is_gui->value), static_cast<std::size_t>(is_gui->size)}, "Cannot get is gui argument from Shell"));
 			return result;
 		}
 		
@@ -51,7 +51,7 @@ namespace Sen::Kernel::Interface::API {
 			auto parameters = std::unique_ptr<CStringList, StringListFinalizer>(new CStringList{nullptr, 0}, finalizer<CStringList>);
 			construct_string_list(std::to_array<std::string>({std::string{"version"}}), parameters.operator*());
 			Interface::Shell::callback(parameters.get(), shell_version.get());
-			auto result = static_cast<int>(Converter::to_int32(std::string{ reinterpret_cast<const char*>(shell_version->value), static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
+			auto result = static_cast<int>(StringParser::to_int32(String{ reinterpret_cast<const char*>(shell_version->value), static_cast<std::size_t>(shell_version->size) }, "Cannot get the Shell version"));
 			return result;
 		}
 

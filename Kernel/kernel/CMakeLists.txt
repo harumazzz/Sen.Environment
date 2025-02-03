@@ -36,9 +36,6 @@ add_library(
 	./utility/assert.hpp
 	./utility/utility.hpp
 
-	./utility/converter/common.hpp
-	./utility/converter/converter.hpp
-
 	./utility/algorithm/math.hpp
 	./utility/algorithm/string_helper.hpp
 
