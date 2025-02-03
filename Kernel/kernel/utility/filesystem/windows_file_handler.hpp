@@ -64,9 +64,9 @@ namespace Sen::Kernel::FileSystem {
                 return thiz;
             }
 
-            template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+            template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
                 { t.size() } -> std::convertible_to<usize>;
-                { t.begin() } -> std::convertible_to<u8*>;
+                { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
             }
             auto write (
                 T& data
@@ -145,23 +145,23 @@ namespace Sen::Kernel::FileSystem {
                 return thiz;
             }
 
-            template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+            template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
                 { t.size() } -> std::convertible_to<usize>;
-                { t.begin() } -> std::convertible_to<u8*>;
+                { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
             }
             auto read (
                 T& data
             ) -> void {
-                auto byte_written = DWORD{0};
+                auto bytes_read = DWORD{0};
                 auto result = ReadFile(
                     thiz.handle,
                     data.begin(),
                     sizeof(u8) * data.size(),
-                    &byte_written,
+                    &bytes_read,
                     nullptr
                 );
                 assert_conditional(SUCCEEDED(result), "Read file operation has not been completed", "read");
-                assert_conditional(byte_written == sizeof(u8) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "read");
+                assert_conditional(bytes_read == sizeof(u8) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_read), "read");
             }
 
             auto data (

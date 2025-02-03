@@ -8,24 +8,10 @@ namespace Sen::Kernel::Path
 {
 
 	namespace fs = std::filesystem;
-	
-	inline auto to_windows_style(
-		const std::string & source
-	) -> std::string const
-	{
-		return to_windows_style(source);
-	}
-
-	inline auto to_posix_style(
-		const std::string & source
-	) -> std::string const
-	{
-		return to_posix_style(source);
-	}
 
 	inline auto absolute(
 		const std::string & source
-	) -> std::string const
+	) -> std::string
 	{
 		#if WINDOWS
 		return utf16_to_utf8(fs::absolute(utf8_to_utf16(source)).wstring());
@@ -36,7 +22,7 @@ namespace Sen::Kernel::Path
 
 	inline auto getParents(
 		const std::string &source
-	) -> std::string const
+	) -> std::string
 	{
 		#if WINDOWS
 		return utf16_to_utf8(fs::path(utf8_to_utf16(source)).parent_path().wstring());

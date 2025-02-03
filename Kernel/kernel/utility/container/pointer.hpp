@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kernel/utility/library.hpp"
-#include "kernel/utility/macro.hpp"
 
 namespace Sen::Kernel {
 
@@ -10,7 +9,6 @@ namespace Sen::Kernel {
 		if (p != nullptr) {
 			delete p;
 		}
-		return;
 	};
 	
 	template <typename T>
@@ -19,7 +17,6 @@ namespace Sen::Kernel {
 		if (p != nullptr) {
 			delete[] p;
 		}
-		return;
 	};
 
 	template <typename T>
@@ -46,7 +43,7 @@ namespace Sen::Kernel {
 
 	template <typename To, typename From>
 	auto steal_pointer(From* from) -> To* {
-			static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
+		static_assert(sizeof(To) == sizeof(From), "The sizeof the destination and source is not the same size, unsafe cast!");
 		return reinterpret_cast<To*>(from);
 	}
 }

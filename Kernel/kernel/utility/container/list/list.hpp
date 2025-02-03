@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/utility/container/base_container/base.hpp"
 #include "kernel/utility/container/list/common.hpp"
 
 namespace Sen::Kernel {
@@ -8,7 +9,7 @@ namespace Sen::Kernel {
     class CList;
 
     template <typename T>
-	class CList : public Common {
+	class CList final : public Common, public BaseContainer<T> {
 
 		protected:
 
@@ -24,17 +25,13 @@ namespace Sen::Kernel {
 
 		protected:
 
-			Pointer<T> value{ nullptr };
-
-			Size _size{};
-
     		Size _capacity{};
 
 		public:
 
 			constexpr explicit CList(
 				const Size& size
-			) : value{new T[size]}, _size{0_size}, _capacity{size}
+			) : BaseContainer<T>{new T[size], size}, _capacity{size}
 			{
 
 			}
@@ -42,52 +39,20 @@ namespace Sen::Kernel {
 			constexpr explicit CList(
 				Pointer<T> const& source,
 				const Size& size
-			) : value{source}, _size{size}, _capacity{size}
+			) : BaseContainer<T>{source, size}, _capacity{size}
 			{
 
 			}
 
 			constexpr explicit CList(
 
-			) : value{new T[64_size]}, _size{0_size}, _capacity{64_size}
+			) : BaseContainer<T>{new T[64_size], 0_size}, _capacity{64_size}
     		{
 
 			}
 
-			constexpr auto data(
-
-			) -> Pointer<T>&
-			{
-				return thiz.value;
-			}
-
-			constexpr auto begin(
-			) -> Pointer<T> {
-				return thiz.value;
-			}
-
-			constexpr auto rbegin(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size - 1;
-			}
-
-			constexpr auto cbegin(
-			) const -> Pointer<T> {
-				return thiz.value;
-			}
-
-			constexpr auto cend(
-			) const -> Pointer<T> {
-				return thiz.value + thiz._size;
-			}
-
-			constexpr auto rend(
-			) const -> Pointer<T> {
-				return thiz.value + thiz._size - 1;
-			}
-
-			constexpr auto release(
-			) -> std::tuple<Pointer<T>, Size> {
+    		constexpr auto release(
+			) -> std::tuple<Pointer<T>, Size> override {
 				auto raw = thiz.value;
 				auto size = thiz._size;
 				thiz.value = nullptr;
@@ -96,14 +61,9 @@ namespace Sen::Kernel {
 				return std::make_tuple(raw, size);
 			}
 
-			constexpr auto end(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size;
-			}
-
 		    auto allocate(
 				Size const& size
-			) -> void
+			) -> void override
 			{
 				if (thiz.value != nullptr) {
 					delete[] thiz.value;
@@ -115,10 +75,9 @@ namespace Sen::Kernel {
 
 			~CList(
 
-			)
-			{
+			) override {
 				if (thiz.value != nullptr) {
-					delete[] value;
+					delete[] thiz.value;
 					thiz.value = nullptr;
 				}
 			}
@@ -133,10 +92,8 @@ namespace Sen::Kernel {
 
 			constexpr CList(
 				CList&& other
-			) noexcept : value{ other.value }, _size{ other._size }, _capacity{other._capacity}
+			) noexcept : BaseContainer<T>{std::move(other)}, _capacity{other._capacity}
 			{
-				other.value = nullptr;
-				other._size = 0;
 				other._capacity = 0;
 			}
 
@@ -144,7 +101,7 @@ namespace Sen::Kernel {
 				CList&& other
 			) noexcept -> CList& {
 				if (this != &other) {
-					delete[] value;
+					delete[] thiz.value;
 					thiz._size = other._size;
 					thiz.value = other.value;
 					thiz._capacity = other._capacity;
@@ -153,14 +110,6 @@ namespace Sen::Kernel {
 					other._capacity = 0;
 				}
 				return thiz;
-			}
-
-			constexpr auto operator [](
-				Size const& index
-			) -> T&
-			{
-				assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
-				return thiz.value[index];
 			}
 
 			auto operator == (
@@ -187,20 +136,23 @@ namespace Sen::Kernel {
 				const CList& other
 			) -> bool const = delete;
 
-			constexpr auto size(
+    		constexpr auto take_ownership (
+				CList& other
+			) -> void {
+    			thiz.value = other.value;
+    			thiz._size = other._size;
+    			other.value = nullptr;
+    			other._size = 0;
+    		}
 
-			) -> Size
-			{
-				return thiz._size;
-			}
-
-    	constexpr auto size(
-			const Size& new_size
-		) -> void
-		{
-			assert_conditional(new_size <= thiz._capacity, "Size must be smaller than current capacity", "size");
-			thiz._size = new_size;
-		}
+    		constexpr auto take_ownership (
+				CArray<T>& other
+			) -> void {
+    			thiz.value = other.value;
+    			thiz._size = other._size;
+    			other.value = nullptr;
+    			other._size = 0;
+    		}
 
 		    constexpr auto capacity(
 
@@ -209,24 +161,39 @@ namespace Sen::Kernel {
 				return thiz._capacity;
 			}
 
+    		constexpr auto size(
+
+			) -> Size override {
+				return thiz._size;
+			}
+
+    		constexpr auto size(
+				const Size& new_size
+			) -> void
+		    {
+		    	assert_conditional(new_size <= thiz._capacity, "Size must be smaller than current capacity", "size");
+		    	thiz._size = new_size;
+		    }
+
 			auto clone (
 
-			) -> CList<T>
+			) -> CList
 			{
 				auto new_instance = new T[thiz._size];
-				std::memcpy(new_instance, thiz.value, thiz._size);
-				return CList<T>{new_instance, thiz._size};
+				if constexpr (is_numeric_v<T>) {
+					std::memcpy(new_instance, thiz.value, thiz._size * sizeof(T));
+				}
+		    	else {
+		    		std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
+		    	}
+				return CList{new_instance, thiz._size};
 			}
 
     		auto clear(
 
-			) -> void {
-				thiz._size = 0;
+			) -> void override {
 				thiz._capacity = 0;
-				if (thiz.value != nullptr) {
-					delete[] thiz.value;
-				}
-				thiz.value = nullptr;
+		    	BaseContainer<T>::clear();
 			}
 
     		auto reallocate (
@@ -234,7 +201,12 @@ namespace Sen::Kernel {
 			) -> void {
 				if (thiz._capacity < size) {
 					auto new_value = new T[size];
-					std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
+					if constexpr (is_numeric_v<T>) {
+						std::memcpy(new_value, thiz.value, thiz._size * sizeof(T));
+					}
+					else {
+						std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
+					}
 					delete[] thiz.value;
 					thiz.value = new_value;
 					thiz._capacity = size;
@@ -299,8 +271,13 @@ namespace Sen::Kernel {
 				else {
 					static_assert(sizeof...(args) == 1, "Expected 1 argument only");
 					auto index = (std::forward<Args>(args), ...);
-					assert_conditional(index < _size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("pop", index));
-					std::memmove(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
+					assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("pop", index));
+					if constexpr (is_numeric_v<T>) {
+						std::memcpy(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
+					}
+					else {
+						std::memmove(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
+					}
 					--thiz._size;
 				}
 			}
@@ -313,7 +290,12 @@ namespace Sen::Kernel {
 				if (thiz._size >= thiz._capacity) {
 					thiz.reallocate(_capacity * 2);
 				}
-				std::memmove(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
+				if constexpr (is_numeric_v<T>) {
+					std::memcpy(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
+				}
+		    	else {
+		    		std::memmove(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
+		    	}
 				thiz.value[index] = std::move(element);
 				++thiz._size;
 			}

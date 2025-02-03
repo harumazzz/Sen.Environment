@@ -156,4 +156,11 @@ namespace Sen::Kernel {
 
 	template <auto Value>
 	constexpr auto is_greater_than_zero_v = is_greater_than_zero<type_of<Value>, Value>::value;
+
+	template <typename T>
+	concept is_numeric_v = std::is_floating_point_v<T> || std::is_integral_v<T>;
+
+	template <typename Container>
+	using extract_container_t = std::decay_t<typename Container::value_type>;
+
 }

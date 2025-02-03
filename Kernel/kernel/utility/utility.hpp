@@ -29,7 +29,6 @@
 #include "kernel/utility/container/path.hpp"
 #include "kernel/utility/converter/common.hpp"
 #include "kernel/utility/converter/converter.hpp"
-#include "kernel/utility/container/image.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/container/system.hpp"

@@ -45,8 +45,7 @@ add_library(
 	./utility/miscellaneous/language/language.hpp
 	./utility/container/path.hpp
 	./utility/container/pointer.hpp
-	./utility/container/image.hpp
-	./utility/container/array/common.hpp
+		./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
 	./utility/container/list/common.hpp
@@ -230,6 +229,8 @@ add_library(
 	./interface/interface.cpp
 	./utility/filesystem/utility.hpp
 	./utility/filesystem/path.hpp
+		utility/filesystem/posix_file_handler.hpp
+		utility/container/base_container/base.hpp
 
 
 )

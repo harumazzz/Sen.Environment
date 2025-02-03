@@ -17,6 +17,9 @@ auto execute (
         // auto kernel = Runtime{};
         // kernel.execute();
         // Executor::unregister_external();
+        auto value = String{};
+        auto path = String{"C:/Users/Admin/Downloads/worldmap (1).json"};
+        FileSystem::read_file(path, value);
     }
     catch(...)
     {

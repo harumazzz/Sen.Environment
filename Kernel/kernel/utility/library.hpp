@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <future>
 #include <random>
+#include <ranges>
 #include <set>
 #include <bitset>
 #include <condition_variable>

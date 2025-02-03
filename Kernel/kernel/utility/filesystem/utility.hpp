@@ -3,12 +3,13 @@
 #include "kernel/utility/filesystem/path.hpp"
 #include "kernel/utility/filesystem/file_handler.hpp"
 #include "kernel/utility/filesystem/windows_file_handler.hpp"
+#include "kernel/utility/filesystem/posix_file_handler.hpp"
 
 namespace Sen::Kernel::FileSystem {
 
-    template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+    template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
         { t.size() } -> std::convertible_to<usize>;
-        { t.begin() } -> std::convertible_to<u8*>;
+        { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
     }
     auto read_file (
         const String& source,
@@ -16,18 +17,21 @@ namespace Sen::Kernel::FileSystem {
     ) -> void {
         auto size = Path::size_file(source);
         data.allocate(size);
+        if constexpr (std::is_same_v<T, CList<extract_container_t<T>>>) {
+            data.size(size);
+        }
         #if WINDOWS
         auto file = WindowsFileReader{source};
         file.read(data);
         #else
-        auto file = open_read(source);
+        auto file = PosixFileReader{source};
         file.read(data);
         #endif
     }
 
-    template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+    template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
         { t.size() } -> std::convertible_to<usize>;
-        { t.begin() } -> std::convertible_to<u8*>;
+        { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
     }
     auto write_file (
        const String& source,
@@ -37,7 +41,7 @@ namespace Sen::Kernel::FileSystem {
         auto file = WindowsFileWriter{source};
         file.write(data);
         #else
-        auto file = open_write(source);
+        auto file = PosixFileWriter{source};
         file.write(data);
         #endif
     }

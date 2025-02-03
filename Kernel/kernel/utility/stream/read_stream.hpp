@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/utility/container/pointer.hpp"
 #include "kernel/utility/stream/base_stream.hpp"
 
 namespace Sen::Kernel {
@@ -160,7 +161,9 @@ namespace Sen::Kernel {
             const usize &size
         ) -> String {
             auto value = thiz.bytes(size);
-            return String{reinterpret_cast<const char *>(value.data()), size};
+            auto destination = String{};
+            destination.take_ownership(steal_reference<String>(value));
+            return destination;
         }
 
         template<class T>

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "kernel/utility/container/array/common.hpp"
+#include "kernel/utility/container/base_container/base.hpp"
+#include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel {
 
 	template <typename T>
-	class CArray {
+	class CArray : public BaseContainer<T> {
 
 		public:
 
@@ -14,17 +16,11 @@ namespace Sen::Kernel {
 			template <typename U>
 			using Pointer = U*;
 
-		protected:
-
-			Pointer<T> value{ nullptr };
-
-			Size _size{0};
-
 		public:
 
 			constexpr explicit CArray(
 				const Size& size
-			) : value{new T[size]}, _size{size}
+			) : BaseContainer<T>{new T[size], size}
 			{
 
 			}
@@ -32,7 +28,7 @@ namespace Sen::Kernel {
 			constexpr explicit CArray(
 				Pointer<T> const& source,
 				const Size& size
-			) : value{source}, _size{size}
+			) : BaseContainer<T>{source, size}
 			{
 
 			}
@@ -41,69 +37,12 @@ namespace Sen::Kernel {
 
 			) = default;
 
-			constexpr auto data(
+			~CArray(
 
-			) -> Pointer<T>&
-			{
-				return thiz.value;
-			}
-
-			constexpr auto begin(
-			) -> Pointer<T> {
-				return thiz.value;
-			}
-
-			constexpr auto rbegin(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size - 1;
-			}
-
-			constexpr auto cbegin(
-			) -> Pointer<T> {
-				return thiz.value;
-			}
-
-			constexpr auto cend(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size;
-			}
-
-			constexpr auto rend(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size - 1;
-			}
-
-			constexpr auto release(
-			) -> std::tuple<Pointer<T>, Size> {
-				auto raw = thiz.value;
-				auto size = thiz._size;
-				thiz.value = nullptr;
-				thiz._size = 0;
-				return std::make_tuple(raw, size);
-			}
-
-			constexpr auto end(
-			) -> Pointer<T> {
-				return thiz.value + thiz._size;
-			}
-
-			auto allocate(
-				Size const& size
-			) -> void
+			) override
 			{
 				if (thiz.value != nullptr) {
 					delete[] thiz.value;
-				}
-				thiz.value = new T[size];
-				thiz._size = size;
-			}
-
-			~CArray(
-
-			)
-			{
-				if (thiz.value != nullptr) {
-					delete[] value;
 					thiz.value = nullptr;
 				}
 			}
@@ -118,30 +57,21 @@ namespace Sen::Kernel {
 
 			constexpr CArray(
 				CArray&& other
-			) noexcept : value{ other.value }, _size{ other._size }
+			) noexcept : BaseContainer<T>{std::move(other)}
 			{
-				other.value = nullptr;
-				other._size = 0;
 			}
 
 			constexpr auto operator=(
 				CArray&& other
 			) noexcept -> CArray& {
 				if (this != &other) {
-					delete[] value;
+					delete[] thiz.value;
 					thiz._size = other._size;
 					thiz.value = other.value;
 					other.value = nullptr;
 					other._size = 0;
 				}
 				return thiz;
-			}
-
-			constexpr auto operator [](
-				Size const& index
-			) -> T&
-			{
-				return thiz.value[index];
 			}
 
 			auto operator == (
@@ -168,11 +98,23 @@ namespace Sen::Kernel {
 				const CArray& other
 			) -> bool const = delete;
 
-			constexpr auto size(
+			constexpr auto take_ownership (
+				CArray& other
+			) -> void {
+				thiz.value = other.value;
+				thiz._size = other._size;
+				other.value = nullptr;
+				other._size = 0;
+			}
 
-			) -> Size
-			{
-				return thiz._size;
+			template <typename U> requires std::is_base_of_v<BaseContainer<extract_container_t<U>>, U>
+			constexpr auto take_ownership (
+				U& other
+			) -> void {
+				thiz.value = other.value;
+				thiz._size = other._size;
+				other.value = nullptr;
+				other._size = 0;
 			}
 
 			auto clone (
@@ -180,18 +122,13 @@ namespace Sen::Kernel {
 			) -> CArray
 			{
 				auto new_instance = new T[thiz._size];
-				std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
-				return CArray{new_instance, thiz._size};
-			}
-
-			auto clear(
-
-			) -> void {
-				thiz._size = 0;
-				if (thiz.value != nullptr) {
-					delete[] thiz.value;
-					thiz.value = nullptr;
+				if constexpr (is_numeric_v<T>) {
+					std::memcpy(new_instance, thiz.value, thiz._size * sizeof(T));
 				}
+				else {
+					std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
+				}
+				return CArray{new_instance, thiz._size};
 			}
 
 			auto assign (

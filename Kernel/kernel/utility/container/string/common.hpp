@@ -41,45 +41,6 @@ namespace Sen::Kernel {
         return result;
     }
 
-    inline auto split(
-        std::string_view str,
-        std::string_view delimiter
-    ) -> List<std::string>
-    {
-        auto result = List<std::string>{};
-        auto pos = 0;
-        auto max_splits = std::count(str.begin(), str.end(), delimiter.front()) + 1; 
-        result.reserve(max_splits);
-        while ((pos = str.find(delimiter)) != std::string_view::npos) {
-            result.push_back(std::string{str.substr(0, pos)});
-            str.remove_prefix(pos + delimiter.length());
-        }
-        result.push_back(std::string{str});
-        return result;
-    }
-
-    inline auto join(
-        const List<std::string> &data,
-        std::string_view delimiter
-    ) -> std::string
-    {
-        auto result = std::string{};
-        result.reserve((delimiter.size() * (data.size() - 1)) + std::accumulate(data.begin(), data.end(), size_t{0}, [](auto old, auto& current){
-            return old + current.size();
-        }));
-        for(auto i : Range{data.size()})
-        {
-            result += data[i];
-            if (i == (data.size() - 1)) {
-                break;
-            }
-            else {
-                result += delimiter;
-            }
-        }
-        return result;
-    }
-
     inline auto to_posix_style(
         std::string_view source
     ) -> std::string
@@ -141,7 +102,7 @@ namespace Sen::Kernel {
         return destination;
     }
 
-    template <typename T> requires std::is_integral<T>::value || std::is_floating_point<T>::value
+    template <typename T> requires std::is_integral_v<T> || std::is_floating_point_v<T>
     inline auto decimal_to_hexadecimal (
         const T& decNumber
     ) -> std::string 
@@ -149,6 +110,13 @@ namespace Sen::Kernel {
         auto ss = std::stringstream{};
         ss << std::hex << decNumber;
         return ss.str();
+    }
+
+    template <typename T> requires std::is_integral_v<T>
+    inline constexpr bool is_whitespace_character(
+        const T& c
+    ) noexcept {
+        return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
     }
 
 }

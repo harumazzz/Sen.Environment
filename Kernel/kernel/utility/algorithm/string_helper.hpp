@@ -8,6 +8,9 @@ namespace Sen::Kernel::StringHelper {
 
     using String = String;
 
+    template <typename T>
+    using List = CList<T>;
+
     template <typename T, auto number> requires std::is_floating_point_v<T> && std::is_integral_v<type_of<number>> && is_greater_than_zero_v<number>
     auto to_fixed (
         const T& value
@@ -103,6 +106,77 @@ namespace Sen::Kernel::StringHelper {
             }
         }
         return true;
+    }
+
+    template <typename T> requires std::is_base_of_v<BaseContainer<String>, T>
+    inline auto calculate_size (
+        T& source
+    ) -> usize {
+        auto result = 0_size;
+        for (auto & e : source) {
+            result += e.size();
+        }
+        return result;
+    }
+
+    inline auto join_strings (
+        List<String>& source,
+        String& destination,
+        const String& separator
+    ) -> void {
+        auto source_size = calculate_size(source);
+        auto size = source.size() - 1;
+        destination.allocate(source_size + separator.size() * size);
+        for (auto& e : source | std::views::take(size)) {
+            destination += e;
+            destination += separator;
+        }
+        destination += source[size];
+    }
+
+    inline auto join_strings (
+        List<String>& source,
+        String& destination,
+        char separator
+    ) -> void {
+        auto source_size = calculate_size(source);
+        auto size = source.size() - 1;
+        destination.allocate(source_size + sizeof(char) * size);
+        for (auto& e : source | std::views::take(size)) {
+            destination += e;
+            destination += separator;
+        }
+        destination += source[size];
+    }
+
+    inline auto split_string (
+        const String& source,
+        const String& separator,
+        List<String>& destination
+    ) -> void {
+        auto start = 0_size;
+        auto end = 0_size;
+        auto sep_len = separator.size();
+        while ((end = source.find(separator, start)) != String::none) {
+            destination.append(source.sub(start, end - start));
+            start = end + sep_len;
+        }
+        destination.append(source.sub(start));
+    }
+
+    inline auto split_string (
+        const String& source,
+        char separator,
+        List<String>& destination
+    ) -> void {
+        auto start = 0_size;
+        auto end = 0_size;
+        auto sep_len = 1;
+        while ((end = source.find(separator, start)) != String::none) {
+            destination.append(source.sub(start, end - start));
+            start = end + sep_len;
+        }
+        destination.append(source.sub(start));
     }
 
 

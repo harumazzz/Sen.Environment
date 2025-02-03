@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/utility/container/pointer.hpp"
 #include "kernel/utility/stream/base_stream.hpp"
 
 
@@ -29,11 +30,11 @@ namespace Sen::Kernel {
         ) = default;
 
         WriteStream(
-                const WriteStream &other
+            const WriteStream &other
         ) = delete;
 
         auto operator=(
-                const WriteStream &other
+            const WriteStream &other
         ) -> WriteStream & = delete;
 
         WriteStream(
@@ -170,11 +171,7 @@ namespace Sen::Kernel {
         }
 
         auto string(String &value) -> void {
-            auto temporary = value.size() + thiz.m_position;
-            thiz.allocate_full(temporary);
-            thiz.m_data.size(thiz.m_data.size() + value.size());
-            std::memcpy(&thiz.m_data[thiz.m_position], value.begin(), value.size());
-            thiz.set_position(temporary);
+            return thiz.write(steal_reference<Uint8Array>(value));
         }
 
         template<typename T>
@@ -202,7 +199,7 @@ namespace Sen::Kernel {
         }
 
         auto null(const usize &size) {
-            auto value = Uint8List{size};
+            auto value = Uint8Array{size};
             thiz.bytes(value);
         }
 
@@ -226,11 +223,7 @@ namespace Sen::Kernel {
         auto write(
             T &value
         ) -> void {
-            auto temporary = value.size() + thiz.m_position;
-            thiz.allocate_full(temporary);
-            thiz.m_data.size(thiz.m_data.size() + value.size());
-            std::memcpy(&thiz.m_data[thiz.m_position], value.begin(), value.size());
-            thiz.set_position(temporary);
+            return thiz.raw(value.begin(), value.size());
         }
 
         auto operator + (
