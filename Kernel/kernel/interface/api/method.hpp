@@ -86,8 +86,8 @@ namespace Sen::Kernel::Interface::API {
 
 	inline auto script(
 
-	) -> std::string {
-		return to_posix_style(construct_string(Executor::script));
+	) -> String {
+		return construct_string(Executor::script);
 	}
 
 	#pragma endregion

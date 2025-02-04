@@ -41,33 +41,6 @@ namespace Sen::Kernel {
         return result;
     }
 
-    inline auto to_posix_style(
-        std::string_view source
-    ) -> std::string
-    {
-        auto destination = std::string{source.data(), source.size()};
-        std::replace(destination.begin(), destination.end(), '\\', '/');
-        return destination;
-    }
-
-    inline auto to_windows_style(
-        std::string_view source
-    ) -> std::string
-    {
-        auto destination = std::string{source.data(), source.size()};
-        std::replace(destination.begin(), destination.end(), '/', '\\');
-        return destination;
-    }
-
-    inline auto to_windows_style(
-        std::wstring_view source
-    ) -> std::wstring
-    {
-        auto destination = std::wstring{source.data(), source.size()};
-        std::replace(destination.begin(), destination.end(), L'/', L'\\');
-        return destination;
-    }
-
     inline auto utf8_to_utf16(
         const std::string_view& str
     ) -> std::wstring
@@ -90,16 +63,7 @@ namespace Sen::Kernel {
         Args&&... args
     ) -> std::string
     {
-        auto destination = std::string{str.data(), str.size()};
-        auto replacePlaceholder = [&](auto&& arg) -> void {
-            auto placeholder = "{}"_sv;
-            auto pos = destination.find(placeholder);
-            if (pos != std::string::npos) {
-                destination.replace(pos, placeholder.length(), arg);
-            }
-        };
-        (replacePlaceholder(args), ...);
-        return destination;
+        return fmt::format(fmt::runtime(str), std::forward<Args>(args)...);
     }
 
     namespace Detail {

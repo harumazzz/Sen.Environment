@@ -157,14 +157,25 @@ namespace Sen::Kernel {
             return thiz.u8() == 1_byte;
         }
 
-         auto string( 
-            const usize &size
+         auto string(
+            const usize& from,
+            const usize &to
         ) -> String {
-            auto value = thiz.bytes(size);
-            return String{reinterpret_cast<const char*>(value.data()), value.size()};
+            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
+            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
+            assert_conditional(from < to, "From index must be smaller than To index", "read");
+            auto destination = String{to - from};
+            std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
+            return destination;
         }
 
-        template<typename T>
+        auto string(
+            const usize &size
+        ) -> String {
+            return thiz.string(thiz.m_position, thiz.m_position + size);
+        }
+
+        template<typename T> requires is_numeric_v<T>
         auto string_of(
 
         ) -> String {
@@ -194,10 +205,10 @@ namespace Sen::Kernel {
         auto bytes(
             const usize &size
         )  -> Uint8Array  {
-            return thiz.read(thiz.m_position, thiz.m_position += size);
+            return thiz.read(thiz.m_position, thiz.m_position + size);
         }
 
-        template<typename T>
+        template<typename T> requires is_numeric_v<T>
         auto read(
             const usize &size
         ) -> T {
@@ -209,7 +220,7 @@ namespace Sen::Kernel {
             return value;
         }
 
-        template<typename T>
+        template<typename T> requires is_numeric_v<T>
         auto read(
 
         ) -> T {
@@ -241,7 +252,7 @@ namespace Sen::Kernel {
 
         constexpr auto size(
 
-        ) -> usize {
+        ) const -> usize {
             return thiz.m_data.size();
         }
 
@@ -290,7 +301,7 @@ namespace Sen::Kernel {
 
         auto has_space(
             const usize& index
-        ) -> bool {
+        ) const -> bool {
             return thiz.m_position + index <= thiz.m_data.size();
         }
 

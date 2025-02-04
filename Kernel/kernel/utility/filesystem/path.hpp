@@ -279,10 +279,26 @@ namespace Sen::Kernel::Path {
         source.replace_all('\\', '/');
     }
 
+    inline auto to_posix (
+        const String& source
+    ) -> String {
+        auto destination = source.clone();
+        to_posix_style(destination);
+        return destination;
+    }
+
     inline auto to_windows_style (
         String& source
     ) -> void {
         source.replace_all('/', '\\');
+    }
+
+    inline auto to_windows (
+        const String& source
+    ) -> String {
+        auto destination = source.clone();
+        to_windows_style(destination);
+        return destination;
     }
 
 

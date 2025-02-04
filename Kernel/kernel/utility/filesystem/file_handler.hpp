@@ -1,5 +1,6 @@
 #pragma once
 
+#include "path.hpp"
 #include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
 #include "kernel/utility/container/string/common.hpp"
@@ -113,7 +114,7 @@ namespace Sen::Kernel::FileSystem {
         auto file = std::fopen(source.cbegin(), mode.cbegin());
         #endif
         #if WINDOWS
-        assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(source)), "open_file");
+        assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), Path::to_posix(source).view()), "open_file");
         #else
         assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source.view()), "open_file");
         #endif

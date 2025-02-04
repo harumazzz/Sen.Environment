@@ -64,7 +64,7 @@ namespace Sen::Kernel::Interface {
 				}
 				auto home = kernel.add_space("Home");
 				{
-					home.add_function("script"_sv, FunctionProxy<std::string>::template as_function<Interface::API::script>);
+					home.add_function("script"_sv, FunctionProxy<String>::template as_function<Interface::API::script>);
 				}
 				auto filesystem = kernel.add_space("FileSystem");
 				{

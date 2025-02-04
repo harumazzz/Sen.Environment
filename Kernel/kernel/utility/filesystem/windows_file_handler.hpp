@@ -5,6 +5,7 @@
 #include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/container/list/list.hpp"
 #include "kernel/utility/container/string/common.hpp"
+#include "kernel/utility/filesystem/path.hpp"
 
 namespace Sen::Kernel::FileSystem {
 
@@ -28,7 +29,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), to_posix_style(path.view())), "WindowsFileWriter");
+                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), Path::to_posix(path).view()), "WindowsFileWriter");
             }
 
             ~WindowsFileWriter(
@@ -107,7 +108,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), to_posix_style(path.view())), "WindowsFileReader");
+                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), Path::to_posix(path).view()), "WindowsFileReader");
             }
 
             ~WindowsFileReader(
