@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/utility/container/pointer.hpp"
+#include "kernel/utility/algorithm/pointer.hpp"
 #include "kernel/utility/stream/base_stream.hpp"
 
 namespace Sen::Kernel {

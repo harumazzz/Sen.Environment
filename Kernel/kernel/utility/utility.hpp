@@ -21,17 +21,17 @@
 
 #include "kernel/utility/filesystem/utility.hpp"
 
-#include "kernel/utility/container/pointer.hpp"
+#include "kernel/utility/algorithm/pointer.hpp"
 #include "kernel/utility/container/string/compile_string.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
 #include "kernel/utility/container/string/string_parser.hpp"
 #include "kernel/utility/diff/vcdiff.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
-#include "kernel/utility/container/system.hpp"
+#include "kernel/utility/miscellaneous/system/system.hpp"
 #include "kernel/utility/encoding/apng/writer.hpp"
-#include "kernel/utility/container/max_rects_lite.hpp"
-#include "kernel/utility/container/utility.hpp"
+#include "kernel/utility/algorithm/max_rects.hpp"
+#include "kernel/utility/algorithm/utility.hpp"
 
 #include "kernel/utility/trait/trait.hpp"
 

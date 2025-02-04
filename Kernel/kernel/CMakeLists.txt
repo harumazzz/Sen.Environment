@@ -41,7 +41,7 @@ add_library(
 	./utility/algorithm/string_helper.hpp
 
 	./utility/miscellaneous/language/language.hpp
-		./utility/container/pointer.hpp
+		utility/algorithm/pointer.hpp
 		./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
@@ -49,7 +49,7 @@ add_library(
 	./utility/container/list/list.hpp
 	./utility/container/list/byte_list.hpp
 
-	./utility/container/system.hpp
+		utility/miscellaneous/system/system.hpp
 	./utility/container/string/common.hpp
 	./utility/container/string/compile_string.hpp
 	./utility/container/string/basic_string.hpp
@@ -67,8 +67,8 @@ add_library(
 	./utility/encoding/image/read.hpp
 	./utility/encoding/image/common.hpp
 	./utility/encoding/image/write.hpp
-	
-	./utility/container/utility.hpp
+
+		utility/algorithm/utility.hpp
 	./utility/miscellaneous/clock/clock.hpp
 
 	./utility/trait/trait.hpp

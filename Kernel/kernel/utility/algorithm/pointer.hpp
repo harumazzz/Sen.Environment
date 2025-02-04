@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kernel/utility/library.hpp"
+#include "../library.hpp"
 
 namespace Sen::Kernel {
 
