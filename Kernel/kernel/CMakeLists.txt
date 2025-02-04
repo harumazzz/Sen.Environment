@@ -26,7 +26,8 @@ add_library(
 	./subprojects/compile-time-regular-expressions.hpp
 	./subprojects/parallel-hashmap.hpp
 	./subprojects/thread-pool.hpp
-	./subprojects/mscharconv.hpp
+	./subprojects/mscharconv.hpp	
+	./subprojects/glaze.hpp
 
 	./utility/macro.hpp
 	./utility/range/forward.hpp
@@ -299,6 +300,7 @@ target_link_libraries(
 	compile-time-regular-expressions
 	parallel-hashmap
 	thread-pool
+	glaze_glaze
 )
 
 if (WIN32)
