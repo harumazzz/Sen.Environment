@@ -290,6 +290,8 @@ namespace Sen::Kernel {
 				thiz.value[index] = std::move(element);
 				++thiz._size;
 			}
+
+    		friend class CArray<T>;
 	};
 
 }

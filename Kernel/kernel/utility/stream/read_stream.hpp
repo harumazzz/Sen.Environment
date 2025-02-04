@@ -161,9 +161,9 @@ namespace Sen::Kernel {
             const usize& from,
             const usize &to
         ) -> String {
-            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
-            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
-            assert_conditional(from < to, "From index must be smaller than To index", "read");
+            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "string");
+            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "string");
+            assert_conditional(from < to, "From index must be smaller than To index", "string");
             auto destination = String{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
             return destination;
@@ -212,8 +212,7 @@ namespace Sen::Kernel {
         auto read(
             const usize &size
         ) -> T {
-            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream",
-                               "read");
+            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream", "read");
             auto value = T{};
             std::memcpy(&value, thiz.m_data.begin() + thiz.m_position, size);
             thiz.m_position += size;
@@ -224,8 +223,7 @@ namespace Sen::Kernel {
         auto read(
 
         ) -> T {
-            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream",
-                               "read");
+            assert_conditional(thiz.m_position + sizeof(T) <= thiz.m_data.size(), "Outside bounds of ReadStream","read");
             auto value = T{};
             std::memcpy(&value, thiz.m_data.begin() + thiz.m_position, sizeof(T));
             thiz.m_position += sizeof(T);

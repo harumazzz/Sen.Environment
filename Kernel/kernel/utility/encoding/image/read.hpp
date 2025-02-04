@@ -2,6 +2,7 @@
 
 #include "kernel/utility/encoding/image/common.hpp"
 #include "kernel/utility/encoding/image/basic_image.hpp"
+#include "kernel/utility/filesystem/utility.hpp"
 
 namespace Sen::Kernel::Encoding::Image {
 
@@ -26,7 +27,7 @@ namespace Sen::Kernel::Encoding::Image {
             Subprojects::libpng::png_set_read_fn(png_struct, &data, &read_png_data);
             auto png_info = Subprojects::libpng::png_create_info_struct(png_struct);
             Subprojects::libpng::png_read_info(png_struct, png_info);
-            image.allocate_new(png_info->width, png_info->height);
+            image.allocate(png_info->width, png_info->height);
             switch (png_info->color_type) {
                 case Subprojects::libpng::$PNG_COLOR_TYPE_PALETTE : {
                     Subprojects::libpng::png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
@@ -95,6 +96,15 @@ namespace Sen::Kernel::Encoding::Image {
         ) -> void {
             auto stream = ReadStream{ source };
             return process_image(stream, image);
+        }
+
+        static auto process_fs (
+            const String& source,
+            Image& image
+        ) -> void {
+            auto source_view = Uint8Array{};
+            FileSystem::read_file(source, source_view);
+            return process(source_view, image);
         }
 
 

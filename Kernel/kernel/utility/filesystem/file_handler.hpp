@@ -87,8 +87,8 @@ namespace Sen::Kernel::FileSystem {
         auto read (
             T& data
         ) -> void {
-            auto count = std::fread(data.begin(), sizeof(u8), data.size(), thiz.value);
-            assert_conditional(count == data.size(), fmt::format("{}: {}", "Missing bytes when reading the file"), "read");
+            auto count = std::fread(data.begin(), sizeof(u8) * data.size(), 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}: {}", "Missing bytes when reading the file"), "read");
         }
 
         template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
@@ -98,8 +98,8 @@ namespace Sen::Kernel::FileSystem {
         auto write (
             T& data
         ) -> void {
-            auto count = std::fwrite(data.begin(), sizeof(u8), data.size(), thiz.value);
-            assert_conditional(count == data.size(), fmt::format("{}: {}", "Missing bytes when writing the file"), "write");
+            auto count = std::fwrite(data.begin(), sizeof(u8) * data.size(), 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}: {}", "Missing bytes when writing the file"), "write");
         }
 
     };

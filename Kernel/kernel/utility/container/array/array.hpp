@@ -142,6 +142,21 @@ namespace Sen::Kernel {
 				other.value = nullptr;
 				other._size = 0;
 			}
+
+			auto assign (
+				CList<T>& other
+			) -> void {
+				if (thiz.value != nullptr) {
+					delete[] thiz.value;
+				}
+				thiz.value = other.value;
+				thiz._size = other._size;
+				other.value = nullptr;
+				other._size = 0;
+				other._capacity = 0;
+			}
+
+			friend class CList<T>;
 	};
 
 }

@@ -72,6 +72,8 @@ namespace Sen::Kernel::Encoding::Image {
             for (auto & row : thiz.m_color) {
                 row.allocate(width);
             }
+            thiz.width = width;
+            thiz.height = height;
         }
 
         auto reallocate(
@@ -140,6 +142,10 @@ namespace Sen::Kernel::Encoding::Image {
             return thiz.m_color;
         }
 
+        constexpr auto color_size(
+        ) const -> usize {
+            return thiz.area() * 4;
+        }
 
     };
 }

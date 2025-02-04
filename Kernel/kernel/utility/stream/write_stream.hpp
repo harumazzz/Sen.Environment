@@ -203,8 +203,7 @@ namespace Sen::Kernel {
             thiz.bytes(value);
         }
 
-        template<typename T>
-        requires std::is_arithmetic_v<T>
+        template<typename T> requires std::is_arithmetic_v<T>
         auto write(
             const T &value
         ) -> void {
@@ -246,6 +245,18 @@ namespace Sen::Kernel {
             const usize& index
         ) -> bool {
             return thiz.m_position + index <= thiz.m_data.capacity();
+        }
+
+        auto release_stream (
+            Uint8Array& that
+        ) -> void {
+            that.assign(thiz.m_data);
+        }
+
+        auto release_stream (
+            Uint8List& that
+        ) -> void {
+            that.assign(thiz.m_data);
         }
     };
 
