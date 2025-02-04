@@ -124,6 +124,14 @@ namespace Sen::Kernel::JavaScript {
 		return Converter::to_string(context, value);
 	}
 
+	template <>
+	inline auto to_value<String>(
+		JSContext* context, 
+		const String& value
+	) -> JSValue {
+		return JS_NewStringLen(context, value.cbegin(), value.size());
+	}
+
 	template <typename T> requires is_map<T>::value
 	inline auto to_value(
 		JSContext* context, 
@@ -162,6 +170,15 @@ namespace Sen::Kernel::JavaScript {
 		JSContext* context,
 		JSValue value
 	) -> std::string
+	{
+		return Converter::get_std_string(context, value);
+	}
+
+	template <>
+	inline auto from_value<String>(
+		JSContext* context,
+		JSValue value
+	) -> String
 	{
 		return Converter::get_string(context, value);
 	}

@@ -340,11 +340,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 				is_valid_source(argument, false);
 				Console.obtained(argument.source);
 				Console.output(argument.source!);
-				defined_or_default(
-					argument,
-					'destination',
-					Kernel.Path.resolve(`${argument.source}.animation`),
-				);
+				defined_or_default(argument, 'destination', `${argument.source}.animation`);
 				check_overwrite(argument as { destination: string }, 'directory');
 				if (argument.media === undefined) {
 					argument.media = Console.path(

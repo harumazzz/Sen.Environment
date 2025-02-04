@@ -17,7 +17,7 @@ namespace Sen::Kernel::JavaScript::Converter {
         }
     }
 
-	inline static auto get_string (
+	inline auto get_std_string (
 		JSContext* context, 
 		const JSValue& value
 	) -> std::string {
@@ -25,6 +25,18 @@ namespace Sen::Kernel::JavaScript::Converter {
         auto size = std::size_t{};
         auto c_str = JS_ToCStringLen(context, &size, value);
         auto str = std::string { c_str, size };
+        JS_FreeCString(context, c_str);
+        return str;
+    }
+
+	inline auto get_string (
+		JSContext* context, 
+		const JSValue& value
+	) -> String {
+		assert_conditional(static_cast<bool>(JS_IsString(value)), "Value must be string, but it isn't", "get_string");
+        auto size = std::size_t{};
+        auto c_str = JS_ToCStringLen(context, &size, value);
+        auto str = String{c_str, size};
         JS_FreeCString(context, c_str);
         return str;
     }
@@ -261,7 +273,7 @@ namespace Sen::Kernel::JavaScript::Converter {
 	}
 
 	inline static auto get_property_string(JSContext* context, JSValueConst obj, JSAtom atom) -> std::string {
-		return get_property(context, obj, atom, "string", get_string);
+		return get_property(context, obj, atom, "string", get_std_string);
 	}
 
 	inline static auto get_property_int32(JSContext* context, JSValueConst obj, JSAtom atom) -> int32_t {

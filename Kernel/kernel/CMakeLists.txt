@@ -41,8 +41,7 @@ add_library(
 	./utility/algorithm/string_helper.hpp
 
 	./utility/miscellaneous/language/language.hpp
-	./utility/container/path.hpp
-	./utility/container/pointer.hpp
+		./utility/container/pointer.hpp
 		./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp

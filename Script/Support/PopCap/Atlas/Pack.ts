@@ -200,10 +200,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
 			...Array<Kernel.ImageAdapter.Image>,
 		] {
-			const json_source: string = Kernel.Path.resolve(
-				Kernel.Path.join([source, 'atlas.json']),
-			);
-			const media_path: string = Kernel.Path.resolve(Kernel.Path.join([source, 'media']));
+			const json_source: string = Kernel.Path.join([source, 'atlas.json']);
+			const media_path: string = Kernel.Path.join([source, 'media']);
 			const definition: Structure.Definition =
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [
@@ -228,19 +226,18 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Kernel.Path.resolve(
-						Kernel.Path.join([media_path, `${data.path[data.path.length - 1]}.png`]),
-					);
+					source_file = Kernel.Path.join([
+						media_path,
+						`${data.path[data.path.length - 1]}.png`,
+					]);
 				} else {
-					source_file = Kernel.Path.resolve(
-						Kernel.Path.join([media_path, `${data.id}.png`]),
-					);
+					source_file = Kernel.Path.join([media_path, `${data.id}.png`]);
 				}
 				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
-				data.source = Kernel.Path.resolve(source_file);
+				data.source = source_file;
 			}
 			const list_view: Array<Array<Detail.MaxRectsAfterData<number>>> = new Array();
 			const packer = new Third.MaxRectsAlgorithm.MaxRectsPacker(
@@ -402,10 +399,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			size: Detail.SizeRange<number>,
 			detail: Detail.Data,
 		): [Wrapper, ...Array<Kernel.ImageAdapter.Image>] {
-			const json_source: string = Kernel.Path.resolve(
-				Kernel.Path.join([source, 'atlas.json']),
-			);
-			const media_path: string = Kernel.Path.resolve(Kernel.Path.join([source, 'media']));
+			const json_source: string = Kernel.Path.join([source, 'atlas.json']);
+			const media_path: string = Kernel.Path.join([source, 'media']);
 			const definition: Structure.Definition =
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [Wrapper, ...Array<Kernel.ImageAdapter.Image>] = [
@@ -427,19 +422,18 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Kernel.Path.resolve(
-						Kernel.Path.join([media_path, `${data.path[data.path.length - 1]}.png`]),
-					);
+					source_file = Kernel.Path.join([
+						media_path,
+						`${data.path[data.path.length - 1]}.png`,
+					]);
 				} else {
-					source_file = Kernel.Path.resolve(
-						Kernel.Path.join([media_path, `${data.id}.png`]),
-					);
+					source_file = Kernel.Path.join([media_path, `${data.id}.png`]);
 				}
 				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
 				data.width = Number(image.width);
 				data.height = Number(image.height);
-				data.source = Kernel.Path.resolve(source_file);
+				data.source = source_file;
 			}
 			const list_view: Array<Array<Detail.MaxRectsAfterData<number>>> = new Array();
 			const packer = new Third.MaxRectsAlgorithm.MaxRectsPacker(

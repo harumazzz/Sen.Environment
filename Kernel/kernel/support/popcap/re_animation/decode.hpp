@@ -11,10 +11,10 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     
 
     class Decode : Common
-    {static auto process_fs(
+    {
+        static auto process_fs(
             std::string_view source,
-            std::string_view destination,
-            ReanimPlatform platform
+            std::string_view destination
         ) -> void
         {
         }

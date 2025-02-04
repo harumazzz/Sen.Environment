@@ -157,77 +157,58 @@ namespace Sen::Kernel::Interface::API {
 			List<std::string>& source
 		) -> std::string
 		{
-			return Kernel::Path::join(source);
+			// TODO : Fix
+			// return Kernel::Path::join(source);
+			return {};
 		}
 
 		inline auto basename(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::basename(source);
 		}
 
-		inline auto delimiter(
-		) -> std::string
-		{
-			return Kernel::Path::delimiter();
-		}
-
 		inline auto dirname(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::dirname(source);
 		}
 
 		inline auto normalize(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::normalize(source);
 		}
 
 		inline auto base_without_extension(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::base_without_extension(source);
 		}
 
 		inline auto except_extension(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::except_extension(source);
 		}
 
 		inline auto resolve(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::resolve(source);
 		}
 
 		inline auto extname(
-			std::string& source
-		) -> std::string
+			const String& source
+		) -> String
 		{
 			return Kernel::Path::extname(source);
-		}
-
-		inline auto is_absolute(
-			std::string& source
-		) -> bool
-		{
-			return Kernel::Path::is_absolute(source);
-		}
-
-		inline auto relative(
-			std::string& from,
-			std::string& to
-		) -> std::string
-		{
-			return Kernel::Path::relative(from, to);
 		}
 
 	}

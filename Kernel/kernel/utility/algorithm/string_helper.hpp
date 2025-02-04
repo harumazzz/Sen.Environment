@@ -5,7 +5,6 @@
 #include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel::StringHelper {
-
     using String = String;
 
     template <typename T>
@@ -179,5 +178,44 @@ namespace Sen::Kernel::StringHelper {
         destination.append(source.sub(start));
     }
 
+    inline auto make_string (
+        const std::u8string_view& source
+    ) -> String {
+        return String{ reinterpret_cast<const char *>(source.data()), source.size() };
+    }
 
+    inline auto make_string (
+        const std::string_view& source
+    ) -> String {
+        return String{ reinterpret_cast<const char *>(source.data()), source.size() };
+    }
+
+    namespace Detail {
+
+        inline auto constexpr Table = std::array<char, 16>{
+            '0', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', 'a', 'b', 'c', 'd', 'e', 'f',
+        };
+
+    }
+
+    template <typename T> requires std::is_base_of_v<BaseContainer<u8>, T>
+    inline constexpr auto compute_bytes_to_hex_string_size(
+        const T &data
+    ) -> usize {
+        return data.size() * 2;
+    }
+
+    template <typename T> requires std::is_base_of_v<BaseContainer<u8>, T>
+    inline auto bytes_to_hex_string(
+        const T &data
+    ) -> String {
+        auto result = String{compute_bytes_to_hex_string_size<T>(data)};
+        auto i = 0_size;
+        for (auto v : data) {
+            result[i++] = Detail::Table[v >> 4];
+            result[i++] = Detail::Table[v & 0xF];
+        }
+        return result;
+    }
 }

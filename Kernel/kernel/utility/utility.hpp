@@ -26,7 +26,6 @@
 #include "kernel/utility/container/string/basic_string.hpp"
 #include "kernel/utility/container/string/string_parser.hpp"
 #include "kernel/utility/diff/vcdiff.hpp"
-#include "kernel/utility/container/path.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/container/system.hpp"

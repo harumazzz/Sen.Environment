@@ -9,7 +9,7 @@ namespace Sen::Kernel {
     class CList;
 
     template <typename T>
-	class CList final : public Common, public BaseContainer<T> {
+	class CList : public Common, public BaseContainer<T> {
 
 		protected:
 
@@ -163,7 +163,7 @@ namespace Sen::Kernel {
 
     		constexpr auto size(
 
-			) -> Size override {
+			) const -> Size override {
 				return thiz._size;
 			}
 
@@ -213,23 +213,14 @@ namespace Sen::Kernel {
 				}
 			}
 
+    		template <typename U>
     		auto append (
-    			T&& value
+    			U&& value
     		) -> void {
 				if (thiz._size >= thiz._capacity) {
 					thiz.reallocate(thiz._capacity * 4);
 				}
-				thiz.value[thiz._size] = std::move(value);
-				++thiz._size;
-			}
-
-    		auto append (
-				const T& value
-			) -> void {
-				if (thiz._size >= thiz._capacity) {
-					thiz.reallocate(thiz._capacity * 4);
-				}
-				thiz.value[thiz._size] = value;
+				thiz.value[thiz._size] = std::forward<T>(value);
 				++thiz._size;
 			}
 

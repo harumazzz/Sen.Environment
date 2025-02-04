@@ -72,7 +72,15 @@ namespace Sen::Kernel::Interface {
 				}
 				auto path = kernel.add_space("Path");
 				{
-					
+					path
+					//.add_function("join"_sv, FunctionProxy<std::string, List<std::string>&>::template as_function<Interface::API::Path::join>)
+					.add_function("basename"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::basename>)
+					.add_function("dirname"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::dirname>)
+					.add_function("normalize"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::normalize>)
+					.add_function("resolve"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::resolve>)
+					.add_function("extname"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::extname>)
+					.add_function("base_without_extension"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::base_without_extension>)
+					.add_function("except_extension"_sv, FunctionProxy<String, const String&>::template as_function<Interface::API::Path::except_extension>);
 				}
 				auto console = kernel.add_space("Console");
 				{

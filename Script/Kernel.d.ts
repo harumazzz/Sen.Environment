@@ -388,12 +388,6 @@ declare namespace Sen {
 			export function basename(source: string): string;
 
 			/**
-			 * Get the path delimiter based on the operating system.
-			 * @returns The delimiter used in paths
-			 */
-			export function delimiter(): string;
-
-			/**
 			 * Get the directory name from a path.
 			 * @param source - The path
 			 * @returns The directory name
@@ -408,25 +402,11 @@ declare namespace Sen {
 			export function normalize(source: string): string;
 
 			/**
-			 * Resolve a sequence of paths or path segments into an absolute path.
-			 * @param source - The path or paths to resolve
-			 * @returns The resolved absolute path
-			 */
-			export function resolve(source: string): string;
-
-			/**
 			 * Get the extension of a path.
 			 * @param source - The path
 			 * @returns The file extension
 			 */
 			export function extname(source: string): string;
-
-			/**
-			 * Check if a path is absolute.
-			 * @param source - The path to check
-			 * @returns True if the path is absolute, otherwise false
-			 */
-			export function is_absolute(source: string): boolean;
 
 			/**
 			 * Generate the relative path from one path to another.

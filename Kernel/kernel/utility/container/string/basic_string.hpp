@@ -123,6 +123,13 @@ namespace Sen::Kernel {
     		return thiz.value[index];
     	}
 
+    	constexpr auto operator [](
+			Size const& index
+		) -> Character& override
+    	{
+    		return thiz.value[index];
+    	}
+
 		constexpr auto operator ==(
 			const BasicString &other
 		) const -> bool {

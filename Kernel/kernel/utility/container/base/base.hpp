@@ -144,7 +144,7 @@ namespace Sen::Kernel {
             thiz._size = size;
         }
 
-        constexpr auto operator [](
+        virtual constexpr auto operator [](
             Size const& index
         ) -> T&
         {
@@ -154,7 +154,7 @@ namespace Sen::Kernel {
 
         virtual constexpr auto size(
 
-        ) -> Size
+        ) const -> Size
         {
             return thiz._size;
         }

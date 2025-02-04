@@ -161,12 +161,10 @@ namespace Sen::Kernel {
             const usize &size
         ) -> String {
             auto value = thiz.bytes(size);
-            auto destination = String{};
-            destination.take_ownership(steal_reference<String>(value));
-            return destination;
+            return String{reinterpret_cast<const char*>(value.data()), value.size()};
         }
 
-        template<class T>
+        template<typename T>
         auto string_of(
 
         ) -> String {

@@ -10,7 +10,7 @@ auto execute (
 {
     try
     {
-        // std::setlocale(LC_ALL, "C");
+        std::setlocale(LC_ALL, "C");
         // auto& script = argument->value[2];
         // Shell::callback = callback;
         // Executor::register_external(&script, argument);

@@ -2,8 +2,6 @@
 
 project(Shell LANGUAGES CXX)
 
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build can only be Release" FORCE)
-
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     add_compile_options(-std=c++23 -fmodules-ts -fPIC -fvisibility=hidden)
 endif()
@@ -101,8 +99,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /std:c++latest)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=0x0A00)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Kernel32)
 endif()
 
 

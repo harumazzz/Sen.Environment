@@ -207,7 +207,7 @@ namespace Sen.Script {
 		 */
 
 		export function query(path: string): string {
-			return Kernel.Path.resolve(path.replace(/^~(?=(\/|$))/gm, participant));
+			return path.replace(/^~(?=(\/|$))/gm, participant);
 		}
 	}
 

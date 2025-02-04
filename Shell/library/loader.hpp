@@ -7,30 +7,6 @@
 
 namespace Sen::Shell {
 
-	#if WINDOWS
-
-	using RtlGetVersionPtr = LONG (WINAPI *)(PRTL_OSVERSIONINFOW);
-
-	
-	inline auto is_windows10(
-
-	) -> bool 
-	{
-		auto rovi = RTL_OSVERSIONINFOW{0};
-		rovi.dwOSVersionInfoSize = sizeof(rovi);
-		auto hMod = GetModuleHandleW(L"ntdll.dll");
-		if (hMod != nullptr) {
-			auto pRtlGetVersion = reinterpret_cast<RtlGetVersionPtr>(GetProcAddress(hMod, "RtlGetVersion"));
-			if (pRtlGetVersion != nullptr) {
-				pRtlGetVersion(&rovi);
-				return (rovi.dwMajorVersion > 10) || 
-					(rovi.dwMajorVersion == 10 && rovi.dwMinorVersion >= 0);
-			}
-		}
-		return false;
-	}
-	#endif
-
 	class KernelLoader {
 		public:
 			KernelLoader(
@@ -48,7 +24,6 @@ namespace Sen::Shell {
 			) -> int
 			{
 				try {
-					this->validate_os();
 					this->initialize_console();
 					this->validate_arguments();
 					this->set_entry();
@@ -99,18 +74,6 @@ namespace Sen::Shell {
 				if (argc < 3) {
 					throw std::runtime_error{"Please use launcher to launch sen"};
 				}
-			}
-
-			inline auto validate_os (
-
-			) -> void
-			{
-				#if WINDOWS
-					if (!is_windows10()) {
-						throw std::runtime_error{"Windows 10 or later is required"};
-					}
-				#endif
-				return;
 			}
 
 			inline auto set_entry(
