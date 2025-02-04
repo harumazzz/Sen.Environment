@@ -3,7 +3,7 @@
 #include "kernel/utility/container/array/byte_array.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
 
-namespace Sen::Kernel::FileSystem::Path {
+namespace Sen::Kernel::Path {
 
     inline auto size_file (
         const String& path
@@ -15,5 +15,13 @@ namespace Sen::Kernel::FileSystem::Path {
         #endif
         return size;
     }
+
+    enum class PathType : u8 {
+        File,
+        Directory,
+        None,
+    };
+
+    
 
 }

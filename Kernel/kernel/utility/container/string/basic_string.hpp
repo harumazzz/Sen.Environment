@@ -51,6 +51,15 @@ namespace Sen::Kernel {
 			std::memcpy(thiz.value, data, thiz._size);
 		}
 
+    	explicit BasicString(
+			char* data,
+			const Size& size
+		) : BaseContainer{ new Character[size + 1], size }
+		{
+			thiz.value[thiz._size] = '\0';
+			std::memcpy(thiz.value, data, thiz._size);
+		}
+
 		explicit BasicString(
 			const char* data,
 			const Size& size
