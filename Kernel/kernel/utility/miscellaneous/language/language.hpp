@@ -4,8 +4,7 @@
 #include <unordered_map>
 
 namespace Sen::Kernel::Language {
-
-	static std::unordered_map<std::string, std::string> language;
+	static std::unordered_map<std::string, std::string> language{};
 
 	inline auto read_language (
 		std::string_view source

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/utility/container/array/common.hpp"
-#include "kernel/utility/container/base_container/base.hpp"
+#include "kernel/utility/container/base/base.hpp"
 #include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel {

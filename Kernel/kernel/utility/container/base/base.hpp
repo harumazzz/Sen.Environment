@@ -141,7 +141,7 @@ namespace Sen::Kernel {
                 delete[] thiz.value;
             }
             thiz.value = new T[size];
-            thiz._size = 0_size;
+            thiz._size = size;
         }
 
         constexpr auto operator [](
