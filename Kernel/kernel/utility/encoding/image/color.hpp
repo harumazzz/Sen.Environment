@@ -54,60 +54,60 @@ namespace Sen::Kernel::Encoding::Image {
             other.m_alpha = 0;
         }
 
-        ~BasicColor(
+        constexpr ~BasicColor(
         ) = default;
 
-        auto operator=(
+        constexpr auto operator=(
             const BasicColor& other
         ) -> BasicColor& = default;
 
-        auto operator=(
+        constexpr auto operator=(
             BasicColor&& other
         ) -> BasicColor& = default;
 
-        auto operator +(
+        constexpr auto operator +(
             const BasicColor& other
         ) -> BasicColor {
             return BasicColor{m_red + other.m_red, m_green + other.m_green, m_blue + other.m_blue, m_alpha + other.m_alpha};
         }
 
-        auto operator -(
+        constexpr auto operator -(
             const BasicColor& other
         ) -> BasicColor {
             return BasicColor{m_red - other.m_red, m_green - other.m_green, m_blue - other.m_blue, m_alpha - other.m_alpha};
         }
 
-        auto operator *(
+        constexpr auto operator *(
             const BasicColor& other
         ) -> BasicColor {
             return BasicColor{m_red * other.m_red, m_green * other.m_green, m_blue * other.m_blue, m_alpha * other.m_alpha};
         }
 
-        auto operator /(
+        constexpr auto operator /(
             const BasicColor& other
         ) -> BasicColor {
             return BasicColor{m_red / other.m_red, m_green / other.m_green, m_blue / other.m_blue, m_alpha / other.m_alpha};
         }
 
-        auto operator&(
+        constexpr auto operator&(
             const BasicColor& other
         ) const -> BasicColor {
             return BasicColor{m_red & other.m_red, m_green & other.m_green, m_blue & other.m_blue, m_alpha & other.m_alpha};
         }
 
-        auto operator|(
+        constexpr auto operator|(
             const BasicColor& other
         ) const -> BasicColor {
             return BasicColor{m_red | other.m_red, m_green | other.m_green, m_blue | other.m_blue, m_alpha | other.m_alpha};
         }
 
-        auto operator^(
+        constexpr auto operator^(
             const BasicColor& other
         ) const -> BasicColor {
             return BasicColor{m_red ^ other.m_red, m_green ^ other.m_green, m_blue ^ other.m_blue, m_alpha ^ other.m_alpha};
         }
 
-        auto operator~(
+        constexpr auto operator~(
 
         ) const -> BasicColor {
             return BasicColor{~m_red, ~m_green, ~m_blue, ~m_alpha};
@@ -115,7 +115,7 @@ namespace Sen::Kernel::Encoding::Image {
 
     protected:
 
-        auto clamp (
+        constexpr auto clamp (
             const T& value
         ) -> T {
             return std::max(thiz.min_value, std::min(value, max_value));
@@ -123,48 +123,48 @@ namespace Sen::Kernel::Encoding::Image {
 
     public:
 
-        auto red(
+        constexpr auto red(
         ) const -> T {
             return thiz.m_red;
         }
 
-        auto green(
+        constexpr auto green(
         ) const -> T {
             return thiz.m_green;
         }
 
-        auto blue(
+        constexpr auto blue(
         ) const -> T {
             return thiz.m_blue;
         }
 
-        auto alpha(
+        constexpr auto alpha(
         ) const -> T {
             return thiz.m_alpha;
         }
 
-        auto red (
+        constexpr auto red (
             const T& value
         ) -> void
         {
             thiz.m_red = thiz.clamp(value);
         }
 
-        auto green (
+        constexpr auto green (
             const T& value
         ) -> void
         {
             thiz.m_green = thiz.clamp(value);
         }
 
-        auto blue (
+        constexpr auto blue (
             const T& value
         ) -> void
         {
             thiz.m_blue = thiz.clamp(value);
         }
 
-        auto alpha (
+        constexpr auto alpha (
             const T& value
         ) -> void
         {

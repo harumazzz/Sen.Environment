@@ -10,4 +10,7 @@ namespace Sen::Kernel {
     template <typename Key, typename Value>
     using Map = HashMap<Key, Value>;
 
+    template <typename Key, typename Value>
+    using NodeHashMap = Subprojects::phmap::node_hash_map<Key, Value>;
+
 }

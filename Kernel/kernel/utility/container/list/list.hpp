@@ -261,7 +261,7 @@ namespace Sen::Kernel {
 				}
 				else {
 					static_assert(sizeof...(args) == 1, "Expected 1 argument only");
-					auto index = (std::forward<Args>(args), ...);
+					auto index = std::get<0>(std::make_tuple<>(args...));
 					assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("pop", index));
 					if constexpr (is_numeric_v<T>) {
 						std::memcpy(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));

@@ -230,6 +230,18 @@ add_library(
 		utility/container/base/base.hpp
 		utility/range/iterator.hpp
 		utility/container/base/common.hpp
+		utility/encoding/image/image_position.hpp
+		utility/algorithm/image/transformation/crop.hpp
+		utility/algorithm/image/transformation/rotate.hpp
+		utility/algorithm/image/transformation/scale.hpp
+		utility/algorithm/image/transformation/resize.hpp
+		utility/algorithm/image/transformation/merge.hpp
+		utility/algorithm/image/transformation/common.hpp
+		utility/encoding/xml/common.hpp
+		utility/encoding/xml/node.hpp
+		utility/encoding/xml/comment.hpp
+		utility/encoding/xml/text.hpp
+		utility/encoding/xml/element.hpp
 
 
 )

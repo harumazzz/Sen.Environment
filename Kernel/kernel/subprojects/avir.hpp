@@ -35,6 +35,6 @@
 
 namespace Sen::Kernel::Subprojects::avir {
 
-	// use third
+	using ::avir::CImageResizer;
 
 }

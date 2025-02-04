@@ -34,7 +34,7 @@ namespace Sen::Kernel::Encoding::Image {
 
     public:
 
-        explicit BasicImage(
+        constexpr explicit BasicImage(
 
         ) = default;
 
@@ -137,7 +137,7 @@ namespace Sen::Kernel::Encoding::Image {
             return thiz.m_color[index];
         }
 
-        auto data (
+        constexpr auto data (
         ) -> Array<Array<Color>>& {
             return thiz.m_color;
         }

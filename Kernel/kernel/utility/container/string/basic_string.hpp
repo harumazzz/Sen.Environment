@@ -974,6 +974,18 @@ namespace Sen::Kernel {
     		}
     	}
 
+    	auto assign (
+    		String&& other
+    	) -> void {
+    	if (thiz.value != nullptr) {
+    		delete[] thiz.value;
+    	}
+    	thiz.value = other.value;
+    	other.value = nullptr;
+    	thiz._size = other._size;
+    	other._size = 0;
+    	}
+
 	};
 
 }
