@@ -14,8 +14,7 @@ namespace Sen::Kernel::Image::Transformation {
 
         static auto process(
             Image& source,
-            Image& destination,
-            const double& angle
+            Image& destination
         ) -> void {
             auto source_buffer = Array<Color>{source.area()};
             auto destination_buffer = Array<Color>{destination.area()};

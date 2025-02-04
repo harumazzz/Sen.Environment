@@ -4,9 +4,6 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
-    template <typename T>
-    using List = CList<T>;
-
     struct Element {
 
     protected:
@@ -109,6 +106,12 @@ namespace Sen::Kernel::Encoding::XML {
         auto child (
         ) -> List<Node>& {
             return thiz.m_child;
+        }
+
+        auto get_child (
+            const usize& index
+        ) -> Node& {
+            return thiz.m_child[index];
         }
 
     };

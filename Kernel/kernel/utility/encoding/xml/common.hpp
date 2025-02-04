@@ -7,6 +7,9 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
+    template <typename T>
+    using List = CList<T>;
+
     struct Node;
 
     struct Comment;
