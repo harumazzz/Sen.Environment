@@ -12,17 +12,6 @@ namespace Sen::Kernel::Path {
     template <typename T>
     using Array = CArray<T>;
 
-    inline auto size_file (
-        const String& path
-    ) -> usize {
-        #if WINDOWS
-        auto size = std::filesystem::file_size(path.wstring());
-        #else
-        auto size = std::filesystem::file_size(path.view());
-        #endif
-        return size;
-    }
-
     enum class PathType : u8 {
         File,
         Directory,
@@ -50,31 +39,6 @@ namespace Sen::Kernel::Path {
         auto type = std::filesystem::status(path.view()).type();
         #endif
         return get_path_type(type);
-    }
-
-    inline auto is_directory (
-        const String& path
-    ) -> bool {
-        return get_path_type(path) == PathType::Directory;
-    }
-
-    inline auto is_file (
-        const String& path
-    ) -> bool {
-        return get_path_type(path) == PathType::File;
-    }
-
-    inline auto is_anything (
-        const String& path
-    ) -> bool {
-        return get_path_type(path) == PathType::None;
-    }
-
-    inline auto exist (
-        const String& path
-    ) -> bool {
-        auto type = get_path_type(path);
-        return type == PathType::File || type == PathType::Directory;
     }
 
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
@@ -157,24 +121,6 @@ namespace Sen::Kernel::Path {
         return result;
     }
 
-    inline auto count_file (
-        const String& source
-    ) -> usize {
-        return count<PathType::File>(source);
-    }
-
-    inline auto count_directory (
-        const String& source
-    ) -> usize {
-        return count<PathType::File>(source);
-    }
-
-    inline auto count_anything (
-        const String& source
-    ) -> usize {
-        return count<PathType::None>(source);
-    }
-
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto read_directory (
         const String& source,
@@ -207,27 +153,6 @@ namespace Sen::Kernel::Path {
         }
     }
 
-    inline auto read_directory_file (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_directory<PathType::File>(source, destination);
-    }
-
-    inline auto read_directory_directory (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_directory<PathType::Directory>(source, destination);
-    }
-
-    inline auto read_directory_anything (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_directory<PathType::None>(source, destination);
-    }
-
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto read_recursive_directory (
         const String& source,
@@ -258,27 +183,6 @@ namespace Sen::Kernel::Path {
                 }
             }
         }
-    }
-
-    inline auto read_recursive_directory_file (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_recursive_directory<PathType::File>(source, destination);
-    }
-
-    inline auto read_recursive_directory_directory (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_recursive_directory<PathType::Directory>(source, destination);
-    }
-
-    inline auto read_recursive_directory_anything (
-        const String& source,
-        List<String>& destination
-    ) -> void {
-        return read_recursive_directory<PathType::None>(source, destination);
     }
 
     template <typename T> requires std::is_base_of_v<BaseContainer<String>, T>
@@ -368,5 +272,18 @@ namespace Sen::Kernel::Path {
         return StringHelper::make_string(std::filesystem::absolute(source.view()).generic_u8string());
         #endif
     }
+
+    inline auto to_posix_style (
+        String& source
+    ) -> void {
+        source.replace_all('\\', '/');
+    }
+
+    inline auto to_windows_style (
+        String& source
+    ) -> void {
+        source.replace_all('/', '\\');
+    }
+
 
 }

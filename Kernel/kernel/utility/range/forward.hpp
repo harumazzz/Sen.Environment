@@ -1,52 +1,11 @@
 #pragma once
 
-#include <type_traits>
+#include "kernel/utility/range/iterator.hpp"
 
 namespace Sen::Kernel {
 
-	template <typename T> requires std::is_arithmetic<T>::value
+	template <typename T> requires std::is_arithmetic_v<T>
 	class Range {
-
-		protected:
-
-			class iterator {
-
-				T i;
-
-				T step;
-
-			public:
-
-				constexpr iterator(
-					const T& start, 
-					const T& step
-				) noexcept : i{start}, step{step} 
-				{
-
-				}
-
-				constexpr auto operator != (
-					const iterator& that
-				) const noexcept -> bool 
-				{ 
-					return i != that.i; 
-				}
-
-				constexpr auto operator++ (
-
-				) noexcept -> const iterator& 
-				{ 
-					this->i += step; 
-					return *this; 
-				}
-
-				constexpr auto operator* (
-
-				) noexcept -> T 
-				{ 
-					return this->i; 
-				}
-			};
 
 		public:
 
@@ -76,16 +35,16 @@ namespace Sen::Kernel {
 
 			constexpr auto begin(
 
-			) noexcept  -> iterator 
+			) noexcept -> Iterator<T>
 			{ 
-				return iterator{start_, step_}; 
+				return Iterator<T>{start_, step_};
 			}
 
 			constexpr auto end(
 
-			) noexcept -> iterator 
+			) noexcept -> Iterator<T>
 			{ 
-				return iterator{end_, step_}; 
+				return Iterator<T>{end_, step_};
 			}
 
 		private:

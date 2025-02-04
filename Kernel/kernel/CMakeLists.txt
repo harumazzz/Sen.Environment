@@ -228,6 +228,7 @@ add_library(
 	./utility/filesystem/path.hpp
 		utility/filesystem/posix_file_handler.hpp
 		utility/container/base/base.hpp
+		utility/range/iterator.hpp
 
 
 )

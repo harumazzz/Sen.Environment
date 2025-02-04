@@ -852,7 +852,9 @@ namespace Sen::Kernel {
     		const size_t& length
     	) const -> List<Size>  {
     		auto positions = List<Size>{};
-    		if (length == 0 || thiz._size < length) return positions;
+    		if (length == 0 || thiz._size < length) {
+    			return positions;
+    		}
     		auto pos = 0_size;
     		while ((pos = find(target, length, pos)) != none) {
     			positions.append(pos);
@@ -860,6 +862,21 @@ namespace Sen::Kernel {
     		}
     		return positions;
 		}
+
+    	auto find_all (
+			const char target
+		) const -> List<Size>  {
+    		auto positions = List<Size>{};
+    		if (thiz._size < 1) {
+    			return positions;
+    		}
+    		auto pos = 0_size;
+    		while ((pos = find(target,  pos)) != none) {
+    			positions.append(pos);
+    			pos += 1;
+    		}
+    		return positions;
+    	}
 
 		auto find_all (
 			const std::string_view& target
@@ -884,12 +901,15 @@ namespace Sen::Kernel {
 			const size_t& target_length,
     		const char* replacement,
 			const size_t& replacement_length
-		) {
+		) -> void
+    	{
     		if (target_length == 0) {
     			return;
     		}
     		auto positions = thiz.find_all(target);
-    		if (positions.empty()) return;
+    		if (positions.empty()) {
+    			return;
+    		}
     		auto count = positions.size();
     		auto new_length = thiz._size + count * (replacement_length - target_length);
     		if (new_length == thiz._size) {
@@ -939,6 +959,20 @@ namespace Sen::Kernel {
 		) -> void {
 			return thiz.replace_all(target, std::strlen(target), replacement, std::strlen(replacement));
 		}
+
+    	auto replace_all(
+    		char target,
+    		char replacement
+		) const -> void
+    	{
+    		auto positions = thiz.find_all(target);
+    		if (positions.empty()) {
+    			return;
+    		}
+    		for (auto& pos : positions) {
+    			std::memcpy(thiz.value + pos, &replacement, 1);
+    		}
+    	}
 
 	};
 
