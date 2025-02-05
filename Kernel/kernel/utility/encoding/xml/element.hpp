@@ -10,7 +10,7 @@ namespace Sen::Kernel::Encoding::XML {
 
         String m_name{};
 
-        NodeHashMap<String, String> m_attribute{};
+        HashMap<String, String> m_attribute{};
 
         List<Node> m_child{};
 
@@ -99,7 +99,7 @@ namespace Sen::Kernel::Encoding::XML {
         }
 
         auto attribute (
-        ) -> NodeHashMap<String, String>& {
+        ) -> HashMap<String, String>& {
             return thiz.m_attribute;
         }
 

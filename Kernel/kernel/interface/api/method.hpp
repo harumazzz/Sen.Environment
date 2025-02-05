@@ -410,39 +410,6 @@ namespace Sen::Kernel::Interface::API {
 
 	#pragma endregion
 
-	#pragma region compression
-
-	namespace Compression {
-
-		#pragma region zip
-
-		namespace Zip {
-
-			#pragma region uncompress
-
-			namespace Uncompress {
-
-				inline auto process(
-					std::string& source,
-					std::string& destination
-				) -> void
-				{
-					return
-						Kernel::Compression::Zip::Uncompress::process(source, destination);
-				}
-			}
-
-			#pragma endregion
-
-		}
-
-		#pragma endregion
-
-
-	}
-
-	#pragma endregion
-
 	#pragma region support
     /*
 	namespace Support {

@@ -21,5 +21,13 @@
 #endif
 
 namespace Sen::Kernel::Subprojects::open_vcdiff {
+
+	using ::open_vcdiff::VCDiffStreamingDecoder;
+
+	using ::open_vcdiff::HashedDictionary;
+
+	using ::open_vcdiff::VCDiffStreamingEncoder;
+
+	using ::open_vcdiff::VCDiffFormatExtensionFlagValues;
 	
 }

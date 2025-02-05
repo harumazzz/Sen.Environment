@@ -32,7 +32,6 @@
 #include "kernel/utility/container/string/compile_string.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
 #include "kernel/utility/container/string/string_parser.hpp"
-#include "kernel/utility/diff/vcdiff.hpp"
 
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/miscellaneous/system/system.hpp"
@@ -45,11 +44,12 @@
 #include "kernel/utility/encryption/crc.hpp"
 #include "kernel/utility/encryption/base64/encode.hpp"
 #include "kernel/utility/encryption/base64/decode.hpp"
-#include "kernel/utility/encryption/fnv.hpp"
+#include "kernel/utility/encryption/fnv/hash.hpp"
 #include "kernel/utility/encryption/Rijndael.hpp"
 #include "kernel/utility/compression/zlib/compress.hpp"
 #include "kernel/utility/compression/zlib/uncompress.hpp"
-#include "kernel/utility/compression/zip.hpp"
+#include "kernel/utility/compression/zip/compress.hpp"
+#include "kernel/utility/compression/zip/uncompress.hpp"
 #include "kernel/utility/compression/lzma/compress.hpp"
 #include "kernel/utility/compression/lzma/uncompress.hpp"
 #include "kernel/utility/compression/bzip2/compress.hpp"
@@ -64,7 +64,8 @@
 #include "kernel/utility/javascript/converter.hpp"
 #include "kernel/utility/javascript/converter/json.hpp"
 #include "kernel/utility/javascript/converter/xml.hpp"
-#include "kernel/utility/diff/vcdiff.hpp"
+#include "kernel/utility/diff/vcdiff/encode.hpp"
+#include "kernel/utility/diff/vcdiff/decode.hpp"
 
 namespace Sen::Kernel {
 

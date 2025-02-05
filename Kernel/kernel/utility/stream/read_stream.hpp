@@ -26,19 +26,19 @@ namespace Sen::Kernel {
         ) = default;
 
         ReadStream(
-                const ReadStream &other
+            const ReadStream &other
         ) = delete;
 
         auto operator=(
-                const ReadStream &other
+            const ReadStream &other
         ) -> ReadStream & = delete;
 
         ReadStream(
-                ReadStream &&other
+            ReadStream &&other
         ) = delete;
 
         auto operator=(
-                ReadStream &&
+            ReadStream &&
         ) -> ReadStream & = delete;
 
         auto u8(

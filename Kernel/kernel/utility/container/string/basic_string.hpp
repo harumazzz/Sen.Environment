@@ -54,7 +54,7 @@ namespace Sen::Kernel {
     	explicit BasicString(
 			char* data,
 			const Size& size
-		) : BaseContainer{ new Character[size + 1], size }
+		) : BaseContainer<char>{ new Character[size + 1], size }
 		{
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data, thiz._size);
@@ -63,7 +63,7 @@ namespace Sen::Kernel {
 		explicit BasicString(
 			const char* data,
 			const Size& size
-		) : BaseContainer{ new Character[size + 1], size }
+		) : BaseContainer<char>{ new Character[size + 1], size }
 		{
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data, thiz._size);
@@ -73,7 +73,9 @@ namespace Sen::Kernel {
 			Size const& size
 		) -> void override
 		{
-			delete[] thiz.value;
+			if (thiz.value != nullptr) {
+				delete[] thiz.value;
+			}
 			thiz.value = new Character[size + 1];
 			thiz._size = size;
 			std::memset(thiz.value, 0, size + 1);
@@ -91,11 +93,25 @@ namespace Sen::Kernel {
 
     	BasicString(
 			const BasicString& other
-		) = delete;
+		) {
+			thiz.value = new Character[other._size + 1];
+			thiz._size = other._size;
+			std::memcpy(thiz.value, other.value, other._size);
+			thiz.value[thiz._size] = '\0';
+		}
 
 		auto operator =(
 			const BasicString& other
-		)->BasicString & = delete;
+		) -> BasicString & {
+			if (thiz.value != nullptr) {
+				delete[] thiz.value;
+			}
+			thiz.value = new Character[other._size + 1];
+			thiz._size = other._size;
+			std::memcpy(thiz.value, other.value, other._size);
+			thiz.value[thiz._size] = '\0';
+			return thiz;
+		}
 
     	BasicString(
 			BasicString&& other
@@ -217,13 +233,6 @@ namespace Sen::Kernel {
 			thiz._size = other._size;
 			other.value = nullptr;
 			other._size = 0;
-		}
-
-		auto clone(
-
-		) const -> BasicString
-		{
-			return BasicString{ thiz.value, thiz._size };
 		}
 
 		auto insert(
@@ -574,7 +583,7 @@ namespace Sen::Kernel {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
 			assert_conditional(from <= to, "From index must be smaller than To index", "substring");
 			auto result = String{to - from};
-			std::memcpy(result.begin(), thiz.value, to - from);
+			std::memcpy(result.value, thiz.value, to - from);
 			return result;
 		}
 

@@ -51,6 +51,12 @@ namespace Sen::Kernel {
 
 			}
 
+    		explicit constexpr CList(
+				const std::span<T>& init
+			) : BaseContainer<T>{new T[init.size()], init.size()}, _capacity{init.size()} {
+				std::uninitialized_copy(init.begin(), init.end(), thiz.value);
+			}
+
     		constexpr auto release(
 			) -> std::tuple<Pointer<T>, Size> override {
 				auto raw = thiz.value;
@@ -175,20 +181,6 @@ namespace Sen::Kernel {
 		    	thiz._size = new_size;
 		    }
 
-			auto clone (
-
-			) -> CList
-			{
-				auto new_instance = new T[thiz._size];
-				if constexpr (is_numeric_v<T>) {
-					std::memcpy(new_instance, thiz.value, thiz._size * sizeof(T));
-				}
-		    	else {
-		    		std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
-		    	}
-				return CList{new_instance, thiz._size};
-			}
-
     		auto clear(
 
 			) -> void override {
@@ -292,6 +284,12 @@ namespace Sen::Kernel {
 			}
 
     		friend class CArray<T>;
+
+    		static auto make_list (
+				const std::span<T>& init
+			) -> CList {
+    			return CList{init};
+    		}
 	};
 
 }

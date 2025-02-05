@@ -41,15 +41,15 @@ add_library(
 	./utility/algorithm/string_helper.hpp
 
 	./utility/miscellaneous/language/language.hpp
-		utility/algorithm/pointer.hpp
-		./utility/container/array/common.hpp
+	./utility/algorithm/pointer.hpp
+	./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
 	./utility/container/list/common.hpp
 	./utility/container/list/list.hpp
 	./utility/container/list/byte_list.hpp
 
-		utility/miscellaneous/system/system.hpp
+	./utility/miscellaneous/system/system.hpp
 	./utility/container/string/common.hpp
 	./utility/container/string/compile_string.hpp
 	./utility/container/string/basic_string.hpp
@@ -75,7 +75,7 @@ add_library(
 
 	./utility/encryption/Rijndael.hpp
 	./utility/encryption/crc.hpp
-	./utility/encryption/fnv.hpp
+	./utility/encryption/fnv/common.hpp
 
 	./utility/encryption/base64/common.hpp
 	./utility/encryption/base64/encode.hpp
@@ -89,15 +89,45 @@ add_library(
 	./utility/encoding/image/color.hpp
 	./utility/encoding/image/rectangle.hpp
 
-		utility/compression/zlib/common.hpp
-		utility/compression/lzma/common.hpp
-		utility/compression/bzip2/common.hpp
+	./utility/compression/zlib/common.hpp
+	./utility/compression/lzma/common.hpp
+	./utility/compression/bzip2/common.hpp
+	./utility/compression/bzip2/compress.hpp
+	./utility/compression/bzip2/uncompress.hpp
+	./utility/compression/lzma/compress.hpp
+	./utility/compression/lzma/uncompress.hpp
+	./utility/compression/zlib/compress.hpp
+	./utility/compression/zlib/uncompress.hpp
+	./utility/compression/zip/compress.hpp
+	./utility/compression/zip/uncompress.hpp
+	
+	./utility/filesystem/utility.hpp
+	./utility/filesystem/path.hpp
+	./utility/filesystem/posix_file_handler.hpp
+	./utility/container/base/base.hpp
+	./utility/range/iterator.hpp
+	./utility/container/base/common.hpp
+	./utility/encoding/image/image_position.hpp
+	./utility/algorithm/image/transformation/crop.hpp
+	./utility/algorithm/image/transformation/rotate.hpp
+	./utility/algorithm/image/transformation/scale.hpp
+	./utility/algorithm/image/transformation/resize.hpp
+	./utility/algorithm/image/transformation/merge.hpp
+	./utility/algorithm/image/transformation/common.hpp
+	./utility/encoding/xml/common.hpp
+	./utility/encoding/xml/node.hpp
+	./utility/encoding/xml/comment.hpp
+	./utility/encoding/xml/text.hpp
+	./utility/encoding/xml/element.hpp
+	./utility/encoding/xml/read.hpp
+	./utility/diff/vcdiff/common.hpp
+	./utility/diff/vcdiff/decode.hpp
+	./utility/diff/vcdiff/encode.hpp
+	./utility/encryption/fnv/hash.hpp
 
 	./utility/stream/base_stream.hpp
 	./utility/stream/read_stream.hpp
 	./utility/stream/write_stream.hpp
-
-	./utility/diff/vcdiff.hpp
 
 	./utility/javascript/common.hpp
 	./utility/javascript/value.hpp
@@ -224,30 +254,6 @@ add_library(
 	./interface/api/method.hpp
 	./interface/api/class.hpp
 	./interface/interface.cpp
-	./utility/filesystem/utility.hpp
-	./utility/filesystem/path.hpp
-		utility/filesystem/posix_file_handler.hpp
-		utility/container/base/base.hpp
-		utility/range/iterator.hpp
-		utility/container/base/common.hpp
-		utility/encoding/image/image_position.hpp
-		utility/algorithm/image/transformation/crop.hpp
-		utility/algorithm/image/transformation/rotate.hpp
-		utility/algorithm/image/transformation/scale.hpp
-		utility/algorithm/image/transformation/resize.hpp
-		utility/algorithm/image/transformation/merge.hpp
-		utility/algorithm/image/transformation/common.hpp
-		utility/encoding/xml/common.hpp
-		utility/encoding/xml/node.hpp
-		utility/encoding/xml/comment.hpp
-		utility/encoding/xml/text.hpp
-		utility/encoding/xml/element.hpp
-		utility/compression/bzip2/compress.hpp
-		utility/compression/bzip2/uncompress.hpp
-		utility/compression/lzma/compress.hpp
-		utility/compression/lzma/uncompress.hpp
-		utility/compression/zlib/compress.hpp
-		utility/compression/zlib/uncompress.hpp
 
 
 )

@@ -117,11 +117,6 @@ namespace Sen::Kernel::Interface {
 				{
 					javascript.add_function("evaluate_fs"_sv, SpecialFunctionProxy<JSValue, std::string&>::template as_function<Interface::API::JS::evaluate_fs>);
 				}
-				auto compression = kernel.add_space("Compression");
-				auto zip = compression.add_space("Zip");
-				{
-					zip.add_function("process"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::Compression::Zip::Uncompress::process>);
-				}
                 /*
 				auto support = kernel.add_space("Support");
 				auto texture = support.add_space("Texture");

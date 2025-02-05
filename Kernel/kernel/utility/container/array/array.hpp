@@ -16,6 +16,14 @@ namespace Sen::Kernel {
 			template <typename U>
 			using Pointer = U*;
 
+		private:
+
+			constexpr explicit CArray(
+				const std::span<T>& init
+			) : BaseContainer<T>{new T[init.size()], init.size()} {
+				std::uninitialized_copy(init.begin(), init.end(), thiz.value);
+			}
+
 		public:
 
 			constexpr explicit CArray(
@@ -76,15 +84,15 @@ namespace Sen::Kernel {
 
 			auto operator == (
 				const CArray& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator != (
 				const CArray& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator < (
 				const CArray& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator > (
 				const CArray& other
@@ -92,11 +100,11 @@ namespace Sen::Kernel {
 
 			auto operator <= (
 				const CArray& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator >= (
 				const CArray& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			constexpr auto take_ownership (
 				CArray& other
@@ -115,20 +123,6 @@ namespace Sen::Kernel {
 				thiz._size = other._size;
 				other.value = nullptr;
 				other._size = 0;
-			}
-
-			auto clone (
-
-			) -> CArray
-			{
-				auto new_instance = new T[thiz._size];
-				if constexpr (is_numeric_v<T>) {
-					std::memcpy(new_instance, thiz.value, thiz._size * sizeof(T));
-				}
-				else {
-					std::memmove(new_instance, thiz.value, thiz._size * sizeof(T));
-				}
-				return CArray{new_instance, thiz._size};
 			}
 
 			auto assign (
@@ -157,6 +151,12 @@ namespace Sen::Kernel {
 			}
 
 			friend class CList<T>;
+
+			static auto make_array (
+				const std::span<T>& init
+			) -> CArray {
+				return CArray{init};
+			}
 	};
 
 }

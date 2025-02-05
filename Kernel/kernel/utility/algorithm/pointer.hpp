@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../library.hpp"
+#include "kernel/utility/library.hpp"
 
 namespace Sen::Kernel {
 
@@ -80,6 +80,27 @@ namespace Sen::Kernel {
 		T* ptr
 	) -> T& {
 		return *ptr;
+	}
+
+	template <typename T>
+	inline constexpr auto remove_pointer(
+		const T* ptr
+	) -> const T& {
+		return *ptr;
+	}
+
+	template <typename T>
+	inline constexpr auto as_move (
+		T& value
+	) -> std::remove_cvref_t<T>&& {
+		return static_cast<std::remove_cvref_t<T>&&>(value);
+	}
+
+	template <typename T>
+	inline constexpr auto as_const (
+		T& value
+	) -> std::remove_cvref_t<T> const & {
+		return static_cast<std::remove_cvref_t<T> const &>(value);
 	}
 
 }

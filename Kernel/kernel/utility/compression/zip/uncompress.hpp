@@ -1,0 +1,73 @@
+#pragma once
+
+#include "kernel/utility/compression/zip/common.hpp"
+
+namespace Sen::Kernel::Compression::Zip {
+
+    struct Uncompress : Common {
+
+    protected:
+
+        using Common = Common;
+
+    public:
+
+        constexpr explicit Uncompress(
+        ) = default;
+
+        constexpr ~Uncompress(
+        ) = default;
+
+        Uncompress(
+            const Uncompress& other
+        ) = delete;
+
+        Uncompress(
+            Uncompress&& other
+        ) = delete;
+
+        auto operator=(
+            const Uncompress& other
+        ) -> Uncompress& = delete;
+
+        auto operator=(
+            Uncompress&& other
+        ) -> Uncompress& = delete;
+
+        static auto process (
+            Uint8Array& source,
+            HashMap<String, Uint8Array>& destination
+        ) -> void {
+            auto zip = Subprojects::zip::zip_stream_open(reinterpret_cast<char*>(source.data()), source.size(), 0, 'r');
+            assert_conditional(zip != nullptr, "Failed to open zip file", "process");
+            auto count = static_cast<usize>(Subprojects::zip::zip_entries_total(zip));
+            destination.reserve(count);
+            for (auto index : Range{count}) {
+                auto entry = Subprojects::zip::zip_entry_openbyindex(zip, index);
+                auto name = Subprojects::zip::zip_entry_name(zip);
+                auto size = Subprojects::zip::zip_entry_size(zip);
+                auto value = Uint8Array{size};
+                Subprojects::zip::zip_entry_extract(zip, on_extract, &value);
+                destination.emplace(String{name, size}, as_move(value));
+                Subprojects::zip::zip_entry_close(zip);
+            }
+            Subprojects::zip::zip_close(zip);
+        }
+
+        static auto process_fs (
+            const String& source,
+            const String& destination
+        ) -> void {
+            auto raw = Uint8Array{};
+            auto ripe = HashMap<String, Uint8Array>{};
+            FileSystem::read_file(source, raw);
+            process(raw, ripe);
+            for (auto& [name, data] : ripe) {
+                FileSystem::write_file(Path::join(as_lvalue(CArray<std::string_view>::make_array(as_lvalue(std::to_array({destination.view(), name.view()}))))), data);
+            }
+        }
+
+    };
+
+}
+

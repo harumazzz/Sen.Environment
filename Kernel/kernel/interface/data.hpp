@@ -120,9 +120,9 @@ namespace Sen::Kernel::Interface {
 
 	inline static auto construct_string(
 		StringView* that
-	) -> Kernel::BasicString
+	) -> Kernel::String
 	{
-		return Kernel::BasicString {
+		return Kernel::String {
 			reinterpret_cast<const char*>(that->value),
 			that->size,
 		};
