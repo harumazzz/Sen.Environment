@@ -53,8 +53,14 @@ namespace Sen::Kernel {
 
         constexpr auto size(
 
-        ) -> usize {
+        ) const -> usize {
             return thiz.m_data.size();
+        }
+
+        constexpr auto size(
+            const usize& size
+        ) -> void {
+            return thiz.m_data.size(size);
         }
 
         constexpr auto current_iterator(
@@ -67,6 +73,11 @@ namespace Sen::Kernel {
 
         ) -> decltype(thiz.m_data.begin()) {
             return thiz.m_data.begin();
+        }
+
+        auto capacity (
+        ) -> usize {
+            return thiz.m_data.capacity();
         }
 
         constexpr auto end(
@@ -225,7 +236,7 @@ namespace Sen::Kernel {
             return thiz.raw(value.begin(), value.size());
         }
 
-        auto operator + (
+        auto operator += (
             const usize& index
         ) -> WriteStream& {
             assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_plus");
@@ -233,7 +244,7 @@ namespace Sen::Kernel {
             return thiz;
         }
 
-        auto operator -(
+        auto operator -=(
             const usize& index
         ) -> WriteStream& {
             assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_minus");
@@ -258,6 +269,8 @@ namespace Sen::Kernel {
         ) -> void {
             that.assign(thiz.m_data);
         }
+
+
     };
 
 }

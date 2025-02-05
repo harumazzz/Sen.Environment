@@ -122,10 +122,6 @@ namespace Sen::Kernel::Interface {
 				{
 					zip.add_function("process"_sv, FunctionProxy<void, std::string&, std::string&>::template as_function<Interface::API::Compression::Zip::Uncompress::process>);
 				}
-				auto zlib = compression.add_space("Zlib");
-				{
-					zlib.add_function("uncompress"_sv, FunctionProxy<std::shared_ptr<JS::ArrayBuffer>, std::shared_ptr<JS::ArrayBuffer>&>::template as_function<Interface::API::Compression::Zlib::uncompress>);
-				}
                 /*
 				auto support = kernel.add_space("Support");
 				auto texture = support.add_space("Texture");

@@ -89,9 +89,9 @@ add_library(
 	./utility/encoding/image/color.hpp
 	./utility/encoding/image/rectangle.hpp
 
-	./utility/compression/zlib.hpp
-	./utility/compression/lzma.hpp
-	./utility/compression/bzip2.hpp
+		utility/compression/zlib/common.hpp
+		utility/compression/lzma/common.hpp
+		utility/compression/bzip2/common.hpp
 
 	./utility/stream/base_stream.hpp
 	./utility/stream/read_stream.hpp
@@ -242,6 +242,12 @@ add_library(
 		utility/encoding/xml/comment.hpp
 		utility/encoding/xml/text.hpp
 		utility/encoding/xml/element.hpp
+		utility/compression/bzip2/compress.hpp
+		utility/compression/bzip2/uncompress.hpp
+		utility/compression/lzma/compress.hpp
+		utility/compression/lzma/uncompress.hpp
+		utility/compression/zlib/compress.hpp
+		utility/compression/zlib/uncompress.hpp
 
 
 )

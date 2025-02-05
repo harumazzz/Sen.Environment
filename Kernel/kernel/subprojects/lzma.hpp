@@ -17,9 +17,16 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Subprojects::lzma 
-{
+namespace Sen::Kernel::Subprojects::lzma {
 
-	// using deps
+	using ::Byte;
+
+	using ::LzmaCompress;
+
+	using ::LzmaUncompress;
+
+	inline constexpr auto $SZ_OK = SZ_OK;
+
+	inline constexpr auto $LZMA_PROPS_SIZE = LZMA_PROPS_SIZE;
 
 }

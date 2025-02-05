@@ -438,23 +438,6 @@ namespace Sen::Kernel::Interface::API {
 
 		#pragma endregion
 
-		#pragma region zlib
-
-		namespace Zlib {
-
-			inline auto uncompress(
-				std::shared_ptr<JavaScript::ArrayBuffer>& source
-			) -> std::shared_ptr<JavaScript::ArrayBuffer>
-			{
-				auto buffer = List<unsigned char>{};
-				buffer.assign(source->value, source->value + source->size);
-				auto result = Kernel::Compression::Zlib::uncompress(buffer);
-				return std::make_shared<JavaScript::ArrayBuffer>(reinterpret_cast<uint8_t*>(result.data()), result.size());
-			}
-
-		}
-
-		#pragma endregion
 
 	}
 

@@ -166,6 +166,7 @@ namespace Sen::Kernel {
             assert_conditional(from < to, "From index must be smaller than To index", "string");
             auto destination = String{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
+            thiz.m_position = to;
             return destination;
         }
 
@@ -239,6 +240,7 @@ namespace Sen::Kernel {
             assert_conditional(from < to, "From index must be smaller than To index", "read");
             auto destination = Uint8Array{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
+            thiz.m_position = to;
             return destination;
         }
 
@@ -281,7 +283,7 @@ namespace Sen::Kernel {
             thiz.m_position = index;
         }
 
-        auto operator + (
+        auto operator +=(
             const usize& index
         ) -> ReadStream& {
 			assert_conditional(index <= thiz.m_data.size(), "Index must be smaller than data size", "operator_plus");
@@ -289,7 +291,7 @@ namespace Sen::Kernel {
             return thiz;
         }
 
-        auto operator -(
+        auto operator -=(
             const usize& index
         ) -> ReadStream& {
             assert_conditional(index <= thiz.m_data.size(), "Index must be smaller than data size", "operator_minus");
@@ -301,6 +303,18 @@ namespace Sen::Kernel {
             const usize& index
         ) const -> bool {
             return thiz.m_position + index <= thiz.m_data.size();
+        }
+
+        auto release_stream (
+            Uint8Array& that
+        ) -> void {
+            that.assign(thiz.m_data);
+        }
+
+        auto release_stream (
+            Uint8List& that
+        ) -> void {
+            that.assign(thiz.m_data);
         }
 
     };

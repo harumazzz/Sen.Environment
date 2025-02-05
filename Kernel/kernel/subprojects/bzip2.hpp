@@ -21,5 +21,23 @@
 #endif
 
 namespace Sen::Kernel::Subprojects::bzip2 {
-	
+
+	using ::bz_stream;
+
+	using ::BZ2_bzCompressInit;
+
+	using ::BZ2_bzCompress;
+
+	using ::BZ2_bzDecompressInit;
+
+	using ::BZ2_bzDecompress;
+
+	using ::BZ2_bzDecompressEnd;
+
+	inline static constexpr auto $BZ_OK = BZ_OK;
+
+	inline static constexpr auto $BZ_FINISH = BZ_FINISH;
+
+	inline static constexpr auto $BZ_STREAM_END = BZ_STREAM_END;
+
 }

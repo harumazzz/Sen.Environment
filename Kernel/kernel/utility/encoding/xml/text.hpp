@@ -36,9 +36,9 @@ namespace Sen::Kernel::Encoding::XML {
         }
 
         auto value (
-            String&& value
+            String& value
         ) -> void {
-            thiz.m_value.assign(std::forward<String>(value));
+            thiz.m_value.assign(value);
         }
 
     };

@@ -150,7 +150,7 @@ namespace Sen::Kernel {
 					delete[] thiz.value;
 				}
 				thiz.value = other.value;
-				thiz._size = other._size;
+				thiz._size = other._capacity;
 				other.value = nullptr;
 				other._size = 0;
 				other._capacity = 0;

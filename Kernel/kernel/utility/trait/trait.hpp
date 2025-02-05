@@ -163,4 +163,10 @@ namespace Sen::Kernel {
 	template <typename Container>
 	using extract_container_t = std::decay_t<typename Container::value_type>;
 
+	template <auto Value, auto Min, auto Max>
+	struct is_between : std::bool_constant<(Min <= Value && Value <= Max)> {};
+
+	template <auto Value, auto Min, auto Max>
+	constexpr auto is_between_v = is_between<Value, Min, Max>::value;
+
 }
