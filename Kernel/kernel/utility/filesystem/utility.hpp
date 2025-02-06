@@ -213,4 +213,42 @@ namespace Sen::Kernel::FileSystem {
         return write_file(source, data);
     }
 
+    inline auto read_utf16 (
+        const String& source
+    ) -> String {
+        auto file = open_read(source);
+        auto file_size = file.size();
+        auto buffer = CharacterArray{file_size};
+        file.read(buffer);
+        auto offset = 0_size;
+        if (file_size >= 2 && buffer[0] == 0xFF && buffer[1] == 0xFE) {
+            offset = 2;
+        }
+        auto converter = std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::consume_header>>{};
+        auto content = converter.from_bytes(buffer.data() + offset, buffer.data() + file_size);
+        auto value = utf16_to_utf8(content);
+        return String{value.data(), value.size()};
+    }
+
+    template <auto is_utf16, auto write_bom> requires std::is_same_v<type_of<write_bom>, bool> && std::is_same_v<type_of<is_utf16>, bool>
+    inline auto write_file_s (
+        const String& source,
+        String& data
+    ) -> void {
+        auto file = open_write(source);
+        if constexpr (is_utf16) {
+            if constexpr (write_bom) {
+                file.write(0xEF_u8, 0xFE_u8);
+            }
+            file.write(as_lvalue(data.warray()));
+        }
+        else {
+            if constexpr (write_bom) {
+                file.write(0xFF_u8, 0xBB_u8, 0xBF_u8);
+            }
+            file.write(data);
+        }
+    }
+
+
 }

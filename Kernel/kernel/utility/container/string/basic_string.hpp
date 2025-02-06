@@ -215,7 +215,29 @@ namespace Sen::Kernel {
 			#endif
 		}
 
-		constexpr operator std::string_view() const {
+    	auto warray (
+    	) const -> CArray<wchar_t> {
+			#if _WIN32
+			auto size = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), nullptr, 0));
+			auto destination = CArray<wchar_t>{size};
+			MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), &destination[0], size);
+			return destination;
+			#else
+			auto convert = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
+			auto wstr = convert.from_bytes(thiz.value, thiz.value + thiz._size);
+			auto destination = CArray<wchar_t>{wstr.size()};
+			std::memcpy(destination.cbegin(), wstr.cbegin(), wstr.size() * sizeof(wchar_t));
+			return destination;
+			auto convert = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
+			auto wstr = convert.from_bytes(thiz.value, thiz.value + thiz._size);
+			auto destination = CArray<wchar_t>{wstr.size()};
+			std::memcpy(destination.cbegin(), wstr.data(), wstr.size() * sizeof(wchar_t));
+			return destination;
+			#endif
+		}
+
+		constexpr operator std::string_view(
+		) const {
 			return std::string_view{ thiz.value, thiz._size };
 		}
 
@@ -994,6 +1016,13 @@ namespace Sen::Kernel {
     	}
 
 	};
+
+	inline auto operator "" _s (
+		const char* value,
+		size_t size
+	) -> String {
+		return String{value, size};
+	}
 
 }
 

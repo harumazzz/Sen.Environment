@@ -65,6 +65,10 @@ namespace Sen::Kernel::FileSystem {
                 return thiz;
             }
 
+        protected:
+
+        public:
+
             template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
                 { t.size() } -> std::convertible_to<usize>;
                 { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
@@ -76,12 +80,24 @@ namespace Sen::Kernel::FileSystem {
                 auto result = WriteFile(
                     thiz.handle,
                     data.begin(),
-                    sizeof(u8) * data.size(),
+                    sizeof(extract_container_t<T>) * data.size(),
                     &byte_written,
                     nullptr
                 );
                 assert_conditional(SUCCEEDED(result), "Write file operation has not been completed", "write");
-                assert_conditional(byte_written == sizeof(u8) * data.size(), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "write");
+                assert_conditional(byte_written == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "write");
+            }
+
+            template <typename... Args> requires (is_numeric_v<Args> && ...)
+            auto write (
+                Args&&... args
+            ) -> void {
+                auto buffer = Uint8Array{sizeof...(args)};
+                {
+                    auto offset = 0_size;
+                    (forward_bytes(std::forward<Args>(args), buffer, offset), ...);
+                }
+                thiz.write(buffer);
             }
 
             auto data (
@@ -157,12 +173,12 @@ namespace Sen::Kernel::FileSystem {
                 auto result = ReadFile(
                     thiz.handle,
                     data.begin(),
-                    sizeof(u8) * data.size(),
+                    sizeof(extract_container_t<T>) * data.size(),
                     &bytes_read,
                     nullptr
                 );
                 assert_conditional(SUCCEEDED(result), "Read file operation has not been completed", "read");
-                assert_conditional(bytes_read == sizeof(u8) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_read), "read");
+                assert_conditional(bytes_read == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_read), "read");
             }
 
             auto data (

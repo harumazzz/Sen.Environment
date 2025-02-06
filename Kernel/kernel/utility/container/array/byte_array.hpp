@@ -56,4 +56,15 @@ namespace Sen::Kernel {
 
 	using SizeArray = CArray<usize>;
 
+
+	template <typename T> requires is_numeric_v<T>
+	inline static auto forward_bytes (
+		const T& arg,
+		Uint8Array& buffer,
+		size_t& offset
+	) -> void {
+		std::memcpy(buffer.data() + offset, &arg, sizeof(T));
+		offset += sizeof(T);
+	}
+
 }

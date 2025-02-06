@@ -17,12 +17,8 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Subprojects::Rijndael 
-{
+namespace Sen::Kernel::Subprojects::Rijndael {
 
-
-	// class Rijndael 
 	using CRijndael = ::CRijndael;
-
 	
 }

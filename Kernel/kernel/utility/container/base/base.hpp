@@ -184,6 +184,16 @@ namespace Sen::Kernel {
             return thiz.value + thiz._size;
         }
 
+        constexpr auto last (
+        ) -> T& {
+            return thiz.value[thiz._size - 1];
+        }
+
+        constexpr auto last_iterator (
+        ) -> Pointer<T> {
+            return thiz.value + (thiz._size - 1);
+        }
+
 
     };
 

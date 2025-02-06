@@ -80,26 +80,77 @@ namespace Sen::Kernel::FileSystem {
             return thiz.value;
         }
 
-        template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+        template <typename T> requires (std::is_base_of_v<BaseContainer<extract_container_t<T>>, T>) && requires (T t) {
             { t.size() } -> std::convertible_to<usize>;
-            { t.begin() } -> std::convertible_to<u8*>;
+            { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
         auto read (
             T& data
         ) -> void {
-            auto count = std::fread(data.begin(), sizeof(u8) * data.size(), 1, thiz.value);
-            assert_conditional(count == 1, fmt::format("{}: {}", "Missing bytes when reading the file"), "read");
+            auto count = std::fread(data.begin(), sizeof(extract_container_t<T>) * data.size(), 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}", "Missing bytes when reading the file"), "read");
         }
 
-        template <typename T> requires (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>) && requires (T t) {
+        template <typename T> requires (std::is_base_of_v<BaseContainer<extract_container_t<T>>, T>) && requires (T t) {
             { t.size() } -> std::convertible_to<usize>;
-            { t.begin() } -> std::convertible_to<u8*>;
+            { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
         auto write (
             T& data
         ) -> void {
-            auto count = std::fwrite(data.begin(), sizeof(u8) * data.size(), 1, thiz.value);
-            assert_conditional(count == 1, fmt::format("{}: {}", "Missing bytes when writing the file"), "write");
+            auto count = std::fwrite(data.begin(), sizeof(extract_container_t<T>) * data.size(), 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}", "Missing bytes when writing the file"), "write");
+        }
+
+        template <typename... Args> requires (is_numeric_v<Args> && ...)
+        auto write (
+            Args&&... args
+        ) -> void {
+            auto buffer = Uint8Array{sizeof...(args)};
+            {
+                auto offset = 0_size;
+                (forward_bytes (std::forward<Args>(args), buffer, offset), ...);
+            }
+            thiz.write(buffer);
+        }
+
+        auto move_to_end (
+
+        ) const -> void {
+            #ifdef WINDOWS
+            _fseeki64(thiz.value, 0, SEEK_END);
+            #else
+            std::fseeko(value, 0, SEEK_END);
+            #endif
+        }
+
+        auto move_to_begin (
+
+        ) const -> void {
+            #ifdef WINDOWS
+            _fseeki64(thiz.value, 0, SEEK_SET);
+            #else
+            std::fseeko(value, 0, SEEK_SET);
+            #endif
+        }
+
+        auto tell (
+
+        ) const -> usize {
+            #ifdef WINDOWS
+            return static_cast<usize>(_ftelli64(thiz.value));
+            #else
+            return static_cast<usize>(std::ftello(value));
+            #endif
+        }
+
+        auto size (
+
+        ) const -> usize {
+            thiz.move_to_end();
+            auto value = thiz.tell();
+            thiz.move_to_begin();
+            return value;
         }
 
     };

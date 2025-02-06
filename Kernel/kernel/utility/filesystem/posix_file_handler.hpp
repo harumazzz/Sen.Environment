@@ -78,7 +78,9 @@ namespace Sen::Kernel::FileSystem {
             { t.size() } -> std::convertible_to<usize>;
             { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
-        void read(T& data) {
+        auto read(
+            T& data
+        ) -> void {
             auto bytes_read = ::read(fd, data.begin(), data.size());
             assert_conditional(bytes_read == static_cast<ssize_t>(data.size()), fmt::format("Missing bytes when read file, expected: {} but got: {}", data.size(), bytes_read), "read");
         }
@@ -139,9 +141,23 @@ namespace Sen::Kernel::FileSystem {
             { t.size() } -> std::convertible_to<usize>;
             { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
-        void write(T& data) {
+        auto write(
+            T& data
+        ) -> void {
             auto bytes_written = ::write(fd, data.begin(), data.size());
             assert_conditional(bytes_written == static_cast<ssize_t>(data.size()), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_written), "write");
+        }
+
+        template <typename... Args> requires (is_numeric_v<Args> && ...)
+        auto write (
+            Args&&... args
+        ) -> void {
+            auto buffer = Uint8Array{sizeof...(args)};
+            {
+                auto offset = 0_size;
+                (forward_bytes(std::forward<Args>(args), buffer, offset), ...);
+            }
+            thiz.write(buffer);
         }
 
         auto data(

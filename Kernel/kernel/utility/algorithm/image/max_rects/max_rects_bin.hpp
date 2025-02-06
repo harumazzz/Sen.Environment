@@ -215,14 +215,14 @@ namespace Sen::Kernel::Image::MaxRects {
             return true;
         }
 
-        constexpr static auto can_do_vertical_split (
+        constexpr static auto can_do_vertical_pack (
             const Node & free_rect,
             const Node & used_node
         ) -> bool {
             return used_node.x < free_rect.x + free_rect.width && used_node.x + used_node.width > free_rect.x;
         }
 
-        constexpr static auto can_do_horizontal_split (
+        constexpr static auto can_do_horizontal_pack (
             const Node & free_rect,
             const Node & used_node
         ) -> bool {
@@ -244,7 +244,7 @@ namespace Sen::Kernel::Image::MaxRects {
             if (!free_rect.collide(used_node)) {
                 return false;
             }
-            if (thiz.can_do_vertical_split(free_rect, used_node)) {
+            if (thiz.can_do_vertical_pack(free_rect, used_node)) {
                 if (used_node.y > free_rect.y && used_node.y < free_rect.y + free_rect.height) {
                     thiz.free_rects.append(thiz.make_node(free_rect.width, used_node.y - free_rect.y, free_rect.x, free_rect.y, free_rect.source));
                 }
@@ -252,7 +252,7 @@ namespace Sen::Kernel::Image::MaxRects {
                     thiz.free_rects.append(thiz.make_node(free_rect.width, free_rect.y + free_rect.height - (used_node.y + used_node.height), free_rect.x, used_node.y + used_node.height, free_rect.source));
                 }
             }
-            if (thiz.can_do_horizontal_split(free_rect, used_node)) {
+            if (thiz.can_do_horizontal_pack(free_rect, used_node)) {
                 if (used_node.x > free_rect.x && used_node.x < free_rect.x + free_rect.width) {
                     thiz.free_rects.append(thiz.make_node(used_node.x - free_rect.x, free_rect.height, free_rect.x, free_rect.y, free_rect.source));
                 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/utility/macro.hpp"
 #include "kernel/utility/library.hpp"
 
 namespace Sen::Kernel::Math {
@@ -56,6 +55,10 @@ namespace Sen::Kernel::Math {
 	using std::min;
 
 	using std::max;
+
+	using std::rotl;
+
+	using std::rotr;
 
 
 	template <typename T> requires std::is_integral_v<T> || std::is_floating_point_v<T>

@@ -72,8 +72,7 @@ add_library(
 
 	./utility/trait/trait.hpp
 
-	./utility/encryption/Rijndael.hpp
-	./utility/encryption/crc/common.hpp
+		./utility/encryption/crc/common.hpp
 	./utility/encryption/crc/crc32/crc32.hpp
 	./utility/encryption/crc/crc32/bzip2.hpp
 	./utility/encryption/crc/crc32/jamcrc.hpp
@@ -304,6 +303,8 @@ add_library(
 	./interface/api/method.hpp
 	./interface/api/class.hpp
 	./interface/interface.cpp
+		utility/encryption/rijndael/encrypt.hpp
+		utility/encryption/rijndael/decrypt.hpp
 
 )
 

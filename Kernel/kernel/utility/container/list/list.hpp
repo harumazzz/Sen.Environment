@@ -224,11 +224,6 @@ namespace Sen::Kernel {
     			++thiz._size;
     		}
 
-    		auto last (
-    		) -> T& {
-	    		return thiz.value[thiz._size - 1];
-    		}
-
     		auto assign (
 				CArray<T>& other
 			) -> void {
