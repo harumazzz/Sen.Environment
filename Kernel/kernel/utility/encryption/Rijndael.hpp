@@ -17,7 +17,7 @@ namespace Sen::Kernel::Encryption
 
 		protected:
 
-			template <typename T> requires std::is_integral<T>::value
+			template <typename T> requires std::is_integral_v<T>
 			inline static auto constexpr is_padded_size(
 				T size, 
 				T block_size
@@ -26,7 +26,7 @@ namespace Sen::Kernel::Encryption
     			return size % block_size == 0;
 			}
 
-			template <typename T> requires std::is_integral<T>::value
+			template <typename T> requires std::is_integral_v<T>
 			inline static auto constexpr is_valid_block_size(
 				T block_size
 			) noexcept -> bool {
@@ -72,7 +72,7 @@ namespace Sen::Kernel::Encryption
 				return m_result;
 			}
 
-			template <typename T, auto mode> requires std::is_integral<T>::value
+			template <typename T, auto mode> requires std::is_integral_v<T>
 			inline static auto decrypt(
 				char const* cipher,
 				std::string_view key,

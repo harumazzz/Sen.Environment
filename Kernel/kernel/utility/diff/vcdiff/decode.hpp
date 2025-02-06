@@ -27,9 +27,7 @@ namespace Sen::Kernel::Diff::VCDiff {
             decoder.StartDecoding(reinterpret_cast<const char*>(before.begin()), before.size());
             decoder.DecodeChunk(reinterpret_cast<const char*>(patch.begin()), patch.size(), &after_);
             decoder.FinishDecoding();
-            for (auto & element : after_) {
-                after.u8(element);
-            }
+            after.raw(reinterpret_cast<uint8_t *>(after_.data()), after_.size());
         }
 
         static auto process (

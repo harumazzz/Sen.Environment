@@ -34,7 +34,6 @@ namespace Sen::Kernel::Encryption::FNV {
             Uint8Array& source,
             Uint8Array& destination
         ) -> void {
-            destination.clear();
             if constexpr (bit_count == BitCount::B32) {
                 destination.allocate(sizeof(u32));
                 auto hash_value = u32{};

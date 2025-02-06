@@ -67,14 +67,60 @@ add_library(
 	./utility/encoding/image/read.hpp
 	./utility/encoding/image/common.hpp
 	./utility/encoding/image/write.hpp
-
-		utility/algorithm/utility.hpp
+	./utility/algorithm/utility.hpp
 	./utility/miscellaneous/clock/clock.hpp
 
 	./utility/trait/trait.hpp
 
 	./utility/encryption/Rijndael.hpp
-	./utility/encryption/crc.hpp
+	./utility/encryption/crc/common.hpp
+	./utility/encryption/crc/crc32/crc32.hpp
+	./utility/encryption/crc/crc32/bzip2.hpp
+	./utility/encryption/crc/crc32/jamcrc.hpp
+	./utility/encryption/crc/crc32/common.hpp
+	./utility/encryption/crc/crc32/c.hpp
+	./utility/encryption/crc/crc32/d.hpp
+	./utility/encryption/crc/crc32/mpeg2.hpp
+	./utility/encryption/crc/crc32/posix.hpp
+	./utility/encryption/crc/crc32/q.hpp
+	./utility/encryption/crc/crc32/sata.hpp
+	./utility/encryption/crc/crc32/xfer.hpp
+	./utility/encryption/crc/crc8/common.hpp
+	./utility/encryption/crc/crc8/crc8.hpp
+	./utility/encryption/crc/crc8/cdma2000.hpp
+	./utility/encryption/crc/crc8/darc.hpp
+	./utility/encryption/crc/crc8/dvbs2.hpp
+	./utility/encryption/crc/crc8/ebu.hpp
+	./utility/encryption/crc/crc8/icode.hpp
+	./utility/encryption/crc/crc8/itu.hpp
+	./utility/encryption/crc/crc8/maxim.hpp
+	./utility/encryption/crc/crc8/rohc.hpp
+	./utility/encryption/crc/crc8/wcdma.hpp
+	./utility/encryption/crc/crc16/common.hpp
+	./utility/encryption/crc/crc16/arc.hpp
+	./utility/encryption/crc/crc16/augccitt.hpp
+	./utility/encryption/crc/crc16/buypass.hpp
+	./utility/encryption/crc/crc16/cdma2000.hpp
+	./utility/encryption/crc/crc16/ccittfalse.hpp
+	./utility/encryption/crc/crc16/dectr.hpp
+	./utility/encryption/crc/crc16/dds110.hpp
+	./utility/encryption/crc/crc16/dectx.hpp
+	./utility/encryption/crc/crc16/dnp.hpp
+	./utility/encryption/crc/crc16/en13757.hpp
+	./utility/encryption/crc/crc16/genibus.hpp
+	./utility/encryption/crc/crc16/t10dif.hpp
+	./utility/encryption/crc/crc16/kermit.hpp
+	./utility/encryption/crc/crc16/mcrf4xx.hpp
+	./utility/encryption/crc/crc16/maxim.hpp
+	./utility/encryption/crc/crc16/riello.hpp
+	./utility/encryption/crc/crc16/tms37157.hpp
+	./utility/encryption/crc/crc16/teledisk.hpp
+	./utility/encryption/crc/crc16/modbus.hpp
+	./utility/encryption/crc/crc16/x25.hpp
+	./utility/encryption/crc/crc16/usb.hpp
+	./utility/encryption/crc/crc16/xmodem.hpp
+	./utility/encryption/crc/crc.hpp
+
 	./utility/encryption/fnv/common.hpp
 
 	./utility/encryption/base64/common.hpp
@@ -254,6 +300,7 @@ add_library(
 	./interface/api/method.hpp
 	./interface/api/class.hpp
 	./interface/interface.cpp
+
 
 
 )

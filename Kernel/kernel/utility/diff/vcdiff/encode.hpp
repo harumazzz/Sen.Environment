@@ -30,9 +30,7 @@ namespace Sen::Kernel::Diff::VCDiff {
             encoder.StartEncoding(&_patch);
             encoder.EncodeChunk(reinterpret_cast<const char*>(after.data()), after.size(), &_patch);
             encoder.FinishEncoding(&_patch);
-            for (auto & element : _patch) {
-                patch.u8(element);
-            }
+            patch.raw(reinterpret_cast<uint8_t *>(_patch.data()), _patch.size());
         }
 
         static auto process (

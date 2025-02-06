@@ -41,7 +41,7 @@
 #include "kernel/utility/trait/trait.hpp"
 
 #include "kernel/utility/encryption/md5/hash.hpp"
-#include "kernel/utility/encryption/crc.hpp"
+#include "kernel/utility/encryption/crc/crc.hpp"
 #include "kernel/utility/encryption/base64/encode.hpp"
 #include "kernel/utility/encryption/base64/decode.hpp"
 #include "kernel/utility/encryption/fnv/hash.hpp"
