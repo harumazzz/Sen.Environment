@@ -300,7 +300,11 @@ add_library(
 	./interface/api/method.hpp
 	./interface/api/class.hpp
 	./interface/interface.cpp
-
+		utility/algorithm/image/max_rects/common.hpp
+		utility/algorithm/image/max_rects/option.hpp
+		utility/algorithm/image/max_rects/extended_image.hpp
+		utility/algorithm/image/max_rects/max_rects_bin.hpp
+		utility/algorithm/image/max_rects/max_rects_packer.hpp
 
 
 )

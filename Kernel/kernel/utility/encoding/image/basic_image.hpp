@@ -50,8 +50,12 @@ namespace Sen::Kernel::Encoding::Image {
         ) = delete;
 
         BasicImage(
-            const BasicImage&& image
-        ) = delete;
+            BasicImage&& other
+        ) noexcept : Rectangle{other.width, other.height} {
+            thiz.m_color.take_ownership(other.m_color);
+            other.width = 0;
+            other.height = 0;
+        }
 
         auto operator=(
             const BasicImage& image

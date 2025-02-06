@@ -63,7 +63,7 @@ namespace Sen::Kernel::Compression::Zip {
             FileSystem::read_file(source, raw);
             process(raw, ripe);
             for (auto& [name, data] : ripe) {
-                FileSystem::write_file(Path::join(as_lvalue(CArray<std::string_view>::make_array(as_lvalue(std::to_array({destination.view(), name.view()}))))), data);
+                FileSystem::write_file(Path::join(destination, name), data);
             }
         }
 

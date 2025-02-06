@@ -53,6 +53,10 @@ namespace Sen::Kernel::Math {
 
 	using ::log2;
 
+	using std::min;
+
+	using std::max;
+
 
 	template <typename T> requires std::is_integral_v<T> || std::is_floating_point_v<T>
 	inline auto compare(

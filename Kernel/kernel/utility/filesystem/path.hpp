@@ -185,18 +185,31 @@ namespace Sen::Kernel::Path {
         }
     }
 
-    template <typename T> requires std::is_base_of_v<BaseContainer<std::string_view>, T>
+    template <typename T> requires std::is_base_of_v<BaseContainer<String>, T>
     inline auto join (
         T& source
     ) -> String {
         auto result = std::filesystem::path{};
         for (auto& arg : source) {
             #if WINDOWS
-            result /= utf8_to_utf16(arg);
+            result /= arg.wstring();
             #else
-            result /= arg;
+            result /= arg.view();
             #endif
         }
+        return StringHelper::make_string(result.generic_u8string());
+    }
+
+    template <typename... Args>
+    inline auto join (
+        const Args&... source
+    ) -> String {
+        auto result = std::filesystem::path{};
+        #if WINDOWS
+        ((result /= std::filesystem::path{source.wstring()}), ...);
+        #else
+        ((result /= std::filesystem::path{source.view()}), ...);
+        #endif
         return StringHelper::make_string(result.generic_u8string());
     }
 
