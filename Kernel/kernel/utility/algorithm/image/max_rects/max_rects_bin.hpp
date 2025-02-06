@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kernel/utility/algorithm/image/max_rects/extended_image.hpp"
-#include "kernel/utility/algorithm/image/max_rects/option.hpp"
 #include "kernel/utility/algorithm/math.hpp"
 #include "kernel/utility/algorithm/pointer.hpp"
 #include "kernel/utility/algorithm/image/max_rects/common.hpp"

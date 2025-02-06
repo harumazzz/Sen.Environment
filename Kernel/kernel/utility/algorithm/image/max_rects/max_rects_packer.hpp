@@ -4,7 +4,7 @@
 
 namespace Sen::Kernel::Image::MaxRects {
 
-    class MaxRectsPacker {
+    class MaxRectsPacker : Common {
 
     protected:
 

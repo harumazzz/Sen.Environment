@@ -134,7 +134,6 @@ add_library(
 	./utility/encoding/image/color.hpp
 	./utility/encoding/image/rectangle.hpp
 	./utility/algorithm/image/max_rects/common.hpp
-	./utility/algorithm/image/max_rects/option.hpp
 	./utility/algorithm/image/max_rects/extended_image.hpp
 	./utility/algorithm/image/max_rects/max_rects_bin.hpp
 	./utility/algorithm/image/max_rects/max_rects_packer.hpp
