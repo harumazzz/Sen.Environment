@@ -16,9 +16,13 @@ namespace Sen::Kernel::Encoding::XML {
 
         using Element = Element;
 
+        using Type = Type;
+
     protected:
 
         std::variant<Text, Element, Comment> m_value{};
+
+        Type m_type{Type::Unknown};
 
     public:
 
@@ -31,7 +35,10 @@ namespace Sen::Kernel::Encoding::XML {
 
         Node (
             Node && other
-        ) = default;
+        ) noexcept : m_type{other.m_type} {
+            thiz.m_value.swap(other.m_value);
+            other.m_type = Type::Unknown;
+        }
 
         ~Node(
         ) = default;
@@ -42,8 +49,10 @@ namespace Sen::Kernel::Encoding::XML {
 
         auto operator = (
             Node&& other
-        ) -> Node& {
+        ) noexcept -> Node& {
             thiz.m_value.swap(other.m_value);
+            thiz.m_type = other.m_type;
+            other.m_type = Type::Unknown;
             return thiz;
         }
 
@@ -87,6 +96,7 @@ namespace Sen::Kernel::Encoding::XML {
         auto set_element (
             Args... args
         ) -> void {
+            thiz.m_type = Type::Element;
             return thiz.set<Element>(std::forward<Args>(args)...);
         }
 
@@ -94,6 +104,7 @@ namespace Sen::Kernel::Encoding::XML {
         auto set_comment (
             Args... args
         ) -> void {
+            thiz.m_type = Type::Comment;
             return thiz.set<Comment>(std::forward<Args>(args)...);
         }
 
@@ -101,6 +112,7 @@ namespace Sen::Kernel::Encoding::XML {
         auto set_text (
             Args... args
         ) -> void {
+            thiz.m_type = Type::Text;
             return thiz.set<Text>(std::forward<Args>(args)...);
         }
 
@@ -130,6 +142,11 @@ namespace Sen::Kernel::Encoding::XML {
         ) -> Text& {
             assert_conditional(thiz.is_comment(), "Expected an text node, but the current node is not", "get_text");
             return thiz.get<Text>();
+        }
+
+        auto get_type (
+        ) const -> Type {
+            return thiz.m_type;
         }
 
     };

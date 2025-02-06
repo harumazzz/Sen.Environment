@@ -216,6 +216,19 @@ namespace Sen::Kernel {
 				++thiz._size;
 			}
 
+    		auto append (
+    		) -> void {
+    			if (thiz._size >= thiz._capacity) {
+    				thiz.reallocate(thiz._capacity * 4);
+    			}
+    			++thiz._size;
+    		}
+
+    		auto last (
+    		) -> T& {
+	    		return thiz.value[thiz._size - 1];
+    		}
+
     		auto assign (
 				CArray<T>& other
 			) -> void {

@@ -18,4 +18,11 @@ namespace Sen::Kernel::Encoding::XML {
 
     struct Element;
 
+    enum class Type : u8 {
+        Element,
+        Text,
+        Comment,
+        Unknown,
+    };
+
 }

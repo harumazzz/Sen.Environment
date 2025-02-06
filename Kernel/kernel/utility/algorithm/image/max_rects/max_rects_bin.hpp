@@ -216,13 +216,6 @@ namespace Sen::Kernel::Image::MaxRects {
             return true;
         }
 
-        template <typename... Args>
-        auto make_node (
-            Args&&... args
-        ) -> std::shared_ptr<Node> {
-            return std::make_unique<Node>(std::forward<Args>(args)...);
-        }
-
         constexpr static auto can_do_vertical_split (
             const Node & free_rect,
             const Node & used_node
@@ -237,6 +230,13 @@ namespace Sen::Kernel::Image::MaxRects {
             return used_node.y < free_rect.y + free_rect.height && used_node.y + used_node.height > free_rect.y;
         }
 
+        template <typename... Args>
+        auto make_node (
+            Args&&... args
+        ) -> std::shared_ptr<Node> {
+            return std::make_shared<Node>(std::forward<Args>(args)...);
+        }
+
         auto split_node(
             const Node & free_rect,
             const Node & used_node
@@ -245,20 +245,20 @@ namespace Sen::Kernel::Image::MaxRects {
             if (!free_rect.collide(used_node)) {
                 return false;
             }
-            if (can_do_vertical_split(free_rect, used_node)) {
+            if (thiz.can_do_vertical_split(free_rect, used_node)) {
                 if (used_node.y > free_rect.y && used_node.y < free_rect.y + free_rect.height) {
-                    thiz.free_rects.append(make_node(free_rect.width, used_node.y - free_rect.y, free_rect.x, free_rect.y, free_rect.source));
+                    thiz.free_rects.append(thiz.make_node(free_rect.width, used_node.y - free_rect.y, free_rect.x, free_rect.y, free_rect.source));
                 }
                 if (used_node.y + used_node.height < free_rect.y + free_rect.height) {
-                    thiz.free_rects.append(make_node(free_rect.width, free_rect.y + free_rect.height - (used_node.y + used_node.height), free_rect.x, used_node.y + used_node.height, free_rect.source));
+                    thiz.free_rects.append(thiz.make_node(free_rect.width, free_rect.y + free_rect.height - (used_node.y + used_node.height), free_rect.x, used_node.y + used_node.height, free_rect.source));
                 }
             }
-            if (can_do_horizontal_split(free_rect, used_node)) {
+            if (thiz.can_do_horizontal_split(free_rect, used_node)) {
                 if (used_node.x > free_rect.x && used_node.x < free_rect.x + free_rect.width) {
-                    free_rects.append(make_node(used_node.x - free_rect.x, free_rect.height, free_rect.x, free_rect.y, free_rect.source));
+                    thiz.free_rects.append(thiz.make_node(used_node.x - free_rect.x, free_rect.height, free_rect.x, free_rect.y, free_rect.source));
                 }
                 if (used_node.x + used_node.width < free_rect.x + free_rect.width) {
-                    free_rects.append(make_node(free_rect.x + free_rect.width - (used_node.x + used_node.width), free_rect.height, used_node.x + used_node.width, free_rect.y, free_rect.source));
+                    thiz.free_rects.append(thiz.make_node(free_rect.x + free_rect.width - (used_node.x + used_node.width), free_rect.height, used_node.x + used_node.width, free_rect.y, free_rect.source));
                 }
             }
             return true;
@@ -299,15 +299,8 @@ namespace Sen::Kernel::Image::MaxRects {
                 }
                 auto node1 = Node{rect->width + option.padding, rect->height + option.padding, width + option.padding - option.border, option.border, rect->source};
                 auto node2 = Node{rect->width + option.padding, rect->height + option.padding, option.border, height + option.padding - option.border, rect->source};
-                if (thiz.vertical_expand) {
-                    if (thiz.update_bin_size(node1) || thiz.update_bin_size(node2)) {
-                        thiz.place(rect, place_node);
-                    }
-                }
-                else {
-                    if (thiz.update_bin_size(node1) ||thiz.update_bin_size(node2)) {
-                        thiz.place(rect, place_node);
-                    }
+                if (thiz.update_bin_size(node1) || thiz.update_bin_size(node2)) {
+                    thiz.place(rect, place_node);
                 }
             }
 

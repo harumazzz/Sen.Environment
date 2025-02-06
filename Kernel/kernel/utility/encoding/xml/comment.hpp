@@ -22,6 +22,18 @@ namespace Sen::Kernel::Encoding::XML {
             return thiz.m_value;
         }
 
+        auto value (
+            const String& value
+        ) -> void {
+            thiz.m_value = value;
+        }
+
+        auto value (
+            String&& value
+        ) -> void {
+            thiz.m_value.assign(value);
+        }
+
     };
 
 }

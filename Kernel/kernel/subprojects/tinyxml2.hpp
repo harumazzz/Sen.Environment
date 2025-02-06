@@ -24,5 +24,11 @@
 #endif
 
 namespace Sen::Kernel::Subprojects::tinyxml2 {
+
+	using ::tinyxml2::XMLDocument;
+
+	using ::tinyxml2::XMLNode;
+
+	using ::tinyxml2::XMLPrinter;
 	
 }

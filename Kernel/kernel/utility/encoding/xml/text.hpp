@@ -14,7 +14,7 @@ namespace Sen::Kernel::Encoding::XML {
 
     public:
 
-        constexpr auto is_empty (
+        auto is_empty (
         ) const -> bool {
             return thiz.m_value.empty();
         }
@@ -25,7 +25,7 @@ namespace Sen::Kernel::Encoding::XML {
             thiz.m_cdata = cdata;
         }
 
-        constexpr auto is_cdata (
+        auto is_cdata (
         ) const -> bool {
             return thiz.m_cdata;
         }
@@ -36,7 +36,7 @@ namespace Sen::Kernel::Encoding::XML {
         }
 
         auto value (
-            String& value
+            String&& value
         ) -> void {
             thiz.m_value.assign(value);
         }

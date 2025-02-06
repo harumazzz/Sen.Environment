@@ -36,7 +36,8 @@
 #include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/miscellaneous/system/system.hpp"
 #include "kernel/utility/encoding/apng/writer.hpp"
-#include "kernel/utility/encoding/xml/node.hpp"
+#include "kernel/utility/encoding/xml/read.hpp"
+#include "kernel/utility/encoding/xml/write.hpp"
 
 #include "kernel/utility/trait/trait.hpp"
 

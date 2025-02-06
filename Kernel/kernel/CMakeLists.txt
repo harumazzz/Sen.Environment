@@ -129,11 +129,15 @@ add_library(
 	./utility/encryption/md5/common.hpp
 	./utility/encryption/md5/hash.hpp
 
-
 	./utility/filesystem/file_handler.hpp
 	./utility/filesystem/windows_file_handler.hpp
 	./utility/encoding/image/color.hpp
 	./utility/encoding/image/rectangle.hpp
+	./utility/algorithm/image/max_rects/common.hpp
+	./utility/algorithm/image/max_rects/option.hpp
+	./utility/algorithm/image/max_rects/extended_image.hpp
+	./utility/algorithm/image/max_rects/max_rects_bin.hpp
+	./utility/algorithm/image/max_rects/max_rects_packer.hpp
 
 	./utility/compression/zlib/common.hpp
 	./utility/compression/lzma/common.hpp
@@ -166,6 +170,7 @@ add_library(
 	./utility/encoding/xml/text.hpp
 	./utility/encoding/xml/element.hpp
 	./utility/encoding/xml/read.hpp
+	./utility/encoding/xml/write.hpp
 	./utility/diff/vcdiff/common.hpp
 	./utility/diff/vcdiff/decode.hpp
 	./utility/diff/vcdiff/encode.hpp
@@ -300,12 +305,6 @@ add_library(
 	./interface/api/method.hpp
 	./interface/api/class.hpp
 	./interface/interface.cpp
-		utility/algorithm/image/max_rects/common.hpp
-		utility/algorithm/image/max_rects/option.hpp
-		utility/algorithm/image/max_rects/extended_image.hpp
-		utility/algorithm/image/max_rects/max_rects_bin.hpp
-		utility/algorithm/image/max_rects/max_rects_packer.hpp
-
 
 )
 

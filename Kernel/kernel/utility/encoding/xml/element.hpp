@@ -114,6 +114,24 @@ namespace Sen::Kernel::Encoding::XML {
             return thiz.m_child[index];
         }
 
+        auto set_name (
+            String&& value
+        ) -> void {
+            thiz.m_name = as_move(value);
+        }
+
+        auto set_name (
+            const String& value
+        ) -> void {
+            thiz.m_name = value;
+        }
+
+        auto append_child (
+        ) -> Node& {
+            thiz.m_child.append();
+            return thiz.m_child.last();
+        }
+
     };
 
 }
