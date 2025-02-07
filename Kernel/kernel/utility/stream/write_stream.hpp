@@ -226,6 +226,18 @@ namespace Sen::Kernel {
             thiz.set_position(temporary);
         }
 
+        template <typename... Args> requires (sizeof...(Args) > 1 && (is_numeric_v<Args> && ...))
+        auto write(
+            const Args &...args
+        ) -> void {
+            auto temporary = Uint8Array{sizeof...(Args)};
+            {
+                auto offset = 0_size;
+                (forward_bytes(std::forward<Args>(args), temporary, offset), ...);
+            }
+            thiz.write(temporary);
+        }
+
         template<typename T> requires (std::is_same_v<T, Uint8Array> or std::is_same_v<T, Uint8List>) && requires(T a) {
             { a.size() } -> std::convertible_to<usize>;
             { a.begin() } -> std::convertible_to<uint8_t*>;

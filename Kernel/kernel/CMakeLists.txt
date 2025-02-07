@@ -26,8 +26,7 @@ add_library(
 	./subprojects/compile-time-regular-expressions.hpp
 	./subprojects/parallel-hashmap.hpp
 	./subprojects/thread-pool.hpp
-	./subprojects/mscharconv.hpp	
-	./subprojects/glaze.hpp
+	./subprojects/mscharconv.hpp
 
 	./utility/macro.hpp
 	./utility/range/forward.hpp
@@ -178,18 +177,6 @@ add_library(
 	./utility/stream/read_stream.hpp
 	./utility/stream/write_stream.hpp
 
-	./utility/javascript/common.hpp
-	./utility/javascript/value.hpp
-	./utility/javascript/value_adapter.hpp
-	./utility/javascript/runtime.hpp
-	./utility/javascript/generalization.hpp
-	./utility/javascript/builder.hpp
-	./utility/javascript/converter.hpp
-	./utility/javascript/converter/json.hpp
-	./utility/javascript/converter/xml.hpp
-	./utility/javascript/proxy.hpp
-	./utility/javascript/namespace_builder.hpp
-
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
 	./support/popcap/animation/definition.hpp
@@ -305,6 +292,13 @@ add_library(
 	./interface/interface.cpp
 		utility/encryption/rijndael/encrypt.hpp
 		utility/encryption/rijndael/decrypt.hpp
+		utility/javascript/common.hpp
+		utility/javascript/runtime.hpp
+		utility/javascript/runtime.hpp
+		utility/javascript/context.hpp
+		utility/javascript/value.hpp
+		utility/javascript/trait.hpp
+		utility/javascript/js_string.hpp
 
 )
 
@@ -375,7 +369,6 @@ target_link_libraries(
 	compile-time-regular-expressions
 	parallel-hashmap
 	thread-pool
-	glaze_glaze
 )
 
 if (WIN32)

@@ -89,7 +89,7 @@ namespace Sen::Kernel {
 	using get_type_t = typename get_type<T>::type;
 
 	template <typename T>
-	concept IsClass = (std::is_class<T>::value && !std::is_pointer<T>::value);
+	concept IsClass = (std::is_class_v<T> && !std::is_pointer_v<T>);
 
 	template <typename Container>
 	struct container_traits {
@@ -158,7 +158,7 @@ namespace Sen::Kernel {
 	constexpr auto is_greater_than_zero_v = is_greater_than_zero<type_of<Value>, Value>::value;
 
 	template <typename T>
-	concept is_numeric_v = std::is_floating_point_v<T> || std::is_integral_v<T>;
+	concept is_numeric_v = (std::is_floating_point_v<T> || std::is_integral_v<T>) && (!std::is_same_v<T, bool> && !std::is_pointer_v<T>);
 
 	template <typename Container>
 	using extract_container_t = std::decay_t<typename Container::value_type>;
@@ -168,5 +168,22 @@ namespace Sen::Kernel {
 
 	template <auto Value, auto Min, auto Max>
 	constexpr auto is_between_v = is_between<Value, Min, Max>::value;
+
+	template <typename T>
+	struct is_boolean : std::false_type {
+
+		static constexpr auto value_type = false;
+
+	};
+
+	template <>
+	struct is_boolean<bool> : std::true_type {
+
+		static constexpr auto value_type = true;
+
+	};
+
+	template <typename T>
+	constexpr auto is_boolean_v = is_boolean<T>::value;
 
 }

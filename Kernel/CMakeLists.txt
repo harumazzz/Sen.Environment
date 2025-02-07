@@ -41,7 +41,6 @@ add_subdirectory("./subprojects/canvas_ity")
 add_subdirectory("./subprojects/compile-time-regular-expressions")
 add_subdirectory("./subprojects/parallel-hashmap")
 add_subdirectory("./subprojects/thread-pool")
-add_subdirectory("./subprojects/glaze")
 
 if (MSVC)
   add_subdirectory("./subprojects/dirent")

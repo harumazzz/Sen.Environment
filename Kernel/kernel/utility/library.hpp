@@ -16,6 +16,8 @@
 #include <chrono>
 #include <cmath>
 #include <cmath>
+#include <span>
+#include <ranges>
 #include <cstring>
 #include <cstdlib>
 #include <regex>
@@ -55,7 +57,6 @@
 #include "kernel/subprojects/parallel-hashmap.hpp"
 #include "kernel/subprojects/thread-pool.hpp"
 #include "kernel/subprojects/mscharconv.hpp"
-#include "kernel/subprojects/glaze.hpp"
 
 namespace Sen::Kernel {
 

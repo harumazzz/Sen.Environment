@@ -1,614 +1,291 @@
 #pragma once
 
+#include "js_string.hpp"
 #include "kernel/utility/javascript/common.hpp"
 
-namespace Sen::Kernel::JavaScript {
+namespace Sen::Kernel::Javascript {
 
-	struct Value;
+    struct Value {
 
-	struct Error;
+        protected:
 
-	struct Value {
+            Pointer<Subprojects::quickjs::JSContext> m_context;
 
-		private:
+            Subprojects::quickjs::JSValue m_value;
 
-			Pointer<JSContext> context;
+            explicit Value (
+                const Pointer<Subprojects::quickjs::JSContext>& context,
+                const Subprojects::quickjs::JSValue& value
+            ) : m_context{context}, m_value{value} {
 
-		public:
+            }
 
-			JSValue value;
+            explicit Value (
+                const Pointer<Subprojects::quickjs::JSContext>& context
+            ) : Value{context, Subprojects::quickjs::$JS_UNINITIALIZED} {
 
-		public:
+            }
 
-			explicit Value(
+        public:
 
-			) : context{nullptr}, value{JS_UNINITIALIZED}
-			{
+            inline static auto new_ref (
+                const Pointer<JSContext> &context,
+                const Subprojects::quickjs::JSValue &other
+            ) -> Value;
 
-			}
-			
-			Value(
-				const Value &other
-			) : context{other.context}, value{other.context == nullptr ? other.value : JS_DupValue(other.context, other.value)} {
+            inline static auto new_value (
+                const Pointer<JSContext> &context
+            ) -> Value;
 
-			}
+            ~Value (
 
-			Value(Value &&other) noexcept 
-				: context{std::move(other.context)}, value{thiz.context == nullptr ? other.value : other.release_value()} {
-				other.value = JS_UNINITIALIZED;
-			}
+            ) {
+                if (thiz.m_context != nullptr) {
+                    Subprojects::quickjs::JS_FreeValue(thiz.m_context, thiz.m_value);
+                }
+            }
 
-			auto operator=(
-				const Value &other
-			) -> Value &
-			{
-				if (this != &other) {
-					thiz.reset_value();
-					thiz.context = other.context;
-					thiz.value = other.context == nullptr ? other.value : JS_DupValue(other.context, other.value); 
-				}
-				return thiz;
-			}
+            auto operator=(
+                const Value &other
+            ) -> Value& = delete;
 
-			auto operator=(
-				Value &&other
-			) -> Value&
-			{
-				if (this != &other) { 
-					thiz.reset_value();
-					thiz.context = std::move(other.context);
-					thiz.value = thiz.context == nullptr ? other.value : other.release_value();
-				}
-				return thiz;
-			}
+            Value(
+                const Value &other
+            ) = delete;
 
-			explicit Value(
-				const JSValue & value
-			) : context{nullptr}, value{value}
-			{
+            auto operator=(
+                Value &&other
+            ) noexcept -> Value& {
+                thiz.m_context = other.m_context;
+                thiz.m_value = other.m_value;
+                other.m_context = nullptr;
+                other.m_value = Subprojects::quickjs::$JS_UNINITIALIZED;
+                return thiz;
+            }
 
-			}
+            Value (
+                Value &&other
+            ) noexcept : m_context{other.m_context}, m_value{other.m_value} {
+                other.m_context = nullptr;
+                other.m_value = Subprojects::quickjs::$JS_UNINITIALIZED;
+            }
 
-			explicit Value(
-				const Pointer<JSContext> & context,
-				const JSValue & value
-			) : context{ context }, value{ value }
-			{
+            auto is_uninitialized(
 
-			}
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsUninitialized(thiz.m_value));
+            }
 
-			~Value(
+            auto _context (
 
-			) 
-			{
-				thiz.reset_value();
-			}
+            ) const -> Pointer<Subprojects::quickjs::JSContext> {
+                return thiz.m_context;
+            }
 
-			auto is_uninitialized(
+            auto is_undefined(
 
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsUninitialized(value));
-			}
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsUndefined(thiz.m_value));
+            }
 
-			auto _context (
+            auto is_array_buffer(
 
-			) -> Pointer<JSContext>
-			{
-				return thiz.context;
-			}
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsArrayBuffer(thiz.m_value));
+            }
 
-			auto is_undefined(
+            auto is_null(
 
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsUndefined(value));
-			}
-
-			auto is_array_buffer(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsArrayBuffer(value));
-			}
-
-			auto is_null(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsNull(value));
-			}
-
-			auto is_bigint(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsBigInt(thiz.context, thiz.value));
-			}
-
-			auto is_exception(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsException(thiz.value));
-			}
-
-			auto is_boolean(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsBool(thiz.value));
-			}
-
-			auto is_number(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsNumber(thiz.value));
-			}
-		
-			auto is_string(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsString(thiz.value));
-			}
-
-			auto is_object(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsObject(thiz.value));
-			}
-
-			auto is_array(
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsArray(thiz.context, thiz.value));
-			}
-
-			auto rebind_value(
-				JSValue const& new_value
-			) -> void 
-			{
-				if (thiz.context != nullptr) {
-					JS_FreeValue(thiz.context, thiz.value);
-				}
-				thiz.value = new_value;
-				return;
-			}
-
-			auto set_string(
-				std::string const & str
-			) -> void
-			{
-				return rebind_value(JS_NewStringLen(thiz.context, str.data(), str.size()));
-			}
-
-			auto set_undefined(
-
-			) -> void
-			{
-				return rebind_value(JS_UNDEFINED);
-			}
-
-			auto set_null(
-
-			) -> void
-			{
-				return rebind_value(JS_NULL);
-			}
-
-			auto set_boolean(
-				bool value
-			) -> void
-			{
-				return rebind_value(JS_NewBool(thiz.context, static_cast<int>(value)));
-			}
-
-			template <typename U> requires std::is_integral<U>::value and (!std::is_unsigned<U>::value)
-			auto set_bigint(
-				U const& value
-			) -> void
-			{
-				return rebind_value(JS_NewBigInt64(thiz.context, static_cast<int64_t>(value)));
-			}
-
-			template <typename U> requires std::is_integral<U>::value and std::is_unsigned<U>::value
-			auto set_bigint(
-				U const& value
-			) -> void
-			{
-				return rebind_value(JS_NewBigUint64(thiz.context, static_cast<uint64_t>(value)));
-			}
-
-			template <typename U> requires std::is_integral<U>::value or std::is_floating_point<U>::value
-			auto set_number(
-				U const& value
-			) -> void
-			{
-				return rebind_value(JS_NewFloat64(thiz.context, static_cast<double>(value)));
-			}
-
-			auto set_object(
-
-			) -> void
-			{
-				return rebind_value(JS_NewObject(thiz.context));
-			}
-
-			auto set_array(
-
-			) -> void
-			{
-				return rebind_value(JS_NewArray(thiz.context));
-			}
-
-			auto reset_value(
-
-			) -> void 
-			{
-				return rebind_value(JS_UNINITIALIZED);
-			}
-
-			auto release_value(
-
-			) -> JSValue
-			{
-				auto result = thiz.value;
-				thiz.reset_value();
-				return result;
-			}
-
-			inline static auto as_new_instance(
-				Pointer<JSContext> const& context,
-				JSValue const& value
-			) -> Value
-			{
-				return Value{context, value};
-			}
-
-			inline static auto as_new_reference(
-				Pointer<JSContext> const& context,
-				JSValue const& value
-			) -> Value
-			{
-				return Value{context, JS_DupValue(context, value)};
-			}
-
-			auto get_prototype(
-
-			) -> Value 
-			{
-				return as_new_instance(thiz.context, JS_GetPrototype(thiz.context, thiz.value));
-			}
-
-			auto set_prototype(
-				Value&& that
-			) -> void
-			{
-				JS_SetPrototype(thiz.context, thiz.value, that.release_value());
-				return;
-			}
-
-			auto define_property(
-				std::string_view name,
-				Value&& value
-			) -> void
-			{
-				auto atom = Atom{thiz.context, name};
-				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value.release_value(), JS_PROP_C_W_E);
-				return;
-			}
-
-			auto define_property(
-				std::string_view name,
-				JSValue value
-			) -> void
-			{
-				auto atom = Atom{thiz.context, name};
-				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value, JS_PROP_C_W_E);
-				return;
-			}
-
-			auto define_property(
-				uint32_t index,
-				Value&& value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value.release_value(), JS_PROP_C_W_E);
-				return;
-			}
-
-			auto define_property(
-				uint32_t index,
-				JSValue value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_DefinePropertyValue(thiz.context, thiz.value, atom.value, value, JS_PROP_C_W_E);
-				return;
-			}
-
-			auto as_reference (
-
-			) -> Value
-			{
-				return Value{thiz._context(), JS_DupValue(thiz._context(), thiz.value)};
-			}
-
-			auto as_instance (
-
-			) -> Value
-			{
-				return Value{thiz._context(), thiz.value};
-			}
-
-			auto define_property(
-				std::string const& name,
-				Value&& getter,
-				Value&& setter
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, name };
-				JS_DefinePropertyGetSet(thiz.context, thiz.value, atom.value, getter.release_value(), setter.release_value(), JS_PROP_C_W_E);
-				return;
-			}
-
-			auto define_property(
-				uint32_t index,
-				Value&& getter,
-				Value&& setter
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_DefinePropertyGetSet(thiz.context, thiz.value, atom.value, getter.release_value(), setter.release_value(), JS_PROP_C_W_E);
-				return;
-			}
-
-			auto delete_property(
-				std::string const& name
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, name };
-				JS_DeleteProperty(thiz.context, thiz.value, atom.value, JS_PROP_THROW);
-				return;
-			}
-
-			auto delete_property(
-				uint32_t index
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_DeleteProperty(thiz.context, thiz.value, atom.value, JS_PROP_THROW);
-				return;
-			}
-
-			auto has_property(
-				std::string const& name
-			) -> bool
-			{
-				auto atom = Atom{ thiz.context, name };
-				auto result = static_cast<bool>(JS_HasProperty(thiz.context, thiz.value, atom.value) == 1);
-				return result;
-			}
-
-			auto has_property(
-				uint32_t index
-			) -> bool
-			{
-				auto atom = Atom{ thiz.context, index };
-				auto result = static_cast<bool>(JS_HasProperty(thiz.context, thiz.value, atom.value) == 1);
-				return result;
-			}
-
-			auto get_property(
-				std::string_view name
-			) -> Value
-			{
-				auto atom = Atom{ thiz.context, name };
-				auto value = thiz.as_new_instance(thiz.context, JS_GetProperty(thiz.context, thiz.value, atom.value));
-				return value;
-			}
-
-			auto get_property(
-				uint32_t index
-			) -> Value
-			{
-				auto atom = Atom{ thiz.context, index };
-				auto value = thiz.as_new_instance(thiz.context, JS_GetProperty(thiz.context, thiz.value, atom.value));
-				return value;
-			}
-
-			auto call (
-
-			) -> JSValue
-			{
-				if (thiz.is_undefined()) {
-					return JS_UNDEFINED;
-				}
-				return JS_Call(thiz.context, thiz.value, JS_UNDEFINED, 0, nullptr);
-			}
-
-			auto set_property(
-				std::string_view name,
-				Value&& value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, name };
-				JS_SetProperty(thiz.context, thiz.value, atom.value, value.release_value());
-				return;
-			}
-
-			auto set_property(
-				std::string_view name,
-				JSValue value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, name };
-				JS_SetProperty(thiz.context, thiz.value, atom.value, value);
-				return;
-			}
-
-			auto set_property(
-				uint32_t index,
-				Value&& value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_SetProperty(thiz.context, thiz.value, atom.value, value.release_value());
-				return;
-			}
-
-			auto set_property(
-				uint32_t index,
-				JSValue value
-			) -> void
-			{
-				auto atom = Atom{ thiz.context, index };
-				JS_SetProperty(thiz.context, thiz.value, atom.value, value);
-				return;
-			}
-
-			template <typename T>
-			auto get() -> T;
-
-			template <typename T> requires std::is_floating_point<T>::value and (!std::is_integral<T>::value)
-			auto get_number(
-
-			) -> T
-			{
-				assert_conditional(thiz.is_number(), "Value is not number", "get");
-				auto result = double{};
-				JS_ToFloat64(thiz.context, &result, thiz.value);
-				return static_cast<T>(result);
-			}
-
-			// For typescript enum, because ts enum convert to js number
-
-			template <typename T> requires (!std::is_floating_point<T>::value) and (std::is_integral<T>::value)
-			auto get_number(
-
-			) -> T
-			{
-				assert_conditional(thiz.is_number(), "Value is not number", "get");
-				auto result = int64_t{};
-				JS_ToInt64(thiz.context, &result, thiz.value);
-				return static_cast<T>(result);
-			}
-
-			template <typename T>
-			auto get_array_bufffer(
-
-			) -> std::shared_ptr<T>
-			{
-				assert_conditional(thiz.is_array_buffer(), "Value is not an ArrayBuffer", "get");
-				auto size = std::size_t{};
-				auto value = JS_GetArrayBuffer(thiz.context, &size, thiz.value);
-				return std::make_shared<T>(value, size);
-			}
-
-			template <typename T> requires (!std::is_floating_point<T>::value) and std::is_integral<T>::value and (!std::is_unsigned<T>::value)
-			auto get_bigint(
-
-			) -> T
-			{
-				assert_conditional(thiz.is_bigint(), "Value is not bigint", "get");
-				auto result = int64_t{};
-				JS_ToBigInt64(thiz.context, &result, thiz.value);
-				return static_cast<T>(result);
-			}
-
-			template <typename T> requires (!std::is_floating_point<T>::value) and std::is_integral<T>::value and (std::is_unsigned<T>::value)
-			auto get_bigint(
-
-			) -> T
-			{
-				assert_conditional(thiz.is_bigint(), "Value is not bigint", "get");
-				auto result = uint64_t{};
-				JS_ToBigUint64(thiz.context, &result, thiz.value);
-				return static_cast<T>(result);
-			}
-
-			auto release (
-
-			) -> JSValue
-			{
-				auto result = thiz.value;
-				thiz.value = JS_UNINITIALIZED;
-				return result;
-			}
-
-			auto is_promise (
-
-			) -> bool
-			{
-				return static_cast<bool>(JS_IsPromise(thiz.value));
-			}
-	};
-
-	struct Error {
-
-		std::string message;
-
-		std::string stack;
-
-		inline auto make_exception (
-			
-		) -> std::string {
-			auto pretty_exception = "Error: " + message;
-			if (!stack.empty()) {
-				pretty_exception += "\nStack Trace:\n" + stack;
-			}
-			return pretty_exception;
-		}
-
-	};
-
-	template <>
-	auto Value::get<std::string>(
-
-	) -> std::string
-	{
-		assert_conditional(is_string(), "Value is not string", "get");
-		auto size = std::size_t{};
-		auto str = JS_ToCStringLen(context, &size, value);
-		auto result = std::string{str, size};
-		JS_FreeCString(context, str);
-		return result;
-	}
-
-	template <>
-	auto Value::get<std::shared_ptr<Error>>(
-
-	) -> std::shared_ptr<Error>
-	{
-		auto message_size = std::size_t{};
-		auto message = JS_ToCStringLen(context, &message_size, value);
-		auto stack_trace = thiz.get_property("stack");
-		auto stack_size = std::size_t{};
-		auto stack = JS_ToCStringLen(context, &stack_size, stack_trace.value);
-		auto destination = std::make_shared<Error>(std::string{ message, message_size },std::string{ stack, stack_size });
-		#if WINDOWS
-		std::replace(destination->stack.data(), destination->stack.data() + destination->stack.size(), '\\', '/');
-		#endif
-		JS_FreeCString(context, message);
-		JS_FreeCString(context, stack);
-		return destination;
-	}
-
-	template <>
-	auto Value::get<bool>(
-
-	) -> bool
-	{
-		assert_conditional(is_boolean(), "Value is not boolean", "get");
-		auto val = JS_ToBool(context, value);
-		return static_cast<bool>(val);
-	}
-
-	inline auto constexpr add_reference = JS_DupValue;
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsNull(thiz.m_value));
+            }
+
+            auto is_bigint(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsBigInt(thiz.m_context, thiz.m_value));
+            }
+
+            auto is_function(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsFunction(thiz.m_context, thiz.m_value));
+            }
+
+            auto is_promise(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsPromise(thiz.m_value));
+            }
+
+            auto is_exception(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsException(thiz.m_value));
+            }
+
+            auto is_boolean(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsBool(thiz.m_value));
+            }
+
+            auto is_number(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsNumber(thiz.m_value));
+            }
+
+            auto is_string(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsString(thiz.m_value));
+            }
+
+            auto is_object(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsObject(thiz.m_value));
+            }
+
+            auto is_array(
+
+            ) const -> bool
+            {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsArray(thiz.m_context, thiz.m_value));
+            }
+
+            auto set_value (
+                const JSValue& new_value
+            ) -> void
+            {
+                if (thiz.m_context != nullptr) {
+                    Subprojects::quickjs::JS_FreeValue(thiz.m_context, thiz.m_value);
+                }
+                thiz.m_value = new_value;
+            }
+
+            auto release (
+            ) -> JSValue
+            {
+                const auto old_value = thiz.m_value;
+                thiz.m_value = Subprojects::quickjs::$JS_UNINITIALIZED;
+                return old_value;
+            }
+
+            template <typename T>
+            auto set (
+                T&& value
+            ) -> void {
+                return Trait<T>::from_value(thiz, value);
+            }
+
+            template <typename T>
+            auto get (
+                T& value
+            ) -> void {
+                return Trait<T>::to_value(std::forward<T>(value), thiz);
+            }
+
+            auto value (
+            ) const -> JSValue {
+                return thiz.m_value;
+            }
+
+            auto set_object(
+
+            ) -> void
+            {
+                return thiz.set_value(Subprojects::quickjs::JS_NewObject(thiz.m_context));
+            }
+
+            auto set_array(
+
+            ) -> void
+            {
+                return thiz.set_value(Subprojects::quickjs::JS_NewArray(thiz.m_context));
+            }
+
+            auto define_property(
+                const String& name,
+                Value&& value
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            auto define_property(
+                const u32 index,
+                Value&& value
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
+                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            auto set_property(
+                const String& name,
+                Value&& value
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value.release());
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            auto set_property(
+                const u32 index,
+                Value&& value
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
+                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value.release());
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            auto get_property(
+                const String& name
+            ) const -> Value
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                auto value = new_ref(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+                return value;
+            }
+
+            auto get_property(
+                const u32 index
+            ) const -> Value
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
+                auto value = new_ref(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+                return value;
+            }
+
+    };
+
+    inline auto JSString::assign_from (
+        const Value& other
+    ) -> void {
+        thiz.m_context = other._context();
+        thiz.m_value = Subprojects::quickjs::JS_DupValue(thiz.m_context, other.value());
+        thiz.value = const_cast<char*>(Subprojects::quickjs::JS_ToCStringLen(thiz.m_context, &thiz._size, thiz.m_value));
+    }
 
 }
