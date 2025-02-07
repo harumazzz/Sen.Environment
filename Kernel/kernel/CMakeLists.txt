@@ -283,8 +283,7 @@ add_library(
 	./support/miscellaneous/project/resource_stream_bundle/unpack.hpp
 
 	./interface/data.hpp
-	./interface/cli.hpp
-	./interface/callback.hpp
+		interface/context.hpp
 	./interface/version.hpp
 	./interface/shell.hpp
 	./interface/api/method.hpp
@@ -299,6 +298,8 @@ add_library(
 		utility/javascript/value.hpp
 		utility/javascript/trait.hpp
 		utility/javascript/js_string.hpp
+		interface/runtime.hpp
+		utility/javascript/proxy.hpp
 
 )
 

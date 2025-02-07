@@ -40,7 +40,7 @@ inline static auto print(
 }
 ```
 
--   In `kernel/interface/callback.hpp`:
+-   In `kernel/interface/context.hpp`:
 
 ```cpp
 // the proxy need to take return type and the rest are the required arguments type
@@ -109,7 +109,7 @@ inline static auto print_point(
 }
 ```
 
--   In `kernel/interface/callback.hpp`:
+-   In `kernel/interface/context.hpp`:
 
 ```cpp
 // the proxy need to take return type and the rest are the required arguments type
@@ -175,7 +175,7 @@ inline static auto return_point(
 }
 ```
 
--   In `kernel/interface/callback.hpp`:
+-   In `kernel/interface/context.hpp`:
 
 ```cpp
 // the proxy need to take return type and the rest are the required arguments type

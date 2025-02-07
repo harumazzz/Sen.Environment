@@ -113,4 +113,46 @@ namespace Sen::Kernel::Javascript {
 
     };
 
+    template <>
+    struct Trait<Value> {
+
+        static auto from_value(
+            Value& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_DupValue(source._context(), source.value()));
+        }
+
+        static auto to_value(
+            Value& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_DupValue(source._context(), source.value()));
+        }
+
+    };
+
+    template <>
+    struct Trait<Uint8Array> {
+
+        static auto from_value(
+            Value& source,
+            Uint8Array& destination
+        ) -> void {
+            assert_conditional(source.is_array_buffer(), "Expected the value to be ArrayBuffer, but the actual type is not", "from_value");
+            auto size = usize{};
+            const auto buffer = Subprojects::quickjs::JS_GetArrayBuffer(source._context(), &size, source.value());
+            destination.allocate(size);
+            std::memcpy(destination.data(), buffer, size);
+        }
+
+        static auto to_value(
+            Uint8Array& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.data(), source.size()));
+        }
+
+    };
+
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/interface/cli.hpp"
 #include "kernel/interface/data.hpp"
 #include "kernel/utility/library.hpp"
 #include "kernel/utility/macro.hpp"

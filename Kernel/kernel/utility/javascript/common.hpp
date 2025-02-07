@@ -5,6 +5,11 @@
 
 namespace Sen::Kernel::Javascript {
 
+    template <typename T>
+    using List = CList<T>;
+
+    struct JSString;
+
     struct Runtime;
 
     struct Context;

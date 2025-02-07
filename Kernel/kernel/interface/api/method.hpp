@@ -5,5 +5,9 @@
 
 namespace Sen::Kernel::Interface::API {
 
+    inline auto version (
+    ) -> usize {
+        return Kernel::version;
+    }
 
 }

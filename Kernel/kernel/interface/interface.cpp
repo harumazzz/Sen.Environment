@@ -1,4 +1,5 @@
-﻿#include "kernel/interface/callback.hpp"
+﻿#include "runtime.hpp"
+#include "kernel/interface/context.hpp"
 using namespace Sen::Kernel;
 using namespace Sen::Kernel::Interface;
 
@@ -11,12 +12,9 @@ auto execute (
     try
     {
         std::setlocale(LC_ALL, "C");
-        // auto& script = argument->value[2];
-        // Shell::callback = callback;
-        // Executor::register_external(&script, argument);
-        // auto kernel = Runtime{};
-        // kernel.execute();
-        // Executor::unregister_external();
+        auto context = Context{};
+        Runtime::make_environment(context);
+        
     }
     catch(...)
     {

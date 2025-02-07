@@ -182,7 +182,7 @@ namespace Sen::Kernel {
         }
 
         auto string(String &value) -> void {
-            return thiz.write(steal_reference<Uint8Array>(value));
+            return thiz.write(steal_reference<Uint8List>(value));
         }
 
         template<typename T>

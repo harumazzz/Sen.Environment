@@ -8,11 +8,15 @@
 
 namespace Sen::Kernel::Subprojects::quickjs {
 
-	inline static constexpr auto $JS_UNINITIALIZED = JS_UNINITIALIZED;
+	inline static const auto $JS_UNINITIALIZED = JS_UNINITIALIZED;
+
+	inline static const auto $JS_UNDEFINED = JS_UNDEFINED;
 
 	using ::JSRuntime;
 
 	using ::JSValue;
+
+	using ::JS_GetArrayBuffer;
 
 	using ::JSContext;
 
@@ -126,7 +130,17 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_ThrowReferenceError;
 
+	using ::JSClassID;
+
 	using ::JS_GetImportMeta;
+
+	using ::JS_GetGlobalObject;
+
+	using ::JS_GetException;
+
+	using ::JS_GetClassProto;
+
+	using ::JS_SetClassProto;
 
 	inline static auto constexpr $JS_EVAL_TYPE_MODULE = int{JS_EVAL_TYPE_MODULE};
 
@@ -135,6 +149,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	inline static auto constexpr $JS_EVAL_FLAG_STRICT = int{JS_EVAL_FLAG_STRICT};
 
 	inline static auto constexpr $JS_PROP_C_W_E = int{JS_PROP_C_W_E};
+
+	inline static auto constexpr $JS_EVAL_TYPE_GLOBAL = int{JS_EVAL_TYPE_GLOBAL};
 
 
 }

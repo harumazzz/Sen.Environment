@@ -186,4 +186,47 @@ namespace Sen::Kernel {
 	template <typename T>
 	constexpr auto is_boolean_v = is_boolean<T>::value;
 
+	template <typename Result, typename... Args>
+	struct is_callable : std::false_type {
+
+		using ReturnType = Result;
+
+	};
+
+	template <typename Result, typename... Args>
+	struct is_callable<Result (*)(Args...)> : std::true_type {
+
+		using ReturnType = Result;
+
+	};
+
+	template <typename Result, typename... Args>
+	constexpr auto is_callable_v = is_callable<Result, Args...>::value;
+
+	template <typename T, typename = void>
+	struct is_global_function : std::false_type {};
+
+	template <typename Result, typename... Args>
+	struct is_global_function<Pointer<Result (Args...)>> : std::true_type {
+
+		using ReturnType = Result;
+
+		using Arguments = std::tuple<Args...>;
+
+	};
+
+	template <typename Callable>
+	struct is_global_function<Callable, std::enable_if_t<!std::is_member_function_pointer_v<Callable>>> : std::true_type {
+		using ReturnType = decltype(std::declval<Callable>()(std::declval<std::tuple_element_t<0, typename std::decay_t<Callable>::Arguments>>()));
+	    using Arguments = typename std::decay_t<Callable>::Arguments;
+
+		template <typename... Args>
+		static auto call(Callable&& callable, Args&&... args) {
+			return std::forward<Callable>(callable)(std::forward<Args>(args)...);
+		}
+	};
+
+	template <auto Callable>
+	constexpr auto is_global_function_v = is_global_function<std::decay_t<type_of<Callable>>>::value;
+
 }
