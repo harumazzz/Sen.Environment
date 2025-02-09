@@ -50,8 +50,8 @@ namespace Sen::Kernel::Interface {
         }
 
         auto evaluate (
-            String& source,
-            String& name
+            const String& source,
+            const String& name
         ) const -> Javascript::Value {
             return thiz.m_context.evaluate(source, name, thiz.m_module);
         }

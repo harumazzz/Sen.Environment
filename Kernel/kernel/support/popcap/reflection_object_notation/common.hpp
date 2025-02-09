@@ -4,15 +4,26 @@
 
 namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 {
-    
+    using namespace jsoncons;
+
+    using JsonData = json;
+
+    using Boolean = bool;
+
+    using JsonEvent = basic_staj_event<char>;
+
+    using JsonWriter = json_stream_encoder;
 
     struct Common
     {
-        inline static constexpr auto k_magic_identifier = "RTON"_sv;
 
-        inline static constexpr auto k_done_identifier = "DONE"_sv;
+        static constexpr auto k_magic_identifier = "RTON"_sv;
 
-        inline static constexpr auto k_version = 1_ui;
+        static constexpr auto k_done_identifier = "DONE"_sv;
+
+        static constexpr auto k_version = 1_ui;
+
+        static constexpr auto k_unicode_index = static_cast<size_t>(std::numeric_limits<int32_t>::max());
 
         struct TypeIdentifierEnumeration
         {
@@ -98,13 +109,17 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 
 
         struct RTIDString {
-            inline static constexpr auto null = "RTID(0)";
+             static constexpr auto null = "RTID(0)"_sv;
 
-            inline static constexpr auto uid = "RTID({:d}.{:d}.{:08x}@{:s})"_sv;
+             static constexpr auto uid = "RTID({:d}.{:d}.{:08x}@{:s})"_sv;
 
-            inline static constexpr auto alias = "RTID({:s}@{:s})"_sv;
+             static constexpr auto alias = "RTID({:s}@{:s})"_sv;
         };
 
-        inline static constexpr auto k_binary_blob = R"($BINARY("{:s}", {:d}))"_sv;
+        static constexpr auto k_binary_blob = R"($BINARY("{:s}", {:d}))"_sv;
+
+        using RtonType = TypeIdentifierEnumeration::Type;
+
+        using RTIDType = RTIDTypeIdentifierEnumeration::Type;
     };
 }

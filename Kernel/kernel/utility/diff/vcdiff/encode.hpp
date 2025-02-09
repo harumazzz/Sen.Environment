@@ -3,7 +3,7 @@
 #include "kernel/utility/container/array/byte_array.hpp"
 #include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/diff/vcdiff/common.hpp"
-#include "kernel/utility/stream/write_stream.hpp"
+#include "kernel/utility/stream/write_memory_stream.hpp"
 
 namespace Sen::Kernel::Diff::VCDiff {
 
@@ -21,7 +21,7 @@ namespace Sen::Kernel::Diff::VCDiff {
         static auto process_whole (
             Uint8Array& before,
             Uint8Array& after,
-            WriteStream& patch
+            WriteMemoryStream& patch
         ) -> void {
             auto _patch = std::string{};
             auto hashed_dictionary = Subprojects::open_vcdiff::HashedDictionary{reinterpret_cast<const char*>(before.data()), before.size()};
@@ -38,7 +38,7 @@ namespace Sen::Kernel::Diff::VCDiff {
             Uint8Array& after,
             Uint8List& patch
         ) -> void {
-            auto stream = WriteStream{patch};
+            auto stream = WriteMemoryStream{patch};
             process_whole(before, after, stream);
             stream.release_stream(patch);
         }

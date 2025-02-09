@@ -83,6 +83,7 @@ namespace Sen::Kernel {
 			thiz._capacity = size + 1;
 			thiz.value = new Character[thiz._capacity];
 			std::memset(thiz.value, 0, thiz._capacity);
+			thiz._size = size;
 		}
 
     	auto reallocate(
@@ -95,6 +96,7 @@ namespace Sen::Kernel {
 			delete[] thiz.value;
 			thiz.value = new_value;
 			std::memset(thiz.value + thiz._size, 0, thiz._capacity - thiz._size);
+			thiz._size = size;
 		}
 
 		~BasicString(
@@ -175,8 +177,24 @@ namespace Sen::Kernel {
 			return std::memcmp(thiz.value, other.value, thiz._size) == 0;
 		}
 
+    	constexpr auto operator ==(
+			 std::string_view other
+		) const -> bool {
+			if (thiz._size != other.size()) {
+				return false;
+			}
+			return std::memcmp(thiz.value, other.data(), thiz._size) == 0;
+		}
+
 		constexpr auto operator != (
 			const BasicString& other
+		) const -> bool
+		{
+			return !(thiz.operator==(other));
+		}
+
+    	constexpr auto operator != (
+    		std::string_view other
 		) const -> bool
 		{
 			return !(thiz.operator==(other));
@@ -270,6 +288,7 @@ namespace Sen::Kernel {
     	constexpr auto take_ownership (
 			BasicString& other
 		) -> void {
+		    delete[] thiz.value;
 			thiz.value = other.value;
 			thiz._size = other._size;
 			thiz._capacity = other._capacity;
@@ -699,7 +718,7 @@ namespace Sen::Kernel {
     	auto sub (
 			const Size& from
 		) const -> String {
-			return sub(from, thiz._size - from);
+			return sub(from, thiz._size);
 		}
 
 		virtual auto substring (
@@ -718,7 +737,7 @@ namespace Sen::Kernel {
 		virtual auto substring (
 			const Size& from
 		) -> void {
-			return thiz.substring(from, thiz._size - from);
+			return thiz.substring(from, thiz._size);
 		}
 
     protected:

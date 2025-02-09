@@ -2,8 +2,8 @@
 
 #include "kernel/utility/compression/bzip2/common.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
-#include "kernel/utility/stream/read_stream.hpp"
-#include "kernel/utility/stream/write_stream.hpp"
+#include "kernel/utility/stream/read_memory_stream.hpp"
+#include "kernel/utility/stream/write_memory_stream.hpp"
 #include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel::Compression::bzip2 {
@@ -48,8 +48,8 @@ namespace Sen::Kernel::Compression::bzip2 {
         ) -> Compress& = delete;
 
         static auto process_whole (
-            ReadStream& source,
-            WriteStream& destination
+            ReadMemoryStream& source,
+            WriteMemoryStream& destination
         ) -> void {
             auto bz_stream = Subprojects::bzip2::bz_stream{
                 .next_in = reinterpret_cast<char *>(source.begin()),
@@ -87,8 +87,8 @@ namespace Sen::Kernel::Compression::bzip2 {
             Uint8List& destination
         ) -> void {
             destination.allocate(source.size() + EXTRA_ALLOCATION);
-            auto raw = ReadStream{source};
-            auto ripe = WriteStream{destination};
+            auto raw = ReadMemoryStream{source};
+            auto ripe = WriteMemoryStream{destination};
             process_whole(raw, ripe);
             raw.release_stream(source);
             ripe.release_stream(destination);

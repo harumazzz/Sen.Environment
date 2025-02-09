@@ -1,8 +1,8 @@
 #pragma once
 
 #include "kernel/utility/compression/zlib/common.hpp"
-#include "kernel/utility/stream/read_stream.hpp"
-#include "kernel/utility/stream/write_stream.hpp"
+#include "kernel/utility/stream/read_memory_stream.hpp"
+#include "kernel/utility/stream/write_memory_stream.hpp"
 
 namespace Sen::Kernel::Compression::Zlib {
 
@@ -50,8 +50,8 @@ namespace Sen::Kernel::Compression::Zlib {
         ) -> Compress& = delete;
 
         static auto process_whole (
-            ReadStream& source,
-            WriteStream& destination
+            ReadMemoryStream& source,
+            WriteMemoryStream& destination
         ) -> void {
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -134,8 +134,8 @@ namespace Sen::Kernel::Compression::Zlib {
             Uint8Array& source,
             Uint8List& destination
         ) -> void {
-            auto raw = ReadStream{source};
-            auto ripe = WriteStream{destination};
+            auto raw = ReadMemoryStream{source};
+            auto ripe = WriteMemoryStream{destination};
             process_whole(raw, ripe);
             raw.release_stream(source);
             ripe.release_stream(destination);

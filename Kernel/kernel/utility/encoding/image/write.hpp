@@ -19,7 +19,7 @@ namespace Sen::Kernel::Encoding::Image {
         public:
 
             static auto process_image (
-                WriteStream& data,
+                WriteMemoryStream& data,
                 Image& image
             ) -> void {
                 auto png_struct = Subprojects::libpng::png_create_write_struct(Subprojects::libpng::$PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -39,7 +39,7 @@ namespace Sen::Kernel::Encoding::Image {
                 Uint8Array& source,
                 Image& image
             ) -> void {
-                auto stream = WriteStream{ source };
+                auto stream = WriteMemoryStream{ source };
                 process_image(stream, image);
                 stream.release_stream(source);
             }

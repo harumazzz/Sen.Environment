@@ -27,6 +27,7 @@ add_library(
 	./subprojects/parallel-hashmap.hpp
 	./subprojects/thread-pool.hpp
 	./subprojects/mscharconv.hpp
+	./subprojects/jsoncons.hpp
 
 	./utility/macro.hpp
 	./utility/range/forward.hpp
@@ -55,9 +56,6 @@ add_library(
 	./utility/container/string/string_parser.hpp
 	./utility/container/map/common.hpp
 
-	./utility/encoding/json/common.hpp
-	./utility/encoding/json/helper.hpp
-	./utility/encoding/json/writer.hpp
 	./utility/encoding/apng/common.hpp
 	./utility/encoding/apng/setting.hpp
 	./utility/encoding/apng/writer.hpp
@@ -174,8 +172,8 @@ add_library(
 	./utility/encryption/fnv/hash.hpp
 
 	./utility/stream/base_stream.hpp
-	./utility/stream/read_stream.hpp
-	./utility/stream/write_stream.hpp
+		utility/stream/read_memory_stream.hpp
+		utility/stream/write_memory_stream.hpp
 
 	./support/popcap/animation/common.hpp
 	./support/popcap/animation/decode.hpp
@@ -208,7 +206,7 @@ add_library(
 	./support/popcap/reflection_object_notation/common.hpp
 	./support/popcap/reflection_object_notation/decode.hpp
 	./support/popcap/reflection_object_notation/encode.hpp
-	./support/popcap/reflection_object_notation/chinese.hpp
+		support/popcap/reflection_object_notation/encrypt.hpp
 	./support/popcap/render_effects/common.hpp
 	./support/popcap/render_effects/decode.hpp
 	./support/popcap/render_effects/definition.hpp
@@ -300,6 +298,11 @@ add_library(
 		utility/javascript/js_string.hpp
 		interface/runtime.hpp
 		utility/javascript/proxy.hpp
+		utility/stream/readable_stream.hpp
+		utility/stream/writeable_stream.hpp
+		utility/stream/read_file_stream.hpp
+		utility/stream/write_file_stream.hpp
+		support/popcap/reflection_object_notation/decrypt.hpp
 
 )
 
@@ -370,6 +373,7 @@ target_link_libraries(
 	compile-time-regular-expressions
 	parallel-hashmap
 	thread-pool
+	jsoncons
 )
 
 if (WIN32)

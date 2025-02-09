@@ -8,6 +8,9 @@ namespace Sen::Kernel::Javascript {
     template <typename T>
     using List = CList<T>;
 
+    template <typename T>
+    using Array = CArray<T>;
+
     struct JSString;
 
     struct Runtime;

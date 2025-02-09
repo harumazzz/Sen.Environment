@@ -35,9 +35,11 @@ namespace Sen::Kernel::FileSystem {
 
     public:
 
-        explicit FileHandler(
+        constexpr explicit FileHandler(
             const Pointer<File>& value
-        ) : value(value) {}
+        ) : value(value) {
+
+        }
 
         ~FileHandler(
         ) {
@@ -47,8 +49,10 @@ namespace Sen::Kernel::FileSystem {
             }
         }
 
-        FileHandler (
-        ) = delete;
+        constexpr explicit FileHandler (
+        ) : value{nullptr} {
+
+        }
 
         FileHandler (
             FileHandler const & other
@@ -91,6 +95,14 @@ namespace Sen::Kernel::FileSystem {
             assert_conditional(count == 1, fmt::format("{}", "Missing bytes when reading the file"), "read");
         }
 
+        auto read (
+            u8* data,
+            const usize& size
+        ) const -> void {
+            auto count = std::fread(data, size, 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}", "Missing bytes when reading the file"), "read");
+        }
+
         template <typename T> requires (std::is_base_of_v<BaseContainer<extract_container_t<T>>, T>) && requires (T t) {
             { t.size() } -> std::convertible_to<usize>;
             { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
@@ -102,11 +114,19 @@ namespace Sen::Kernel::FileSystem {
             assert_conditional(count == 1, fmt::format("{}", "Missing bytes when writing the file"), "write");
         }
 
+        auto write (
+            const uint8_t* data,
+            const usize& size
+        ) const -> void {
+            auto count = std::fwrite(data, size, 1, thiz.value);
+            assert_conditional(count == 1, fmt::format("{}", "Missing bytes when writing the file"), "write");
+        }
+
         template <typename... Args> requires (is_numeric_v<Args> && ...)
         auto write (
             Args&&... args
         ) -> void {
-            auto buffer = Uint8Array{sizeof...(args)};
+            auto buffer = Uint8Array{total_sizeof<Args>()...};
             {
                 auto offset = 0_size;
                 (forward_bytes (std::forward<Args>(args), buffer, offset), ...);

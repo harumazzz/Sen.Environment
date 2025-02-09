@@ -57,6 +57,7 @@
 #include "kernel/subprojects/parallel-hashmap.hpp"
 #include "kernel/subprojects/thread-pool.hpp"
 #include "kernel/subprojects/mscharconv.hpp"
+#include "kernel/subprojects/jsoncons.hpp"
 
 namespace Sen::Kernel {
 

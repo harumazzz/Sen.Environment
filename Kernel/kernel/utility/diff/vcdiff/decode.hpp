@@ -2,7 +2,7 @@
 
 #include "kernel/utility/container/array/byte_array.hpp"
 #include "kernel/utility/diff/vcdiff/common.hpp"
-#include "kernel/utility/stream/write_stream.hpp"
+#include "kernel/utility/stream/write_memory_stream.hpp"
 
 namespace Sen::Kernel::Diff::VCDiff {
 
@@ -16,7 +16,7 @@ namespace Sen::Kernel::Diff::VCDiff {
 
         static auto process_whole (
             Uint8Array& before,
-            WriteStream& after,
+            WriteMemoryStream& after,
             Uint8Array& patch
         ) -> void {
             auto after_ = std::string{};
@@ -35,7 +35,7 @@ namespace Sen::Kernel::Diff::VCDiff {
             Uint8List& after,
             Uint8Array& patch
         ) -> void {
-            auto stream = WriteStream{after};
+            auto stream = WriteMemoryStream{after};
             process_whole(before, stream, patch);
             stream.release_stream(after);
         }

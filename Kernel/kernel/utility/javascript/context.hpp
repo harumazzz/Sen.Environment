@@ -75,16 +75,16 @@ namespace Sen::Kernel::Javascript {
             }
 
             inline auto evaluate (
-                String& source,
-                String& name,
+                const String& source,
+                const String& name,
                 const bool is_module
             ) const -> Value {
                 const auto result = Subprojects::quickjs::JS_Eval(
                     thiz.m_context,
-                    source.data(),
+                    source.cbegin(),
                     source.size(),
-                    name.data(),
-                   is_module ? Subprojects::quickjs::$JS_EVAL_TYPE_MODULE : Subprojects::quickjs::$JS_EVAL_TYPE_GLOBAL | Subprojects::quickjs::$JS_EVAL_FLAG_STRICT | Subprojects::quickjs::$JS_EVAL_FLAG_COMPILE_ONLY
+                    name.cbegin(),
+                   is_module ? Subprojects::quickjs::$JS_EVAL_TYPE_MODULE : Subprojects::quickjs::$JS_EVAL_TYPE_GLOBAL | Subprojects::quickjs::$JS_EVAL_FLAG_STRICT
                 );
                 return Value::new_owner(thiz.m_context, result);
             }

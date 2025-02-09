@@ -7,7 +7,7 @@
 namespace Sen::Kernel::Javascript {
 
     template <auto Callable> requires is_global_function_v<Callable> &&
-        std::is_same_v<typename is_global_function<std::decay_t<type_of<Callable>>>::Arguments, std::tuple<Context&, Value&, List<Value>&, Value&>> &&
+        std::is_same_v<typename is_global_function<std::decay_t<type_of<Callable>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
         std::is_void_v<typename is_global_function<std::decay_t<type_of<Callable>>>::ReturnType>
     inline auto proxy_native_function (
         Subprojects::quickjs::JSContext* ctx,
@@ -18,11 +18,10 @@ namespace Sen::Kernel::Javascript {
         auto result = Value::new_value(ctx);
         auto context = Context::new_ref(ctx);
         auto value = Value::new_ref(ctx, this_val);
-        auto arguments = List<Value>{static_cast<usize>(argc)};
+        auto arguments = Array<Value>{static_cast<usize>(argc)};
         for (auto i = 0; i < argc; ++i) {
-            arguments.append(Value::new_ref(ctx, argv[i]));
+            arguments[i] = Value::new_ref(ctx, argv[i]);
         }
-        auto this_value = Value::new_ref(ctx, this_val);
         Callable(context, value, arguments, result);
         return result.release();
     }

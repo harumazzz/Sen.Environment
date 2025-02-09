@@ -31,13 +31,13 @@ namespace Sen::Kernel::Javascript {
             Value& destination
         ) -> void {
             if constexpr (std::is_floating_point_v<T>) {
-                destination = Subprojects::quickjs::JS_NewFloat64(source._context(), source);
+                destination.set_value(Subprojects::quickjs::JS_NewFloat64(destination._context(), source));
             }
             else if constexpr (std::is_integral_v<T> && !std::is_unsigned_v<T>) {
-                destination = Subprojects::quickjs::JS_NewBigInt64(source._context(), source);
+                destination.set_value(Subprojects::quickjs::JS_NewBigInt64(destination._context(), source));
             }
             else {
-                destination = Subprojects::quickjs::JS_NewBigUint64(source._context(), source);
+                destination.set_value(Subprojects::quickjs::JS_NewBigUint64(destination._context(), source));
             }
         }
 

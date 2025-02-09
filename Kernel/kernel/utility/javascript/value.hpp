@@ -1,7 +1,7 @@
 #pragma once
 
-#include "js_string.hpp"
 #include "kernel/utility/javascript/common.hpp"
+#include "kernel/utility/javascript/js_string.hpp"
 
 namespace Sen::Kernel::Javascript {
 
@@ -27,6 +27,11 @@ namespace Sen::Kernel::Javascript {
             }
 
         public:
+
+            constexpr explicit Value(
+            ) : m_context{nullptr}, m_value{Subprojects::quickjs::$JS_UNINITIALIZED} {
+
+            }
 
             inline static auto new_ref (
                 const Pointer<JSContext> &context,
@@ -199,14 +204,15 @@ namespace Sen::Kernel::Javascript {
             inline auto set (
                 T& value
             ) -> void {
-                return Trait<T>::from_value(thiz, value);
+                return Trait<T>::to_value(value, thiz);
             }
 
             template <typename T>
             inline auto get (
                 T& value
             ) -> void {
-                return Trait<T>::to_value(value, thiz);
+                debug("called");
+                return Trait<T>::from_value(thiz, value);
             }
 
             inline auto value (

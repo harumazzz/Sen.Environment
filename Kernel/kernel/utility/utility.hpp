@@ -20,6 +20,10 @@
 #include "kernel/utility/container/array/common.hpp"
 #include "kernel/utility/container/array/array.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
+#include "kernel/utility/stream/read_file_stream.hpp"
+#include "kernel/utility/stream/write_file_stream.hpp"
+#include "kernel/utility/stream/read_memory_stream.hpp"
+#include "kernel/utility/stream/write_memory_stream.hpp"
 
 #include "kernel/utility/container/list/common.hpp"
 #include "kernel/utility/container/list/list.hpp"
@@ -33,7 +37,6 @@
 #include "kernel/utility/container/string/basic_string.hpp"
 #include "kernel/utility/container/string/string_parser.hpp"
 
-#include "kernel/utility/encoding/json/writer.hpp"
 #include "kernel/utility/miscellaneous/system/system.hpp"
 #include "kernel/utility/encoding/apng/writer.hpp"
 #include "kernel/utility/encoding/xml/read.hpp"
@@ -58,6 +61,11 @@
 #include "kernel/utility/compression/bzip2/uncompress.hpp"
 #include "kernel/utility/diff/vcdiff/encode.hpp"
 #include "kernel/utility/diff/vcdiff/decode.hpp"
+
+#include "kernel/utility/javascript/runtime.hpp"
+#include "kernel/utility/javascript/context.hpp"
+#include "kernel/utility/javascript/value.hpp"
+#include "kernel/utility/javascript/trait.hpp"
 
 namespace Sen::Kernel {
 

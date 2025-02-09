@@ -215,18 +215,13 @@ namespace Sen::Kernel {
 
 	};
 
-	template <typename Callable>
-	struct is_global_function<Callable, std::enable_if_t<!std::is_member_function_pointer_v<Callable>>> : std::true_type {
-		using ReturnType = decltype(std::declval<Callable>()(std::declval<std::tuple_element_t<0, typename std::decay_t<Callable>::Arguments>>()));
-	    using Arguments = typename std::decay_t<Callable>::Arguments;
-
-		template <typename... Args>
-		static auto call(Callable&& callable, Args&&... args) {
-			return std::forward<Callable>(callable)(std::forward<Args>(args)...);
-		}
-	};
-
 	template <auto Callable>
 	constexpr auto is_global_function_v = is_global_function<std::decay_t<type_of<Callable>>>::value;
+
+	template <typename... Ts>
+	constexpr auto total_sizeof(
+	) -> size_t {
+		return (sizeof(Ts) + ... + 0_size);
+	}
 
 }

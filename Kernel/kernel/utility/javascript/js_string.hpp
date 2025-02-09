@@ -95,6 +95,52 @@ namespace Sen::Kernel::Javascript {
                 return thiz.m_context;
             }
 
+            using BasicString::contains;
+
+            using BasicString::begin;
+
+            using BasicString::end;
+
+            using BasicString::data;
+
+            using BasicString::cbegin;
+
+            using BasicString::cend;
+
+            using BasicString::copy;
+
+            using BasicString::ends_with;
+
+            using BasicString::find;
+
+            using BasicString::find_all;
+
+            using BasicString::length;
+
+            using BasicString::rcontains;
+
+            using BasicString::rfind;
+
+            using BasicString::size;
+
+            using BasicString::max_size;
+
+            using BasicString::starts_with;
+
+            using BasicString::string;
+
+            using BasicString::sub;
+
+            using BasicString::view;
+
+            using BasicString::warray;
+
+            using BasicString::wstring;
+
+            using BasicString::operator==;
+
+            using BasicString::operator[];
+
     };
 
 }
