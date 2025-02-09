@@ -202,16 +202,15 @@ namespace Sen::Kernel::Javascript {
 
             template <typename T>
             inline auto set (
-                T& value
+                T&& value
             ) -> void {
-                return Trait<T>::to_value(value, thiz);
+                return Trait<T>::to_value(std::forward<T>(value), thiz);
             }
 
             template <typename T>
             inline auto get (
                 T& value
             ) -> void {
-                debug("called");
                 return Trait<T>::from_value(thiz, value);
             }
 
@@ -225,6 +224,13 @@ namespace Sen::Kernel::Javascript {
             ) -> void
             {
                 return thiz.set_value(Subprojects::quickjs::JS_NewObject(thiz.m_context));
+            }
+
+            inline auto set_undefined(
+
+            ) -> void
+            {
+                return thiz.set_value(Subprojects::quickjs::$JS_UNDEFINED);
             }
 
             inline auto set_array(
@@ -241,6 +247,16 @@ namespace Sen::Kernel::Javascript {
             {
                 auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
                 Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            inline auto define_property(
+                const String& name,
+                const JSValue& value
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value, Subprojects::quickjs::$JS_PROP_C_W_E);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
 
@@ -293,6 +309,14 @@ namespace Sen::Kernel::Javascript {
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
                 return value;
             }
+
+            template <auto function> requires is_global_function_v<function> &&
+                std::is_same_v<typename is_global_function<std::decay_t<type_of<function>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
+                std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType>
+            inline auto add_function(
+                const String& name,
+                bool is_constructor
+            ) const -> void;
 
     };
 

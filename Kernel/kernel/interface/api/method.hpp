@@ -13,12 +13,8 @@ namespace Sen::Kernel::Interface::API {
     using Array = CArray<T>;
 
     inline auto version (
-        Javascript::Context& context,
-        Javascript::Value& object,
-        Array<Javascript::Value>& arguments,
-        Javascript::Value& result
-    ) -> void {
-        result.set(Kernel::version);
+    ) -> usize {
+        return Kernel::version;
     }
 
 }

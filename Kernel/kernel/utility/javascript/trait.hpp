@@ -27,7 +27,7 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            T& source,
+            const T& source,
             Value& destination
         ) -> void {
             if constexpr (std::is_floating_point_v<T>) {
@@ -55,10 +55,34 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            JSString& source,
+            const JSString& source,
             Value& destination
         ) -> void {
-            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.data(), source.size()));
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
+        }
+
+    };
+
+    template <>
+    struct Trait<String> {
+
+        static auto from_value(
+            Value& source,
+            String& destination
+        ) -> void {
+            assert_conditional(source.is_string(), "Expected the value to be string, but the actual type is not", "from_value");
+            auto size = usize{};
+            auto buffer = Subprojects::quickjs::JS_ToCStringLen(source._context(), &size, source.value());
+            auto movable_string = String{buffer, size};
+            Subprojects::quickjs::JS_FreeCString(source._context(), buffer);
+            destination.take_ownership(movable_string);
+        }
+
+        static auto to_value(
+            const String& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
         }
 
     };
@@ -75,7 +99,7 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            bool& source,
+            const bool& source,
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_NewBool(destination._context(), source));
@@ -96,18 +120,23 @@ namespace Sen::Kernel::Javascript {
             destination.allocate(length);
             auto context = source._context();
             for (auto index : Range{length}) {
-                destination.append(Value::new_ref(context, source.get_property(index).get<T>()));
+                auto value = T{};
+                Trait<T>::from_value(source.get_property(index), value);
+                destination.append(as_move(value));
             }
         }
 
         static auto to_value(
-            CList<T>& source,
+            const CList<T>& source,
             Value& destination
         ) -> void {
             destination.set_array();
             // TODO : Refactor code with quickjs api : 0.9.0 for fast array
+            const auto context = destination._context();
             for (auto index : Range{source.size()}) {
-                destination.define_property(index, Value::new_ref(destination._context(), source[index]));
+                auto value = Value::new_value(context);
+                Trait<T>::to_value(source[index], value);
+                destination.define_property(index, as_move(value));
             }
         }
 
@@ -124,7 +153,7 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            Value& source,
+            const Value& source,
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_DupValue(source._context(), source.value()));
@@ -147,10 +176,10 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            Uint8Array& source,
+            const Uint8Array& source,
             Value& destination
         ) -> void {
-            destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.data(), source.size()));
+            destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.cbegin(), source.size()));
         }
 
     };

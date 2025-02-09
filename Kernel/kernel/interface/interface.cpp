@@ -9,8 +9,7 @@ auto execute (
     Callback callback
 ) -> int
 {
-    try
-    {
+    try {
         std::setlocale(LC_ALL, "C");
         auto context = Context{};
         Runtime::make_environment(context);

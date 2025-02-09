@@ -224,4 +224,41 @@ namespace Sen::Kernel {
 		return (sizeof(Ts) + ... + 0_size);
 	}
 
+	template <typename T>
+	struct callable_traits;
+
+	/// Note : Functions
+
+	template <typename Ret, typename... Args>
+	struct callable_traits<Ret(*)(Args...)> {
+		using return_type = Ret;
+		using args_tuple = std::tuple<std::decay_t<Args>...>;
+		static constexpr auto arg_count = sizeof...(Args);
+	};
+
+	/// Note : Lambda
+
+	template <typename F>
+	struct callable_traits : callable_traits<decltype(&F::operator())> {
+	};
+
+	/// Note : Class or Struct
+
+	template <typename Ret, typename Class, typename... Args>
+	struct callable_traits<Ret(Class::*)(Args...) const> {
+		using return_type = Ret;
+		using args_tuple = std::tuple<Args...>;
+		static constexpr auto arg_count = sizeof...(Args);
+		using class_type = Class;
+	};
+
+	template <typename T, auto... Indexes> requires (std::is_same_v<type_of<Indexes>, type_of<std::tuple_size_v<T>>> && ...)
+	constexpr auto is_valid_tuple(std::index_sequence<Indexes...>) {
+		return (!std::is_void_v<std::tuple_element_t<Indexes, T>> && ...);
+	}
+
+	template <typename T>
+	using remove_reference = std::remove_cvref_t<T>;
+
+
 }
