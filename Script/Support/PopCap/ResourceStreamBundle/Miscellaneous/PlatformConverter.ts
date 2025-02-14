@@ -53,7 +53,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 					`${destination}/packet/${e}.scg`,
 					scg_setting,
 				);
-				Kernel.FileSystem.remove_all(`${destination}/packet/${e}.scg.package`);
+				Kernel.FileSystem.remove(`${destination}/packet/${e}.scg.package`);
 			} else {
 				const element = e.toLowerCase();
 				if (element === 'streamingwave' && to_ios) {
@@ -113,8 +113,8 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 						`${destination}/packet/Global_Data.scg`,
 						scg_setting,
 					);
-					Kernel.FileSystem.remove_all(`${destination}/packet/${e}.scg.package`);
-					Kernel.FileSystem.remove_all(`${destination}/packet/Global_Data.scg.package`);
+					Kernel.FileSystem.remove(`${destination}/packet/${e}.scg.package`);
+					Kernel.FileSystem.remove(`${destination}/packet/Global_Data.scg.package`);
 					packet_list[i] = 'Global_Data';
 					streaming_wave_processed = true;
 				} else if (element === 'global_data' && !to_ios) {
@@ -174,8 +174,8 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 						`${destination}/packet/StreamingWave.scg`,
 						scg_setting,
 					);
-					Kernel.FileSystem.remove_all(`${destination}/packet/${e}.scg.package`);
-					Kernel.FileSystem.remove_all(`${destination}/packet/StreamingWave.scg.package`);
+					Kernel.FileSystem.remove(`${destination}/packet/${e}.scg.package`);
+					Kernel.FileSystem.remove(`${destination}/packet/StreamingWave.scg.package`);
 					packet_list[i] = 'StreamingWave';
 					streaming_wave_processed = true;
 				} else {
@@ -197,7 +197,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 			`${Kernel.Path.except_extension(source)}.${to_ios ? 'main.rsb' : 'main.obb'}`,
 			setting,
 		);
-		Kernel.FileSystem.remove_all(destination);
+		Kernel.FileSystem.remove(destination);
 	}
 
 	export function process_fs(source: string, destination: string, to_ios: boolean) {

@@ -624,23 +624,10 @@ declare namespace Sen {
 			export function copy(source: string, destination: string): void;
 
 			/**
-			 * Copy a file or directory.
-			 * @param source - The path of the file or directory to copy
-			 * @param destination - The destination path or directory
-			 */
-			export function copy_directory(source: string, destination: string): void;
-
-			/**
 			 * Remove a file or directory.
 			 * @param source - The path of the file or directory to remove
 			 */
 			export function remove(source: string): void;
-
-			/**
-			 * Remove a file or directory.
-			 * @param source - The path of the file or directory to remove
-			 */
-			export function remove_all(source: string): void;
 		}
 
 		/**

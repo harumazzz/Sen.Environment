@@ -64,9 +64,7 @@ namespace Sen::Kernel::Path {
                 }
             }
             if constexpr (filter == PathType::None) {
-                if (type == PathType::None) {
-                    ++result;
-                }
+                ++result;
             }
         }
         return result;
@@ -113,9 +111,7 @@ namespace Sen::Kernel::Path {
                 }
             }
             if constexpr (filter == PathType::None) {
-                if (type == PathType::None) {
-                    ++result;
-                }
+                ++result;
             }
         }
         return result;
@@ -146,9 +142,7 @@ namespace Sen::Kernel::Path {
                 }
             }
             if constexpr (filter == PathType::None) {
-                if (type == PathType::None) {
-                    destination.append(file);
-                }
+                destination.append(file);
             }
         }
     }
@@ -178,9 +172,7 @@ namespace Sen::Kernel::Path {
                 }
             }
             if constexpr (filter == PathType::None) {
-                if (type == PathType::None) {
-                    destination.append(file);
-                }
+                destination.append(file);
             }
         }
     }

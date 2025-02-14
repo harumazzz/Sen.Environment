@@ -141,6 +141,11 @@ namespace Sen::Kernel::Javascript {
 
             using BasicString::operator[];
 
+            auto as_string(
+            ) const -> const BasicString& {
+                return thiz;
+            }
+
     };
 
 }

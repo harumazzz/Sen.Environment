@@ -108,7 +108,7 @@ namespace Sen::Kernel::Javascript {
 
             inline auto set_class_proto (
                 const u32& id,
-                Value &&        value
+                Value && value
             ) const -> void {
                 Subprojects::quickjs::JS_SetClassProto(thiz.m_context, static_cast<Subprojects::quickjs::JSClassID>(id), value.release());
             }
@@ -134,5 +134,11 @@ namespace Sen::Kernel::Javascript {
     ) -> Value {
         return Value{context, other};
     }
+
+    inline auto Value::context(
+    ) const -> Context {
+        return Context::new_ref(thiz.m_context);
+    }
+
 
 }

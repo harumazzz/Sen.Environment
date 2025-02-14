@@ -13,16 +13,22 @@ namespace Sen::Kernel::Javascript {
             T& destination
         ) -> void {
             if constexpr (std::is_floating_point_v<T>) {
+                auto value = f64{};
                 assert_conditional(source.is_number(), "Expected the value to be number, but the actual type is not", "from_value");
-                Subprojects::quickjs::JS_ToFloat64(source._context(), &destination, source.value());
+                Subprojects::quickjs::JS_ToFloat64(source._context(), &value, source.value());
+                destination = static_cast<T>(value);
             }
             else if constexpr (std::is_integral_v<T> && !std::is_unsigned_v<T>) {
+                auto value = i64{};
                 assert_conditional(source.is_bigint(), "Expected the value to be bigint, but the actual type is not", "from_value");
-                Subprojects::quickjs::JS_ToBigInt64(source._context(), &destination, source.value());
+                Subprojects::quickjs::JS_ToBigInt64(source._context(), &value, source.value());
+                destination = static_cast<T>(value);
             }
             else {
+                auto value = u64{};
                 assert_conditional(source.is_bigint(), "Expected the value to be bigint, but the actual type is not", "from_value");
-                Subprojects::quickjs::JS_ToBigUint64(source._context(), &destination, source.value());
+                Subprojects::quickjs::JS_ToBigUint64(source._context(), &value, source.value());
+                destination = static_cast<T>(value);
             }
         }
 
@@ -79,7 +85,7 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            const String& source,
+            auto&& source,
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
@@ -116,13 +122,13 @@ namespace Sen::Kernel::Javascript {
         ) -> void {
             assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
             auto length = u32{};
-            source.get_property("length"_s).template get<u32>(length);
+            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).release());
             destination.allocate(length);
-            auto context = source._context();
-            for (auto index : Range{length}) {
+            for (auto index : Range{static_cast<usize>(length)}) {
                 auto value = T{};
-                Trait<T>::from_value(source.get_property(index), value);
-                destination.append(as_move(value));
+                auto current_value = source.get_property(index);
+                Trait<T>::from_value(current_value, value);
+                destination.append(value);
             }
         }
 
@@ -132,11 +138,10 @@ namespace Sen::Kernel::Javascript {
         ) -> void {
             destination.set_array();
             // TODO : Refactor code with quickjs api : 0.9.0 for fast array
-            const auto context = destination._context();
             for (auto index : Range{source.size()}) {
-                auto value = Value::new_value(context);
+                auto value = Value::new_value(destination._context());
                 Trait<T>::to_value(source[index], value);
-                destination.define_property(index, as_move(value));
+                destination.set_property(index, value.release());
             }
         }
 
@@ -182,6 +187,31 @@ namespace Sen::Kernel::Javascript {
             destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.cbegin(), source.size()));
         }
 
+    };
+
+    template <typename T> requires std::is_class_v<T>
+    struct Trait<Pointer<T>> {
+
+        static auto from_value(
+            Value& source,
+            Pointer<T>& destination
+        ) -> void {
+            assert_conditional(Detail::class_id<T> != Detail::k_invalid_class_id, "Class ID is not registered", "from_value");
+            const auto value = source.value();
+            auto opaque = Subprojects::quickjs::JS_GetOpaque(value, static_cast<Subprojects::quickjs::JSClassID>(Detail::class_id<T>));
+            assert_conditional(opaque != nullptr, "Expected the value to be opaque, but the actual type is not", "from_value");
+            destination = static_cast<T*>(opaque);
+        }
+
+        static auto to_value(
+            const Pointer<T>& source,
+            Value& destination
+        ) -> void {
+            assert_conditional(source != nullptr, "Expected the value to be opaque, but the actual type is not", "to_value");
+            auto value = Subprojects::quickjs::JS_NewObjectClass(destination._context(), static_cast<int>(Detail::class_id<T>));
+            Subprojects::quickjs::JS_SetOpaque(value, source);
+            destination.set_value(value);
+        }
     };
 
 }

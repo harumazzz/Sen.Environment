@@ -53,23 +53,30 @@ namespace Sen::Kernel {
 				running_ = false;
 			}
 
-			inline auto get_duration(
+			inline auto duration(
 
-			) -> int64_t
+			) const -> int64_t
 			{
 				return duration_;
 			}
 
+			inline auto duration_as_seconds(
+
+			) const -> double
+			{
+				return static_cast<double>(duration_ / 1000);
+			}
+
 			inline auto is_started(
 
-			) -> bool
+			) const -> bool
 			{
 				return running_;
 			}
 
 			inline auto is_stopped(
 
-			) -> bool
+			) const -> bool
 			{
 				return !running_;
 			}

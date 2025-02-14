@@ -247,7 +247,31 @@ namespace Sen::Kernel {
 	template <typename Ret, typename Class, typename... Args>
 	struct callable_traits<Ret(Class::*)(Args...) const> {
 		using return_type = Ret;
-		using args_tuple = std::tuple<Args...>;
+		using args_tuple = std::tuple<std::decay_t<Args>...>;
+		static constexpr auto arg_count = sizeof...(Args);
+		using class_type = Class;
+	};
+
+	template <typename Ret, typename Class, typename... Args>
+	struct callable_traits<Ret(Class::*)(Args...)> {
+		using return_type = Ret;
+		using args_tuple = std::tuple<std::decay_t<Args>...>;
+		static constexpr auto arg_count = sizeof...(Args);
+		using class_type = Class;
+	};
+
+	template <typename Ret, typename Class, typename... Args>
+	struct callable_traits<Ret(Class::*)(Args...) volatile> {
+		using return_type = Ret;
+		using args_tuple = std::tuple<std::decay_t<Args>...>;
+		static constexpr auto arg_count = sizeof...(Args);
+		using class_type = Class;
+	};
+
+	template <typename Ret, typename Class, typename... Args>
+	struct callable_traits<Ret(Class::*)(Args...) const volatile> {
+		using return_type = Ret;
+		using args_tuple = std::tuple<std::decay_t<Args>...>;
 		static constexpr auto arg_count = sizeof...(Args);
 		using class_type = Class;
 	};
@@ -260,5 +284,23 @@ namespace Sen::Kernel {
 	template <typename T>
 	using remove_reference = std::remove_cvref_t<T>;
 
+	template <typename Method>
+	struct extract_class;
+
+	template <typename ClassType, typename ReturnType, typename... Args>
+	struct extract_class<ReturnType(ClassType::*)(Args...)> {
+		using type = ClassType;
+	};
+
+	template <typename ClassType, typename ReturnType, typename... Args>
+	struct extract_class<ReturnType(ClassType::*)(Args...) const> {
+		using type = ClassType;
+	};
+
+	template <auto function>
+	constexpr auto extract_class_t = extract_class<decltype(function)>::type;
+
+	template <typename F>
+	using function_return = typename callable_traits<F>::return_type;
 
 }

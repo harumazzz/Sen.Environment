@@ -67,9 +67,6 @@ namespace Sen::Kernel::Javascript {
                 Value &&other
             ) noexcept -> Value& {
                 if (this != &other) {
-                    if (thiz.m_context != nullptr) {
-                        Subprojects::quickjs::JS_FreeValue(m_context, m_value);
-                    }
                     thiz.m_context = other.m_context;
                     thiz.m_value = other.m_value;
                     other.m_context = nullptr;
@@ -183,7 +180,7 @@ namespace Sen::Kernel::Javascript {
             }
 
             inline auto set_value (
-                const JSValue& new_value
+                const Subprojects::quickjs::JSValue& new_value
             ) -> void
             {
                 if (thiz.m_context != nullptr) {
@@ -215,7 +212,7 @@ namespace Sen::Kernel::Javascript {
             }
 
             inline auto value (
-            ) const -> JSValue {
+            ) const -> Subprojects::quickjs::JSValue {
                 return thiz.m_value;
             }
 
@@ -240,19 +237,24 @@ namespace Sen::Kernel::Javascript {
                 return thiz.set_value(Subprojects::quickjs::JS_NewArray(thiz.m_context));
             }
 
+            inline auto new_object (
+
+            ) const -> Value
+            {
+                return Value{thiz.m_context, Subprojects::quickjs::JS_NewObject(thiz.m_context)};
+            }
+
             inline auto define_property(
                 const String& name,
                 Value&& value
             ) const -> void
             {
-                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
-                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
-                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+                return thiz.define_property(name, value.release());
             }
 
             inline auto define_property(
                 const String& name,
-                const JSValue& value
+                const Subprojects::quickjs::JSValue& value
             ) const -> void
             {
                 auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
@@ -265,8 +267,27 @@ namespace Sen::Kernel::Javascript {
                 Value&& value
             ) const -> void
             {
+                return thiz.define_property(index, value.release());
+            }
+
+            inline auto define_property(
+                const u32 index,
+                const Subprojects::quickjs::JSValue& value
+            ) const -> void
+            {
                 auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
-                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_DefinePropertyValue(thiz.m_context, thiz.m_value, atom, value, Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            inline auto define_property(
+                const String& value,
+                Value&& getter,
+                Value&& setter
+            ) const -> void
+            {
+                auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, value.cbegin(), value.size());
+                JS_DefinePropertyGetSet(thiz.m_context, thiz.m_value, atom, getter.release(), setter.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
 
@@ -275,8 +296,16 @@ namespace Sen::Kernel::Javascript {
                 Value&& value
             ) const -> void
             {
+                return thiz.set_property(name, value.release());
+            }
+
+            inline auto set_property(
+                const String& name,
+                const Subprojects::quickjs::JSValue& value
+            ) const -> void
+            {
                 auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
-                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value.release());
+                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
 
@@ -285,8 +314,16 @@ namespace Sen::Kernel::Javascript {
                 Value&& value
             ) const -> void
             {
+                return thiz.set_property(index, value.release());
+            }
+
+            inline auto set_property(
+                const u32 index,
+                const Subprojects::quickjs::JSValue& value
+            ) const -> void
+            {
                 auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
-                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value.release());
+                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
 
@@ -295,7 +332,7 @@ namespace Sen::Kernel::Javascript {
             ) const -> Value
             {
                 auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
-                auto value = new_ref(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
+                auto value = new_owner(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
                 return value;
             }
@@ -305,18 +342,27 @@ namespace Sen::Kernel::Javascript {
             ) const -> Value
             {
                 auto atom = Subprojects::quickjs::JS_NewAtomUInt32(thiz.m_context, index);
-                auto value = new_ref(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
+                auto value = new_owner(thiz.m_context, JS_GetProperty(thiz.m_context, thiz.m_value, atom));
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
                 return value;
             }
 
-            template <auto function> requires is_global_function_v<function> &&
+            inline auto context (
+            ) const -> Context;
+
+            template <auto function, auto is_constructor> requires is_global_function_v<function> &&
                 std::is_same_v<typename is_global_function<std::decay_t<type_of<function>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
-                std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType>
+                std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType> && std::is_same_v<type_of<is_constructor>, bool>
             inline auto add_function(
-                const String& name,
-                bool is_constructor
+                const String& name
             ) const -> void;
+
+            template <auto function, auto is_constructor> requires is_global_function_v<function> &&
+                std::is_same_v<typename is_global_function<std::decay_t<type_of<function>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
+                std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType> && std::is_same_v<type_of<is_constructor>, bool>
+            inline auto set_function (
+                const String& name
+            ) -> void;
 
     };
 

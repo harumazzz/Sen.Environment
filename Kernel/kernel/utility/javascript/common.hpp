@@ -33,4 +33,13 @@ namespace Sen::Kernel::Javascript {
 
     };
 
+    namespace Detail {
+
+        inline static auto constexpr k_invalid_class_id = u32{Subprojects::quickjs::$JS_INVALID_CLASS_ID};
+
+        template <typename T> requires std::is_class_v<T>
+        inline static auto class_id = u32{0};
+
+    }
+
 }

@@ -8,9 +8,19 @@
 
 namespace Sen::Kernel::Subprojects::quickjs {
 
-	inline static const auto $JS_UNINITIALIZED = JS_UNINITIALIZED;
+	using ::JSClassDef;
 
-	inline static const auto $JS_UNDEFINED = JS_UNDEFINED;
+	using ::JS_NewObjectClass;
+
+	using ::JS_NewClassID;
+
+	using ::JS_ToUint32;
+
+	using ::JS_DefinePropertyGetSet;
+
+	using ::JS_NewClass;
+
+	using ::JS_SetConstructor;
 
 	using ::JSRuntime;
 
@@ -122,12 +132,6 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JSModuleDef;
 
-	inline auto JS_VALUE_GET_POINTER (
-		JSValue value
-	) -> void* {
-		return JS_VALUE_GET_PTR(value);
-	}
-
 	using ::JS_ThrowReferenceError;
 
 	using ::JSClassID;
@@ -142,6 +146,10 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_SetClassProto;
 
+	using ::JS_SetOpaque;
+
+	using ::JS_NewCFunction2;
+
 	inline static auto constexpr $JS_EVAL_TYPE_MODULE = int{JS_EVAL_TYPE_MODULE};
 
 	inline static auto constexpr $JS_EVAL_FLAG_COMPILE_ONLY = int{JS_EVAL_TYPE_MODULE};
@@ -151,6 +159,22 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	inline static auto constexpr $JS_PROP_C_W_E = int{JS_PROP_C_W_E};
 
 	inline static auto constexpr $JS_EVAL_TYPE_GLOBAL = int{JS_EVAL_TYPE_GLOBAL};
+
+	inline static auto constexpr $JS_INVALID_CLASS_ID = int{JS_INVALID_CLASS_ID};
+
+	inline static const auto $JS_UNINITIALIZED = JS_UNINITIALIZED;
+
+	inline static const auto $JS_UNDEFINED = JS_UNDEFINED;
+
+	inline static constexpr auto $JS_CFUNC_constructor = JS_CFUNC_constructor;
+
+	inline static constexpr auto $JS_CFUNC_generic = JS_CFUNC_generic;
+
+	inline auto JS_VALUE_GET_POINTER (
+		JSValue value
+	) -> void* {
+		return JS_VALUE_GET_PTR(value);
+	}
 
 
 }

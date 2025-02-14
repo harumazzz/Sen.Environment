@@ -133,6 +133,27 @@ namespace Sen::Kernel::Javascript {
                 return definition;
             }
 
+            template <typename T> requires std::is_class_v<T>
+            inline auto register_class (
+                const String& name
+            ) const -> void {
+                Subprojects::quickjs::JS_NewClassID(thiz.m_runtime, &Detail::class_id<T>);
+                const auto definition = Subprojects::quickjs::JSClassDef {
+                    .class_name = name.cbegin(),
+                    .finalizer = [](
+                        Subprojects::quickjs::JSRuntime* rt,
+                        Subprojects::quickjs::JSValue obj
+                    ) -> void {
+                        delete static_cast<Pointer<T>>(Subprojects::quickjs::JS_GetOpaque(obj, static_cast<Subprojects::quickjs::JSClassID>(Detail::class_id<T>)));
+                    },
+                    .gc_mark = nullptr,
+                    .call = nullptr,
+                    .exotic = nullptr,
+                };
+                auto result = Subprojects::quickjs::JS_NewClass(thiz.m_runtime, Detail::class_id<T>, &definition);
+		        assert_conditional(result == 0, fmt::format("Class {} register failed", name.view()), "register_class");
+            }
+
     };
 
     inline auto Context::runtime(

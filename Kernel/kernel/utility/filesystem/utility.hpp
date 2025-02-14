@@ -127,8 +127,7 @@ namespace Sen::Kernel::FileSystem {
         const String& destination
     ) -> void {
         assert_conditional(exist(source), fmt::format("{} does not exist, invalid copy operation call", source.view()), "copy");
-        auto parent = dirname(destination);
-        if (!is_directory(parent)) {
+        if (const auto parent = dirname(destination); !is_directory(parent)) {
             create_directory(parent);
         }
         #if WINDOWS

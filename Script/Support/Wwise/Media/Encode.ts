@@ -348,7 +348,7 @@ namespace Sen.Script.Support.Wwise.Media.Encode {
 			`${wwise_project_dir}/GeneratedSoundBanks/${platform}/Sample.wem`,
 			destination,
 		);
-		Kernel.FileSystem.remove_all(wwise_project_dir);
+		Kernel.FileSystem.remove(wwise_project_dir);
 	}
 
 	export function process_fs(source: string, destination: string, format: Common.Format): void {

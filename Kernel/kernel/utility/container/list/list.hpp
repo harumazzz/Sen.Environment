@@ -90,11 +90,29 @@ namespace Sen::Kernel {
 
 			explicit CList(
 				const CList& other
-			) = delete;
+			) : CList<T>{other._capacity} {
+				for (auto & e : other) {
+					thiz.value.append(e);
+				}
+			}
 
 			auto operator =(
 				const CList& other
-			) -> CList& = delete;
+			) -> CList& {
+				thiz.allocate(other._capacity);
+				for (auto & e : other) {
+					thiz.value.append(e);
+				}
+				return thiz;
+			}
+
+    		constexpr auto operator [](
+				Size const& index
+			) const -> T&
+    		{
+    			assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+    			return thiz.value[index];
+    		}
 
 			constexpr CList(
 				CList&& other
@@ -199,7 +217,9 @@ namespace Sen::Kernel {
 					else {
 						std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
 					}
-					delete[] thiz.value;
+					if (thiz.value != nullptr) {
+						delete[] thiz.value;
+					}
 					thiz.value = new_value;
 					thiz._capacity = size;
 				}
@@ -209,7 +229,7 @@ namespace Sen::Kernel {
     		auto append (
     			U&& value
     		) -> void {
-				if (thiz._size >= thiz._capacity) {
+				if (thiz._size + 1 > thiz._capacity) {
 					thiz.reallocate(thiz._capacity * 4);
 				}
 				thiz.value[thiz._size] = std::forward<T>(value);
@@ -218,7 +238,7 @@ namespace Sen::Kernel {
 
     		auto append (
     		) -> void {
-    			if (thiz._size >= thiz._capacity) {
+    			if (thiz._size + 1 > thiz._capacity) {
     				thiz.reallocate(thiz._capacity * 4);
     			}
     			++thiz._size;
