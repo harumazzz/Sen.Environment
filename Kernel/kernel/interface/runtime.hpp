@@ -22,6 +22,13 @@ namespace Sen::Kernel::Interface::Runtime {
             s_Shell.add_function<&API::Shell::callback>("callback"_s);
         }
         {
+            auto s_Language = s_Kernel.add_space("Language"_s);
+        }
+        {
+            auto s_JSON = s_Kernel.add_space("JSON"_s);
+
+        }
+        {
             using Type = Path::PathType;
             auto s_FileSystem = s_Kernel.add_space("FileSystem"_s);
             s_FileSystem.add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_file>>("read_file"_s)
@@ -85,7 +92,8 @@ namespace Sen::Kernel::Interface::Runtime {
         }
     }
 
-    inline auto make_exception() -> List<String> {
+    inline auto make_exception(
+    ) -> List<String> {
         auto exception_message = List<String>{4_size};
         exception_message.append("display"_s);
         exception_message.append(StringHelper::make_string(parse_exception().what()));

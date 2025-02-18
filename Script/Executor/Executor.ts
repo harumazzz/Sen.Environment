@@ -205,7 +205,7 @@ namespace Sen.Script.Executor {
 		} else if ((configuration as any)[key] === '?') {
 			let input: string = undefined!;
 			while (true) {
-				input = readline().trim();
+				input = readline();
 				if (/\d+/.test(input) && rule[0] <= BigInt(input) && rule[1] >= BigInt(input)) {
 					break;
 				}
@@ -259,7 +259,7 @@ namespace Sen.Script.Executor {
 			}
 			return print_argument(argument[key] as string);
 		} else if ((configuration as any)[key] === '?') {
-			(argument as any)[key] = readline().trim();
+			(argument as any)[key] = readline();
 		} else {
 			if (rule === undefined) {
 				print_argument(configuration[key] as string);
@@ -347,7 +347,7 @@ namespace Sen.Script.Executor {
 			input = Shell.callback('input_enumeration', ...rule.map((e) => e.toString()))[0];
 		} else {
 			while (true) {
-				input = readline().trim();
+				input = readline();
 				if (/^\d+$/.test(input) && (rule as Array<bigint>).includes(BigInt(input))) {
 					break;
 				}
@@ -385,7 +385,7 @@ namespace Sen.Script.Executor {
 					]![1];
 					break;
 				case 'string':
-					(argument as any)[key] = readline().trim();
+					(argument as any)[key] = readline();
 					break;
 				case 'bigint':
 					(argument as any)[key] = input_integer(rule as Array<bigint>);
@@ -709,7 +709,7 @@ namespace Sen.Script.Executor {
 			),
 		);
 		loop: while (true) {
-			input = readline().trim();
+			input = readline();
 			switch (input) {
 				case '':
 					break loop;

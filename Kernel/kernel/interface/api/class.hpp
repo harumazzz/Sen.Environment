@@ -21,6 +21,21 @@ namespace Sen::Kernel::Interface {
 			return std::invoke(method, instance, std::forward<Args>(args)...);
 		}
 
+		template <auto member>
+		inline constexpr auto make_setter (
+			Pointer<member_class_t<member>> instance,
+			std::remove_reference_t<decltype(instance->*member)>&& value
+		) -> void {
+			std::invoke(member, *instance) = std::forward<decltype(value)>(value);
+		}
+
+		template <auto member>
+		inline constexpr auto make_getter (
+			Pointer<member_class_t<member>> instance
+		) -> decltype(std::invoke(member, *instance)) {
+			return std::invoke(member, *instance);
+		}
+
 	}
 
 

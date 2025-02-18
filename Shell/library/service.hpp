@@ -30,6 +30,7 @@ namespace Sen::Shell {
 		#else
 		std::getline(std::cin, text);
 		#endif
+		trim(text);
 		return text;
 	}
 

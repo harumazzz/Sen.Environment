@@ -295,4 +295,15 @@ namespace Sen::Kernel {
 	template <typename F>
 	using function_return = typename callable_traits<F>::return_type;
 
+	template <auto member>
+	struct member_class;
+
+	template <typename Class, typename Type, Type Class::* member>
+	struct member_class<member> {
+		using type = Class;
+	};
+
+	template <auto member>
+	using member_class_t = typename member_class<member>::type;
+
 }

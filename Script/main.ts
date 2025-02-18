@@ -158,7 +158,7 @@ namespace Sen.Script {
 			Console.argument(source);
 			let destination: string = undefined!;
 			loop: do {
-				destination = readline().trim();
+				destination = readline();
 				switch (destination) {
 					case ':p':
 						if (type === 'file') destination = Shell.callback('pick_file')[0];
@@ -233,7 +233,7 @@ namespace Sen.Script {
 		 */
 
 		export function query(path: string): string {
-			return path.replace(/^~(?=(\/|$))/gm, participant);
+			return path.replace(/^~(?=(\/|$))/, participant);
 		}
 	}
 

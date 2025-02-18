@@ -4,7 +4,7 @@ namespace Sen.Script.Helper.WWise.HashID {
 		while (input !== '') {
 			Console.argument(Kernel.Language.get('wwise.helper.hash_id.input_id_to_hash'));
 			Executor.clock.stop_safe();
-			input = readline().trim();
+			input = readline();
 			Executor.clock.start_safe();
 			if (input.length === 0) break;
 			Console.obtained(`${input}`);

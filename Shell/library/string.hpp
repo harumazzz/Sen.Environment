@@ -67,4 +67,28 @@ namespace Sen::Shell {
         return result;
     }
 
+    inline auto left_trim (
+        std::string &s
+    ) -> void {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](auto&& ch) {
+            return !std::isspace(ch);
+        }));
+    }
+    
+    inline auto right_trim (
+        std::string &s
+    ) -> void {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](auto&& ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
+    }
+
+    inline auto trim (
+        std::string& s
+    ) -> void
+    {
+        left_trim(s);
+        right_trim(s);
+    }
+
 }

@@ -75,7 +75,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateData {
 		const resolution = Executor.input_integer([...resolution_map.keys()]);
 		const source = Console.path(Kernel.Language.get('input_directory'), 'directory');
 		Console.argument(Kernel.Language.get('popcap.animation.add_library.image_posix_for_id'));
-		const image_posix = readline().trim();
+		const image_posix = readline();
 		assert(
 			image_posix.length === 0,
 			Kernel.Language.get('popcap.animation.add_library.image_posix_cannot_be_empty'),

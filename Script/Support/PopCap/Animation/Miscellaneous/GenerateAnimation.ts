@@ -144,7 +144,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					sprite_list.map((_, i) => rule.push(BigInt(i + 1)));
 					let sprite_to_disable: string = '';
 					const argument = (rule: Array<bigint>) => {
-						const input: string = readline().trim();
+						const input: string = readline();
 						const check_vaild = (range: Array<bigint>) => {
 							if (range.length > 0) return;
 							Console.warning(Kernel.Language.get('js.invalid_input_value'));

@@ -708,9 +708,9 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		// TODO : Add loc
 		const source = Console.path('Enter Fla path', 'file');
 		Console.argument('Enter animation name');
-		const animation_name = readline().trim();
+		const animation_name = readline();
 		Console.argument('Enter animation type');
-		const type = readline().trim();
+		const type = readline();
 		const dest = Kernel.Path.dirname(source);
 		const resolution = 1536;
 		Kernel.Compression.Zip.Uncompress.process(`${source}`, `${source}_unpack`);
