@@ -4,18 +4,10 @@
 
 namespace Sen::Shell {
 
-	struct String {
+	struct Message {
 
 		uint8_t* value{ nullptr };
 
-		size_t size{0};
-
-	};
-
-	struct StringList {
-
-		String* value{nullptr};
-		
 		size_t size{0};
 
 	};

@@ -36,7 +36,7 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 			),
 			'cyan',
 		);
-		const subgroup = Kernel.Console.readline().trim();
+		const subgroup = readline().trim();
 		const resolutions = get_resolution();
 		assert(
 			resolutions.length > 0,

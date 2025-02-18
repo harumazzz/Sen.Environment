@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/utility/container/array/common.hpp"
 #include "kernel/utility/container/base/base.hpp"
 #include "kernel/utility/trait/trait.hpp"
 
@@ -41,11 +40,18 @@ namespace Sen::Kernel {
 
 			}
 
+			template <typename Iterator>
+			constexpr explicit CArray(Iterator first, Iterator last)
+			: BaseContainer<T>{new T[std::distance(first, last)], static_cast<Size>(std::distance(first, last))} {
+				std::move(first, last, this->data());
+			}
+
+
 			constexpr explicit CArray(
 
 			) = default;
 
-			~CArray(
+			constexpr ~CArray(
 
 			) override
 			{
@@ -54,6 +60,17 @@ namespace Sen::Kernel {
 					thiz.value = nullptr;
 				}
 			}
+
+	        constexpr auto allocate(
+	            Size const& size
+	        ) -> void
+	        {
+	            if (thiz.value != nullptr) {
+	                delete[] thiz.value;
+	            }
+	            thiz.value = new T[size];
+	            thiz._size = size;
+	        }
 
 			explicit CArray(
 				const CArray& other
@@ -125,7 +142,17 @@ namespace Sen::Kernel {
 				other._size = 0;
 			}
 
-			auto assign (
+			explicit operator CArrayView<T>(
+			) const {
+				return CArrayView<T>{ thiz.value, thiz._size };
+			}
+
+			constexpr auto view (
+			) -> CArrayView<T> {
+				return CArrayView<T>{ thiz.value, thiz._size };
+			}
+
+			constexpr auto assign (
 				CArray& other
 			) -> void {
 				if (thiz.value != nullptr) {
@@ -137,7 +164,7 @@ namespace Sen::Kernel {
 				other._size = 0;
 			}
 
-			auto assign (
+			constexpr auto assign (
 				CList<T>& other
 			) -> void {
 				if (thiz.value != nullptr) {
@@ -152,7 +179,7 @@ namespace Sen::Kernel {
 
 			friend class CList<T>;
 
-			static auto make_array (
+			constexpr static auto make_array (
 				const std::span<T>& init
 			) -> CArray {
 				return CArray{init};

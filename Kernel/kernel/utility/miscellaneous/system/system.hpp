@@ -5,10 +5,6 @@
 
 namespace Sen::Kernel {
 
-	/**
-	 * Architecture test
-	*/
-
 	enum class Architecture : uint8_t {
 		X64,
 		ARM,
@@ -18,18 +14,10 @@ namespace Sen::Kernel {
 		ARM64,
 	};
 
-	/**
-	 * Process call
-	*/
-
 	struct Process {
 
-		/**
-		 * Method only launch process, will not return result
-		*/
-
 		static auto run(
-			std::string_view command
+			const String& command
 		) -> void
 		{
 			#if WINDOWS
@@ -40,7 +28,7 @@ namespace Sen::Kernel {
 		}
 
 		static auto get_environment(
-			std::string_view str
+			const String& str
 		) 
 		{
 			#if WINDOWS
@@ -50,12 +38,8 @@ namespace Sen::Kernel {
 			#endif
 		}
 
-		/**
-		 * Test if something is exists in path environment
-		*/
-
 		static auto is_exists_in_path_environment(
-			std::string_view str
+			const String& str
 		) -> bool
 		{
 			#if WINDOWS
@@ -66,25 +50,25 @@ namespace Sen::Kernel {
 		}
 
 		static auto get_path_environment(
-			std::string_view str
-		) -> std::string
+			const String& str
+		) -> String
 		{
 			auto environment = get_environment(str);
 			#if WINDOWS
-			return utf16_to_utf8({environment, wcslen(environment)});
+			return StringHelper::make_string(utf16_to_utf8({environment, wcslen(environment)}));
 			#else
-			return std::string{environment, std::strlen(environment)};
+			return String{environment, std::strlen(environment)};
 			#endif
 		}
 
 		static auto execute(
-			std::string_view command
-		) -> std::string
+			const String& command
+		) -> String
 		{
 			#if WINDOWS
 				auto hStdOutRead = static_cast<HANDLE>(nullptr);
 				auto hStdOutWrite = static_cast<HANDLE>(nullptr);
-			    SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
+			    auto sa = SECURITY_ATTRIBUTES{sizeof(SECURITY_ATTRIBUTES),nullptr, TRUE};
 			    if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0)) {
 			        throw Exception{"Failed to create pipe for stdout.", std::source_location::current(), "execute"};
 			    }
@@ -117,7 +101,7 @@ namespace Sen::Kernel {
 			    	throw Exception{"Failed to create a single process", std::source_location::current(), "execute"};
 			    }
 			    CloseHandle(hStdOutWrite);
-			    auto result = std::string{};
+			    auto result = String{};
 			    auto buffer = std::array<char, 128>{};
 			    auto bytesRead = DWORD{};
 			    while (ReadFile(hStdOutRead, buffer.data(), sizeof(buffer), &bytesRead, nullptr) && bytesRead > 0) {
@@ -130,7 +114,7 @@ namespace Sen::Kernel {
 			    return result;
 			#else
 				auto buffer = std::array<char, 128>{};
-				auto result = std::string{};
+				auto result = String{};
 				auto pipe = std::unique_ptr<FILE, decltype(&pclose)>(popen(command.data(), "r"), pclose);
 				if (pipe == nullptr) {
 					throw Exception("open process failed", std::source_location::current(), "execute");

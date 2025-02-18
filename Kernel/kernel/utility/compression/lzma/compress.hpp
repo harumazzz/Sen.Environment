@@ -66,7 +66,7 @@ namespace Sen::Kernel::Compression::Lzma {
                 -1
             );
             assert_conditional(state == Subprojects::lzma::$SZ_OK, fmt::format("{}", Kernel::Language::get("lzma.compress.failed")), "compress");
-            destination.size(destination_size);
+            destination.resize(destination_size);
         }
 
         static auto process (

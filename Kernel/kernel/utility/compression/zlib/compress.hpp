@@ -106,7 +106,7 @@ namespace Sen::Kernel::Compression::Zlib {
             );
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to compress zlib", "process_whole");
             assert_conditional(z_stream.avail_in == 0, "Failed to compress zlib", "process_whole");
-            destination.size(static_cast<usize>(z_stream.total_out));
+            destination.resize(static_cast<usize>(z_stream.total_out));
             #pragma clang diagnostic pop
         }
 

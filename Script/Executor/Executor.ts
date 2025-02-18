@@ -205,7 +205,7 @@ namespace Sen.Script.Executor {
 		} else if ((configuration as any)[key] === '?') {
 			let input: string = undefined!;
 			while (true) {
-				input = Kernel.Console.readline().trim();
+				input = readline().trim();
 				if (/\d+/.test(input) && rule[0] <= BigInt(input) && rule[1] >= BigInt(input)) {
 					break;
 				}
@@ -259,7 +259,7 @@ namespace Sen.Script.Executor {
 			}
 			return print_argument(argument[key] as string);
 		} else if ((configuration as any)[key] === '?') {
-			(argument as any)[key] = Kernel.Console.readline().trim();
+			(argument as any)[key] = readline().trim();
 		} else {
 			if (rule === undefined) {
 				print_argument(configuration[key] as string);
@@ -320,8 +320,8 @@ namespace Sen.Script.Executor {
 	}
 
 	export function input_boolean(): boolean {
-		if (Shell.is_gui()) {
-			const result = Shell.callback(['input_boolean']);
+		if (is_gui()) {
+			const result = Shell.callback('input_boolean')[0];
 			return result === '1';
 		} else {
 			(
@@ -343,11 +343,11 @@ namespace Sen.Script.Executor {
 
 	export function input_integer(rule: Array<bigint>): bigint {
 		let input: string = undefined!;
-		if (Shell.is_gui()) {
-			input = Shell.callback(['input_enumeration', ...rule.map((e) => e.toString())]);
+		if (is_gui()) {
+			input = Shell.callback('input_enumeration', ...rule.map((e) => e.toString()))[0];
 		} else {
 			while (true) {
-				input = Kernel.Console.readline().trim();
+				input = readline().trim();
 				if (/^\d+$/.test(input) && (rule as Array<bigint>).includes(BigInt(input))) {
 					break;
 				}
@@ -385,7 +385,7 @@ namespace Sen.Script.Executor {
 					]![1];
 					break;
 				case 'string':
-					(argument as any)[key] = Kernel.Console.readline().trim();
+					(argument as any)[key] = readline().trim();
 					break;
 				case 'bigint':
 					(argument as any)[key] = input_integer(rule as Array<bigint>);
@@ -487,7 +487,7 @@ namespace Sen.Script.Executor {
 			default:
 				assert(false, format(Kernel.Language.get('js.method_does_not_execute')));
 		}
-		if (Shell.is_gui()) {
+		if (is_gui()) {
 			Console.finished(
 				Kernel.Language.get('js.command_line_has_finished'),
 				`${Kernel.Language.get('execution_time')}: ${clock
@@ -546,15 +546,15 @@ namespace Sen.Script.Executor {
 
 	export type ExecuteType = 'simple' | 'whole';
 
-	export function print_statement(name: string, num: bigint): void {
+	export function print_statement(name: string, num: bigint | number): void {
 		return print_argument(`${num}. ${Kernel.Language.get(name)}`);
 	}
 
 	export function print_argument(e: string): void {
-		if (Shell.is_gui()) {
-			Kernel.Console.print([e.toString()]);
+		if (is_gui()) {
+			print(e.toString());
 		} else {
-			Kernel.Console.print([`    ${e}`]);
+			print(`    ${e}`);
 		}
 	}
 
@@ -709,20 +709,20 @@ namespace Sen.Script.Executor {
 			),
 		);
 		loop: while (true) {
-			input = Kernel.Console.readline().trim();
+			input = readline().trim();
 			switch (input) {
 				case '':
 					break loop;
 				case ':p':
 					Console.argument(Kernel.Language.get('input_type'));
 					[Kernel.Language.get('file'), Kernel.Language.get('directory')].forEach(
-						(e, i) => print_statement(e, BigInt(i + 1)),
+						(e, i) => print_statement(e, i + 1),
 					);
 					const result = input_integer([1n, 2n]);
 					if (result === 1n) {
-						input = Shell.callback(['pick_file']);
+						input = Shell.callback('pick_file')[0];
 					} else {
-						input = Shell.callback(['pick_directory']);
+						input = Shell.callback('pick_directory')[0];
 					}
 					if (input.length === 0) continue;
 					break;
@@ -788,7 +788,7 @@ namespace Sen.Script.Executor {
 			Kernel.Path.normalize(e),
 		);
 		if ((argument.source as Array<string>).length > 1) {
-			if (Shell.is_gui()) {
+			if (is_gui()) {
 				Console.display(
 					`${Kernel.Language.get('js.make_host.argument_obtained')}:`,
 					(argument.source as Array<string>).map((e, i) => `${i + 1}. ${e}`).join('\n'),
@@ -796,9 +796,7 @@ namespace Sen.Script.Executor {
 				);
 			} else {
 				Console.send(`${Kernel.Language.get('js.make_host.argument_obtained')}:`, 'cyan');
-				(argument.source as Array<string>).forEach((e, i) =>
-					print_statement(e, BigInt(i + 1)),
-				);
+				(argument.source as Array<string>).forEach((e, i) => print_statement(e, i + 1));
 			}
 			Console.argument(
 				format(

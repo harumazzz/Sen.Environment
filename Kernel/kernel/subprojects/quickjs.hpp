@@ -3,7 +3,6 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 
-#include "quickjs.hpp"
 #include "subprojects/quickjs/quickjs.h"
 
 namespace Sen::Kernel::Subprojects::quickjs {
@@ -11,6 +10,24 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	using ::JSClassDef;
 
 	using ::JS_NewObjectClass;
+
+	using ::JS_SetContextOpaque;
+
+	using ::JS_GetContextOpaque;
+
+	using ::JS_NewDate;
+
+	using ::JS_Call;
+
+	using ::JS_NewPromiseCapability;
+
+	using ::JS_NewArrayBuffer;
+
+	using ::JS_GetProperty;
+
+	using ::JS_HasProperty;
+
+	using ::JS_DeleteProperty;
 
 	using ::JS_NewClassID;
 
@@ -159,6 +176,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	inline static auto constexpr $JS_PROP_C_W_E = int{JS_PROP_C_W_E};
 
 	inline static auto constexpr $JS_EVAL_TYPE_GLOBAL = int{JS_EVAL_TYPE_GLOBAL};
+
+	inline static auto constexpr $JS_PROP_THROW = int{JS_PROP_THROW};
 
 	inline static auto constexpr $JS_INVALID_CLASS_ID = int{JS_INVALID_CLASS_ID};
 

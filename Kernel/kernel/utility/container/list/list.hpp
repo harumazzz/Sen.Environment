@@ -8,13 +8,15 @@ namespace Sen::Kernel {
     template<typename T>
     class CList;
 
+	template <typename T>
+	using List = CList<T>;
+
     template <typename T>
 	class CList : public Common, public BaseContainer<T> {
 
 		protected:
 
     		using Common = Common;
-
 
 		public:
 
@@ -31,7 +33,7 @@ namespace Sen::Kernel {
 
 			constexpr explicit CList(
 				const Size& size
-			) : BaseContainer<T>{new T[size], size}, _capacity{size}
+			) : BaseContainer<T>{new T[size], 0_size}, _capacity{size}
 			{
 
 			}
@@ -67,9 +69,9 @@ namespace Sen::Kernel {
 				return std::make_tuple(raw, size);
 			}
 
-		    auto allocate(
+		    constexpr auto allocate(
 				Size const& size
-			) -> void override
+			) -> void
 			{
 				if (thiz.value != nullptr) {
 					delete[] thiz.value;
@@ -79,7 +81,7 @@ namespace Sen::Kernel {
 				thiz._capacity = size;
 			}
 
-			~CList(
+			constexpr ~CList(
 
 			) override {
 				if (thiz.value != nullptr) {
@@ -88,7 +90,7 @@ namespace Sen::Kernel {
 				}
 			}
 
-			explicit CList(
+			constexpr CList(
 				const CList& other
 			) : CList<T>{other._capacity} {
 				for (auto & e : other) {
@@ -96,7 +98,7 @@ namespace Sen::Kernel {
 				}
 			}
 
-			auto operator =(
+			constexpr auto operator =(
 				const CList& other
 			) -> CList& {
 				thiz.allocate(other._capacity);
@@ -138,15 +140,15 @@ namespace Sen::Kernel {
 
 			auto operator == (
 				const CList& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator != (
 				const CList& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator < (
 				const CList& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator > (
 				const CList& other
@@ -154,11 +156,11 @@ namespace Sen::Kernel {
 
 			auto operator <= (
 				const CList& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
 			auto operator >= (
 				const CList& other
-			) -> bool const = delete;
+			) -> bool = delete;
 
     		constexpr auto take_ownership (
 				CList& other
@@ -191,7 +193,7 @@ namespace Sen::Kernel {
 				return thiz._size;
 			}
 
-    		constexpr auto size(
+    		constexpr auto resize(
 				const Size& new_size
 			) -> void
 		    {
@@ -199,14 +201,14 @@ namespace Sen::Kernel {
 		    	thiz._size = new_size;
 		    }
 
-    		auto clear(
+    		constexpr auto clear(
 
 			) -> void override {
 				thiz._capacity = 0;
 		    	BaseContainer<T>::clear();
 			}
 
-    		auto reallocate (
+    		constexpr auto reallocate (
 				const Size& size
 			) -> void {
 				if (thiz._capacity < size) {
@@ -226,7 +228,7 @@ namespace Sen::Kernel {
 			}
 
     		template <typename U>
-    		auto append (
+    		constexpr auto append (
     			U&& value
     		) -> void {
 				if (thiz._size + 1 > thiz._capacity) {
@@ -236,7 +238,7 @@ namespace Sen::Kernel {
 				++thiz._size;
 			}
 
-    		auto append (
+    		constexpr auto append (
     		) -> void {
     			if (thiz._size + 1 > thiz._capacity) {
     				thiz.reallocate(thiz._capacity * 4);
@@ -244,7 +246,7 @@ namespace Sen::Kernel {
     			++thiz._size;
     		}
 
-    		auto assign (
+    		constexpr auto assign (
 				CArray<T>& other
 			) -> void {
 				if (thiz.value != nullptr) {
@@ -257,7 +259,7 @@ namespace Sen::Kernel {
 				other._size = 0;
 			}
 
-    		auto assign (
+    		constexpr auto assign (
 				CList& other
 			) -> void {
 				if (thiz.value != nullptr) {
@@ -272,7 +274,7 @@ namespace Sen::Kernel {
 			}
 
     		template <typename... Args> requires (std::is_same_v<Args, Size> && ... )
-    		auto pop(
+    		constexpr auto pop(
     			 const Args&... args
 			) -> void {
 				assert_conditional(thiz._size > 0, fmt::format("No argument to pop, the current list is empty"), "pop");
@@ -293,7 +295,16 @@ namespace Sen::Kernel {
 				}
 			}
 
-    		auto insert(
+    		constexpr auto view (
+    		) -> CListView<T> {
+				return CListView<T>{thiz.value, thiz._size, thiz._capacity};
+    		}
+
+    		constexpr operator CListView<T>() {
+				return CListView<T>{thiz.value, thiz._size, thiz._capacity};
+    		}
+
+    		constexpr auto insert(
 				const Size& index,
 				T&& element
 			) -> void {
@@ -303,8 +314,7 @@ namespace Sen::Kernel {
 				}
 				if constexpr (is_numeric_v<T>) {
 					std::memcpy(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
-				}
-		    	else {
+				} else {
 		    		std::memmove(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
 		    	}
 				thiz.value[index] = std::move(element);
@@ -313,10 +323,18 @@ namespace Sen::Kernel {
 
     		friend class CArray<T>;
 
-    		static auto make_list (
+    		constexpr static auto make_list (
 				const std::span<T>& init
 			) -> CList {
     			return CList{init};
+    		}
+
+    		constexpr static auto make_list (
+				const std::initializer_list<T>& init
+			) -> CList {
+    			auto result = CList{init.size()};
+    			std::move(init.begin(), init.end(), init.begin());
+    			return result;
     		}
 	};
 

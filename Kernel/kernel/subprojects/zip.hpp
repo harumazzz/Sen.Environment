@@ -40,7 +40,7 @@ namespace Sen::Kernel::Subprojects::zip {
 
 	using ::zip_stream_copy;
 
-
+	using ::zip_t;
 	
 
 }

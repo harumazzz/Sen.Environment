@@ -15,16 +15,6 @@ declare namespace Sen {
 	 */
 	declare namespace Shell {
 		/**
-		 * The version number of the current shell.
-		 */
-		export function version(): number;
-
-		/**
-		 * Boolean flag indicating whether the current shell is a graphical user interface (GUI) or a console.
-		 */
-		export function is_gui(): boolean;
-
-		/**
 		 * Callback function for processing shell commands.
 		 *
 		 * @param argument An array containing the command string as the first element
@@ -32,7 +22,7 @@ declare namespace Sen {
 		 *
 		 * @returns A string representing the output or result of the command execution.
 		 */
-		export function callback(argument: [string, ...string]): string;
+		export function callback(argument: string, ...string): Array<string>;
 	}
 
 	/**
@@ -44,12 +34,6 @@ declare namespace Sen {
 		 * The current version number of the kernel.
 		 */
 		export function version(): number;
-
-		/**
-		 * Read-only access to the arguments passed to the kernel on startup.
-		 * This is likely a string array containing command-line arguments.
-		 */
-		export function arguments(): Array<string>;
 
 		export function test<T>(source: string): T;
 
@@ -174,20 +158,6 @@ declare namespace Sen {
 			 * @param value The ArrayBuffer to fill with random bytes.
 			 */
 			export function random(value: ArrayBuffer): void;
-
-			/**
-			 * copyArrayBuffer function
-			 *
-			 * This function creates a deep copy of the provided ArrayBuffer.
-			 *
-			 * A deep copy ensures a new, independent ArrayBuffer is created with the same
-			 * contents as the original. Changes to the copy won't affect the original buffer,
-			 * and vice versa.
-			 *
-			 * @param {ArrayBuffer} value - The ArrayBuffer to copy.
-			 * @returns {ArrayBuffer} - A new ArrayBuffer containing a copy of the original data.
-			 */
-			export function copyArrayBuffer(value: ArrayBuffer): ArrayBuffer;
 
 			/**
 			 * Compares two ArrayBuffers for equality.
@@ -438,25 +408,6 @@ declare namespace Sen {
 		export type Color = 'red' | 'green' | 'cyan' | 'yellow' | 'default';
 
 		/**
-		 * Declarations for console methods
-		 */
-		declare namespace Console {
-			/**
-			 * Print a message to the debug console with optional color.
-			 * @param title - The title of the message
-			 * @param message - The content of the message (optional)
-			 * @param color - The color of the message (optional)
-			 */
-			export function print(data: [string, string?, Color?]): void;
-
-			/**
-			 * Read a line of input from the console.
-			 * @returns The input string
-			 */
-			export function readline(): string;
-		}
-
-		/**
 		 * Custom JSON Serialization and Deserialization
 		 *
 		 * This namespace provides functions for custom JSON serialization and deserialization.
@@ -678,31 +629,6 @@ declare namespace Sen {
 					 */
 					export function process(source: string, destination: string): void;
 				}
-			}
-
-			/**
-			 * JavaScript Zlib and Gzip Compression/Decompression Utilities (may not be directly related to the kernel)
-			 *
-			 * This namespace provides functions for Zlib and Gzip compression and decompression.
-			 * These functionalities might not directly interact with the operating system kernel for compression/decompression.
-			 */
-
-			declare namespace Zlib {
-				/**
-				 * Zlib compression level. Higher levels result in better compression ratios
-				 * but take longer to compress.
-				 */
-				export type Level = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-
-				/**
-				 * --------------------------------------------------
-				 * JavaScript Zlib decompression function for data stream (advanced usage)
-				 *
-				 * @param data The ArrayBufer containing the compressed data.
-				 * @returns A new ArrayBufer containing the decompressed data.
-				 * --------------------------------------------------
-				 */
-				export function uncompress(data: ArrayBuffer): ArrayBuffer;
 			}
 		}
 
@@ -1010,30 +936,6 @@ declare namespace Sen {
 						destination: string,
 						use_64_bit_variant: boolean,
 					): void;
-
-					/**
-					 * Uncompresses data in memory using the zlib library.
-					 *
-					 * @param source {ArrayBuffer} The source data to be uncompressed.
-					 * @param use_64_bit_variant {boolean} Flag to indicate whether to use the 64-bit variant of zlib (if available).
-					 * @returns {Kernel.BinaryView} The uncompressed data as a BinaryView.
-					 */
-					export function uncompress(
-						source: ArrayBuffer,
-						use_64_bit_variant: boolean,
-					): Kernel.BinaryView;
-
-					/**
-					 * Compresses data in memory using the zlib library.
-					 *
-					 * @param source {string} The source data to be compressed.
-					 * @param use_64_bit_variant {boolean} Flag to indicate whether to use the 64-bit variant of zlib (if available).
-					 * @returns {Kernel.BinaryView} The compressed data as a BinaryView.
-					 */
-					export function compress(
-						source: string,
-						use_64_bit_variant: boolean,
-					): Kernel.BinaryView;
 				}
 
 				/**

@@ -18,12 +18,25 @@ namespace Sen::Kernel::Javascript {
     ) -> Subprojects::quickjs::JSValue {
         auto context = Context::new_ref(ctx);
         auto value = Value::new_ref(ctx, this_val);
+        auto result = Value::new_value(ctx);
         auto arguments = Array<Value>{static_cast<usize>(argc)};
         for (auto i = 0; i < argc; ++i) {
             arguments[i] = Value::new_ref(ctx, argv[i]);
         }
-        auto result = Value::new_value(ctx);
-        Callable(context, value, arguments, result);
+        try {
+            std::invoke(Callable, context, value, arguments, result);
+        } catch (...) {
+            auto exception = parse_exception();
+            auto error = context.evaluate(StringHelper::make_string(fmt::format(
+            R"(function {0}() {{
+				    let e = new Error(`{1}`);
+				    e.source = `{2}`;
+				    throw e;
+			    }}{0}();)",
+            exception.function_name, exception.message(), exception.source
+            )), "proxy_native_function"_s);
+            result.set_value(error.release());
+        }
         return result.release();
     }
 
@@ -56,8 +69,8 @@ namespace Sen::Kernel::Javascript {
             using ClassName = typename traits::class_type;
             auto instance = static_cast<Pointer<ClassName>>(nullptr);
             value.template get<Pointer<ClassName>>(instance);
-            return call([&]<typename... Arguments> requires (!std::is_void_v<Arguments> && ...) (Arguments&&... args) -> auto {
-                return (instance->*function)(std::forward<Arguments>(args)...);
+            return call([&]<typename... Arguments> requires (!std::is_void_v<Arguments> && ...) (Arguments&&... args) -> decltype(std::invoke(function, instance, std::forward<Arguments>(args)...)) {
+                return std::invoke(function, instance, std::forward<Arguments>(args)...);
             });
         } else {
             return call(function);
@@ -193,6 +206,17 @@ namespace Sen::Kernel::Javascript {
             return thiz;
         }
 
+        template <typename U>
+        auto add_member_variable (
+            const String& name,
+            U&& value
+        ) -> ClassBuilder& {
+            auto new_value = thiz.m_proto.new_value();
+            new_value.template set<U>(std::forward<U>(value));
+            thiz.m_proto.define_property(name, new_value.release());
+            return thiz;
+        }
+
         template<auto function> requires is_global_function_v<function> &&
         std::is_same_v<typename is_global_function<std::decay_t<type_of<function>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
         std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType>
@@ -203,12 +227,23 @@ namespace Sen::Kernel::Javascript {
             return thiz;
         }
 
+        template <typename U>
+        auto add_static_variable (
+            const String& name,
+            U&& value
+        ) -> ClassBuilder& {
+            auto new_value = thiz.m_proto.new_value();
+            new_value.template set<U>(std::forward<U>(value));
+            thiz.m_constructor.define_property(name, new_value.release());
+            return thiz;
+        }
+
         template <auto getter, auto setter> requires is_global_function_v<getter> &&
         std::is_same_v<typename is_global_function<std::decay_t<type_of<getter>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
             std::is_void_v<typename is_global_function<std::decay_t<type_of<getter>>>::ReturnType> && is_global_function_v<setter> &&
             std::is_same_v<typename is_global_function<std::decay_t<type_of<setter>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
             std::is_void_v<typename is_global_function<std::decay_t<type_of<setter>>>::ReturnType>
-        auto add_setter_setter (
+        auto add_getter_setter (
             const String& name
         ) -> ClassBuilder& {
             auto generator = [this, &name]<auto function> requires is_global_function_v<function> &&
@@ -272,7 +307,7 @@ namespace Sen::Kernel::Javascript {
             const String& name,
             Value && value
         ) -> NamespaceBuilder & {
-            thiz.m_object.define_property(name, as_move(value));
+            thiz.m_object.define_property(name, value.release());
             return thiz;
         }
 

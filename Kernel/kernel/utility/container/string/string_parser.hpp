@@ -84,6 +84,14 @@ namespace Sen::Kernel::StringParser {
         return to_integer<u8>(str, error);
     }
 
+    inline auto to_size (
+        const String& str,
+        const std::string_view& error
+    ) -> usize
+    {
+        return to_integer<usize>(str, error);
+    }
+
    inline auto to_int16(
         const String& str,
         const std::string_view& error

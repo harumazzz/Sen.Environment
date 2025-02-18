@@ -76,7 +76,6 @@ namespace Sen::Kernel::Javascript {
             Value& source,
             String& destination
         ) -> void {
-            assert_conditional(source.is_string(), "Expected the value to be string, but the actual type is not", "from_value");
             auto size = usize{};
             auto buffer = Subprojects::quickjs::JS_ToCStringLen(source._context(), &size, source.value());
             auto movable_string = String{buffer, size};
@@ -89,6 +88,18 @@ namespace Sen::Kernel::Javascript {
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
+        }
+
+    };
+
+    template <>
+    struct Trait<std::string_view> {
+
+        static auto to_value(
+            auto&& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.data(), source.size()));
         }
 
     };
@@ -122,7 +133,7 @@ namespace Sen::Kernel::Javascript {
         ) -> void {
             assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
             auto length = u32{};
-            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).release());
+            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
             destination.allocate(length);
             for (auto index : Range{static_cast<usize>(length)}) {
                 auto value = T{};

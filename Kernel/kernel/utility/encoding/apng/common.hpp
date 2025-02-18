@@ -63,7 +63,7 @@ namespace Sen::Kernel::Encoding::APNG {
 	};
 
 	struct ImageData {
-		List<List<std::uint32_t>> pixel_list;
+		CList<CList<std::uint32_t>> pixel_list;
 		ImageHeader meta_data;
 	};
 

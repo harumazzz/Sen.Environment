@@ -17,4 +17,10 @@ namespace Sen::Kernel {
     template <typename T>
     class CList;
 
+    template <typename T>
+    class CArrayView;
+
+    template <typename T>
+    class CListView;
+
 }

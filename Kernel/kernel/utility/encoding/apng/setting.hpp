@@ -7,7 +7,7 @@ namespace Sen::Kernel::Encoding::APNG {
 	template <typename T> requires std::is_arithmetic<T>::value
 	struct Setting {
 
-        List<T> delay_frames_list{};
+        CList<T> delay_frames_list{};
 
         T loop{};
 
@@ -38,7 +38,7 @@ namespace Sen::Kernel::Encoding::APNG {
 		) -> Setting& = delete;
 
         explicit Setting(
-            List<T> &&delay_frames_list,
+            CList<T> &&delay_frames_list,
             const T& loop,
             const T& width,
             const T& height,

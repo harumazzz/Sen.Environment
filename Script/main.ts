@@ -1,5 +1,32 @@
 namespace Sen.Script {
 	/**
+	 *
+	 * @returns Test is the current Shell is a GUI interface
+	 */
+
+	export function is_gui(): boolean {
+		return Shell.callback('is_gui')[0] === '1';
+	}
+
+	/**
+	 *
+	 * @param args - Arguments to print
+	 */
+
+	export function print(...args: Array<string>): void {
+		Shell.callback('display', ...args);
+	}
+
+	/**
+	 *
+	 * @returns Result of the readline
+	 */
+
+	export function readline(): string {
+		return Shell.callback('input')[0];
+	}
+
+	/**
 	 * Console namespace of Script
 	 */
 
@@ -19,12 +46,12 @@ namespace Sen.Script {
 			message?: string,
 			color: Kernel.Color = 'default',
 		): void {
-			const is_gui = Shell.is_gui();
-			const prefix = is_gui ? '' : '● ';
+			const is = is_gui();
+			const prefix = is ? '' : '● ';
 			const new_tille = `${prefix}${title}`;
 			let msg = message ? message : '';
-			if (!is_gui && msg !== '') msg = `    ${msg}`;
-			return Kernel.Console.print([new_tille, msg, color]);
+			if (!is && msg !== '') msg = `    ${msg}`;
+			return print(new_tille, msg, color);
 		}
 
 		export function send(message: any, color: Kernel.Color = 'default'): void {
@@ -39,8 +66,7 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function error(str: string | undefined): void {
-			if (str === undefined) return;
+		export function error(str: string): void {
 			return Console.display(`${Kernel.Language.get('runtime_error')}:`, str, 'red');
 		}
 
@@ -53,10 +79,10 @@ namespace Sen.Script {
 		 */
 
 		export function argument(str: any): void {
-			const title = Shell.is_gui()
+			const title = is_gui()
 				? `${Kernel.Language.get('execution_argument')}:`
 				: `${Kernel.Language.get('execution_argument')}: ${str}`;
-			const message = Shell.is_gui() ? str : '';
+			const message = is_gui() ? str : '';
 			return display(title, message, 'cyan');
 		}
 
@@ -132,11 +158,11 @@ namespace Sen.Script {
 			Console.argument(source);
 			let destination: string = undefined!;
 			loop: do {
-				destination = Kernel.Console.readline().trim();
+				destination = readline().trim();
 				switch (destination) {
 					case ':p':
-						if (type === 'file') destination = Shell.callback(['pick_file']);
-						else destination = Shell.callback(['pick_directory']);
+						if (type === 'file') destination = Shell.callback('pick_file')[0];
+						else destination = Shell.callback('pick_directory')[0];
 
 						Console.obtained(destination);
 						break loop;
@@ -194,8 +220,8 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function setup(): void {
-			participant = Kernel.Path.dirname(Kernel.Home.script());
+		export function setup(script: string): void {
+			participant = Kernel.Path.dirname(script);
 		}
 
 		/**
@@ -231,7 +257,7 @@ namespace Sen.Script {
 				.split('\n')
 				.map((e) => e.replace(/(?<=\()(.*)(?=(Kernel|Script))/, ''))
 				.filter((e: string) => !/(\s)<eval>(\s)/m.test(e));
-			if (Shell.is_gui()) {
+			if (is_gui()) {
 				return base_stack.map((e) => e.trim().replaceAll('../', '')).join('\n');
 			}
 			return base_stack.join('\n');
@@ -257,7 +283,7 @@ namespace Sen.Script {
 		 */
 
 		export function make_exception(e: Error): string {
-			if (Shell.is_gui()) {
+			if (is_gui()) {
 				Console.error(e.message);
 				Console.display(
 					`${Kernel.Language.get('stack')}:`,
@@ -276,7 +302,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 13 as const;
+	export const version = 14 as const;
 
 	/**
 	 * --------------------------------------------------
@@ -285,10 +311,17 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export async function main(): Promise<void> {
-		const result: string = await launch();
-		Console.error(result);
-		if (Shell.is_gui()) {
+	export async function main(data: {
+		arguments: Array<string>;
+		home: string;
+		error: string | undefined;
+	}): Promise<void> {
+		const result: string | undefined = await launch(data.arguments);
+		if (result !== undefined) {
+			data.error = result;
+			Console.error(result);
+		}
+		if (is_gui()) {
 			Console.finished(
 				Kernel.Language.get('method_are_succeeded'),
 				Kernel.Language.get('js.relaunch_tool'),
@@ -296,7 +329,7 @@ namespace Sen.Script {
 		} else {
 			Console.finished(Kernel.Language.get('method_are_succeeded'));
 		}
-		Shell.callback(['finish']);
+		Shell.callback('finish');
 	}
 
 	/**
@@ -306,15 +339,14 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export async function launch(): Promise<string> {
-		let result: string = undefined!;
+	export async function launch(args: Array<string>): Promise<string | undefined> {
+		let result: string | undefined = undefined;
 		try {
-			Home.setup();
-			const args = Kernel.arguments();
+			Home.setup(args[2]);
 			Console.display(
-				`Sen ~ Shell: ${Shell.callback([
-					'version',
-				])} & Kernel: ${Kernel.version()} & Script: ${version}`,
+				`Sen ~ Shell: ${
+					Shell.callback('version')[0]
+				} & Kernel: ${Kernel.version()} & Script: ${version}`,
 				args[0],
 			);
 			Module.load();
@@ -405,3 +437,5 @@ namespace Sen.Script {
 		];
 	}
 }
+
+Sen.Script.main;

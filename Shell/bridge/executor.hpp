@@ -4,8 +4,13 @@
 
 namespace Sen::Shell {
 
-	using Callback = int(*)(StringList* list, String* destination);
+	using Callback = int(*)(Message* source, Message* destination);
 
-	using Execute = int(*)(StringList* argument, Callback callback);
+	struct Service {
 
+		Callback callback;
+
+	};
+
+	using Execute = int(*)(Message* argument, Service* service);
 }

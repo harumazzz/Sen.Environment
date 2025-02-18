@@ -126,9 +126,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 		const sprite_list = Object.keys(sprite_information_map);
 		if (sprite_list.length >= 0) {
 			Console.finished(Kernel.Language.get('popcap.animation.to_apng.all_sprite_loaded'));
-			sprite_list.map((e, i) => {
-				Kernel.Console.print([`    ${i + 1}: ${e}`]);
-			});
+			sprite_list.map((e, i) => Executor.print_statement(e, i));
 			Console.argument(
 				Kernel.Language.get('popcap.animation.miscellaneous.to_apng.disable_sprite'),
 			);
@@ -146,7 +144,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					sprite_list.map((_, i) => rule.push(BigInt(i + 1)));
 					let sprite_to_disable: string = '';
 					const argument = (rule: Array<bigint>) => {
-						const input: string = Kernel.Console.readline().trim();
+						const input: string = readline().trim();
 						const check_vaild = (range: Array<bigint>) => {
 							if (range.length > 0) return;
 							Console.warning(Kernel.Language.get('js.invalid_input_value'));

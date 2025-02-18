@@ -3,6 +3,8 @@
 #include "kernel/interface/context.hpp"
 #include "kernel/interface/api/method.hpp"
 #include "kernel/utility/javascript/proxy.hpp"
+#include "kernel/interface/api/class.hpp"
+#include "kernel/support/utility.hpp"
 
 namespace Sen::Kernel::Interface::Runtime {
 
@@ -14,6 +16,10 @@ namespace Sen::Kernel::Interface::Runtime {
         auto s_Kernel = s_Sen.add_space("Kernel"_s);
         {
             s_Kernel.add_function<&Javascript::proxy_native_function_wrapper<&API::version>>("version"_s);
+        }
+        {
+            auto s_Shell = s_Sen.add_space("Shell"_s);
+            s_Shell.add_function<&API::Shell::callback>("callback"_s);
         }
         {
             using Type = Path::PathType;
@@ -53,6 +59,21 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_member_function<&Javascript::proxy_native_function_wrapper<&Clock::is_started>>("is_started"_s)
             .add_member_function<&Javascript::proxy_native_function_wrapper<&Clock::is_stopped>>("is_stopped"_s);
         }
+        {
+            auto s_OperatingSystem = s_Kernel.add_space("OperatingSystem"_s);
+            s_OperatingSystem.add_function<&Javascript::proxy_native_function_wrapper<&API::OperatingSystem::current>>("current"_s);
+        }
+        {
+            auto s_Process = s_Kernel.add_space("Process"_s);
+            s_Process.add_function<&Javascript::proxy_native_function_wrapper<&Process::execute>>("execute"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Process::run>>("run"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Process::is_exists_in_path_environment>>("is_exists_in_path_environment"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Process::get_path_environment>>("get_path_environment"_s);
+        }
+        {
+            auto s_JavaScript = s_Kernel.add_space("JavaScript"_s);
+            s_JavaScript.add_function<&API::JavaScript::evaluate_fs>("evaluate_fs"_s);
+        }
         const auto s_Support = s_Kernel.add_space("Support"_s);
         const auto s_PopCap = s_Support.add_space("PopCap"_s);
         {
@@ -63,5 +84,14 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReflectionObjectNotation::Decrypt::process_fs>>("decrypt_fs"_s);
         }
     }
+
+    inline auto make_exception() -> List<String> {
+        auto exception_message = List<String>{4_size};
+        exception_message.append("display"_s);
+        exception_message.append(StringHelper::make_string(parse_exception().what()));
+        exception_message.append(""_s);
+        exception_message.append("red"_s);
+        return exception_message;
+    };
 
 }		

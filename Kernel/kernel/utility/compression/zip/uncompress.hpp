@@ -34,6 +34,15 @@ namespace Sen::Kernel::Compression::Zip {
             Uncompress&& other
         ) -> Uncompress& = delete;
 
+        static auto make_value (
+            Subprojects::zip::zip_t* zip,
+            const usize& size
+        ) -> Uint8Array {
+            auto value = Uint8Array{size};
+            Subprojects::zip::zip_entry_extract(zip, on_extract, &value);
+            return value;
+        }
+
         static auto process (
             Uint8Array& source,
             HashMap<String, Uint8Array>& destination
@@ -46,9 +55,7 @@ namespace Sen::Kernel::Compression::Zip {
                 auto entry = Subprojects::zip::zip_entry_openbyindex(zip, index);
                 auto name = Subprojects::zip::zip_entry_name(zip);
                 auto size = Subprojects::zip::zip_entry_size(zip);
-                auto value = Uint8Array{size};
-                Subprojects::zip::zip_entry_extract(zip, on_extract, &value);
-                destination.emplace(String{name, size}, as_move(value));
+                destination.emplace(String{name, size}, make_value(zip, size));
                 Subprojects::zip::zip_entry_close(zip);
             }
             Subprojects::zip::zip_close(zip);

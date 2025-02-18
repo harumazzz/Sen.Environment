@@ -51,7 +51,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 			Console.argument(
 				Kernel.Language.get('script.helper.pvz2.chinese.to_international.waiting'),
 			);
-			Kernel.Console.readline();
+			readline();
 			return Kernel.JSON.deserialize_fs<Array<string>>(international_ripe_file);
 		};
 		const list = _handle();

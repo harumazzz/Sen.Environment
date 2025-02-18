@@ -19,15 +19,17 @@ add_executable(
     $<$<PLATFORM_ID:Windows>:./shell.rc>
     ./bridge/data.hpp
     ./bridge/executor.hpp
-    ./library/callback.hpp
-    ./library/color.hpp
-    ./library/dialog.hpp
-    ./library/loader.hpp
     ./library/macro.hpp
     ./library/standard.hpp
     ./library/string.hpp
-    ./library/version.hpp
     ./shell.cpp
+        library/builtin.hpp
+        library/miscellaneous.hpp
+        library/service.hpp
+        library/library.hpp
+        library/loader.hpp
+        library/proxy.hpp
+        library/version.hpp
 )
 
 target_include_directories(

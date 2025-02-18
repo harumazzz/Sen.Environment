@@ -40,6 +40,14 @@ namespace Sen::Kernel::Javascript {
         template <typename T> requires std::is_class_v<T>
         inline static auto class_id = u32{0};
 
+        struct Promise {
+
+            JSValue resolve;
+
+            JSValue reject;
+
+        };
+
     }
 
 }

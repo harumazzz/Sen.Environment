@@ -49,10 +49,10 @@ namespace Sen::Kernel {
             return thiz.m_data.size();
         }
 
-        constexpr auto size(
+        constexpr auto resize(
             const usize& size
         ) -> void {
-            return thiz.m_data.size(size);
+            return thiz.m_data.resize(size);
         }
 
         constexpr auto current_iterator(
@@ -103,9 +103,9 @@ namespace Sen::Kernel {
             const uint8_t* data,
             const usize &size
         ) -> void {
-            auto temporary = size + thiz.m_position;
+            const auto temporary = size + thiz.m_position;
             thiz.allocate_full(temporary);
-            thiz.m_data.size(thiz.m_data.size() + size);
+            thiz.m_data.resize(thiz.m_data.size() + size);
             std::memcpy(&thiz.m_data[thiz.m_position], data, size);
             thiz.set_position(temporary);
         }
@@ -115,9 +115,9 @@ namespace Sen::Kernel {
             const T &value
         ) -> void {
             constexpr auto sz = sizeof(T);
-            auto temporary = thiz.m_position + sz;
+            const auto temporary = thiz.m_position + sz;
             thiz.allocate_full(temporary);
-            thiz.m_data.size(thiz.m_data.size() + sz);
+            thiz.m_data.resize(thiz.m_data.size() + sz);
             std::memcpy(&thiz.m_data[thiz.m_position], &value, sz);
             thiz.set_position(temporary);
         }

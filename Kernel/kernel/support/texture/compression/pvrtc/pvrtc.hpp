@@ -60,12 +60,13 @@ namespace Sen::Kernel::Support::Texture::Compression::PVRTC
 	}
 
 	inline static auto decode_4bpp(
-		const List<Packet> &packets,
-		int width) -> List<uint8_t>
+		const CList<Packet> &packets,
+		int width) -> CList<uint8_t>
 	{
 		auto blocks = width >> 2;
 		auto blockMask = blocks - 1;
-		auto result = List<uint8_t>((width * width) * 4, 0x00);
+		auto result = CList<uint8_t>{static_cast<unsigned long long>(width * width * 4)};
+		std::memset(result.cbegin(), 0x00, result.size());
 		for (auto y : Range<int>(blocks))
 		{
 			for (auto x : Range<int>(blocks))
@@ -110,7 +111,7 @@ namespace Sen::Kernel::Support::Texture::Compression::PVRTC
 
 	template <typename T> requires std::is_integral<T>::value && std::is_unsigned<T>::value
 	inline static auto calculate_bounding_box(
-		const List<uint8_t> &colors,
+		const CList<uint8_t> &colors,
 		int width,
 		int blockX,
 		int blockY,
@@ -171,13 +172,13 @@ namespace Sen::Kernel::Support::Texture::Compression::PVRTC
 
 	template <typename T> requires std::is_integral<T>::value && std::is_unsigned<T>::value
 	inline static auto encode_rgba_4bpp(
-		const List<uint8_t> &color,
+		const CList<uint8_t> &color,
 		int width
-	) -> List<PVRTC::Packet>
+	) -> CList<PVRTC::Packet>
 	{
 		auto blocks = width >> 2;
 		auto blockMask = blocks - 1;
-		auto result = List<PVRTC::Packet>{};
+		auto result = CList<PVRTC::Packet>{};
 		result.resize(((width * width) >> 4));
 		auto min_color = Rgba32<T>{};
 		auto max_color = Rgba32<T>{};
@@ -252,13 +253,13 @@ namespace Sen::Kernel::Support::Texture::Compression::PVRTC
 
 	template <typename T> requires std::is_integral<T>::value && std::is_unsigned<T>::value
 	inline static auto encode_rgb_4bpp(
-		const List<uint8_t> &color,
+		const CList<uint8_t> &color,
 		int width
-	) -> List<PVRTC::Packet>
+	) -> CList<PVRTC::Packet>
 	{
 		auto blocks = width >> 2;
 		auto blockMask = blocks - 1;
-		auto result = List<PVRTC::Packet>{};
+		auto result = CList<PVRTC::Packet>{};
 		result.resize(((width * width) >> 4));
 		auto min_color = Rgba32<T>{};
 		auto max_color = Rgba32<T>{};

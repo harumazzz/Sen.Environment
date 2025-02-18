@@ -42,7 +42,6 @@ add_library(
 
 	./utility/miscellaneous/language/language.hpp
 	./utility/algorithm/pointer.hpp
-	./utility/container/array/common.hpp
 	./utility/container/array/array.hpp
 	./utility/container/array/byte_array.hpp
 	./utility/container/list/common.hpp
@@ -303,6 +302,10 @@ add_library(
 		utility/stream/read_file_stream.hpp
 		utility/stream/write_file_stream.hpp
 		support/popcap/reflection_object_notation/decrypt.hpp
+		utility/container/array_view/array_view.hpp
+		utility/container/list_view/list_view.hpp
+		utility/container/list_view/byte_view.hpp
+		utility/container/array_view/byte_view.hpp
 
 )
 

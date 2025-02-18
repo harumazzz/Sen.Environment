@@ -1,6 +1,6 @@
 #pragma once
 
-#include "value.hpp"
+#include "kernel/utility/javascript/value.hpp"
 #include "kernel/utility/javascript/common.hpp"
 
 namespace Sen::Kernel::Javascript {
@@ -11,12 +11,14 @@ namespace Sen::Kernel::Javascript {
 
             Pointer<Subprojects::quickjs::JSContext> m_context;
 
+            bool m_module;
+
             bool m_owner;
 
             explicit Context(
                 const Pointer<Subprojects::quickjs::JSContext>& context,
                 const bool owner
-            ) : m_context{context}, m_owner{owner} {
+            ) : m_context{context}, m_module{false}, m_owner{owner} {
 
             }
 
@@ -24,9 +26,10 @@ namespace Sen::Kernel::Javascript {
 
             Context (
                 Context&& other
-            ) noexcept : m_context{other.m_context}, m_owner{other.m_owner} {
+            ) noexcept : m_context{other.m_context}, m_module{other.m_module}, m_owner{other.m_owner} {
                 other.m_context = nullptr;
                 other.m_owner = false;
+                other.m_module = false;
             }
 
             auto operator = (
@@ -34,8 +37,10 @@ namespace Sen::Kernel::Javascript {
             ) noexcept -> Context & {
                 thiz.m_context = other.m_context;
                 thiz.m_owner = other.m_owner;
+                thiz.m_module = other.m_module;
                 other.m_context = nullptr;
                 other.m_owner = false;
+                other.m_module = false;
                 return thiz;
             }
 
@@ -74,17 +79,27 @@ namespace Sen::Kernel::Javascript {
                 return Context{context, false};
             }
 
+            auto set_module (
+                const bool value
+            ) -> void {
+                thiz.m_module = value;
+            }
+
+            auto get_module (
+            ) const -> bool {
+                return thiz.m_module;
+            }
+
             inline auto evaluate (
                 const String& source,
-                const String& name,
-                const bool is_module
+                const String& name
             ) const -> Value {
                 const auto result = Subprojects::quickjs::JS_Eval(
                     thiz.m_context,
                     source.cbegin(),
                     source.size(),
                     name.cbegin(),
-                   is_module ? Subprojects::quickjs::$JS_EVAL_TYPE_MODULE : Subprojects::quickjs::$JS_EVAL_TYPE_GLOBAL | Subprojects::quickjs::$JS_EVAL_FLAG_STRICT
+                   thiz.m_module ? Subprojects::quickjs::$JS_EVAL_TYPE_MODULE : Subprojects::quickjs::$JS_EVAL_TYPE_GLOBAL | Subprojects::quickjs::$JS_EVAL_FLAG_STRICT
                 );
                 return Value::new_owner(thiz.m_context, result);
             }
@@ -92,7 +107,7 @@ namespace Sen::Kernel::Javascript {
             inline auto global_object (
 
             ) const -> Value {
-                return Value::new_ref(thiz.m_context, Subprojects::quickjs::JS_GetGlobalObject(thiz.m_context));
+                return Value::new_owner(thiz.m_context, Subprojects::quickjs::JS_GetGlobalObject(thiz.m_context));
             }
 
             inline auto catch_exception (
@@ -111,6 +126,22 @@ namespace Sen::Kernel::Javascript {
                 Value && value
             ) const -> void {
                 Subprojects::quickjs::JS_SetClassProto(thiz.m_context, static_cast<Subprojects::quickjs::JSClassID>(id), value.release());
+            }
+
+            template<typename T>
+            inline auto set_opaque (
+                const Pointer<T>& opaque
+            ) const -> void {
+                Subprojects::quickjs::JS_SetContextOpaque(thiz.m_context, opaque);
+            }
+
+            template<typename T>
+            inline auto get_opaque (
+
+            ) const -> Pointer<T> {
+                auto opaque = Subprojects::quickjs::JS_GetContextOpaque(thiz.m_context);
+                assert_conditional(opaque != nullptr, "Expected the value to be opaque, but the actual type is not", "get_opaque");
+                return static_cast<T*>(opaque);
             }
 
     };

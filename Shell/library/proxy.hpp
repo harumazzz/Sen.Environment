@@ -1,20 +1,13 @@
 #pragma once
 
-#include "kernel/utility/library.hpp"
-#include "kernel/utility/container/string/basic_string.hpp"
+#include "bridge/data.hpp"
+#include "library/builtin.hpp"
+#include "library/standard.hpp"
 
-namespace Sen::Kernel::Interface {
+namespace Sen::Shell {
 
-	struct Message {
-
-		uint8_t* value{nullptr};
-
-		size_t size{0};
-
-	};
-
-	inline constexpr auto total_size(
-        CList<String>& strings
+    inline constexpr auto total_size(
+        const std::vector<std::string>& strings
     ) -> usize
     {
         auto result = sizeof(u32);
@@ -24,9 +17,9 @@ namespace Sen::Kernel::Interface {
         return result;
     }
 
-    inline auto construct_proxy(
+    inline constexpr auto construct_proxy(
         Pointer<uint8_t> ptr,
-        CList<String>& strings
+        const std::vector<std::string>& strings
     ) -> void
     {
         for (auto& str : strings) {
@@ -63,7 +56,7 @@ namespace Sen::Kernel::Interface {
 
     template <typename MessagePtr>
     inline auto construct (
-        CList<String>& strings,
+        const std::vector<std::string>& strings,
         MessagePtr& message
     ) -> void {
         auto ptr = message->value;
@@ -75,7 +68,7 @@ namespace Sen::Kernel::Interface {
 
     template <typename Deleter>
     inline auto construct_message (
-        CList<String>& strings,
+        const std::vector<std::string>& strings,
         std::unique_ptr<Message, Deleter> &message
     ) -> void {
         new_message(message, total_size(strings));
@@ -83,7 +76,7 @@ namespace Sen::Kernel::Interface {
     }
 
     inline auto construct_message (
-        CList<String>& strings,
+        const std::vector<std::string>& strings,
         Pointer<Message> message
     ) -> void {
         new_message(message, total_size(strings));
@@ -93,32 +86,39 @@ namespace Sen::Kernel::Interface {
     inline constexpr auto destruct_proxy(
         Pointer<uint8_t> ptr,
         const uint32_t& count,
-        List<String>& result,
+        std::vector<std::string>& strings,
         const Pointer<Message> message
     ) -> void
     {
+        const auto end = message->value + message->size;
         for (auto i = u32{0}; i < count; ++i) {
+            if (ptr + sizeof(u32) > end) {
+                break;
+            }
             auto size = u32{};
             std::memcpy(&size, ptr, sizeof(u32));
             ptr += sizeof(u32);
-            result.append(String{reinterpret_cast<const char*>(ptr), size});
+            if (ptr + size > end) {
+                break;
+            }
+            strings.emplace_back(reinterpret_cast<const char*>(ptr), size);
             ptr += size;
         }
     }
 
     inline auto destruct_message (
-        const Pointer<Message> & message,
-        CList<String>& destination
-    ) -> void {
-	    if (message->size == 0) {
-	        return;
-	    }
+        const Pointer<Message> & message
+    ) -> std::vector<std::string> {
+        auto strings = std::vector<std::string>{};
+        if (message->size == sizeof(u32)) {
+            return strings;
+        }
         auto ptr = message->value;
         auto count = u32{};
         std::memcpy(&count, ptr, sizeof(u32));
         ptr += sizeof(u32);
-	    destination.allocate(count);
-        destruct_proxy(ptr, count, destination, message);
+        destruct_proxy(ptr, count, strings, message);
+        return strings;
     }
 
     inline constexpr auto free_message (
@@ -132,25 +132,22 @@ namespace Sen::Kernel::Interface {
         }
     }
 
+    inline constexpr auto free_service (
+        Pointer<Service> service
+    ) -> void {
+        delete service;
+    }
+
     inline constexpr auto total_size(
-        const String& str
+        const std::string& str
     ) -> usize {
         return sizeof(u32) + str.size();
     }
 
-    template <typename Message>
-    inline auto construct(
-        const String& str,
-        Message& message
-    ) -> void {
-        auto ptr = message->value;
-        const auto size = static_cast<u32>(str.size());
-        std::memcpy(ptr, &size, sizeof(u32));
-        ptr += sizeof(u32);
-        if (size > 0) {
-            std::memcpy(ptr, str.cbegin(), size);
-        }
+    template <typename... Args>
+    inline auto make_list(Args&&... args) -> std::vector<std::string> {
+        return std::vector<std::string>{std::forward<Args>(args)...};
     }
-	
+
 
 }

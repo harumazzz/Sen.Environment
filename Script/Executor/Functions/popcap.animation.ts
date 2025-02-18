@@ -247,7 +247,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 					Kernel.Language.get('popcap.animation.add_library.image_posix_for_id'),
 				);
 				while (argument.image_posix === undefined) {
-					const value = Kernel.Console.readline().trim();
+					const value = readline().trim();
 					if (value.length === 0) {
 						Console.warning(
 							Kernel.Language.get(
@@ -271,7 +271,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 								'popcap.animation.add_library.sprite_name',
 							)} ${media}`,
 						);
-						sprite = has_sprite ? Kernel.Console.readline().trim() : undefined;
+						sprite = has_sprite ? readline().trim() : undefined;
 					}
 					return sprite;
 				};

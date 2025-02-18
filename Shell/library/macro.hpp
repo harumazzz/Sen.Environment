@@ -19,9 +19,9 @@
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-#define MAIN_FUNCTION int wmain(int size, wchar_t* argc[])
+#define MAIN_FUNCTION int wmain(int argc, wchar_t* argv[])
 #else
-#define MAIN_FUNCTION int main(int size, char* argc[])
+#define MAIN_FUNCTION int main(int argc, char* argv[])
 #endif
 
 #define assert_conditional(condition, message) \
@@ -29,3 +29,9 @@
 		throw std::runtime_error(message); \
 	}\
 	static_assert(true)
+
+#define thiz (*this)
+
+namespace Sen::Shell {
+
+}

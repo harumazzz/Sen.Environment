@@ -6,9 +6,6 @@ namespace Sen::Kernel {
 	template <typename T>
 	using Pointer = T*;
 
-	template <typename T>
-	using List = std::vector<T>;
-
     template <typename Type>
     concept CharacterOnView = std::is_same_v<Type, char> || std::is_same_v<Type, unsigned char>;
 
@@ -79,11 +76,6 @@ namespace Sen::Kernel {
 
 	template <typename T>
 	struct get_type;
-
-	template <typename U>
-	struct get_type<List<U>> {
-		using type = U;
-	};
 
 	template <typename T>
 	using get_type_t = typename get_type<T>::type;

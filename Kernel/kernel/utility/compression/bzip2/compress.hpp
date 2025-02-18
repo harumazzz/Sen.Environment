@@ -79,7 +79,7 @@ namespace Sen::Kernel::Compression::bzip2 {
             );
             assert_conditional(state == Subprojects::bzip2::$BZ_STREAM_END, "Failed to finish bzip2", "process_whole");
             assert_conditional(bz_stream.avail_in == 0, "Failed to finish bzip2", "process_whole");
-            destination.size((static_cast<usize>(bz_stream.total_out_hi32) << 32) + static_cast<usize>(bz_stream.total_out_lo32));
+            destination.resize((static_cast<usize>(bz_stream.total_out_hi32) << 32) + static_cast<usize>(bz_stream.total_out_lo32));
         }
 
         static auto process (

@@ -1,6 +1,6 @@
 project(
 	tinyfiledialogs
-	VERSION 3.18.2
+	VERSION 3.19.1
 	HOMEPAGE_URL https://sourceforge.net/projects/tinyfiledialogs/
 	LANGUAGES C
 )

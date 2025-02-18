@@ -1,10 +1,7 @@
 #pragma once
 
-#include "kernel/interface/api/method.hpp"
-#include "kernel/interface/api/class.hpp"
-#include "kernel/interface/version.hpp"
 #include "kernel/interface/shell.hpp"
-#include "kernel/utility/javascript/runtime.hpp"
+#include "kernel/utility/utility.hpp"
 
 namespace Sen::Kernel::Interface {
 
@@ -16,27 +13,14 @@ namespace Sen::Kernel::Interface {
 
         Javascript::Context m_context;
 
-        bool m_module;
-
     public:
 
         explicit Context(
+            const Pointer<Service>& service
         ) : m_runtime{Javascript::Runtime::new_instance()},
-            m_context{m_runtime.context()},
-            m_module{false}
+            m_context{m_runtime.context()}
         {
-
-        }
-
-        auto set_module (
-            const bool value
-        ) -> void {
-            m_module = value;
-        }
-
-        auto get_module (
-        ) const -> bool {
-            return m_module;
+            thiz.m_context.set_opaque<Service>(service);
         }
 
         auto runtime (
@@ -49,15 +33,52 @@ namespace Sen::Kernel::Interface {
             return thiz.m_context;
         }
 
-        auto evaluate (
+        [[nodiscard]] auto evaluate (
             const String& source,
             const String& name
         ) const -> Javascript::Value {
-            return thiz.m_context.evaluate(source, name, thiz.m_module);
+            return thiz.m_context.evaluate(source, name);
         }
 
-        auto execute (
-        ) -> void {
+        auto evaluate_fs (
+            const String& source
+        ) const -> Javascript::Value {
+            auto script = String{};
+            FileSystem::read_file(source, script);
+            return thiz.evaluate(script, source);
+        }
+
+        static auto new_context (
+        ) -> Javascript::Context {
+            return Javascript::Context::new_ref(nullptr);
+        }
+
+        auto make_argument (
+            List<String>&& arguments
+        ) -> List<Javascript::Value> {
+            auto data = Javascript::Value::new_value(thiz.context().context());
+            data.set_object();
+            auto set_home = [&]() -> void {
+                auto home = data.new_value();
+                home.template set<std::string_view>(arguments[2].view());
+                data.define_property("home"_s, home.release());
+            };
+            auto set_argument = [&]() -> void {
+                auto argument = data.new_value();
+                argument.template set<List<String>>(as_move(arguments));
+                data.define_property("arguments"_s, argument.release());
+            };
+            auto set_error = [&]() -> void {
+                auto error = data.new_value();
+                error.set_undefined();
+                data.define_property("error"_s, error.release());
+            };
+            set_home();
+            set_argument();
+            set_error();
+            auto result = List<Javascript::Value>{1_size};
+            result.append(data);
+            return result;
         }
 
         ~Context(

@@ -91,14 +91,18 @@ namespace Sen::Kernel::Javascript {
                 Subprojects::quickjs::JS_DumpMemoryUsage(fp, &mem_usage, thiz.m_runtime);
             }
 
-            inline auto execute_pending_job(
+            inline auto call_promise (
                 Context& context
             ) const -> void {
                 auto ctx = std::add_pointer_t<Subprojects::quickjs::JSContext>{nullptr};
-                auto count = Subprojects::quickjs::JS_ExecutePendingJob(thiz.m_runtime, &ctx);
-                assert_conditional(count != 0, "Unhandled promise: Promise still not finished", "execute_pending_job");
+                const auto count = Subprojects::quickjs::JS_ExecutePendingJob(thiz.m_runtime, &ctx);
+                assert_conditional(count != 0, "Unhandled promise: Promise still not finished", "call_promise");
                 context = Context::new_ref(ctx);
-                assert_conditional(context.catch_exception().is_undefined(), "Exception found when executing Promise", "execute_pending_job");
+                if (auto exception = context.catch_exception(); !exception.is_undefined()) {
+                    auto error = String{};
+                    exception.template get<String>(error);
+                    assert_conditional(false, fmt::format("{}", error.view()), "call_promise");
+                }
 
             }
 

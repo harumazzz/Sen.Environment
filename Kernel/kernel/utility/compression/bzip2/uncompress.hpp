@@ -76,7 +76,7 @@ namespace Sen::Kernel::Compression::bzip2 {
                 &bz_stream
             );
             assert_conditional(state == Subprojects::bzip2::$BZ_OK, "Failed to decompress", "process_whole");
-            destination.size((static_cast<std::uint64_t>(bz_stream.total_in_hi32) << 32) + static_cast<std::uint64_t>(bz_stream.total_in_lo32));
+            destination.resize((static_cast<std::uint64_t>(bz_stream.total_in_hi32) << 32) + static_cast<std::uint64_t>(bz_stream.total_in_lo32));
         }
 
         static auto process (

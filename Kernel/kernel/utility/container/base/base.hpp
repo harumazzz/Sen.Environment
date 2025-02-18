@@ -47,7 +47,7 @@ namespace Sen::Kernel {
             const BaseContainer& other
         ) -> BaseContainer& = delete;
 
-        auto operator=(
+        constexpr auto operator=(
             const BaseContainer&& other
         ) noexcept -> BaseContainer& {
             value = other.value;
@@ -57,7 +57,7 @@ namespace Sen::Kernel {
             return thiz;
         }
 
-        virtual ~BaseContainer() {
+        virtual constexpr ~BaseContainer() {
 
         }
 
@@ -117,7 +117,7 @@ namespace Sen::Kernel {
             return thiz.value + thiz._size - 1;
         }
 
-        virtual auto release(
+        virtual constexpr auto release(
         ) -> std::tuple<Pointer<T>, Size> {
             auto raw = thiz.value;
             auto size = thiz._size;
@@ -129,17 +129,6 @@ namespace Sen::Kernel {
         constexpr auto end(
         ) -> Pointer<T> {
             return thiz.value + thiz._size;
-        }
-
-        virtual auto allocate(
-            Size const& size
-        ) -> void
-        {
-            if (thiz.value != nullptr) {
-                delete[] thiz.value;
-            }
-            thiz.value = new T[size];
-            thiz._size = size;
         }
 
         virtual constexpr auto operator [](
@@ -192,6 +181,11 @@ namespace Sen::Kernel {
         constexpr auto last_iterator (
         ) -> Pointer<T> {
             return thiz.value + (thiz._size - 1);
+        }
+
+        constexpr auto total_bytes (
+        ) const -> Size {
+            return thiz._size * sizeof(T);
         }
 
 
