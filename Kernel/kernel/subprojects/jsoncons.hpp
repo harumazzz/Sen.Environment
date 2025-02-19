@@ -18,6 +18,12 @@
 
 namespace Sen::Kernel::Subprojects::jsoncons {
 
+    using ::jsoncons::json_stream_encoder;
+
+    using ::jsoncons::json_stream_cursor;
+
+    using ::jsoncons::staj_event_type;
+
 
 }
 

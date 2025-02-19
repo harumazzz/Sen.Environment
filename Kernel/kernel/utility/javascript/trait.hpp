@@ -92,6 +92,49 @@ namespace Sen::Kernel::Javascript {
 
     };
 
+    template <typename Key, typename MapValue>
+    struct Trait<HashMap<Key, MapValue>> {
+
+        static auto from_value(
+            Value& source,
+            HashMap<Key, MapValue>& destination
+        ) -> void {
+            assert_conditional(source.is_object(), "Expected the value to be object, but the actual type is not", "from_value");
+            auto property_count = u32{};
+            auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
+            Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
+            for (const auto index : Range{property_count}) {
+                const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
+                if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
+                    auto make_value = [&element]() -> MapValue {
+                        auto value = MapValue{};
+                        Trait<MapValue>::from_value(element, value);
+                        return value;
+                    };
+                    destination.emplace(StringHelper::make_string_view(key), make_value());
+                }
+                Subprojects::quickjs::JS_FreeCString(source._context(), key);
+            }
+            Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
+        }
+
+        static auto to_value(
+            HashMap<Key, MapValue>& source,
+            Value& destination
+        ) -> void {
+            destination.set_object();
+            for (const auto& [key, value] : source) {
+                auto make_value = [&destination, &value]() -> Value {
+                    auto element = destination.new_value();
+                    Trait<MapValue>::to_value(value, element);
+                    return element;
+                };
+                destination.set_property(key, make_value());
+            }
+        }
+
+    };
+
     template <>
     struct Trait<std::string> {
 
@@ -140,11 +183,11 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <typename T>
-    struct Trait<CList<T>> {
+    struct Trait<List<T>> {
 
         static auto from_value(
             Value& source,
-            CList<T>& destination
+            List<T>& destination
         ) -> void {
             assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
             auto length = u32{};
@@ -159,7 +202,7 @@ namespace Sen::Kernel::Javascript {
         }
 
         static auto to_value(
-            const CList<T>& source,
+            const List<T>& source,
             Value& destination
         ) -> void {
             destination.set_array();
@@ -169,6 +212,77 @@ namespace Sen::Kernel::Javascript {
                 Trait<T>::to_value(source[index], value);
                 destination.set_property(index, value.release());
             }
+        }
+
+    };
+
+    template <typename T>
+    struct Trait<CArray<T>> {
+
+        static auto from_value(
+            Value& source,
+            CArray<T>& destination
+        ) -> void {
+            assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
+            auto length = u32{};
+            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+            destination.allocate(length);
+            for (auto index : Range{static_cast<usize>(length)}) {
+                auto value = T{};
+                auto current_value = source.get_property(index);
+                Trait<T>::from_value(current_value, value);
+                destination.append(value);
+            }
+        }
+
+        static auto to_value(
+            const CArray<T>& source,
+            Value& destination
+        ) -> void {
+            destination.set_array();
+            // TODO : Refactor code with quickjs api : 0.9.0 for fast array
+            for (auto index : Range{source.size()}) {
+                auto value = Value::new_value(destination._context());
+                Trait<T>::to_value(source[index], value);
+                destination.set_property(index, value.release());
+            }
+        }
+
+    };
+
+    template <typename T, auto N> requires (std::is_same_v<type_of<N>, usize>)
+    struct Trait<std::array<T, N>> {
+
+        static auto from_value(
+            Value& source,
+            std::array<T, N>& destination
+        ) -> void {
+            assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
+            auto length = u32{};
+            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+            assert_conditional(static_cast<u32>(array_size_v<decltype(destination)>) == length, "The array size does not match", "from_value");
+            [&]<auto... Indices> requires (std::is_same_v<type_of<Indices>, usize> && ...) (std::index_sequence<Indices...>) -> void {
+                ((destination[Indices] = [] (const Value& source_value, const usize& i) -> T {
+                    auto value = T{};
+                    auto current_value = source_value.get_property(i);
+                    Trait<T>::from_value(current_value, value);
+                    return value;
+                }(source, Indices)), ...);
+            }(std::make_index_sequence<array_size_v<decltype(destination)>>{});
+        }
+
+        static auto to_value(
+            const std::array<T, N>& source,
+            Value& destination
+        ) -> void {
+            destination.set_array();
+            [&]<auto... Indices> requires (std::is_same_v<type_of<Indices>, usize> && ...) (std::index_sequence<Indices...>) -> void {
+                ((destination.set_property(Indices, [&] () -> Subprojects::quickjs::JSValue {
+                    auto value = Value::new_value(destination._context());
+                    Trait<T>::to_value(source[Indices], value);
+                    return value.release();
+                }())), ...);
+            }(std::make_index_sequence<array_size_v<decltype(source)>>{});
         }
 
     };
@@ -308,19 +422,19 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <>
-    struct Trait<jsoncons::json_stream_cursor> {
+    struct Trait<Subprojects::jsoncons::json_stream_cursor> {
 
         static auto to_value(
-            jsoncons::json_stream_cursor& source,
+            Subprojects::jsoncons::json_stream_cursor& source,
             Value& destination
         ) -> void {
             switch (auto& event = source.current(); event.event_type()) {
-                case jsoncons::staj_event_type::begin_array: {
+                case Subprojects::jsoncons::staj_event_type::begin_array: {
                     destination.set_array();
                     auto index = u32{0};
                     source.next();
                     while (!source.done()) {
-                        if (source.current().event_type() == jsoncons::staj_event_type::end_array) {
+                        if (source.current().event_type() == Subprojects::jsoncons::staj_event_type::end_array) {
                             break;
                         }
                         auto value = destination.new_value();
@@ -331,12 +445,12 @@ namespace Sen::Kernel::Javascript {
                     }
                     break;
                 }
-                case jsoncons::staj_event_type::begin_object: {
+                case Subprojects::jsoncons::staj_event_type::begin_object: {
                     destination.set_object();
                     source.next();
                     while (!source.done()) {
                         auto& current_event = source.current();
-                        if (current_event.event_type() == jsoncons::staj_event_type::end_object) {
+                        if (current_event.event_type() == Subprojects::jsoncons::staj_event_type::end_object) {
                             break;
                         }
                         auto key = current_event.template get<std::string>();
@@ -348,27 +462,27 @@ namespace Sen::Kernel::Javascript {
                     }
                     break;
                 }
-                case jsoncons::staj_event_type::null_value: {
+                case Subprojects::jsoncons::staj_event_type::null_value: {
                     destination.set_null();
                     break;
                 }
-                case jsoncons::staj_event_type::bool_value: {
+                case Subprojects::jsoncons::staj_event_type::bool_value: {
                     destination.template set<bool>(event.template get<bool>());
                     break;
                 }
-                case jsoncons::staj_event_type::double_value: {
+                case Subprojects::jsoncons::staj_event_type::double_value: {
                     destination.template set<f64>(event.template get<f64>());
                     break;
                 }
-                case jsoncons::staj_event_type::int64_value: {
+                case Subprojects::jsoncons::staj_event_type::int64_value: {
                     destination.template set<i64>(event.template get<i64>());
                     break;
                 }
-                case jsoncons::staj_event_type::uint64_value: {
+                case Subprojects::jsoncons::staj_event_type::uint64_value: {
                     destination.template set<u64>(event.template get<u64>());
                     break;
                 }
-                case jsoncons::staj_event_type::string_value: {
+                case Subprojects::jsoncons::staj_event_type::string_value: {
                     destination.template set<std::string_view>(event.template get<std::string>());
                     break;
                 }
@@ -380,11 +494,11 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <>
-    struct Trait<jsoncons::json_stream_encoder> {
+    struct Trait<Subprojects::jsoncons::json_stream_encoder> {
 
         static auto from_value(
             Value& source,
-            jsoncons::json_stream_encoder& destination
+            Subprojects::jsoncons::json_stream_encoder& destination
         ) -> void {
             if (source.is_array()) {
                 destination.begin_array();
