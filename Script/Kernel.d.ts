@@ -344,13 +344,6 @@ declare namespace Sen {
 		 */
 		declare namespace Path {
 			/**
-			 * Join multiple path segments into a single path.
-			 * @param args - An array of path segments to join
-			 * @returns The joined path
-			 */
-			export function join(args: Array<string>): string;
-
-			/**
 			 * Get the last portion of a path.
 			 * @param source - The path
 			 * @returns The file name

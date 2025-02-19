@@ -200,8 +200,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup,
 			...Array<Kernel.ImageAdapter.Image>,
 		] {
-			const json_source: string = Kernel.Path.join([source, 'atlas.json']);
-			const media_path: string = Kernel.Path.join([source, 'media']);
+			const json_source: string = `${source}/atlas.json`;
+			const media_path: string = `${source}/media`;
 			const definition: Structure.Definition =
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [
@@ -226,12 +226,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Kernel.Path.join([
-						media_path,
-						`${data.path[data.path.length - 1]}.png`,
-					]);
+					source_file = `${media_path}/${data.path[data.path.length - 1]}.png`;
 				} else {
-					source_file = Kernel.Path.join([media_path, `${data.id}.png`]);
+					source_file = `${media_path}/${data.id}.png`;
 				}
 				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
@@ -360,11 +357,11 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				...Array<Kernel.ImageAdapter.Image>,
 			] = ResourceGroup.process(source, size, detail);
 			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResourceGroup.ResourceSubgroup>(
-				Kernel.Path.join([destination, `${definition.id}.json`]),
+				`${destination}/${definition.id}.json`,
 				definition,
 			);
 			images.forEach((image: Kernel.ImageAdapter.Image) =>
-				Kernel.Image.write(Kernel.Path.join([destination, image.source_file!]), image),
+				Kernel.Image.write(`${destination}/${image.source_file!}`, image),
 			);
 		}
 	}
@@ -397,8 +394,8 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			size: Detail.SizeRange<number>,
 			detail: Detail.Data,
 		): [Wrapper, ...Array<Kernel.ImageAdapter.Image>] {
-			const json_source: string = Kernel.Path.join([source, 'atlas.json']);
-			const media_path: string = Kernel.Path.join([source, 'media']);
+			const json_source: string = `${source}/atlas.json`;
+			const media_path: string = `${source}/media`;
 			const definition: Structure.Definition =
 				Kernel.JSON.deserialize_fs<Structure.Definition>(json_source);
 			const destination: [Wrapper, ...Array<Kernel.ImageAdapter.Image>] = [
@@ -420,12 +417,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 			for (const data of prepare) {
 				let source_file: string = undefined!;
 				if (is_path) {
-					source_file = Kernel.Path.join([
-						media_path,
-						`${data.path[data.path.length - 1]}.png`,
-					]);
+					source_file = `${media_path}/${data.path[data.path.length - 1]}.png`;
 				} else {
-					source_file = Kernel.Path.join([media_path, `${data.id}.png`]);
+					source_file = `${media_path}/${data.id}.png`;
 				}
 				const image: Kernel.ImageAdapter.Image = Kernel.Image.open(source_file);
 				images.set(source_file, image);
@@ -551,11 +545,11 @@ namespace Sen.Script.Support.PopCap.Atlas.Pack {
 				detail,
 			);
 			Kernel.JSON.serialize_fs<Kernel.Support.PopCap.ResInfo.Atlas>(
-				Kernel.Path.join([destination, `${wrapper.id}.json`]),
+				`${destination}/${wrapper.id}.json`,
 				wrapper.value,
 			);
 			images.forEach((image: Kernel.ImageAdapter.Image) =>
-				Kernel.Image.write(Kernel.Path.join([destination, image.source_file!]), image),
+				Kernel.Image.write(`${destination}/${image.source_file!}`, image),
 			);
 		}
 	}

@@ -51,8 +51,7 @@ namespace Sen::Kernel::Interface::Runtime {
         }
         {
             auto s_Path = s_Kernel.add_space("Path"_s);
-            s_Path.add_function<&Javascript::proxy_native_function_wrapper<&Path::join<String>>>("join"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&Path::basename>>("basename"_s)
+            s_Path.add_function<&Javascript::proxy_native_function_wrapper<&Path::basename>>("basename"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Path::dirname>>("dirname"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Path::normalize>>("normalize"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Path::base_without_extension>>("base_without_extension"_s)

@@ -50,18 +50,18 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <>
-    struct Trait<JSString> {
+    struct Trait<NativeString> {
 
         static auto from_value(
             Value& source,
-            JSString& destination
+            NativeString& destination
         ) -> void {
             assert_conditional(source.is_string(), "Expected the value to be string, but the actual type is not", "from_value");
             destination.assign_from(source);
         }
 
         static auto to_value(
-            const JSString& source,
+            const NativeString& source,
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.begin(), source.size()));

@@ -507,7 +507,7 @@ namespace Sen::Kernel::Javascript {
 
     };
 
-    inline auto JSString::assign_from (
+    inline auto NativeString::assign_from (
         const Value& other
     ) -> void {
         thiz.m_context = other._context();

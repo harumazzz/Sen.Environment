@@ -74,17 +74,6 @@ namespace Sen::Kernel::Interface::API {
 
     }
 
-    namespace Path {
-
-        inline static auto join(
-			List<String>& source
-		) -> String
-		{
-			return Kernel::Path::join(source);
-		}
-
-    }
-
     namespace OperatingSystem {
 
         namespace Detail {
@@ -128,8 +117,8 @@ namespace Sen::Kernel::Interface::API {
             Array<Javascript::Value>& arguments,
             Javascript::Value& result
         ) -> void {
-            auto source = Javascript::JSString{};
-            arguments[0].template get<Javascript::JSString>(source);
+            auto source = Javascript::NativeString{};
+            arguments[0].template get<Javascript::NativeString>(source);
             auto view = String{};
             Kernel::FileSystem::read_file(source, view);
             auto destination = context.evaluate(view, source);
@@ -213,8 +202,8 @@ namespace Sen::Kernel::Interface::API {
         ) -> void {
             // TODO : Add loc
             assert_conditional(arguments.size() == 1, "Expected one argument", "deserialize_fs");
-            auto source = Javascript::JSString{};
-            arguments[0].template get<Javascript::JSString>(source);
+            auto source = Javascript::NativeString{};
+            arguments[0].template get<Javascript::NativeString>(source);
             auto view = std::string{};
             Kernel::FileSystem::read_file(source, view);
             Detail::deserialize(view, result);
@@ -241,8 +230,8 @@ namespace Sen::Kernel::Interface::API {
         ) -> void {
             // TODO : Add loc
             assert_conditional(arguments.size() == 2, "Expected two argument", "serialize_fs");
-            auto destination = Javascript::JSString{};
-            arguments[0].template get<Javascript::JSString>(destination);
+            auto destination = Javascript::NativeString{};
+            arguments[0].template get<Javascript::NativeString>(destination);
             auto stream = std::ostringstream{};
             Detail::serialize(arguments[1], stream);
             const auto data = CharacterArrayView{const_cast<char*>(stream.view().data()), stream.view().size()};

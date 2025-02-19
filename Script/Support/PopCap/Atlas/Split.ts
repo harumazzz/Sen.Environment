@@ -33,12 +33,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			is_path: boolean,
 		): string {
 			if (is_path) {
-				return `${Kernel.Path.join([
-					destination,
-					(resource.path as string).split('/').at(-1)!,
-				])}.png`;
+				return `${destination}/${(resource.path as string).split('/').at(-1)!}.png`;
 			}
-			return `${Kernel.Path.join([destination, resource.id])}.png`;
+			return `${destination}/${resource.id}.png`;
 		}
 
 		/**
@@ -124,7 +121,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				...resource,
 				resources: [],
 			};
-			const sprite_destination: string = Kernel.Path.join([destination, 'media']);
+			const sprite_destination: string = `${destination}/media`;
 			const by_path: boolean = method === 'path';
 			const style_use_string: boolean = style === 'string';
 			Kernel.FileSystem.create_directory(sprite_destination);
@@ -201,10 +198,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				style,
 				destination,
 			);
-			Kernel.JSON.serialize_fs<Structure.Definition>(
-				Kernel.Path.join([destination, 'atlas.json']),
-				definition,
-			);
+			Kernel.JSON.serialize_fs<Structure.Definition>(`${destination}/atlas.json`, definition);
 		}
 	}
 
@@ -242,12 +236,9 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			id: string | undefined,
 		): string {
 			if (id === undefined) {
-				return `${Kernel.Path.join([
-					destination,
-					(resource.path as string).split('/').at(-1)!,
-				])}.png`;
+				return `${destination}/${(resource.path as string).split('/').at(-1)!}.png`;
 			}
-			return `${Kernel.Path.join([destination, id])}.png`;
+			return `${destination}/${id}.png`;
 		}
 
 		export function make_definition(
@@ -307,7 +298,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 			};
 			const parents: Array<string> = Object.keys(resource.packet);
 			Kernel.FileSystem.create_directory(destination);
-			const sprite_destination: string = Kernel.Path.join([destination, 'media']);
+			const sprite_destination: string = `${destination}/media`;
 			Kernel.FileSystem.create_directory(sprite_destination);
 			const image_wrapper: Map<string, Array<Kernel.Image.RectangleFileIO>> = new Map<
 				string,
@@ -387,10 +378,7 @@ namespace Sen.Script.Support.PopCap.Atlas.Split {
 				destination,
 				style,
 			);
-			Kernel.JSON.serialize_fs<Structure.Definition>(
-				Kernel.Path.join([destination, 'atlas.json']),
-				definition,
-			);
+			Kernel.JSON.serialize_fs<Structure.Definition>(`${destination}/atlas.json`, definition);
 		}
 	}
 }

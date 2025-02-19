@@ -6,7 +6,7 @@
 
 namespace Sen::Kernel::Javascript {
 
-    struct JSString : public StringView {
+    class NativeString final : public StringView {
 
         protected:
 
@@ -14,41 +14,53 @@ namespace Sen::Kernel::Javascript {
 
         public:
 
-            explicit JSString(
+            explicit NativeString(
 
             ) : StringView{}, m_context{nullptr}
             {
             }
 
-            explicit JSString(
-                const Size& size
+            NativeString(
+                Pointer<char> data,
+                const std::size_t& size
             ) = delete;
 
-            explicit JSString(
+            NativeString(
+                const char* data,
+                const std::size_t& size
+            ) = delete;
+
+            NativeString(
                 const char* data
             ) = delete;
 
-            explicit JSString(
-                char* data,
+            NativeString(
+                const std::string& other
+            ) = delete;
+
+            NativeString(
+                const std::string_view& data
+            ) = delete;
+
+            NativeString(
+                const BasicString& other
+            ) = delete;
+
+            explicit NativeString(
                 const Size& size
             ) = delete;
 
-            explicit JSString(
-                const char* data,
-                const Size& size
-            ) = delete;
-
-            JSString(
-                const JSString& other
+            NativeString(
+                const NativeString& other
             ) = delete;
 
             auto operator =(
-                const JSString& other
-            ) -> JSString & = delete;
+                const NativeString& other
+            ) -> NativeString & = delete;
 
             constexpr auto operator=(
-                JSString&& other
-            ) noexcept -> JSString& {
+                NativeString&& other
+            ) noexcept -> NativeString& {
                 if (this != &other) {
                     thiz._size = other._size;
                     thiz.value = other.value;
@@ -60,8 +72,8 @@ namespace Sen::Kernel::Javascript {
                 return thiz;
             }
 
-            JSString (
-                JSString&& other
+            NativeString (
+                NativeString&& other
             ) noexcept : m_context{other.m_context} {
                 if (this != &other) {
                     thiz._size = other._size;
@@ -72,7 +84,7 @@ namespace Sen::Kernel::Javascript {
                 }
             }
 
-            ~JSString(
+            ~NativeString(
 
             ) override
             {
@@ -85,12 +97,12 @@ namespace Sen::Kernel::Javascript {
                 const Value& other
             ) -> void;
 
-            auto context (
+            [[nodiscard]] auto context (
             ) const -> Pointer<Subprojects::quickjs::JSContext> {
                 return thiz.m_context;
             }
 
-            auto view (
+            [[nodiscard]] auto view (
             ) const -> std::string_view override {
                 return std::string_view{ thiz.value, thiz._size };
             }
@@ -101,5 +113,5 @@ namespace Sen::Kernel::Javascript {
 
 template <>
 struct Sen::Kernel::Transform<Sen::Kernel::StringView> {
-    using type = Javascript::JSString;
+    using type = Javascript::NativeString;
 };
