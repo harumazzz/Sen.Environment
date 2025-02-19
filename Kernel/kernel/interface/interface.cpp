@@ -15,17 +15,6 @@ auto execute (
         Runtime::make_environment(context);
         auto arguments = List<String>{};
         destruct_message(message, arguments);
-        {
-            auto clock = Clock{};
-            clock.start_safe();
-            auto source = Uint8Array{};
-            FileSystem::read_file("C:/Users/Admin/Downloads/Telegram Desktop/main.889.com.ea.game.pvz2_row.obb.bin"_s, source);
-            auto destination = Uint8Array{};
-            Encryption::Base64::Decode::process(steal_reference<UCharacterArray>(source), destination);
-            FileSystem::write_file("C:/Users/Admin/Downloads/Telegram Desktop/main.889.com.ea.game.pvz2_row.obb.1"_s, destination);
-            clock.stop_safe();
-            debug(fmt::format("Time spent: {}s", clock.duration_as_seconds()));
-        }
         const auto main = context.evaluate_fs(arguments[2]);
         const auto result = main.call(as_lvalue(context.make_argument(as_move(arguments))));
         while (context.runtime().has_promise()) {
