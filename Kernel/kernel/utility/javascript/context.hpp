@@ -128,6 +128,11 @@ namespace Sen::Kernel::Javascript {
                 Subprojects::quickjs::JS_SetClassProto(thiz.m_context, static_cast<Subprojects::quickjs::JSClassID>(id), value.release());
             }
 
+            inline auto new_value (
+            ) const -> Value {
+                return Value::new_value(thiz.m_context);
+            }
+
             template<typename T>
             inline auto set_opaque (
                 const Pointer<T>& opaque

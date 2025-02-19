@@ -26,7 +26,10 @@ namespace Sen::Kernel::Interface::Runtime {
         }
         {
             auto s_JSON = s_Kernel.add_space("JSON"_s);
-
+            s_JSON.add_function<&API::JSON::deserialize>("deserialize"_s)
+            .add_function<&API::JSON::serialize>("serialize"_s)
+            .add_function<&API::JSON::deserialize_fs>("deserialize_fs"_s)
+            .add_function<&API::JSON::serialize_fs>("serialize_fs"_s);
         }
         {
             using Type = Path::PathType;

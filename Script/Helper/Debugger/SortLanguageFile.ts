@@ -29,12 +29,7 @@ namespace Sen.Script.Helper.Debugger.SortLanguageFile {
 			Kernel.Language.get('script.sort_language_file.input_language_file'),
 			'file',
 		);
-		Kernel.JSON.serialize_fs(
-			source,
-			process(Kernel.JSON.deserialize_fs<LanguageFile>(source)),
-			1n,
-			false,
-		);
+		Kernel.JSON.serialize_fs(source, process(Kernel.JSON.deserialize_fs<LanguageFile>(source)));
 	}
 }
 Sen.Script.Helper.Debugger.SortLanguageFile.execute();

@@ -32,4 +32,8 @@ namespace Sen::Kernel {
 
     using SizeArrayView = ArrayView<usize>;
 
+    using CharacterArrayView = ArrayView<char>;
+
+    using UCharacterArrayView = ArrayView<uchar>;
+
 }

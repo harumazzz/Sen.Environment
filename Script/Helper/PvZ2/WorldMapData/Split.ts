@@ -141,15 +141,10 @@ namespace Sen.Script.Helper.PvZ2.WorldMapData.Split {
 			delete (worldmap as any).objdata.m_worldName;
 			delete (worldmap as any).objdata.m_worldId;
 			delete (worldmap as any).objdata.m_resGroupID;
-			Kernel.JSON.serialize_fs<Object>(
-				`${destination}/worldmap/${map_name}.json`,
-				worldmap,
-				1n,
-				false,
-			);
+			Kernel.JSON.serialize_fs<Object>(`${destination}/worldmap/${map_name}.json`, worldmap);
 			definition.objects[map_name] = record_data;
 		}
-		Kernel.JSON.serialize_fs(`${destination}/map_list.json`, definition, 1n, false);
+		Kernel.JSON.serialize_fs(`${destination}/map_list.json`, definition);
 	}
 
 	/**

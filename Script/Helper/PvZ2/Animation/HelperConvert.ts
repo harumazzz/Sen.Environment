@@ -99,8 +99,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.HelperConvert {
 		Kernel.JSON.serialize_fs(
 			`${Kernel.Path.except_extension(source)}.twinstar.json`,
 			process(animation),
-			1n,
-			false,
 		);
 	}
 }

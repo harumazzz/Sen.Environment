@@ -746,12 +746,7 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 			animation_name,
 			resolution,
 		);
-		Kernel.JSON.serialize_fs(
-			`${dest}/${type}${animation_name}.package/data.json`,
-			data,
-			1n,
-			true,
-		);
+		Kernel.JSON.serialize_fs(`${dest}/${type}${animation_name}.package/data.json`, data);
 	}
 }
 

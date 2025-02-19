@@ -121,7 +121,7 @@ namespace Sen.Script.Support.PopCap.Atlas.MultiResolution {
 			new RegExp(`${before}`, 'i'),
 			`${after}` as Resolution,
 		);
-		Kernel.JSON.serialize_fs<Definition>(`${destination}/atlas.json`, definition, 1n, false);
+		Kernel.JSON.serialize_fs<Definition>(`${destination}/atlas.json`, definition);
 		call(
 			Kernel.FileSystem.read_directory_only_file(`${source}/media`).filter((e) =>
 				/((\.png))$/i.test(e),

@@ -11,11 +11,19 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_NewObjectClass;
 
+	using ::JS_AtomToCString;
+
+	using ::JSPropertyEnum;
+
 	using ::JS_SetContextOpaque;
 
 	using ::JS_GetContextOpaque;
 
+	using ::JS_FreePropertyEnum;
+
 	using ::JS_NewDate;
+
+	using ::JS_GetOwnPropertyNames;
 
 	using ::JS_Call;
 
@@ -184,6 +192,10 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	inline static const auto $JS_UNINITIALIZED = JS_UNINITIALIZED;
 
 	inline static const auto $JS_UNDEFINED = JS_UNDEFINED;
+
+	inline static const auto $JS_NULL = JS_NULL;
+
+	inline static auto constexpr $JS_GPN_STRING_MASK = JS_GPN_STRING_MASK;
 
 	inline static constexpr auto $JS_CFUNC_constructor = JS_CFUNC_constructor;
 

@@ -14,7 +14,7 @@ namespace Sen::Kernel {
         ) noexcept : BaseContainer<T>{nullptr, 0_size} {}
 
         constexpr CArrayView(
-            const T* &data,
+            Pointer<T> data,
             const std::size_t& size
         ) noexcept : BaseContainer<T>{data, size} {}
 

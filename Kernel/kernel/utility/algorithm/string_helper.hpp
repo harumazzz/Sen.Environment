@@ -218,4 +218,10 @@ namespace Sen::Kernel::StringHelper {
         }
         return result;
     }
+
+    inline auto make_string_view (
+        const char* str
+    ) -> std::string_view {
+        return std::string_view{ str };
+    }
 }

@@ -73,7 +73,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.AddLibrary {
 				additional_data.sprite.push(sprite);
 			}
 		}
-		Kernel.JSON.serialize_fs(data_path, data, 1n, false);
+		Kernel.JSON.serialize_fs(data_path, data);
 		Kernel.Support.PopCap.Animation.Miscellaneous.generate_document(
 			`${source}/DOMDocument.xml`,
 			additional_data,

@@ -451,7 +451,7 @@ declare namespace Sen {
 			 * @param ensure_ascii Whether to ensure ASCII characters only (optional, defaults to false).
 			 * @returns The serialized JSON string.
 			 */
-			export function serialize<T>(obj: T, indent?: bigint, ensure_ascii?: boolean): string;
+			export function serialize<T>(obj: T): string;
 
 			/**
 			 * Serializes a JavaScript object into a JSON file.
@@ -464,12 +464,7 @@ declare namespace Sen {
 			 * @param ensure_ascii Whether to ensure ASCII characters only (optional, defaults to false).
 			 * @returns: (void) - This function doesn't return a value.
 			 */
-			export function serialize_fs<T>(
-				destination: string,
-				obj: T,
-				indent: bigint,
-				ensure_ascii: boolean,
-			): void;
+			export function serialize_fs<T>(destination: string, obj: T): void;
 		}
 
 		/**

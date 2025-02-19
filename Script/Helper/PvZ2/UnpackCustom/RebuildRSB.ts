@@ -78,7 +78,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 							(data_info['category']['resolution'] as Array<bigint>).push(resolution);
 						}
 					}
-					Kernel.JSON.serialize_fs(`${scg_dest}/data.json`, data_info, 1n, true);
+					Kernel.JSON.serialize_fs(`${scg_dest}/data.json`, data_info);
 				}
 			} catch (e: any) {
 				Console.warning(e);

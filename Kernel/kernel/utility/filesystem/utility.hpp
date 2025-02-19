@@ -44,7 +44,7 @@ namespace Sen::Kernel::FileSystem {
         auto size = size_file(source);
         data.allocate(size);
         if constexpr (std::is_same_v<T, CList<extract_container_t<T>>>) {
-            data.size(size);
+            data.resize(size);
         }
         #if WINDOWS
         auto file = WindowsFileReader{source};

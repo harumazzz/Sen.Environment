@@ -47,7 +47,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.ErasePlantLevels {
 			}
 			Console.output(`Leveling removed for: ${obj.aliases[0]}`);
 		}
-		Kernel.JSON.serialize_fs<PlantLevels>(ripe, json, 1n, false);
+		Kernel.JSON.serialize_fs<PlantLevels>(ripe, json);
 	}
 
 	/**

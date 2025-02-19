@@ -111,6 +111,8 @@ namespace Sen::Kernel::Interface::API {
             Array<Javascript::Value>& arguments,
             Javascript::Value& result
         ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() >= 1, "Expected at least one argument", "callback");
             const auto service = context.get_opaque<Service>();
             auto message = std::unique_ptr<Message, decltype(&free_message)>{nullptr, &free_message};
             auto destination = std::unique_ptr<Message, decltype(&free_message)>{new Message{}, &free_message};
@@ -127,6 +129,90 @@ namespace Sen::Kernel::Interface::API {
                 return m_result;
             };
             result.template set<List<String>>(make_message());
+        }
+
+    }
+
+    namespace JSON {
+
+        namespace Detail {
+
+            inline auto deserialize (
+                const std::string& source,
+                Javascript::Value& result
+            ) -> void {
+                auto stream = std::istringstream{source};
+                auto destination = jsoncons::json_stream_cursor{stream};
+                result.template set<jsoncons::json_stream_cursor>(destination);
+            }
+
+            inline auto serialize (
+                Kernel::Javascript::Value& object,
+                std::ostringstream& stream
+            ) -> void {
+                auto os = jsoncons::json_stream_encoder{stream};
+                object.template get<jsoncons::json_stream_encoder>(os);
+                os.flush();
+            }
+
+        }
+
+        inline auto deserialize (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "deserialize");
+            auto source = std::string{};
+            arguments[0].template get<std::string>(source);
+            Detail::deserialize(source, result);
+        }
+
+        inline auto deserialize_fs (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "deserialize_fs");
+            auto source = String{};
+            arguments[0].template get<String>(source);
+            auto view = String{};
+            Kernel::FileSystem::read_file(source, view);
+            Detail::deserialize(view.string(), result);
+        }
+
+        inline auto serialize (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "serialize");
+            auto stream = std::ostringstream{};
+            Detail::serialize(arguments[0], stream);
+            result.template set<std::string_view>(stream.view());
+        }
+
+        inline auto serialize_fs (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 2, "Expected two argument", "serialize_fs");
+            auto destination = String{};
+            arguments[0].template get<String>(destination);
+            auto stream = std::ostringstream{};
+            Detail::serialize(arguments[1], stream);
+            auto data = CharacterArrayView{const_cast<char*>(stream.view().data()), stream.view().size()};
+            Kernel::FileSystem::write_file(destination, data);
+            result.set_undefined();
         }
 
     }

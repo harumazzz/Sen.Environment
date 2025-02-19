@@ -77,7 +77,7 @@ namespace Sen::Kernel::Javascript {
             String& destination
         ) -> void {
             auto size = usize{};
-            auto buffer = Subprojects::quickjs::JS_ToCStringLen(source._context(), &size, source.value());
+            const auto buffer = Subprojects::quickjs::JS_ToCStringLen(source._context(), &size, source.value());
             auto movable_string = String{buffer, size};
             Subprojects::quickjs::JS_FreeCString(source._context(), buffer);
             destination.take_ownership(movable_string);
@@ -88,6 +88,21 @@ namespace Sen::Kernel::Javascript {
             Value& destination
         ) -> void {
             destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
+        }
+
+    };
+
+    template <>
+    struct Trait<std::string> {
+
+        static auto from_value(
+            Value& source,
+            std::string& destination
+        ) -> void {
+            auto size = usize{};
+            const auto buffer = Subprojects::quickjs::JS_ToCStringLen(source._context(), &size, source.value());
+            destination.assign(buffer, size);
+            Subprojects::quickjs::JS_FreeCString(source._context(), buffer);
         }
 
     };
@@ -222,6 +237,200 @@ namespace Sen::Kernel::Javascript {
             auto value = Subprojects::quickjs::JS_NewObjectClass(destination._context(), static_cast<int>(Detail::class_id<T>));
             Subprojects::quickjs::JS_SetOpaque(value, source);
             destination.set_value(value);
+        }
+    };
+
+    template <>
+    struct Trait<jsoncons::json> {
+
+        static auto from_value(
+            Value& source,
+            jsoncons::json& destination
+        ) -> void {
+
+        }
+
+        static auto to_value(
+            const jsoncons::json& source,
+            Value& destination
+        ) -> void {
+            switch (source.type()) {
+                case jsoncons::json_type::array_value: {
+                    destination.set_array();
+                    auto index = u32{};
+                    for (const auto& item : source.array_range()) {
+                        auto value = Value::new_value(destination._context());
+                        Trait<jsoncons::json>::to_value(item, value);
+                        destination.set_property(index, value.release());
+                        ++index;
+                    }
+                    break;
+                }
+                case jsoncons::json_type::object_value: {
+                    destination.set_object();
+                    for (auto& [key, value] : source.object_range()) {
+                        auto new_value = Value::new_value(destination._context());
+                        Trait<jsoncons::json>::to_value(value, new_value);
+                        destination.set_property(key, new_value.release());
+                    }
+                    break;
+                }
+                case jsoncons::json_type::string_value: {
+                    destination.template set<std::string_view>(source.template as<std::string>());
+                    break;
+                }
+                case jsoncons::json_type::bool_value: {
+                    destination.template set<bool>(source.template as<bool>());
+                    break;
+                }
+                case jsoncons::json_type::double_value: {
+                    destination.template set<double>(source.template as<double>());
+                    break;
+                }
+                case jsoncons::json_type::int64_value: {
+                    destination.template set<int64_t>(source.template as<int64_t>());
+                    break;
+                }
+                case jsoncons::json_type::uint64_value: {
+                    destination.template set<uint64_t>(source.template as<uint64_t>());
+                    break;
+                }
+                case jsoncons::json_type::null_value: {
+                    destination.set_null();
+                    break;
+                }
+                default: {
+                    assert_conditional(false, "Unsupported JSON value", "to_value");
+                }
+            }
+        }
+
+    };
+
+    template <>
+    struct Trait<jsoncons::json_stream_cursor> {
+
+        static auto to_value(
+            jsoncons::json_stream_cursor& source,
+            Value& destination
+        ) -> void {
+            switch (auto& event = source.current(); event.event_type()) {
+                case jsoncons::staj_event_type::begin_array: {
+                    destination.set_array();
+                    auto index = u32{0};
+                    source.next();
+                    while (!source.done()) {
+                        if (source.current().event_type() == jsoncons::staj_event_type::end_array) {
+                            break;
+                        }
+                        auto value = destination.new_value();
+                        to_value(source, value);
+                        destination.set_property(index, value.release());
+                        ++index;
+                        source.next();
+                    }
+                    break;
+                }
+                case jsoncons::staj_event_type::begin_object: {
+                    destination.set_object();
+                    source.next();
+                    while (!source.done()) {
+                        auto& current_event = source.current();
+                        if (current_event.event_type() == jsoncons::staj_event_type::end_object) {
+                            break;
+                        }
+                        auto key = current_event.template get<std::string>();
+                        source.next();
+                        auto value = destination.new_value();
+                        to_value(source, value);
+                        destination.set_property(key, value.release());
+                        source.next();
+                    }
+                    break;
+                }
+                case jsoncons::staj_event_type::null_value: {
+                    destination.set_null();
+                    break;
+                }
+                case jsoncons::staj_event_type::bool_value: {
+                    destination.template set<bool>(event.template get<bool>());
+                    break;
+                }
+                case jsoncons::staj_event_type::double_value: {
+                    destination.template set<f64>(event.template get<f64>());
+                    break;
+                }
+                case jsoncons::staj_event_type::int64_value: {
+                    destination.template set<i64>(event.template get<i64>());
+                    break;
+                }
+                case jsoncons::staj_event_type::uint64_value: {
+                    destination.template set<u64>(event.template get<u64>());
+                    break;
+                }
+                case jsoncons::staj_event_type::string_value: {
+                    destination.template set<std::string_view>(event.template get<std::string>());
+                    break;
+                }
+                default: {
+                    assert_conditional(false, "Unsupported JSON value", "to_value");
+                }
+            }
+        }
+    };
+
+    template <>
+    struct Trait<jsoncons::json_stream_encoder> {
+
+        static auto from_value(
+            Value& source,
+            jsoncons::json_stream_encoder& destination
+        ) -> void {
+            if (source.is_array()) {
+                destination.begin_array();
+                auto length = u32{};
+                Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+                for (const auto index : Range{length}) {
+                    auto current = source.get_property(index);
+                    from_value(current, destination);
+                }
+                destination.end_array();
+            } else if (source.is_object_of_object()) {
+                destination.begin_object();
+                auto property_count = u32{};
+                auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
+                Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
+                for (const auto index : Range{property_count}) {
+                    const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
+                    if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
+                        destination.key(StringHelper::make_string_view(key));
+                        from_value(element, destination);
+                    }
+                    Subprojects::quickjs::JS_FreeCString(source._context(), key);
+                }
+                Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
+                destination.end_object();
+            } else if (source.is_bigint()) {
+                auto value = i64{};
+                source.template get<i64>(value);
+                destination.int64_value(value);
+            } else if (source.is_boolean()) {
+                auto value = bool{};
+                source.template get<bool>(value);
+                destination.bool_value(value);
+            } else if (source.is_number()) {
+                auto value = f64{};
+                source.template get<f64>(value);
+                destination.double_value(value);
+            } else if (source.is_null()) {
+                destination.null_value();
+            } else if (source.is_string()) {
+                auto value = String{};
+                source.template get<String>(value);
+                destination.string_value(value.view());
+            } else {
+                assert_conditional(false, "Unsupported JSON value", "from_value");
+            }
         }
     };
 

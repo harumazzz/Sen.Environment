@@ -172,6 +172,19 @@ namespace Sen::Kernel::Javascript {
                 return static_cast<bool>(Subprojects::quickjs::JS_IsObject(thiz.m_value));
             }
 
+            inline auto is_object_of_object (
+
+            ) const -> bool
+            {
+                if (!thiz.is_object()) {
+                    return false;
+                }
+                auto name = String{};
+                auto name_property = thiz.get_property("constructor"_sv).get_property("name"_sv);
+                name_property.template get<String>(name);
+                return static_cast<bool>(name == "Object"_sv);
+            }
+
             inline auto is_array(
 
             ) const -> bool
@@ -229,6 +242,13 @@ namespace Sen::Kernel::Javascript {
             }
 
             template <typename T>
+            inline auto set (
+                T& value
+            ) -> void {
+                return Trait<T>::to_value(value, thiz);
+            }
+
+            template <typename T>
             inline auto get (
                 T& value
             ) -> void {
@@ -252,6 +272,13 @@ namespace Sen::Kernel::Javascript {
             ) -> void
             {
                 return thiz.set_value(Subprojects::quickjs::$JS_UNDEFINED);
+            }
+
+            inline auto set_null(
+
+            ) -> void
+            {
+                return thiz.set_value(Subprojects::quickjs::$JS_NULL);
             }
 
             inline auto set_array(
@@ -318,7 +345,7 @@ namespace Sen::Kernel::Javascript {
             ) const -> void
             {
                 const auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, value.cbegin(), value.size());
-                JS_DefinePropertyGetSet(thiz.m_context, thiz.m_value, atom, getter.release(), setter.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
+                Subprojects::quickjs::JS_DefinePropertyGetSet(thiz.m_context, thiz.m_value, atom, getter.release(), setter.release(), Subprojects::quickjs::$JS_PROP_C_W_E);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
 
@@ -336,6 +363,16 @@ namespace Sen::Kernel::Javascript {
             ) const -> void
             {
                 const auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value);
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+            }
+
+            inline auto set_property(
+                const std::string_view& name,
+                const Subprojects::quickjs::JSValue& value
+            ) const -> void
+            {
+                const auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.data(), name.size());
                 Subprojects::quickjs::JS_SetProperty(thiz.m_context, thiz.m_value, atom, value);
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
             }
@@ -363,6 +400,16 @@ namespace Sen::Kernel::Javascript {
             ) const -> Value
             {
                 const auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.cbegin(), name.size());
+                auto value = new_owner(thiz.m_context, Subprojects::quickjs::JS_GetProperty(thiz.m_context, thiz.m_value, atom));
+                Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
+                return value;
+            }
+
+            inline auto get_property(
+                const std::string_view& name
+            ) const -> Value
+            {
+                const auto atom = Subprojects::quickjs::JS_NewAtomLen(thiz.m_context, name.data(), name.size());
                 auto value = new_owner(thiz.m_context, Subprojects::quickjs::JS_GetProperty(thiz.m_context, thiz.m_value, atom));
                 Subprojects::quickjs::JS_FreeAtom(thiz.m_context, atom);
                 return value;

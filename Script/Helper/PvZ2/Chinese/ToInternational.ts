@@ -35,14 +35,14 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 		};
 		const _handle = () => {
 			const ripe_file = `${chinese_bundle}/group.json`;
-			Kernel.JSON.serialize_fs<Array<string>>(ripe_file, dummy, 1n, false);
+			Kernel.JSON.serialize_fs<Array<string>>(ripe_file, dummy);
 			Console.finished(
 				`${Kernel.Language.get(
 					'script.helper.pvz2.chinese.to_international.dumped_file',
 				)}: ${ripe_file}`,
 			);
 			const international_ripe_file: string = `${international_bundle}/group.json`;
-			Kernel.JSON.serialize_fs<Array<string>>(international_ripe_file, [], 1n, false);
+			Kernel.JSON.serialize_fs<Array<string>>(international_ripe_file, []);
 			Console.finished(
 				`${Kernel.Language.get(
 					'script.helper.pvz2.chinese.to_international.to_port_2c_content_edit_this',
@@ -78,7 +78,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 			for (const [_, value] of Object.entries(scg_data.subgroup)) {
 				(value as any).category.compression = 3n;
 			}
-			Kernel.JSON.serialize_fs(`${source_directory}/data.json`, scg_data, 1n, false);
+			Kernel.JSON.serialize_fs(`${source_directory}/data.json`, scg_data);
 			Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 				source_directory,
 				`${international_bundle}/packet/${e}.scg`,
@@ -92,12 +92,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 				'script.helper.pvz2.chinese.to_international.all_process_has_been_finished',
 			),
 		);
-		Kernel.JSON.serialize_fs(
-			`${international_bundle}/data.json`,
-			international_data,
-			1n,
-			false,
-		);
+		Kernel.JSON.serialize_fs(`${international_bundle}/data.json`, international_data);
 	}
 }
 
