@@ -67,7 +67,7 @@ namespace Sen::Kernel::Javascript {
         };
         if constexpr (std::is_member_function_pointer_v<decltype(function)>) {
             using ClassName = typename traits::class_type;
-            auto instance = static_cast<Pointer<ClassName>>(nullptr);
+            auto instance = std::add_pointer_t<ClassName>{nullptr};
             value.template get<Pointer<ClassName>>(instance);
             return call([&]<typename... Arguments> requires (!std::is_void_v<Arguments> && ...) (Arguments&&... args) -> decltype(std::invoke(function, instance, std::forward<Arguments>(args)...)) {
                 return std::invoke(function, instance, std::forward<Arguments>(args)...);

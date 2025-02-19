@@ -306,4 +306,21 @@ namespace Sen::Kernel {
 	template <auto member>
 	using member_class_t = typename member_class<member>::type;
 
+	template <typename T>
+	struct array_traits;
+
+	template <typename T, std::size_t N>
+	struct array_traits<std::array<T, N>> {
+
+		using type = T;
+
+		static constexpr auto size = N;
+	};
+
+	template <typename T>
+	using array_value_t = typename array_traits<T>::type;
+
+	template <typename T>
+	inline constexpr auto array_size_v = array_traits<T>::size;
+
 }
