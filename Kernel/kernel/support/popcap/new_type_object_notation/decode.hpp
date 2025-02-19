@@ -113,15 +113,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             stream.set_position(current_pos);
             if (atlas)
             {
-                auto atlas_info = AtlasInfo{};
+                value.emplace<AtlasInfo>();
+                auto& atlas_info = std::get<AtlasInfo>(value);
                 exchange_atlas_info(stream, atlas_info);
-                value.emplace<AtlasInfo>(atlas_info);
             }
             else
             {
-                auto type_info = TypeInfo{};
+                value.emplace<TypeInfo>();
+                auto& type_info = std::get<TypeInfo>(value);
                 exchange_type_info(stream, type_info);
-                value.emplace<TypeInfo>(type_info);
             }
         }
 

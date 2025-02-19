@@ -153,21 +153,21 @@ namespace Sen::Kernel::Support::PopCap::Animation
             }
             if (flag.test(LayerChangeFlag::source_rectangle))
             {
-                auto source_rectangle = SourceRectangle{};
+                change.source_rectangle.emplace();
+                auto& source_rectangle = change.source_rectangle.value();
                 exchange_floater_with_rate<ValueRate::size, i16>(stream, source_rectangle[0]);
                 exchange_floater_with_rate<ValueRate::size, i16>(stream, source_rectangle[1]);
                 exchange_floater_with_rate<ValueRate::size, i16>(stream, source_rectangle[2]);
                 exchange_floater_with_rate<ValueRate::size, i16>(stream, source_rectangle[3]);
-                change.source_rectangle = source_rectangle;
             }
             if (flag.test(LayerChangeFlag::color))
             {
-                auto color = AnimationColor{};
+                change.color.emplace();
+                auto& color = change.color.value();
                 exchange_floater_with_rate<ValueRate::color, u8>(stream, color[0]);
                 exchange_floater_with_rate<ValueRate::color, u8>(stream, color[1]);
                 exchange_floater_with_rate<ValueRate::color, u8>(stream, color[2]);
                 exchange_floater_with_rate<ValueRate::color, u8>(stream, color[3]);
-                change.color = color;
             }
             if (flag.test(LayerChangeFlag::sprite_frame_number))
             {

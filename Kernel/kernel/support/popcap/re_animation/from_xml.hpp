@@ -13,11 +13,11 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         template <typename Type> requires (!std::is_void_v<Type>) && (std::is_same_v<Type, String> || std::is_arithmetic_v<Type>)
         static auto exchange_child_value(XMLNode const &node, Type &value) -> bool
         {
-            auto new_string = String{node.child_value()};
-            if (new_string.empty())
+            if (const auto temporary = StringHelper::make_string_view(node.child_value()); temporary.empty())
             {
                 return false;
             }
+            auto new_string = StringHelper::make_string(node.child_value());
             if constexpr (std::is_same_v<Type, String>) {
                 value.take_ownership(new_string);
             }
@@ -34,10 +34,9 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             return true;
         }
 
-        template <auto can_null = false>
+        template <auto can_null> requires std::is_same_v<type_of<can_null>, bool>
         static auto exchange_child_node(XMLNode const &node, const std::string_view name) -> XMLNode
         {
-            static_assert(can_null == true || can_null == false, "Can null must be true or false");
             const auto child = node.child(name.data());
             if constexpr (!can_null)
             {
@@ -57,7 +56,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform, is_class TransformClass>
+        template <auto platform, typename TransformClass> requires (std::is_same_v<type_of<platform>, VersionPlatform> && is_class<TransformClass>)
         static auto exchange_transform_value(XMLNode const &node, TransformClass &value) -> void
         {
             exchange_node_value(value.x, node, k_x);
@@ -122,7 +121,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 auto make_track = [&]() -> Track {
                     auto track = Track{};
-                    auto name = exchange_child_node(node_track, k_name);
+                    auto name = exchange_child_node<false>(node_track, k_name);
                     exchange_child_value(name, track.name);
                     exchange_transform<platform>(track.transform, node_track);
                     return track;
@@ -134,7 +133,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_animation(ReanimInfo & model, XMLNode const &value) -> void
         {
-            auto fps_child = exchange_child_node(value, k_fps);
+            const auto fps_child = exchange_child_node<false>(value, k_fps);
             exchange_child_value(fps_child, model.frame_rate);
             exchange_track<platform>(model.track, value);
         }
