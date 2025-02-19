@@ -20,35 +20,56 @@ namespace Sen::Kernel::Interface::API {
     namespace FileSystem {
 
         inline auto read_file (
-            const String& source
-        ) -> String {
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "serialize_fs");
             auto destination = String{};
-            Kernel::FileSystem::read_file(source , destination);
-            return destination;
+            arguments[0].template get<String>(destination);
+            auto data = String{};
+            Kernel::FileSystem::read_file(destination, data);
+            result.template set<String>(data);
         }
 
         inline auto write_file (
             const String& source,
             const String& destination
         ) -> void {
-            Kernel::FileSystem::write_file(source, const_cast<String&>(destination));
+            Kernel::FileSystem::write_file(source, destination);
         }
 
         template <auto mode> requires std::is_same_v<type_of<mode>, Path::PathType>
         inline auto read_current_directory (
-            const String& source
-        ) -> List<String> {
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "serialize_fs");
+            auto source = String{};
+            arguments[0].template get<String>(source);
             auto destination = List<String>{};
             Kernel::FileSystem::read_directory<mode>(source , destination);
-            return destination;
+            result.template set<List<String>>(destination);
         }
 
         inline auto read_directory (
-            const String& source
-        ) -> List<String> {
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "serialize_fs");
+            auto source = String{};
+            arguments[0].template get<String>(source);
             auto destination = List<String>{};
             Kernel::FileSystem::read_recursive_directory_file(source , destination);
-            return destination;
+            result.template set<List<String>>(destination);
         }
 
     }
@@ -66,18 +87,32 @@ namespace Sen::Kernel::Interface::API {
 
     namespace OperatingSystem {
 
-        inline auto current(
-        ) -> String {
+        namespace Detail {
+
+            inline static auto constexpr k_windows = "Windows"_sv;
+
+            inline static auto constexpr k_linux = "Linux"_sv;
+
+            inline static auto constexpr k_mac = "Macintosh"_sv;
+
+            inline static auto constexpr k_android = "Android"_sv;
+
+            inline static auto constexpr k_iphone = "iPhone"_sv;
+
+        }
+
+        inline auto constexpr current(
+        ) -> std::string_view {
             #if WINDOWS
-            return String{ "Windows" };
+            return Detail::k_windows;
             #elif ANDROID
-            return String{ "Android" };
+            return Detail::k_android;
             #elif LINUX
-            return String{ "Linux" };
+            return Detail::k_linux;
             #elif APPLE
-            return String{ "Macintosh" };
+            return Detail::k_mac;
             #elif IPHONE
-            return String{ "iPhone" };
+            return Detail::k_iphone;
             #else
             assert_conditional(false, "Unknown operating system", "current");
             #endif
@@ -93,8 +128,8 @@ namespace Sen::Kernel::Interface::API {
             Array<Javascript::Value>& arguments,
             Javascript::Value& result
         ) -> void {
-            auto source = String{};
-            arguments[0].template get<String>(source);
+            auto source = Javascript::JSString{};
+            arguments[0].template get<Javascript::JSString>(source);
             auto view = String{};
             Kernel::FileSystem::read_file(source, view);
             auto destination = context.evaluate(view, source);
@@ -178,11 +213,11 @@ namespace Sen::Kernel::Interface::API {
         ) -> void {
             // TODO : Add loc
             assert_conditional(arguments.size() == 1, "Expected one argument", "deserialize_fs");
-            auto source = String{};
-            arguments[0].template get<String>(source);
-            auto view = String{};
+            auto source = Javascript::JSString{};
+            arguments[0].template get<Javascript::JSString>(source);
+            auto view = std::string{};
             Kernel::FileSystem::read_file(source, view);
-            Detail::deserialize(view.string(), result);
+            Detail::deserialize(view, result);
         }
 
         inline auto serialize (
@@ -206,11 +241,11 @@ namespace Sen::Kernel::Interface::API {
         ) -> void {
             // TODO : Add loc
             assert_conditional(arguments.size() == 2, "Expected two argument", "serialize_fs");
-            auto destination = String{};
-            arguments[0].template get<String>(destination);
+            auto destination = Javascript::JSString{};
+            arguments[0].template get<Javascript::JSString>(destination);
             auto stream = std::ostringstream{};
             Detail::serialize(arguments[1], stream);
-            auto data = CharacterArrayView{const_cast<char*>(stream.view().data()), stream.view().size()};
+            const auto data = CharacterArrayView{const_cast<char*>(stream.view().data()), stream.view().size()};
             Kernel::FileSystem::write_file(destination, data);
             result.set_undefined();
         }
@@ -220,17 +255,17 @@ namespace Sen::Kernel::Interface::API {
     namespace Language {
 
         inline auto read_language (
-            const String& source
+            const StringView& source
         ) -> void {
-            return Kernel::Language::read_language([&](std::optional<jsoncons::json>& value) -> void {
+            return Kernel::Language::read_language([&](std::optional<Subprojects::jsoncons::json>& value) -> void {
                 auto data = String{};
                 Kernel::FileSystem::read_file(source, data);
-                value.emplace(jsoncons::json::parse(data.view()));
+                value.emplace(Subprojects::jsoncons::json::parse(data.view()));
             });
         }
 
         inline auto get (
-            const String& key
+            const StringView& key
         ) -> std::string_view {
             return Kernel::Language::get(key.view());
         }

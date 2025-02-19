@@ -6,10 +6,10 @@
 
 namespace Sen::Kernel::Language {
 
-	static auto language = std::optional<jsoncons::json>{std::nullopt};
+	static auto language = std::optional<Subprojects::jsoncons::json>{std::nullopt};
 
 	inline auto read_language (
-		const std::function<void(std::optional<jsoncons::json>&)>& callback
+		const std::function<void(std::optional<Subprojects::jsoncons::json>&)>& callback
 	) -> void {
 		callback(language);
 	}

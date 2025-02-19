@@ -25,6 +25,8 @@ namespace Sen::Kernel {
 
 		using Iterator = Pointer<Character>;
 
+    	using allocator_type = std::allocator<char>;
+
     	template <typename T>
     	using List = CList<T>;
 
@@ -73,6 +75,14 @@ namespace Sen::Kernel {
 			std::memcpy(thiz.value, data, thiz._size);
 		}
 
+    	explicit BasicString(
+		   const std::string_view data
+	   ) : BaseContainer<char>{new Character[data.size() + 1], data.size()}, _capacity{data.size() + 1} {
+			thiz.value[thiz._size] = '\0';
+			std::memcpy(thiz.value, data.data(), thiz._size);
+		}
+
+
 		constexpr auto allocate(
 			Size const& size
 		) -> void
@@ -97,7 +107,7 @@ namespace Sen::Kernel {
 			thiz._size = size;
 		}
 
-		constexpr ~BasicString(
+		virtual constexpr ~BasicString(
 
 		) override
 		{
@@ -135,6 +145,20 @@ namespace Sen::Kernel {
 			thiz = as_move(other);
 		}
 
+    	auto operator+(const BasicString& other) const -> BasicString {
+			auto string = BasicString{};
+			string += thiz;
+			string += other;
+			return string;
+		}
+
+    	auto operator+(const std::string_view other) const -> BasicString {
+			auto string = BasicString{};
+			string += thiz;
+			string += other;
+			return string;
+		}
+
 		constexpr auto operator=(
 			BasicString&& other
 		) noexcept -> BasicString& {
@@ -153,14 +177,14 @@ namespace Sen::Kernel {
     	constexpr auto operator [](
 			Size const& index
 		) const -> Character {
-    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
     		return thiz.value[index];
     	}
 
     	constexpr auto operator [](
 			Size const& index
 		) -> Character& override {
-    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
     		return thiz.value[index];
     	}
 
@@ -237,7 +261,7 @@ namespace Sen::Kernel {
 		) const -> std::wstring
 		{
 			#if _WIN32
-			auto size = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), nullptr, 0));
+			const auto size = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), nullptr, 0));
 			auto destination = std::wstring{};
 			destination.resize(size);
 			MultiByteToWideChar(CP_UTF8, 0, thiz.value, static_cast<int>(thiz._size), &destination[0], static_cast<int>(size));
@@ -259,7 +283,7 @@ namespace Sen::Kernel {
 			auto convert = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
 			auto wstr = convert.from_bytes(thiz.value, thiz.value + thiz._size);
 			auto destination = CArray<wchar_t>{wstr.size()};
-			std::memcpy(destination.cbegin(), wstr.cbegin(), wstr.size() * sizeof(wchar_t));
+			std::memcpy(destination.begin(), wstr.begin(), wstr.size() * sizeof(wchar_t));
 			return destination;
 			#endif
 		}
@@ -268,6 +292,9 @@ namespace Sen::Kernel {
 		) const {
 			return std::string_view{ thiz.value, thiz._size };
 		}
+
+    	constexpr operator StringView(
+		) const;
 
 		[[nodiscard]] constexpr auto length(
 
@@ -290,17 +317,17 @@ namespace Sen::Kernel {
 
 		constexpr virtual auto insert(
 			const Size& index,
-			Pointer<const char> str,
+			const Pointer<const char> str,
 			const Size& len
 		) -> void {
 			assert_conditional(index < thiz._size, fmt::format("Inserted index is larger than the size of the string"), "insert");
-			auto new_size = thiz._size + len;
+			const auto new_size = thiz._size + len;
 			if (new_size <= thiz._capacity) {
 				std::memmove(thiz.value + index + len, thiz.value + index, thiz._size - index);
 				std::memcpy(thiz.value + index, str, len);
 			} else {
-				auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				auto raw = new Character[new_capacity + 1];
+				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
+				const auto raw = new Character[new_capacity + 1];
 				std::memcpy(raw, thiz.value, index);
 				std::memcpy(raw + index, str, len);
 				std::memcpy(raw + index + len, thiz.value + index, thiz._size - index);
@@ -317,7 +344,7 @@ namespace Sen::Kernel {
 			const Size& index,
 			const Character& ch
 		) -> void {
-			auto temporary = std::array<char, 1>{ ch };
+			const auto temporary = std::array<char, 1>{ ch };
 			return insert(index, temporary.data(), temporary.size());
 		}
 
@@ -343,21 +370,23 @@ namespace Sen::Kernel {
 			assert_conditional(first >= thiz.value && first <= thiz.end(), fmt::format("Erase begin iterator is outside bounds of the String iterator"), "erase");
 			assert_conditional(last >= thiz.value && last <= thiz.end(), fmt::format("Erase end iterator is outside bounds of the String iterator"), "erase");
 			assert_conditional(first <= last, fmt::format("Cannot erase if the first iterator is larger than last iterator"), "erase");
-			auto erase_len = static_cast<Size>(last - first);
-			auto new_size = thiz._size - erase_len;
+			const auto erase_len = static_cast<Size>(last - first);
+			const auto new_size = thiz._size - erase_len;
 			std::memcpy(first, last, thiz.end() - last);
 			thiz._size = new_size;
 			thiz.value[thiz._size] = '\0';
 			return thiz;
 		}
 
-    	constexpr virtual auto push(const Character& c) -> void {
-			auto new_size = thiz._size + 1;
+    	constexpr virtual auto push(
+    		const Character& c
+    	) -> void {
+			const auto new_size = thiz._size + 1;
 			if (new_size <= thiz._capacity) {
 				thiz.value[thiz._size] = c;
 			} else {
-				auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				auto new_value = new Character[new_capacity + 1];
+				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
+				const auto new_value = new Character[new_capacity + 1];
 				std::memcpy(new_value, thiz.value, thiz._size);
 				new_value[thiz._size] = c;
 				delete[] thiz.value;
@@ -379,14 +408,14 @@ namespace Sen::Kernel {
 
     	constexpr virtual auto append(
     		const Size& count,
-    		Character ch
+    		const Character ch
     	) -> BasicString& {
-			auto new_size = thiz._size + count;
+			const auto new_size = thiz._size + count;
 			if (new_size <= thiz._capacity) {
 				std::memset(thiz.value + thiz._size, ch, count);
 			} else {
-				auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				auto new_value = new Character[new_capacity + 1];
+				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
+				const auto new_value = new Character[new_capacity + 1];
 				std::memcpy(new_value, thiz.value, thiz._size);
 				std::memset(new_value + thiz._size, ch, count);
 				delete[] thiz.value;
@@ -403,15 +432,14 @@ namespace Sen::Kernel {
     		Pointer<const Character> s,
     		const Size& count
     	) -> BasicString& {
-			auto new_size = thiz._size + count;
+			const auto new_size = thiz._size + count;
 			if (new_size <= thiz._capacity) {
 				std::memcpy(thiz.value + thiz._size, s, count);
 			} else {
-				auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				auto new_value = new Character[new_capacity + 1];
+				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
+				const auto new_value = new Character[new_capacity + 1];
 				std::memcpy(new_value, thiz.value, thiz._size);
 				std::memcpy(new_value + thiz._size, s, count);
-
 				delete[] thiz.value;
 				thiz.value = new_value;
 				thiz._capacity = new_capacity;
@@ -423,7 +451,7 @@ namespace Sen::Kernel {
 
 
 		constexpr virtual auto append(
-			Pointer<const Character> s
+			const Pointer<const Character>& s
 		) -> BasicString& {
 			return append(s, std::strlen(s));
 		}
@@ -453,7 +481,7 @@ namespace Sen::Kernel {
 		}
 
 		constexpr virtual auto append(
-			std::initializer_list<Character> list
+			const std::initializer_list<Character>& list
 		) -> BasicString& {
 			return append(list.begin(), list.size());
 		}
@@ -491,15 +519,15 @@ namespace Sen::Kernel {
 			Pointer<const Character> cstr,
 			const Size& count2
 		) -> BasicString& {
-			auto new_size = thiz._size - count + count2;
+			const auto new_size = thiz._size - count + count2;
 			if (new_size <= thiz._capacity) {
 				if (count2 != count) {
 					std::memmove(thiz.value + pos + count2, thiz.value + pos + count, thiz._size - pos - count);
 				}
 				std::memcpy(thiz.value + pos, cstr, count2);
 			} else {
-				auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				auto new_value = new Character[new_capacity + 1];
+				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
+				const auto new_value = new Character[new_capacity + 1];
 				std::memcpy(new_value, thiz.value, pos);
 				std::memcpy(new_value + pos, cstr, count2);
 				std::memcpy(new_value + pos + count2, thiz.value + pos + count, thiz._size - pos - count);
@@ -514,9 +542,9 @@ namespace Sen::Kernel {
 
 
 		constexpr virtual auto replace(
-			Pointer<Character> first,
-			Pointer<Character> last,
-			Pointer<const Character> cstr,
+			const Pointer<Character>& first,
+			const Pointer<Character>& last,
+			const Pointer<const Character>& cstr,
 			const Size& count2
 		) -> BasicString& {
 			return replace(first - value, last - first, cstr, count2);
@@ -525,15 +553,15 @@ namespace Sen::Kernel {
 		constexpr virtual auto replace(
 			const Size& pos,
 			const Size& count,
-			Pointer<const Character> cstr
+			const Pointer<const Character>& cstr
 		) -> BasicString& {
 			return replace(pos, count, cstr, std::strlen(cstr));
 		}
 
 		constexpr auto replace(
-			Pointer<Character> first,
-			Pointer<Character> last,
-			Pointer<const Character> cstr
+			const Pointer<Character>& first,
+			const Pointer<Character>& last,
+			const Pointer<const Character>& cstr
 		) -> BasicString& {
 			return replace(first - thiz.value, last - first, cstr, std::strlen(cstr));
 		}
@@ -542,26 +570,26 @@ namespace Sen::Kernel {
 			const Size& pos,
 			const Size& count,
 			const Size& count2,
-			Character ch
+			const Character ch
 		) -> BasicString& {
-			auto new_str = BasicString{ count2 };
+			const auto new_str = BasicString{ count2 };
 			std::memset(new_str.value, ch, count2);
 			return replace(pos, count, new_str);
 		}
 
 		constexpr virtual auto replace(
-			Pointer<Character> first,
-			Pointer<Character> last,
+			const Pointer<Character>& first,
+			const Pointer<Character>& last,
 			const Size& count2,
-			Character ch
+			const Character ch
 		) -> BasicString& {
 			return replace(first - value, last - first, count2, ch);
 		}
 
 		template <typename It>
 		constexpr auto replace(
-			Pointer<Character> first,
-			Pointer<Character> last,
+			const Pointer<Character>& first,
+			const Pointer<Character>& last,
 			It first2,
 			It last2
 		) -> BasicString& {
@@ -569,45 +597,32 @@ namespace Sen::Kernel {
 		}
 
 		constexpr virtual auto replace(
-			Pointer<Character> first,
-			Pointer<Character> last,
-			std::initializer_list<Character> list
+			const Pointer<Character>& first,
+			const Pointer<Character>& last,
+			const std::initializer_list<Character>& list
 		) -> BasicString& {
 			return replace(first - value, last - first, list.begin(), list.size());
 		}
 
 		auto copy(
-			Pointer<Character> source,
+			const Pointer<Character>& source,
 			const Size& size
-		) const -> void
-		{
+		) const -> void {
 			std::memcpy(source, thiz.value, size);
 		}
 
 		constexpr auto operator+=(
 			const BasicString& other
 		) -> BasicString& {
-		    const auto new_size = thiz._size + other._size;
-		    if (new_size <= thiz._capacity) {
-		        std::memcpy(thiz.value + thiz._size, other.value, other._size);
-		    } else {
-		        const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-		        const auto new_value = new Character[new_capacity + 1];
-		        std::memcpy(new_value, thiz.value, thiz._size);
-		        std::memcpy(new_value + thiz._size, other.value, other._size);
-		        delete[] thiz.value;
-		        thiz.value = new_value;
-		        thiz._capacity = new_capacity;
-		    }
-		    thiz._size = new_size;
-		    thiz.value[new_size] = '\0';
-		    return thiz;
+			return thiz.add(other.value, other._size);
 		}
 
-		virtual auto operator+=(
-			const char* other
+    protected:
+
+		constexpr auto add(
+			const char* other,
+			const Size& other_size
 		) -> BasicString& {
-		    const auto other_size = std::strlen(other);
 		    const auto new_size = thiz._size + other_size;
 		    if (new_size <= thiz._capacity) {
 		        std::memcpy(thiz.value + thiz._size, other, other_size);
@@ -625,44 +640,25 @@ namespace Sen::Kernel {
 		    return thiz;
 		}
 
-		constexpr virtual auto operator+=(
-			Character other
+    public:
+
+    	constexpr virtual auto operator+=(
+			const char* other
 		) -> BasicString& {
-		    const auto new_size = thiz._size + 1;
-		    if (new_size <= thiz._capacity) {
-		        thiz.value[thiz._size] = other;
-		    } else {
-		        const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-		        const auto new_value = new Character[new_capacity + 1];
-		        std::memcpy(new_value, thiz.value, thiz._size);
-		        new_value[thiz._size] = other;
-		        delete[] thiz.value;
-		        thiz.value = new_value;
-		        thiz._capacity = new_capacity;
-		    }
-		    thiz._size = new_size;
-		    thiz.value[new_size] = '\0';
-		    return thiz;
+    		return thiz.add(other, std::strlen(other));
+    	}
+
+		constexpr virtual auto operator+=(
+			const Character& other
+		) -> BasicString& {
+			const auto temporary = std::array<char, 1>{other};
+		    return thiz.add(temporary.data(), temporary.size());
 		}
 
 		constexpr virtual auto operator+=(
-			std::initializer_list<Character> value_list
+			const std::initializer_list<Character> &value_list
 		) -> BasicString& {
-		    const auto new_size = thiz._size + value_list.size();
-		    if (new_size <= thiz._capacity) {
-		        std::memcpy(thiz.value + thiz._size, value_list.begin(), value_list.size());
-		    } else {
-		        const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-		        const auto new_value = new Character[new_capacity + 1];
-		        std::memcpy(new_value, thiz.value, thiz._size);
-		        std::memcpy(new_value + thiz._size, value_list.begin(), value_list.size());
-		        delete[] thiz.value;
-		        thiz.value = new_value;
-		        thiz._capacity = new_capacity;
-		    }
-		    thiz._size = new_size;
-		    thiz.value[new_size] = '\0';
-		    return thiz;
+		    return thiz.add(value_list.begin(), value_list.size());
 		}
 
 		template <typename StringViewLike>
@@ -673,21 +669,7 @@ namespace Sen::Kernel {
 		constexpr auto operator+=(
 			const StringViewLike& str
 		) -> BasicString& {
-		    const auto new_size = thiz._size + str.size();
-		    if (new_size <= thiz._capacity) {
-		        std::memcpy(thiz.value + thiz._size, str.data(), str.size());
-		    } else {
-		        const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-		        const auto new_value = new Character[new_capacity + 1];
-		        std::memcpy(new_value, thiz.value, thiz._size);
-		        std::memcpy(new_value + thiz._size, str.data(), str.size());
-		        delete[] thiz.value;
-		        thiz.value = new_value;
-		        thiz._capacity = new_capacity;
-		    }
-		    thiz._size = new_size;
-		    thiz.value[new_size] = '\0';
-		    return thiz;
+		    return thiz.add(str.data(), str.size());
 		}
 
     	[[nodiscard]] constexpr auto view (
@@ -695,12 +677,15 @@ namespace Sen::Kernel {
 			return std::string_view{ thiz.value, thiz._size };
 		}
 
+    	constexpr auto as_view (
+		) const -> StringView;
+
     	[[nodiscard]] auto sub (
     		const Size& from,
 			const Size& to
 		) const -> String {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
-			assert_conditional(from <= to, "From index must be smaller than To index", "substring");
+			assert_conditional(from <= to, "From index must be smaller than to index", "substring");
 			auto result = String{to - from};
 			std::memcpy(result.value, thiz.value, to - from);
 			return result;
@@ -717,8 +702,8 @@ namespace Sen::Kernel {
 			const Size& to
 		) -> void {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
-			assert_conditional(from <= to, "From index must be smaller than To index", "substring");
-			auto result = new Character[to - from];
+			assert_conditional(from <= to, "From index must be smaller than to index", "substring");
+			const auto result = new Character[to - from];
 			std::memcpy(result, thiz.value, to - from);
 			delete[] thiz.value;
 			thiz.value = result;
@@ -731,45 +716,11 @@ namespace Sen::Kernel {
 			return thiz.substring(from, thiz._size);
 		}
 
-    protected:
-
-		constexpr static auto build_longest_prefab_suffix(
-			const char* pattern,
-			const usize& m,
-			SizeArray& lps
-		) -> void {
-    		auto len = 0_size;
-    		auto i = 1_size;
-    		while (i < m) {
-    			if (pattern[i] == pattern[len]) {
-    				len++;
-    				lps[i] = len;
-    				++i;
-    			}
-    			else {
-    				if (len != 0) {
-    					len = lps[len - 1];
-    				}
-    				else {
-    					lps[i] = 0;
-    					++i;
-    				}
-    			}
-    		}
-    	}
-
-    public:
-
     	[[nodiscard]] constexpr auto find (
-    		char pattern,
+    		const char pattern,
 			const Size& pos = 0
     	) const -> Size {
-    		for (auto i = pos; i < thiz._size; ++i) {
-				if (thiz.value[i] == pattern) {
-					return i;
-				}
-    		}
-    		return none;
+    		return Detail::find(thiz, pattern, pos);
     	}
 
     	constexpr auto find(
@@ -777,32 +728,7 @@ namespace Sen::Kernel {
 			const size_t& size,
 			const Size& pos = 0
 		) const -> Size {
-    		auto m = size;
-    		auto n = thiz._size;
-    		if (m == 0_size) return pos;
-    		if (n < m || pos >= n) return none;
-    		auto lps = SizeArray{m};
-    		build_longest_prefab_suffix(pattern, m, lps);
-    		auto i = pos;
-    		auto j = 0_size;
-    		while (i < n) {
-    			if (pattern[j] == thiz.value[i]) {
-    				++i;
-    				++j;
-    			}
-    			if (j == m) {
-    				return i - j;
-    			}
-    			if (i < n && pattern[j] != thiz.value[i]) {
-    				if (j != 0) {
-    					j = lps[j - 1];
-    				}
-    				else {
-    					++i;
-    				}
-    			}
-    		}
-    		return none;
+    		return Detail::find(thiz, pattern, size, pos);
     	}
 
     	[[nodiscard]] constexpr auto find(
@@ -831,28 +757,7 @@ namespace Sen::Kernel {
 			const size_t& size,
 			const Size& pos = none
 		) const -> Size {
-    		auto m = size;
-    		auto n = thiz._size;
-    		if (m == 0_size) return pos;
-    		if (n < m) return none;
-    		auto bad_character = std::array<size_t, 256>{};
-    		for (auto i = 0_size; i < m; ++i) {
-    			bad_character[pattern[i]] = i;
-    		}
-    		auto start = (pos == none) ? n - m : std::min(pos, n - m);
-    		for (auto i = start; i >= m - 1; --i) {
-    			auto j = m - 1;
-    			while (pattern[j] == value[i + j]) {
-    				if (j == 0_size) {
-    					return i;
-    				}
-    				--j;
-    			}
-    			auto shift = m - 1 - bad_character[value[i]];
-    			if (shift < 1_size) shift = 1;
-    			i -= shift;
-    		}
-    		return none;
+			return Detail::rfind(thiz, pattern, size, pos);
     	}
 
     	constexpr auto rfind(
@@ -880,10 +785,7 @@ namespace Sen::Kernel {
 			const char* pattern,
 			const Size& m
 		) const -> bool {
-    		if (m > thiz._size) {
-    			return false;
-    		}
-    		return std::memcmp(thiz.value, pattern, m) == 0;
+    		return Detail::starts_with(thiz, pattern, m);
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
@@ -901,17 +803,14 @@ namespace Sen::Kernel {
     	[[nodiscard]] constexpr auto starts_with (
 			const String& value
 		) const -> bool {
-    		return thiz.starts_with(value.cbegin(), value.size());
+    		return thiz.starts_with(value.begin(), value.size());
     	}
 
     	constexpr auto ends_with (
 			const char* pattern,
 			const Size& m
 		) const -> bool {
-    		if (m > thiz._size) {
-    			return false;
-    		}
-    		return std::memcmp(thiz.value + thiz._size - m, pattern, m) == 0;
+    		return Detail::ends_with(thiz, pattern, m);
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
@@ -923,7 +822,7 @@ namespace Sen::Kernel {
     	[[nodiscard]] constexpr auto ends_with (
 			const String& value
 		) const -> bool {
-    		return thiz.ends_with(value.cbegin(), value.size());
+    		return thiz.ends_with(value.begin(), value.size());
     	}
 
     	[[nodiscard]] constexpr auto contains (
@@ -945,8 +844,8 @@ namespace Sen::Kernel {
     			++index;
     		}
     		if (index > 0) {
-    			auto new_size = thiz._size - index;
-    			auto new_value = new Character[new_size + 1];
+    			const auto new_size = thiz._size - index;
+    			const auto new_value = new Character[new_size + 1];
     			std::memcpy(new_value, value + index, new_size + 1);
     			delete[] thiz.value;
     			thiz.value = new_value;
@@ -979,31 +878,13 @@ namespace Sen::Kernel {
     		const char* target,
     		const size_t& length
     	) const -> List<Size>  {
-    		auto positions = List<Size>{};
-    		if (length == 0 || thiz._size < length) {
-    			return positions;
-    		}
-    		auto pos = 0_size;
-    		while ((pos = find(target, length, pos)) != none) {
-    			positions.append(pos);
-    			pos += length;
-    		}
-    		return positions;
+    		return Detail::find_all(thiz, target, length);
 		}
 
     	[[nodiscard]] constexpr auto find_all (
 			const char target
 		) const -> List<Size>  {
-    		auto positions = List<Size>{};
-    		if (thiz._size < 1) {
-    			return positions;
-    		}
-    		auto pos = 0_size;
-    		while ((pos = find(target,  pos)) != none) {
-    			positions.append(pos);
-    			pos += 1;
-    		}
-    		return positions;
+    		return Detail::find_all(thiz, target);
     	}
 
 		[[nodiscard]] constexpr auto find_all (
@@ -1015,7 +896,7 @@ namespace Sen::Kernel {
 		[[nodiscard]] constexpr auto find_all (
 			const String& target
 		) const -> List<Size> {
-			return thiz.find_all(target.cbegin(), target.size());
+			return thiz.find_all(target.begin(), target.size());
 		}
 
 		constexpr auto find_all (
@@ -1034,21 +915,20 @@ namespace Sen::Kernel {
     		if (target_length == 0) {
     			return;
     		}
-    		auto positions = thiz.find_all(target);
+    		const auto positions = thiz.find_all(target);
     		if (positions.empty()) {
     			return;
     		}
-    		auto count = positions.size();
-    		auto new_length = thiz._size + count * (replacement_length - target_length);
-    		if (new_length == thiz._size) {
-    			for (auto& pos : positions) {
+    		const auto count = positions.size();
+		    if (const auto new_length = thiz._size + count * (replacement_length - target_length); new_length == thiz._size) {
+    			for (const auto& pos : positions) {
     				std::memcpy(thiz.value + pos, replacement, replacement_length);
     			}
     		}
     		else {
     			if (new_length > thiz._capacity) {
-    				auto new_capacity = std::max(new_length, thiz._capacity * 3);
-    				auto new_data = new Character[new_capacity + 1];
+    				const auto new_capacity = std::max(new_length, thiz._capacity * 3);
+    				const auto new_data = new Character[new_capacity + 1];
     				auto source_index = 0_size;
     				auto destination_index = 0_size;
     				auto position_index = 0_size;
@@ -1099,7 +979,7 @@ namespace Sen::Kernel {
 			const String& target,
 			const String& replacement
 		) -> void {
-			return thiz.replace_all(target.cbegin(), target.size(), replacement.cbegin(), replacement.size());
+			return thiz.replace_all(target.begin(), target.size(), replacement.begin(), replacement.size());
 		}
 
 		constexpr virtual auto replace_all(
@@ -1110,15 +990,15 @@ namespace Sen::Kernel {
 		}
 
 		constexpr virtual auto replace_all(
-    		char target,
-    		char replacement
+    		const char target,
+    		const char replacement
 		) const -> void
     	{
-    		auto positions = thiz.find_all(target);
+    		const auto positions = thiz.find_all(target);
     		if (positions.empty()) {
     			return;
     		}
-    		for (auto& pos : positions) {
+    		for (const auto& pos : positions) {
     			std::memcpy(thiz.value + pos, &replacement, 1);
     		}
     	}
@@ -1150,3 +1030,36 @@ struct std::hash<Sen::Kernel::String> {
 		return Sen::Kernel::hash_string(str);
 	}
 };
+
+template<typename Json>
+struct jsoncons::json_type_traits<Json, Sen::Kernel::String> {
+	using class_type = Sen::Kernel::String;
+	using allocator_type = typename Json::allocator_type;
+	using char_type = typename Json::char_type;
+	using string_view_type = typename Json::string_view_type;
+
+	static bool is(const Json &ajson) noexcept {
+		if (!ajson.is_string()) return false;
+		return true;
+	}
+
+	static auto as(const Json &ajson) -> class_type {
+		if (!is(ajson)) throw conv_error(conv_errc::conversion_failed, "Not a String");
+		std::string_view sv(ajson.as_string_view());
+		class_type class_instance{sv.data(), sv.size()};
+		return class_instance;
+	}
+
+	static Json to_json(const class_type &class_instance, allocator_type alloc = allocator_type()) {
+		Json ajson(semantic_tag::none, alloc);
+		ajson = class_instance.view();
+		return ajson;
+	}
+};
+
+template<>
+struct jsoncons::is_json_type_traits_declared<Sen::Kernel::String> : public std::true_type {
+};
+
+template <>
+struct jsoncons::extension_traits::is_string<Sen::Kernel::String> : std::true_type {};

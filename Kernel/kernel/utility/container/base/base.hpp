@@ -12,6 +12,9 @@ namespace Sen::Kernel {
 
         template <typename U>
         using Pointer = U*;
+        
+        template <typename U>
+        using ConstPointer = const Pointer<U>;
 
         using value_type = Type;
 
@@ -28,7 +31,7 @@ namespace Sen::Kernel {
         }
 
         constexpr explicit BaseContainer(
-            Pointer<T> value,
+            const Pointer<T> value,
             const Size& size
         ) : value{ value }, _size{ size } {}
 
@@ -48,7 +51,7 @@ namespace Sen::Kernel {
         ) -> BaseContainer& = delete;
 
         constexpr auto operator=(
-            const BaseContainer&& other
+            BaseContainer&& other
         ) noexcept -> BaseContainer& {
             value = other.value;
             _size = other._size;
@@ -83,37 +86,37 @@ namespace Sen::Kernel {
         }
 
         constexpr auto begin(
-        ) -> Pointer<T> {
+        ) const -> Pointer<T> {
             return thiz.value;
         }
 
         constexpr auto cbegin(
-        ) const -> Pointer<T> {
+        ) const -> ConstPointer<T> {
             return thiz.value;
         }
 
         constexpr auto cend(
-        ) const -> Pointer<T> {
+        ) const -> ConstPointer<T> {
             return thiz.value + thiz._size;
         }
 
         constexpr auto rbegin(
-        ) -> Pointer<T> {
+        ) const -> Pointer<T> {
             return thiz.value + thiz._size - 1;
         }
 
         constexpr auto rend(
-        ) -> Pointer<T> {
+        ) const -> Pointer<T> {
             return thiz.value + thiz._size - 1;
         }
 
         constexpr auto rcbegin(
-        ) const -> Pointer<T> {
+        ) const -> ConstPointer<T> {
             return thiz.value + thiz._size - 1;
         }
 
         constexpr auto rcend(
-        ) const -> Pointer<T> {
+        ) const -> ConstPointer<T> {
             return thiz.value + thiz._size - 1;
         }
 
@@ -127,7 +130,7 @@ namespace Sen::Kernel {
         }
 
         constexpr auto end(
-        ) -> Pointer<T> {
+        ) const -> Pointer<T> {
             return thiz.value + thiz._size;
         }
 
@@ -135,7 +138,7 @@ namespace Sen::Kernel {
             Size const& index
         ) -> T&
         {
-            assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+            assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
             return thiz.value[index];
         }
 

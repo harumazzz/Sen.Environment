@@ -323,4 +323,28 @@ namespace Sen::Kernel {
 	template <typename T>
 	inline constexpr auto array_size_v = array_traits<T>::size;
 
+	template <typename T>
+	struct Transform {
+		using type = T;
+	};
+
+	template <typename T>
+	struct TransformWrapper {
+		using type = typename Transform<T>::type;
+	};
+
+	template <typename Tuple, template <typename> class Transformer>
+	struct TupleConverter;
+
+	template <template <typename> class Transformer, typename... Args>
+	struct TupleConverter<std::tuple<Args...>, Transformer> {
+		using type = std::tuple<typename Transformer<Args>::type...>;
+	};
+
+	template <typename Tuple, template <typename> class Transformer>
+	using ConvertTuple = typename TupleConverter<Tuple, Transformer>::type;
+
+	template <typename Tuple, template <typename> class Transformer>
+	using ConvertTuple = typename TupleConverter<Tuple, Transformer>::type;
+
 }

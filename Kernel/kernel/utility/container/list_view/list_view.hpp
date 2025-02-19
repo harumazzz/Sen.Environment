@@ -29,7 +29,7 @@ namespace Sen::Kernel {
             const std::size_t& capacity
         ) noexcept : BaseContainer<T>{data, size}, _capacity{capacity} {}
 
-        explicit constexpr CListView(const CList<T>& other) noexcept : BaseContainer<T>{other.cbegin(), other.size()}, _capacity{other.capacity()} {
+        explicit constexpr CListView(const CList<T>& other) noexcept : BaseContainer<T>{other.begin(), other.size()}, _capacity{other.capacity()} {
 
         }
 

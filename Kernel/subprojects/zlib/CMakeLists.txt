@@ -15,32 +15,73 @@ endif ()
 
 add_library(
 	${PROJECT_NAME} STATIC
-	./zconf.h
-	./zlib.h
-	./crc32.h
-	./deflate.h
-	./gzguts.h
-	./inffast.h
-	./inffixed.h
-	./inflate.h
-	./inftrees.h
-	./trees.h
-	./zutil.h
-	./adler32.c
-	./compress.c
-	./crc32.c
-	./deflate.c
-	./gzclose.c
-	./gzlib.c
-	./gzread.c
-	./gzwrite.c
-	./inflate.c
-	./infback.c
-	./inftrees.c
-	./inffast.c
-	./trees.c
-	./uncompr.c
-	./zutil.c
+./adler32.c
+./adler32_p.h
+./arch_functions.h
+./chunkset_tpl.h
+./compare256_rle.h
+./compress.c
+./cpu_features.c
+./cpu_features.h
+./crc32.c
+./crc32.h
+./crc32_braid_comb.c
+./crc32_braid_comb_p.h
+./crc32_braid_p.h
+./crc32_braid_tbl.h
+./deflate.c
+./deflate.h
+./deflate_fast.c
+./deflate_huff.c
+./deflate_medium.c
+./deflate_p.h
+./deflate_quick.c
+./deflate_rle.c
+./deflate_slow.c
+./deflate_stored.c
+./fallback_builtins.h
+./functable.c
+./functable.h
+./gzguts.h
+./gzlib.c
+./gzread.c
+./gzwrite.c
+./infback.c
+./inffast_tpl.h
+./inffixed_tbl.h
+./inflate.c
+./inflate.h
+./inflate_p.h
+./inftrees.c
+./inftrees.h
+./insert_string.c
+./insert_string_roll.c
+./insert_string_tpl.h
+./match_tpl.h
+./trees.c
+./trees.h
+./trees_emit.h
+./trees_tbl.h
+./uncompr.c
+./zbuild.h
+./zconf.h
+./zendian.h
+./zlib.h
+./zlib_name_mangling.h
+./zmemory.h
+./zutil.c
+./zutil.h
+./zutil_p.h
+./arch/generic/adler32_c.c
+./arch/generic/adler32_fold_c.c
+./arch/generic/chunkset_c.c
+./arch/generic/chunk_permute_table.h
+./arch/generic/compare256_c.c
+./arch/generic/compare256_p.h
+./arch/generic/crc32_braid_c.c
+./arch/generic/crc32_fold_c.c
+./arch/generic/generic_functions.h
+./arch/generic/slide_hash_c.c
 )
 
 if(UNIX OR APPLE OR ANDROID)
@@ -49,6 +90,7 @@ if(UNIX OR APPLE OR ANDROID)
 		-D_LARGEFILE64_SOURCE=1
 	)
 endif()
+
 
 # UTF8 Support
 if(MSVC)

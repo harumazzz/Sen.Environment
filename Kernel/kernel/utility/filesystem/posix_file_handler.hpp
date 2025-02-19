@@ -35,8 +35,8 @@ namespace Sen::Kernel::FileSystem {
         int fd{-1};
 
     public:
-        explicit PosixFileReader(const String& path) {
-            thiz.fd = open(path.cbegin(), Detail::$O_RDONLY);
+        explicit PosixFileReader(const StringView& path) {
+            thiz.fd = open(path.begin(), Detail::$O_RDONLY);
             assert(thiz.fd != -1, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "PosixFileReader");
         }
 
@@ -74,14 +74,13 @@ namespace Sen::Kernel::FileSystem {
             return *this;
         }
 
-        template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
+        template <typename T> requires (std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
             { t.size() } -> std::convertible_to<usize>;
-            { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
-        }
+        }) || std::is_same_v<T, std::string>
         auto read(
             T& data
         ) -> void {
-            auto bytes_read = ::read(fd, data.begin(), data.size());
+            auto bytes_read = ::read(fd, data.data(), data.size());
             assert_conditional(bytes_read == static_cast<ssize_t>(data.size()), fmt::format("Missing bytes when read file, expected: {} but got: {}", data.size(), bytes_read), "read");
         }
 
@@ -97,8 +96,8 @@ namespace Sen::Kernel::FileSystem {
         int fd{-1};
 
     public:
-        explicit PosixFileWriter(const String& path) {
-            thiz.fd = open(path.cbegin(), Detail::$O_WRONLY | Detail::$O_CREAT | Detail::$O_TRUNC, Detail::$DEFAULT_OPEN);
+        explicit PosixFileWriter(const StringView& path) {
+            thiz.fd = open(path.begin(), Detail::$O_WRONLY | Detail::$O_CREAT | Detail::$O_TRUNC, Detail::$DEFAULT_OPEN);
             assert_conditional(thiz.fd != -1 , fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "PosixFileWriter");
         }
 
@@ -142,7 +141,7 @@ namespace Sen::Kernel::FileSystem {
             { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
         auto write(
-            T& data
+            const T& data
         ) -> void {
             auto bytes_written = ::write(fd, data.begin(), data.size());
             assert_conditional(bytes_written == static_cast<ssize_t>(data.size()), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_written), "write");

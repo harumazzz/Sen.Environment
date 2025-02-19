@@ -31,7 +31,7 @@ namespace Sen::Kernel::Encoding::Image {
             auto stream = static_cast<ReadMemoryStream*>(Subprojects::libpng::png_get_io_ptr(png_ptr));
             assert_conditional(stream->has_space(length), "Stream is too small to read the current image", "read_png_data");
             std::memcpy(data, stream->current_iterator(), length);
-            stream->operator+(length);
+            stream->operator+=(length);
         }
 
         inline static auto write_png_data (
@@ -41,8 +41,7 @@ namespace Sen::Kernel::Encoding::Image {
         ) -> void {
             auto stream = static_cast<WriteMemoryStream*>(Subprojects::libpng::png_get_io_ptr(png_ptr));
             assert_conditional(stream->has_space(length), "Stream is too small to write the current image", "write_png_data");
-            std::memcpy(stream->current_iterator(), data, length);
-            stream->operator+(length);
+            stream->raw(reinterpret_cast<u8 *>(data), length);
         }
 
         inline static auto flush_png_data (

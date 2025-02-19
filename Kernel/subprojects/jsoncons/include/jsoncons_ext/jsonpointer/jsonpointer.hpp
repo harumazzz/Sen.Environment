@@ -37,6 +37,31 @@ namespace jsoncons { namespace jsonpointer {
 
     } // namespace detail
 
+    template <typename CharT,typename Allocator=std::allocator<CharT>>
+    std::basic_string<CharT,std::char_traits<CharT>,Allocator> escape(jsoncons::basic_string_view<CharT> s, const Allocator& = Allocator())
+    {
+        std::basic_string<CharT,std::char_traits<CharT>,Allocator> result;
+
+        for (auto c : s)
+        {
+            if (JSONCONS_UNLIKELY(c == '~'))
+            {
+                result.push_back('~');
+                result.push_back('0');
+            }
+            else if (JSONCONS_UNLIKELY(c == '/'))
+            {
+                result.push_back('~');
+                result.push_back('1');
+            }
+            else
+            {
+                result.push_back(c);
+            }
+        }
+        return result;
+    }
+
     template <typename CharT>
     std::basic_string<CharT> escape_string(const std::basic_string<CharT>& s)
     {
@@ -1172,31 +1197,6 @@ namespace jsoncons { namespace jsonpointer {
         }
     }
 
-    template <typename CharT>
-    std::basic_string<CharT> escape(const jsoncons::basic_string_view<CharT>& s)
-    {
-        std::basic_string<CharT> result;
-
-        for (auto c : s)
-        {
-            if (c == '~')
-            {
-                result.push_back('~');
-                result.push_back('0');
-            }
-            else if (c == '/')
-            {
-                result.push_back('~');
-                result.push_back('1');
-            }
-            else
-            {
-                result.push_back(c);
-            }
-        }
-        return result;
-    }
-
     // flatten
 
     template <typename Json>
@@ -1442,5 +1442,27 @@ namespace jsoncons { namespace jsonpointer {
 
 } // namespace jsonpointer
 } // namespace jsoncons
+
+namespace std {
+    template <typename CharT>
+    struct hash<jsoncons::jsonpointer::basic_json_pointer<CharT>>
+    {
+        std::size_t operator()(const jsoncons::jsonpointer::basic_json_pointer<CharT>& ptr) const noexcept
+        {
+            constexpr std::uint64_t prime{0x100000001B3};
+            std::uint64_t result{0xcbf29ce484222325};
+             
+            for (const auto& str : ptr)
+            {
+                for (std::size_t i = 0; i < str.length(); ++i)
+                {
+                    result = (result * prime) ^ str[i];
+                }
+            }
+            return result;
+        }
+    };   
+    
+} // namespace std
 
 #endif

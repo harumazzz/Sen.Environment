@@ -150,12 +150,12 @@ namespace Sen::Kernel::StringHelper {
 
     inline auto split_string (
         const String& source,
-        const String& separator,
+        const std::string_view& separator,
         List<String>& destination
     ) -> void {
         auto start = 0_size;
         auto end = 0_size;
-        auto sep_len = separator.size();
+        const auto sep_len = separator.size();
         while ((end = source.find(separator, start)) != String::none) {
             destination.append(source.sub(start, end - start));
             start = end + sep_len;
@@ -165,13 +165,21 @@ namespace Sen::Kernel::StringHelper {
 
     inline auto split_string (
         const String& source,
-        char separator,
+        const String& separator,
+        List<String>& destination
+    ) -> void {
+        return split_string(source, separator.view(), destination);
+    }
+
+    inline auto split_string (
+        const String& source,
+        const char separator,
         List<String>& destination
     ) -> void {
         auto start = 0_size;
         auto end = 0_size;
-        auto sep_len = 1;
         while ((end = source.find(separator, start)) != String::none) {
+            constexpr auto sep_len = 1;
             destination.append(source.sub(start, end - start));
             start = end + sep_len;
         }

@@ -13,7 +13,7 @@
 #include <jsoncons/config/jsoncons_config.hpp>
 
 #include <jsoncons_ext/jsonpointer/jsonpointer.hpp>
-#include <jsoncons_ext/jsonschema/common/schema_validators.hpp>
+#include <jsoncons_ext/jsonschema/common/schema_validator.hpp>
 #include <jsoncons_ext/jsonschema/jsonschema_error.hpp>
 
 namespace jsoncons {
@@ -107,7 +107,7 @@ namespace jsonschema {
     template <typename Json>
     class json_schema
     {
-        using keyword_validator_type = std::unique_ptr<keyword_validator<Json>>;
+        using keyword_validator_ptr_type = std::unique_ptr<keyword_validator<Json>>;
         using document_schema_validator_type = std::unique_ptr<document_schema_validator<Json>>;
 
         document_schema_validator_type root_;
@@ -133,7 +133,7 @@ namespace jsonschema {
             jsonpointer::json_pointer instance_location{};
             Json patch(json_array_arg);
 
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, reporter, patch);
             return patch;
@@ -146,7 +146,7 @@ namespace jsonschema {
             jsonpointer::json_pointer instance_location{};
             Json patch(json_array_arg);
 
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, reporter, patch);
             return reporter.error_count() == 0;
@@ -161,7 +161,7 @@ namespace jsonschema {
             Json patch(json_array_arg);
 
             error_reporter_adaptor adaptor(reporter);
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, adaptor, patch);
         }
@@ -175,7 +175,7 @@ namespace jsonschema {
             patch = Json(json_array_arg);
 
             error_reporter_adaptor adaptor(std::forward<MsgReporter>(reporter));
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, adaptor, patch);
         }
@@ -187,7 +187,7 @@ namespace jsonschema {
             patch = Json(json_array_arg);
 
             fail_early_reporter reporter;
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, reporter, patch);
         }
@@ -200,7 +200,7 @@ namespace jsonschema {
             Json patch{json_array_arg};
 
             validation_message_to_json_events adaptor{ visitor };
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             error_reporter_adaptor reporter(adaptor);
             root_->validate(context, instance, instance_location, results, reporter, patch);
@@ -213,7 +213,7 @@ namespace jsonschema {
         {
             jsonpointer::json_pointer instance_location{};
 
-            root_->walk(evaluation_context<Json>{}, instance, instance_location, reporter);
+            root_->walk(eval_context<Json>{}, instance, instance_location, reporter);
         }
         
     private:
@@ -223,7 +223,7 @@ namespace jsonschema {
             jsonpointer::json_pointer instance_location{};
             patch = Json(json_array_arg);
 
-            evaluation_context<Json> context;
+            eval_context<Json> context;
             evaluation_results results;
             root_->validate(context, instance, instance_location, results, reporter, patch);
         }

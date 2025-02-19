@@ -1,7 +1,7 @@
 #pragma once
 
-#include "kernel/support/popcap/animation/definition.hpp"
-#include "kernel/support/popcap/animation/convert/definition.hpp"
+#include "kernel/support/popcap/animation/model.hpp"
+#include "kernel/support/popcap/animation/convert/model.hpp"
 #include "kernel/support/popcap/animation/convert/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Animation::Convert {

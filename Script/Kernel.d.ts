@@ -1676,7 +1676,7 @@ declare namespace Sen {
 					/**
 					 * Denotes the target platform for file system operations.
 					 */
-					export type Platform = 'pc' | 'game-console' | 'phone-32' | 'phone-64' | 'tv';
+					export type Platform = 'desktop' | 'mobile32' | 'mobile64' | 'television';
 
 					// Interface to define the structure of a single Reanim transform
 					export interface ReanimTransform extends Record<string, unknown> {

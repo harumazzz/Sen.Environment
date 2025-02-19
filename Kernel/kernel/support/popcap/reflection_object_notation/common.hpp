@@ -21,6 +21,10 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
 
         static constexpr auto k_done_identifier = "DONE"_sv;
 
+        static constexpr auto k_rtid_0 = "RTID(0)"_sv;
+
+        static constexpr auto k_rtid_empty = "RTID()"_sv;
+
         static constexpr auto k_version = 1_ui;
 
         static constexpr auto k_unicode_index = static_cast<size_t>(std::numeric_limits<int32_t>::max());

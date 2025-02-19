@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "kernel/support/popcap/re_animation/definition.hpp"
+#include "kernel/support/popcap/re_animation/model.hpp"
 #include "kernel/support/popcap/re_animation/convert/from_flash.hpp"
 #include "kernel/support/popcap/re_animation/convert/to_flash.hpp"
 #include "kernel/support/popcap/re_animation/decode.hpp"

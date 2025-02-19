@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/utility/utility.hpp"
-#include "kernel/support/popcap/particles/definition.hpp"
+#include "kernel/support/popcap/particles/model.hpp"
 #include "kernel/support/popcap/particles/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::Particles

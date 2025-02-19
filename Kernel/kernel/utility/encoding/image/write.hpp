@@ -39,16 +39,16 @@ namespace Sen::Kernel::Encoding::Image {
                 Uint8Array& source,
                 Image& image
             ) -> void {
-                auto stream = WriteMemoryStream{ source };
+                auto stream = WriteMemoryStream{ image.color_size() };
                 process_image(stream, image);
                 stream.release_stream(source);
             }
 
             static auto process_fs (
-                const String& destination,
+                const StringView& destination,
                 Image& image
             ) -> void {
-                auto source_view = Uint8Array{image.color_size()};
+                auto source_view = Uint8Array{};
                 process(source_view, image);
                 return FileSystem::write_file(destination, source_view);
             }

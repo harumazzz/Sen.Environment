@@ -6,68 +6,31 @@
 
 namespace Sen::Kernel::Compression::Zlib {
 
-    template <auto type, auto level, auto windows_bits, auto memory_level, auto strategy> requires std::is_same_v<type_of<type>, Type> && is_numeric_v<type_of<level>> && is_numeric_v<type_of<windows_bits>> && is_numeric_v<type_of<memory_level>> &&
-            is_between_v<level, 0_size, Subprojects::zlib::$Z_BEST_COMPRESSION> && is_between_v<windows_bits, 8_size, Subprojects::zlib::$MAX_WBITS> && is_between_v<memory_level, 1_size, Subprojects::zlib::$MAX_MEM_LEVEL>
-    && (!(windows_bits == 8_size && type == Type::zlib)) && std::is_same_v<type_of<strategy>, Strategy>
+
     struct Compress : Common {
 
-    protected:
-
-        using Common = Common;
-
-        inline static constexpr auto Format = type;
-
-        inline static constexpr auto Level = level;
-
-        inline static constexpr auto WindowsBits = static_cast<int>(windows_bits);
-
-        inline static constexpr auto MemoryLevel = memory_level;
-
-        inline static constexpr auto Strategy = strategy;
-
-    public:
-
-        constexpr Compress (
-        ) = default;
-
-        constexpr ~Compress (
-        ) = default;
-
-        Compress (
-            const Compress& other
-        ) = delete;
-
-        Compress (
-            Compress&& other
-        ) = delete;
-
-        auto operator = (
-            const Compress& other
-        ) -> Compress& = delete;
-
-        auto operator = (
-            Compress&& other
-        ) -> Compress& = delete;
-
+        template <auto level = 9, auto type, auto windows_bits, auto memory_level, auto strategy> requires is_valid_compress<type, level, windows_bits, memory_level, strategy>
         static auto process_whole (
-            ReadMemoryStream& source,
-            WriteMemoryStream& destination
+            Uint8Array& source,
+            Uint8List& destination
         ) -> void {
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wold-style-cast"
-            auto actual_window_bits = WindowsBits;
-            if constexpr (Format == Type::deflate) {
+            auto actual_window_bits = windows_bits;
+            if constexpr (type == Type::deflate) {
                 actual_window_bits = -actual_window_bits;
-            } else if constexpr (Format == Type::zlib) {
-                actual_window_bits = actual_window_bits;
+            } else if constexpr (type == Type::zlib) {
+              //  actual_window_bits = actual_window_bits;
             } else {
                 actual_window_bits += 16_size;
             }
+            const auto allocate_size = compressBound(source.size());
+            destination.allocate(allocate_size);
             auto z_stream = Subprojects::zlib::z_stream{
                 .next_in = reinterpret_cast<Subprojects::zlib::Bytef*>(source.begin()),
                 .avail_in = static_cast<Subprojects::zlib::uInt>(source.size()),
                 .total_in = 0,
-                .next_out = reinterpret_cast<Subprojects::zlib::Bytef*>(destination.current_iterator()),
+                .next_out = reinterpret_cast<Subprojects::zlib::Bytef*>(destination.begin()),
                 .avail_out = static_cast<Subprojects::zlib::uInt>(destination.capacity()),
                 .total_out = 0,
                 .msg = nullptr,
@@ -82,11 +45,11 @@ namespace Sen::Kernel::Compression::Zlib {
             auto state = int{};
             state = Subprojects::zlib::deflateInit2_(
                 &z_stream,
-                static_cast<int>(Level),
+                static_cast<int>(level),
                 Subprojects::zlib::$Z_DEFLATED,
                 actual_window_bits,
-                static_cast<int>(MemoryLevel),
-                static_cast<int>(Strategy),
+                static_cast<int>(memory_level),
+                static_cast<int>(strategy),
                 Subprojects::zlib::$ZLIB_VERSION,
                 static_cast<int>(sizeof(z_stream))
             );
@@ -106,10 +69,11 @@ namespace Sen::Kernel::Compression::Zlib {
             );
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to compress zlib", "process_whole");
             assert_conditional(z_stream.avail_in == 0, "Failed to compress zlib", "process_whole");
-            destination.resize(static_cast<usize>(z_stream.total_out));
+            destination.resize(z_stream.total_out);
             #pragma clang diagnostic pop
         }
 
+        /*
         static auto estimate_size(
             const usize& raw_size
         ) -> usize
@@ -129,16 +93,16 @@ namespace Sen::Kernel::Compression::Zlib {
             }
             return wrap_size + (raw_size + ((raw_size + 7_size) >> 3_size) + ((raw_size + 63_size) >> 6_size) + 5_size);
         }
+        */
 
+        template <auto level = 9, auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, auto memory_level = Subprojects::zlib::$MAX_MEM_LEVEL, auto strategy = Strategy::default_mode> requires is_valid_compress<type, level, windows_bits, memory_level, strategy>
         static auto process (
             Uint8Array& source,
-            Uint8List& destination
+            Uint8Array& destination
         ) -> void {
-            auto raw = ReadMemoryStream{source};
-            auto ripe = WriteMemoryStream{destination};
-            process_whole(raw, ripe);
-            raw.release_stream(source);
-            ripe.release_stream(destination);
+            auto buffer = Uint8List{};
+            process_whole<level, type, windows_bits, memory_level, strategy>(source, buffer);
+            destination.assign(buffer);
         }
 
     };

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "kernel/utility/library.hpp"
+#include "kernel/utility/container/array/byte_array.hpp"
+#include "kernel/utility/container/list/list.hpp"
 
 namespace Sen::Kernel {
 
@@ -100,6 +102,176 @@ namespace Sen::Kernel {
         const T& c
     ) noexcept {
         return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
+    }
+
+    namespace Detail {
+
+        inline static auto constexpr none = static_cast<size_t>(-1);
+
+        template <typename Container>
+        [[nodiscard]] inline constexpr auto find (
+            const Container& other,
+            const char pattern,
+            const size_t& pos = 0
+        ) -> size_t {
+            for (auto i = pos; i < other.size(); ++i) {
+                if (other[i] == pattern) {
+                    return i;
+                }
+            }
+            return none;
+        }
+
+        inline constexpr auto build_longest_prefab_suffix(
+            const char* pattern,
+            const size_t& m,
+            SizeArray& lps
+        ) -> void {
+            auto len = 0_size;
+            auto i = 1_size;
+            while (i < m) {
+                if (pattern[i] == pattern[len]) {
+                    len++;
+                    lps[i] = len;
+                    ++i;
+                }
+                else {
+                    if (len != 0) {
+                        len = lps[len - 1];
+                    }
+                    else {
+                        lps[i] = 0;
+                        ++i;
+                    }
+                }
+            }
+        }
+
+        template <typename Container>
+        inline constexpr auto find(
+            const Container& other,
+            const char* pattern,
+            const size_t& size,
+            const usize& pos = 0
+        ) -> usize {
+            const auto m = size;
+            const auto n = other.size();
+            if (m == 0_size) return pos;
+            if (n < m || pos >= n) return none;
+            auto lps = SizeArray{m};
+            build_longest_prefab_suffix(pattern, m, lps);
+            auto i = pos;
+            auto j = 0_size;
+            while (i < n) {
+                if (pattern[j] == other[i]) {
+                    ++i;
+                    ++j;
+                }
+                if (j == m) {
+                    return i - j;
+                }
+                if (i < n && pattern[j] != other[i]) {
+                    if (j != 0) {
+                        j = lps[j - 1];
+                    }
+                    else {
+                        ++i;
+                    }
+                }
+            }
+            return none;
+        }
+
+        template <typename Container>
+        inline constexpr auto rfind(
+            const Container& other,
+            const char* pattern,
+            const size_t& size,
+            const usize& pos = none
+        ) -> usize {
+            const auto m = size;
+            const auto n = other.size();
+            if (m == 0_size) return pos;
+            if (n < m) return none;
+            auto bad_character = std::array<size_t, 256>{};
+            for (auto i = 0_size; i < m; ++i) {
+                bad_character[pattern[i]] = i;
+            }
+            const auto start = (pos == none) ? n - m : std::min(pos, n - m);
+            for (auto i = start; i >= m - 1; --i) {
+                auto j = m - 1;
+                while (pattern[j] == other[i + j]) {
+                    if (j == 0_size) {
+                        return i;
+                    }
+                    --j;
+                }
+                auto shift = m - 1 - bad_character[other[i]];
+                if (shift < 1_size) shift = 1;
+                i -= shift;
+            }
+            return none;
+        }
+
+        template <typename Container>
+        inline constexpr auto find_all (
+            const Container& other,
+            const char* target,
+            const size_t& length
+        ) -> List<usize>  {
+            auto positions = List<usize>{};
+            if (length == 0 || other.size() < length) {
+                return positions;
+            }
+            auto pos = 0_size;
+            while ((pos = find(other, target, length, pos)) != none) {
+                positions.append(pos);
+                pos += length;
+            }
+            return positions;
+        }
+
+        template <typename Container>
+        [[nodiscard]] inline constexpr auto find_all (
+            const Container& other,
+            const char target
+        ) -> List<usize>  {
+            auto positions = List<usize>{};
+            if (other.size() < 1) {
+                return positions;
+            }
+            auto pos = 0_size;
+            while ((pos = find(other, target, pos)) != none) {
+                positions.append(pos);
+                pos += 1;
+            }
+            return positions;
+        }
+
+        template <typename Container>
+        inline constexpr auto starts_with (
+            const Container& other,
+            const char* pattern,
+            const usize& m
+        ) -> bool {
+            if (m > other.size()) {
+                return false;
+            }
+            return std::memcmp(other.begin(), pattern, m) == 0;
+        }
+
+        template <typename Container>
+        inline constexpr auto ends_with (
+            const Container& other,
+            const char* pattern,
+            const usize& m
+        ) -> bool {
+            if (m > other.size()) {
+                return false;
+            }
+            return std::memcmp(other.begin() + other.size() - m, pattern, m) == 0;
+        }
+
     }
 
 }

@@ -15,17 +15,17 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
         static auto process (
             const Uint8Array& source,
             Uint8Array& destination,
-            const String& key,
-            const String& iv
+            const StringView& key,
+            const StringView& iv
         ) -> void {
             return Encryption::Rijndael::Decrypt<Encryption::Rijndael::Mode::CBC>::process(source, key, iv, destination);
         }
 
         static auto process_fs (
-            const String& source,
-            const String& destination,
-            const String& key,
-            const String& iv
+            const StringView& source,
+            const StringView& destination,
+            const StringView& key,
+            const StringView& iv
         ) -> void {
             auto source_view = Uint8Array{};
             FileSystem::read_file(source, source_view);

@@ -31,14 +31,15 @@ namespace Sen::Kernel {
 			return this->arg;
 		}
 
-		Exception(const std::string &arg, const std::source_location &loc = std::source_location::current(), const std::string & function_name = "") : std::runtime_error{arg}, source{std::string{loc.file_name()} + std::string{":"} + std::to_string(loc.line())}, arg{arg}, function_name{function_name}
+		Exception(const std::string &arg, const std::source_location &loc = std::source_location::current(), const std::string & function_name = "") : std::runtime_error{arg}, arg{arg}, function_name{function_name.empty() ? "lambda" : function_name},
+		source{std::string{loc.file_name()} + ":" + std::to_string(loc.line()) + ":" + std::to_string(loc.column())}
 		{
 			{
-					auto current_stack = source;
+
 					#if _WIN32 // Windows using seperator '\\'
-						std::replace(current_stack.begin(), current_stack.end(), '\\', '/');
+						std::ranges::replace(source, '\\', '/');
 					#endif
-					msg = current_stack;
+					msg = source;
 				}
 				msg += '\n';
 				msg += arg;

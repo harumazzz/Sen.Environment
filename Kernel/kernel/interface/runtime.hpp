@@ -36,12 +36,12 @@ namespace Sen::Kernel::Interface::Runtime {
         {
             using Type = Path::PathType;
             auto s_FileSystem = s_Kernel.add_space("FileSystem"_s);
-            s_FileSystem.add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_file>>("read_file"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::write_file>>("write_file"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_current_directory<Type::None>>>("read_current_directory"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_current_directory<Type::File>>>("read_directory_only_file"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_current_directory<Type::Directory>>>("read_directory_only_directory"_s)
-            .add_function<&Javascript::proxy_native_function_wrapper<&API::FileSystem::read_directory>>("read_directory"_s)
+            s_FileSystem.add_function<&API::FileSystem::read_file>("read_file"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&FileSystem::write_file<String>>>("write_file"_s)
+            .add_function<&API::FileSystem::read_current_directory<Type::None>>("read_current_directory"_s)
+            .add_function<&API::FileSystem::read_current_directory<Type::File>>("read_directory_only_file"_s)
+            .add_function<&API::FileSystem::read_current_directory<Type::Directory>>("read_directory_only_directory"_s)
+            .add_function<&API::FileSystem::read_directory>("read_directory"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&FileSystem::create_directory>>("create_directory"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&FileSystem::is_file>>("is_file"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&FileSystem::is_directory>>("is_directory"_s)
@@ -87,6 +87,11 @@ namespace Sen::Kernel::Interface::Runtime {
             s_JavaScript.add_function<&API::JavaScript::evaluate_fs>("evaluate_fs"_s);
         }
         const auto s_Support = s_Kernel.add_space("Support"_s);
+        {
+            auto s_Texture = s_Support.add_space("Texture"_s);
+            s_Texture.add_function<&Javascript::proxy_native_function_wrapper<&Support::Texture::InvokeMethod::Decode::process_fs>>("decode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::Texture::InvokeMethod::Encode::process_fs>>("encode_fs"_s);
+        }
         const auto s_PopCap = s_Support.add_space("PopCap"_s);
         {
             auto s_ReflectionObjectNotation = s_PopCap.add_space("ReflectionObjectNotation"_s);
@@ -94,6 +99,46 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReflectionObjectNotation::Decode::process_fs>>("decode_fs"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReflectionObjectNotation::Encrypt::process_fs>>("encrypt_fs"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReflectionObjectNotation::Decrypt::process_fs>>("decrypt_fs"_s);
+        }
+        {
+            auto s_Zlib = s_PopCap.add_space("Zlib"_s);
+            s_Zlib.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Zlib::Compress::process_fs>>("compress_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Zlib::Uncompress::process_fs>>("uncompress_fs"_s);
+        }
+        {
+            auto s_CompiledText = s_PopCap.add_space("CompiledText"_s);
+            s_CompiledText.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CompiledText::Decode::process_fs>>("decode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CompiledText::Encode::process_fs>>("encode_fs"_s);
+        }
+        {
+            auto s_CharacterFontWidget2 = s_PopCap.add_space("CharacterFontWidget2"_s);
+            s_CharacterFontWidget2.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CharacterFontWidget2::Encode::process_fs>>("encode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CharacterFontWidget2::Decode::process_fs>>("decode_fs"_s);
+        }
+        {
+            auto s_CryptData = s_PopCap.add_space("CryptData"_s);
+            s_CryptData.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CryptData::Encrypt::process_fs>>("encrypt_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::CryptData::Decrypt::process_fs>>("decrypt_fs"_s);
+        }
+        {
+            auto s_Package = s_PopCap.add_space("Package"_s);
+            s_Package.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Package::Unpack::process_fs>>("unpack_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Package::Pack::process_fs>>("pack_fs"_s);
+        }
+        {
+            auto s_NewTypeObjectNotation = s_PopCap.add_space("NewTypeObjectNotation"_s);
+            s_NewTypeObjectNotation.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::NewTypeObjectNotation::Encode::process_fs>>("encode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::NewTypeObjectNotation::Decode::process_fs>>("decode_fs"_s);
+        }
+        {
+            auto s_Animation = s_PopCap.add_space("Animation"_s);
+            s_Animation.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Animation::Decode::process_fs>>("decode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::Animation::Encode::process_fs>>("encode_fs"_s);
+        }
+        {
+            auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
+            s_ReAnimation.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReAnimation::Decode::process_fs>>("decode_fs"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReAnimation::Encode::process_fs>>("encode_fs"_s);
         }
     }
 

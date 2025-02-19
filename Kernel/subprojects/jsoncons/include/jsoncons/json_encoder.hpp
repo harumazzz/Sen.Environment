@@ -1062,7 +1062,7 @@ namespace detail {
             sink_.append(options_.new_line_chars().data(),options_.new_line_chars().length());
             for (std::size_t i = 0; i < len; ++i)
             {
-                sink_.push_back(' ');
+                sink_.push_back('\t');
             }
             column_ = len;
         }

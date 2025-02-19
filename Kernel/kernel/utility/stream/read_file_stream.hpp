@@ -21,7 +21,7 @@ namespace Sen::Kernel {
     public:
 
         explicit ReadFileStream(
-            const String &source
+            const StringView &source
         ) : Base{}, m_file{FileSystem::open_read(source)}, m_size{FileSystem::size_file(source)}
         {
         }
@@ -48,7 +48,7 @@ namespace Sen::Kernel {
         ) -> String override {
             assert_conditional(from <= thiz.m_size, "From index must be smaller than Stream size", "string");
             assert_conditional(to <= thiz.m_size, "To index must be smaller than Stream size", "string");
-            assert_conditional(from < to, "From index must be smaller than To index", "string");
+            assert_conditional(from < to, "From index must be smaller than to index", "string");
             auto destination = String{to - from};
             thiz.m_file.read(reinterpret_cast<uint8_t*>(destination.data()), to - from);
             thiz.m_position = to;
@@ -77,13 +77,30 @@ namespace Sen::Kernel {
             return value;
         }
 
+        auto operator +=(
+           const usize& index
+       ) -> ReadFileStream& {
+             assert_conditional(index <= thiz.m_file.size(), "Index must be smaller than data size", "operator_plus");
+             thiz.m_position += index;
+             return thiz;
+         }
+
+        auto operator -=(
+            const usize& index
+        ) -> ReadFileStream& {
+             assert_conditional(index <= thiz.m_file.size(), "Index must be smaller than data size", "operator_minus");
+             thiz.m_position -= index;
+             return thiz;
+         }
+
+
         auto read(
             const usize &from,
             const usize &to
         ) -> Uint8Array override {
             assert_conditional(from <= thiz.m_size, "From index must be smaller than Stream size", "read");
             assert_conditional(to <= thiz.m_size, "To index must be smaller than Stream size", "read");
-            assert_conditional(from < to, "From index must be smaller than To index", "read");
+            assert_conditional(from < to, "From index must be smaller than to index", "read");
             auto destination = Uint8Array{to - from};
             thiz.m_file.read(destination.begin(), to - from);
             thiz.m_position = to;
@@ -101,6 +118,7 @@ namespace Sen::Kernel {
         ) -> File & {
             return thiz.m_file;
         }
+
 
     };
 

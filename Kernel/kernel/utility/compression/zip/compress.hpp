@@ -41,7 +41,7 @@ namespace Sen::Kernel::Compression::Zip {
             auto zip = Subprojects::zip::zip_stream_open(nullptr, 0, 0, 'w');
             assert_conditional(zip != nullptr, "Failed to create ZIP archive", "process");
             for (auto& [name, data] : source) {
-                Subprojects::zip::zip_entry_open(zip, name.cbegin());
+                Subprojects::zip::zip_entry_open(zip, name.begin());
                 Subprojects::zip::zip_entry_write(zip, data.data(), data.size());
                 Subprojects::zip::zip_entry_close(zip);
             }

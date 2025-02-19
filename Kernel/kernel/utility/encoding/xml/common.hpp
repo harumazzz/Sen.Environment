@@ -7,8 +7,17 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
-    template <typename T>
-    using List = CList<T>;
+    using XMLDocument = pugi::xml_document;
+
+    using XMLNode = pugi::xml_node;
+
+    using XMLAttribute = pugi::xml_attribute;
+
+    using XMLText = pugi::xml_text;
+
+    using XMLWriter = pugi::xml_writer;
+
+    using XMLWriterStream = pugi::xml_writer_stream;
 
     struct Node;
 

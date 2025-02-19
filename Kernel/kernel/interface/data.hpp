@@ -148,7 +148,7 @@ namespace Sen::Kernel::Interface {
         std::memcpy(ptr, &size, sizeof(u32));
         ptr += sizeof(u32);
         if (size > 0) {
-            std::memcpy(ptr, str.cbegin(), size);
+            std::memcpy(ptr, str.begin(), size);
         }
     }
 	

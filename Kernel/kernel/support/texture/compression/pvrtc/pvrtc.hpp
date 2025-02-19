@@ -66,7 +66,7 @@ namespace Sen::Kernel::Support::Texture::Compression::PVRTC
 		auto blocks = width >> 2;
 		auto blockMask = blocks - 1;
 		auto result = CList<uint8_t>{static_cast<unsigned long long>(width * width * 4)};
-		std::memset(result.cbegin(), 0x00, result.size());
+		std::memset(result.begin(), 0x00, result.size());
 		for (auto y : Range<int>(blocks))
 		{
 			for (auto x : Range<int>(blocks))

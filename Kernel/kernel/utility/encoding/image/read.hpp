@@ -17,44 +17,45 @@ namespace Sen::Kernel::Encoding::Image {
         using Rectangle = Rectangle;
 
     public:
-
         static auto process_image (
             ReadMemoryStream& data,
             Image& image
-        ) -> void {
-            auto png_struct = Subprojects::libpng::png_create_read_struct(Subprojects::libpng::$PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-            Subprojects::libpng::png_set_error_fn(png_struct, nullptr, &png_error, &png_warning);
-            Subprojects::libpng::png_set_read_fn(png_struct, &data, &read_png_data);
-            auto png_info = Subprojects::libpng::png_create_info_struct(png_struct);
-            Subprojects::libpng::png_read_info(png_struct, png_info);
+        ) -> void
+        {
+            auto png_struct = png_create_read_struct(Subprojects::libpng::$PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+            png_set_error_fn(png_struct, nullptr, &png_error, &png_warning);
+            png_set_read_fn(png_struct, &data, &read_png_data);
+            auto png_info = png_create_info_struct(png_struct);
+            png_read_info(png_struct, png_info);
+            debug("ok");
             image.allocate(png_info->width, png_info->height);
             switch (png_info->color_type) {
                 case Subprojects::libpng::$PNG_COLOR_TYPE_PALETTE : {
-                    Subprojects::libpng::png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
-                    Subprojects::libpng::png_set_palette_to_rgb(png_struct);
+                    png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
+                    png_set_palette_to_rgb(png_struct);
                     break;
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_GRAY : {
-                    Subprojects::libpng::png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
+                    png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
                     if (png_info->bit_depth == 1 || png_info->bit_depth == 2 || png_info->bit_depth == 4) {
-                        Subprojects::libpng::png_set_expand_gray_1_2_4_to_8(png_struct);
+                        png_set_expand_gray_1_2_4_to_8(png_struct);
                     }
                     [[fallthrough]];
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_GRAY_ALPHA : {
                     if ((*png_info).bit_depth == 16) {
-                        Subprojects::libpng::png_set_scale_16(png_struct);
+                        png_set_scale_16(png_struct);
                     }
-                    Subprojects::libpng::png_set_gray_to_rgb(png_struct);
+                    png_set_gray_to_rgb(png_struct);
                     break;
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_RGB : {
-                    Subprojects::libpng::png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
+                    png_set_add_alpha(png_struct, 0xFF, Subprojects::libpng::$PNG_FILLER_AFTER);
                     [[fallthrough]];
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_RGB_ALPHA : {
                     if ((*png_info).bit_depth == 16) {
-                        Subprojects::libpng::png_set_scale_16(png_struct);
+                        png_set_scale_16(png_struct);
                     }
                     break;
                 }
@@ -99,7 +100,7 @@ namespace Sen::Kernel::Encoding::Image {
         }
 
         static auto process_fs (
-            const String& source,
+            const StringView& source,
             Image& image
         ) -> void {
             auto source_view = Uint8Array{};

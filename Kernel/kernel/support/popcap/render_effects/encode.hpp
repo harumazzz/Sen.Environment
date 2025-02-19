@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/support/popcap/render_effects/common.hpp"
-#include "kernel/support/popcap/render_effects/definition.hpp"
+#include "kernel/support/popcap/render_effects/model.hpp"
 
 namespace Sen::Kernel::Support::PopCap::RenderEffects {
 

@@ -46,6 +46,7 @@ namespace Sen::Shell {
                     print_arguments(arguments);
                     break;
                 case hash_string("input"): {
+                    print(color_of(std::string{"● "}, std::string{"cyan"}));
                     const auto value = readline();
                     construct_message(make_list(value), destination);
                     break;
@@ -56,10 +57,6 @@ namespace Sen::Shell {
                 }
                 case hash_string("version"): {
                     construct_message(make_list(std::to_string(Shell::version)), destination);
-                    break;
-                }
-                case hash_string("wait"): {
-                    println(color_of(std::string{"● "}, std::string{"cyan"}));
                     break;
                 }
                 case hash_string("pick_file"): {

@@ -175,7 +175,7 @@ namespace Sen::Kernel::Encoding::Image {
             std::ostream& os,
             const BasicColor& color
         ) -> std::ostream& {
-            os << "Color" << "(" << color.m_red << ", " << color.m_green << ", " << color.m_blue << ", " << color.m_alpha << ")";
+            os << "Color" << "(" << static_cast<int>(color.m_red) << ", " << static_cast<int>(color.m_green) << ", " << static_cast<int>(color.m_blue) << ", " << static_cast<int>(color.m_alpha) << ")";
             return os;
         }
     };

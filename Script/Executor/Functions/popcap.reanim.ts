@@ -114,17 +114,17 @@ namespace Sen.Script.Executor.Functions.PopCap.ReAnimation {
 
 	export namespace Detail {
 		export const _platform: Array<Kernel.Support.PopCap.ReAnimation.Platform> = [
-			'pc',
-			'game-console',
-			'phone-32',
-			'phone-64',
-			'tv',
+			'desktop',
+			'mobile32',
+			'mobile64',
+			'television',
 		];
 
 		export function platform(): Array<[bigint, string, string]> {
 			return _platform.map((e, i) => [
 				BigInt(i + 1),
 				e as string,
+				// TODO : rename
 				Kernel.Language.get(`popcap.reanim.platform.${e}`),
 			]);
 		}

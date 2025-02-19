@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/utility/utility.hpp"
-#include "kernel/support/popcap/resource_stream_bundle/definition.hpp"
+#include "kernel/support/popcap/resource_stream_bundle/model.hpp"
 #include "kernel/support/miscellaneous/project/stream_compressed_group/common.hpp"
 
 namespace Sen::Kernel::Support::Miscellaneous::Project::ResourceStreamBundle

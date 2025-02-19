@@ -105,11 +105,12 @@ namespace Sen::Kernel {
         }
 
         auto bytes(Uint8Array & value) -> void {
-            thiz.template write<Uint8Array>(value);
+            static_cast<Derived*>(this)-> raw(value.data(), value.size());
         }
 
         auto string_v32(const String &value) -> void {
-            throw Exception{"Not implemented", std::source_location::current(), "string_v32"};
+            thiz.v32(value.size());
+            thiz.string(value);
         }
 
         template<typename T>
@@ -126,22 +127,33 @@ namespace Sen::Kernel {
         }
 
         auto null(const usize &size) {
-            auto value = Uint8Array{size};
-            thiz.bytes(value);
+            static_cast<Derived*>(this)->allocate_size(size);
         }
 
         auto f32(const float& value) -> void {
-            return thiz.template write<float>(value);
+            thiz.template write<float>(value);
         }
 
         auto f64(const double& value) -> void {
-            return thiz.template write<double>(value);
+            thiz.template write<double>(value);
         }
 
         auto boolean(
             const bool data
         ) -> void {
-            return thiz.u8(data ? 0x01_u8 : 0x00_u8);
+            thiz.u8(data ? 0x01_u8 : 0x00_u8);
+        }
+
+        auto string(
+            const std::string_view &source
+        ) -> void {
+            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(source.data()), source.size());
+        }
+
+        auto string(
+            const String &value
+        ) -> void {
+            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
         }
 
     };

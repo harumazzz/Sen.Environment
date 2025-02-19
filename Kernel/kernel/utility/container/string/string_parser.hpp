@@ -29,7 +29,7 @@ namespace Sen::Kernel::StringParser {
         const std::string_view& error
     ) -> T {
         auto destination = T{};
-        auto result = Subprojects::mscharconv::from_chars(data.cbegin(), data.cend(), destination, Subprojects::mscharconv::chars_format::fixed);
+        auto result = Subprojects::mscharconv::from_chars(data.begin(), data.cend(), destination, Subprojects::mscharconv::chars_format::fixed);
         assert_conditional(result.ec == std::errc{}, fmt::format("{}", error), "to_float");
         return destination;
     }
@@ -41,7 +41,7 @@ namespace Sen::Kernel::StringParser {
         const std::string_view& error
     ) -> T {
         auto destination = T{};
-        auto result = Subprojects::mscharconv::from_chars(data.cbegin(), data.cend(), destination, 10);
+        auto result = Subprojects::mscharconv::from_chars(data.begin(), data.cend(), destination, 10);
         assert_conditional(result.ec == std::errc{}, fmt::format("{}", error), "to_integer");
         return destination;
     }

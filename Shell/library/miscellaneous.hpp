@@ -19,6 +19,7 @@ namespace Sen::Shell {
         for (auto& e : source) {
             #if WINDOWS
             auto source_element_8 = u16_to_u8(std::u16string_view{reinterpret_cast<const char16_t *>(e)});
+            std::ranges::replace(source_element_8, '\\', '/');
             result.emplace_back(std::move(reinterpret_cast<std::string &>(source_element_8)));
             #else
             result.emplace_back(e);

@@ -5,23 +5,23 @@
 
 
 namespace Sen::Kernel {
-
     class WriteMemoryStream : public WritableStream<WriteMemoryStream> {
-
     protected:
-
         Uint8List m_data{};
 
     private:
-
         using Base = WritableStream;
 
     public:
-
         template<typename T>
-        requires std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>
+            requires std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>
         explicit WriteMemoryStream(T &source) : Base{}, m_data{} {
             thiz.m_data.assign(source);
+        }
+
+
+        explicit WriteMemoryStream(usize const &size) : Base{}, m_data{} {
+            thiz.m_data.allocate(size);
         }
 
         explicit WriteMemoryStream() : Base{}, m_data{} {
@@ -49,6 +49,12 @@ namespace Sen::Kernel {
             return thiz.m_data.size();
         }
 
+        constexpr auto size(
+            const usize &size
+        ) -> void {
+            return thiz.m_data.resize(size);
+        }
+
         constexpr auto resize(
             const usize& size
         ) -> void {
@@ -67,7 +73,7 @@ namespace Sen::Kernel {
             return thiz.m_data.begin();
         }
 
-        auto capacity (
+        auto capacity(
         ) -> usize {
             return thiz.m_data.capacity();
         }
@@ -95,15 +101,22 @@ namespace Sen::Kernel {
             const usize &new_size
         ) -> void {
             if (new_size > thiz.m_data.capacity()) {
-                thiz.m_data.reallocate(new_size);
+                thiz.m_data.reallocate(new_size + 640000);
             }
         }
 
+        auto allocate_size(const usize &size) -> void {
+            auto temporary = size + thiz.m_position;
+            thiz.allocate_full(temporary);
+            thiz.m_data.resize(thiz.m_data.size() + size);
+            thiz.set_position(temporary);
+        }
+
         auto raw(
-            const uint8_t* data,
+            const uint8_t *data,
             const usize &size
         ) -> void {
-            const auto temporary = size + thiz.m_position;
+            auto temporary = size + thiz.m_position;
             thiz.allocate_full(temporary);
             thiz.m_data.resize(thiz.m_data.size() + size);
             std::memcpy(&thiz.m_data[thiz.m_position], data, size);
@@ -115,28 +128,28 @@ namespace Sen::Kernel {
             const T &value
         ) -> void {
             constexpr auto sz = sizeof(T);
-            const auto temporary = thiz.m_position + sz;
+            auto temporary = thiz.m_position + sz;
             thiz.allocate_full(temporary);
             thiz.m_data.resize(thiz.m_data.size() + sz);
             std::memcpy(&thiz.m_data[thiz.m_position], &value, sz);
             thiz.set_position(temporary);
         }
 
-        template <typename... Args> requires (sizeof...(Args) > 1 && (is_numeric_v<Args> && ...))
+        template<typename... Args> requires (sizeof...(Args) > 1 && (is_numeric_v<Args> && ...))
         auto write_impl(
-            const Args &...args
+            const Args &... args
         ) -> void {
-            auto temporary = Uint8Array{total_sizeof<Args>()...};
-            {
+            auto temporary = Uint8Array{total_sizeof<Args>()...}; {
                 auto offset = 0_size;
                 (forward_bytes(std::forward<Args>(args), temporary, offset), ...);
             }
             thiz.write_impl(temporary);
         }
 
-        template<typename T> requires (std::is_same_v<T, Uint8Array> or std::is_same_v<T, Uint8List>) && requires(T a) {
+        template<typename T> requires (std::is_same_v<T, Uint8Array> or std::is_same_v<T, Uint8List>) && requires(T a)
+        {
             { a.size() } -> std::convertible_to<usize>;
-            { a.begin() } -> std::convertible_to<uint8_t*>;
+            { a.begin() } -> std::convertible_to<uint8_t *>;
         }
         auto write_impl(
             T &value
@@ -144,53 +157,40 @@ namespace Sen::Kernel {
             return thiz.raw(value.begin(), value.size());
         }
 
-        auto operator += (
-            const usize& index
-        ) -> WriteMemoryStream& {
+        auto operator +=(
+            const usize &index
+        ) -> WriteMemoryStream & {
             assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_plus");
             thiz.m_position += index;
             return thiz;
         }
 
         auto operator -=(
-            const usize& index
-        ) -> WriteMemoryStream& {
+            const usize &index
+        ) -> WriteMemoryStream & {
             assert_conditional(index <= thiz.m_data.capacity(), "Index must be smaller than data size", "operator_minus");
             thiz.m_position -= index;
             return thiz;
         }
 
         auto has_space(
-            const usize& index
+            const usize &index
         ) -> bool {
             return thiz.m_position + index <= thiz.m_data.capacity();
         }
 
-        auto release_stream (
-            Uint8Array& that
+        auto release_stream(
+            Uint8Array &that
         ) -> void {
             that.assign(thiz.m_data);
         }
 
-        auto release_stream (
-            Uint8List& that
+        auto release_stream(
+            Uint8List &that
         ) -> void {
             that.assign(thiz.m_data);
-        }
-
-        auto string (
-            const std::string_view& source
-        ) -> void {
-            return thiz.raw(reinterpret_cast<const uint8_t *>(source.data()), source.size());
-        }
-
-        auto string(
-            const String &value
-        ) -> void {
-            return thiz.raw(reinterpret_cast<const uint8_t *>(value.cbegin()), value.size());
         }
 
 
     };
-
 }

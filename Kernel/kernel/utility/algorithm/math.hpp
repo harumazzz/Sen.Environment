@@ -120,6 +120,37 @@ namespace Sen::Kernel::Math {
 		return false;
 	}
 
+	template <typename T>
+	inline constexpr auto is_between (
+		const T& target,
+		const T& a,
+		const T& b
+	) -> bool
+	{
+		if (target >= a && target <= b) {
+			return true;
+		}
+		return false;
+	}
+
+	template <typename F, auto... Indices> requires (std::is_same_v<type_of<Indices>, size_t> && ...)
+	inline constexpr auto generate_each(
+		F&& func,
+		std::index_sequence<Indices...>
+	) -> void {
+		(func(Indices), ...);
+	}
+
+	template <auto N, typename F> requires (std::is_same_v<type_of<N>, size_t>)
+	inline constexpr auto for_each (
+		F&& func
+	) -> void {
+		if constexpr (N > 0) {
+			func();
+			for_each<N - 1>(std::forward<F>(func));
+		}
+	}
+
 	template <typename Container, typename Compare, typename Projection>
 	inline constexpr auto sort(
 		Container& arr,

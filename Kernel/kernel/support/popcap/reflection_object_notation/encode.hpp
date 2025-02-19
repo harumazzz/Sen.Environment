@@ -8,19 +8,19 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
         using StringStore = Map<usize, uint32_t>;
 
     private:
-        static auto exchange_string(WriteMemoryStream &stream, const std::string_view data, StringStore &string_index)  -> void {
+        static auto exchange_string(WriteMemoryStream &stream, const std::string_view& data, StringStore &string_index)  -> void {
             auto is_rtid = false;
             auto string = String{data.data(), data.size()};
-            if (string.size() > "RTID(0)"_sv.size() && string.starts_with("RTID(") && string.ends_with(")")) {
+            if (string.size() > k_rtid_0.size() && string.starts_with("RTID(") && string.ends_with(")")) {
                 is_rtid = true;
                 if (string == RTIDString::null) {
                     stream.u8(static_cast<u8>(RtonType::string_rtid_null));
                 } else {
                     stream.u8(static_cast<u8>(RtonType::string_rtid));
-                    string.substring("RTID("_sv.size(), string.size() - "RTID()"_sv.size());
+                    string.substring("RTID("_sv.size(), string.size() - k_rtid_empty.size());
                     if (const auto at_position = string.find('@'); at_position != String::none) {
                         auto head_content = string.sub(0_size, at_position);
-                        auto tail_content = string.sub(at_position + 1_size, string.size());
+                        const auto tail_content = string.sub(at_position + 1_size, string.size());
                         const auto sheet_length = compute_utf8_character_length(tail_content);
                         if (head_content.find_all('.').size() == 2_size) {
                             stream.u8(static_cast<u8>(RTIDType::uid));
@@ -50,7 +50,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
             if (!is_rtid) {
 
                 if (const auto string_length = compute_utf8_character_length(string) == string.size()) {
-                    const auto hash = hash_string(string);
+                    const auto hash = hash_string(string.view());
                     if (const auto indexed_string = string_index.find(hash); indexed_string != string_index.end()) {
                         stream.u8(static_cast<u8>(RtonType::string_native_indexed));
                         stream.v32(indexed_string->second);
@@ -60,7 +60,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
                         string_index.emplace(hash, static_cast<u32>(string_index.size()));
                     }
                 } else {
-                    const auto hash = hash_string(string) + k_unicode_index;
+                    const auto hash = hash_string(string.view()) + k_unicode_index;
                     if (const auto indexed_string = string_index.find(hash); indexed_string != string_index.end()) {
                         stream.u8(static_cast<u8>(RtonType::string_unicode_indexed));
                         stream.v32(indexed_string->second);
@@ -157,8 +157,8 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
         }
 
     public:
-        static auto process_whole(WriteMemoryStream &stream, String &buffer) {
-            auto is = std::istringstream{buffer.data()};
+        static auto process_whole(WriteMemoryStream &stream, const std::string &buffer) {
+            auto is = std::istringstream{buffer};
             auto cursor = json_stream_cursor{is};
             stream.allocate_full(buffer.size());
             stream.string(k_magic_identifier);
@@ -168,18 +168,19 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation {
             const auto &event = cursor.current();
             assert_conditional(event.event_type() == staj_event_type::begin_object, "JSON must be object", "process_whole"); //TODO: add locale.
             cursor.next();
-            for (; !cursor.done(); cursor.next()) {
+            while (!cursor.done()) {
                 exchange_value(stream, cursor.current(), string_index);
+                cursor.next();
             }
             stream.string(k_done_identifier);
             is.clear();
         }
 
         static auto process_fs(
-            String const &source,
-            String const &destination) -> void {
+            StringView const &source,
+            StringView const &destination) -> void {
             auto stream = WriteMemoryStream{};
-            auto buffer = String{};
+            auto buffer = std::string{};
             FileSystem::read_file(source, buffer);
             process_whole(stream, buffer);
             FileSystem::write_file(destination, stream.view());

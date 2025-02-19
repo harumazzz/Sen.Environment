@@ -44,7 +44,7 @@
 #include "kernel/subprojects/Rijndael.hpp"
 #include "kernel/subprojects/libpng.hpp"
 #include "kernel/subprojects/etc1.hpp"
-#include "kernel/subprojects/tinyxml2.hpp"
+#include "kernel/subprojects/pugixml.hpp"
 #include "kernel/subprojects/lzma.hpp"
 #include "kernel/subprojects/avir.hpp"
 #include "kernel/subprojects/open_vcdiff.hpp"
@@ -58,6 +58,7 @@
 #include "kernel/subprojects/thread-pool.hpp"
 #include "kernel/subprojects/mscharconv.hpp"
 #include "kernel/subprojects/jsoncons.hpp"
+#include "kernel/subprojects/pvrtc.hpp"
 
 namespace Sen::Kernel {
 

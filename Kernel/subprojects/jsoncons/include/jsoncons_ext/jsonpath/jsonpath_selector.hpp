@@ -18,7 +18,7 @@
 #include <jsoncons/config/jsoncons_config.hpp>
 #include <jsoncons/tag_type.hpp>
 
-#include <jsoncons_ext/jsonpath/expression.hpp>
+#include <jsoncons_ext/jsonpath/token_evaluator.hpp>
 #include <jsoncons_ext/jsonpath/path_node.hpp>
 
 namespace jsoncons { 
@@ -778,11 +778,11 @@ namespace detail {
         }
 
         void select(eval_context<Json,JsonReference>& context,
-                    reference root,
-                    const path_node_type& last, 
-                    reference current,
-                    node_receiver_type& receiver,
-                    result_options options) const override
+            reference root,
+            const path_node_type& last, 
+            reference current,
+            node_receiver_type& receiver,
+            result_options options) const override
         {
             if (current.is_array())
             {
@@ -806,16 +806,20 @@ namespace detail {
         }
 
         reference evaluate(eval_context<Json,JsonReference>& context,
-                           reference root,
-                           const path_node_type& last, 
-                           reference current, 
-                           result_options options,
-                           std::error_code&) const override
+            reference root,
+            const path_node_type& last, 
+            reference current, 
+            result_options options,
+            std::error_code&) const override
         {
             auto jptr = context.create_json(json_array_arg, semantic_tag::none, context.get_allocator());
             json_array_receiver<Json,JsonReference> receiver(jptr);
             select(context, root, last, current, receiver, options);
-            return *jptr;
+            if (jptr->empty())
+            {
+                return context.null_value();
+            }
+            return jptr->size() == 1 ? (*jptr)[0] : *jptr;
         }
 
         std::string to_string(int level) const override
@@ -923,7 +927,7 @@ namespace detail {
     {
         using supertype = base_selector<Json,JsonReference>;
 
-        expression<Json,JsonReference> expr_;
+        token_evaluator<Json,JsonReference> expr_;
 
     public:
         using value_type = typename supertype::value_type;
@@ -934,7 +938,7 @@ namespace detail {
         using path_generator_type = path_generator<Json,JsonReference>;
         using node_receiver_type = typename supertype::node_receiver_type;
 
-        filter_selector(expression<Json,JsonReference>&& expr)
+        filter_selector(token_evaluator<Json,JsonReference>&& expr)
             : base_selector<Json,JsonReference>(), expr_(std::move(expr))
         {
         }
@@ -1013,7 +1017,7 @@ namespace detail {
         using allocator_type = typename Json::allocator_type;
         using string_type = typename Json::string_type;
 
-        expression<Json,JsonReference> expr_;
+        token_evaluator<Json,JsonReference> expr_;
 
     public:
         using value_type = typename supertype::value_type;
@@ -1024,7 +1028,7 @@ namespace detail {
         using path_generator_type = path_generator<Json,JsonReference>;
         using node_receiver_type = typename supertype::node_receiver_type;
 
-        index_expression_selector(expression<Json,JsonReference>&& expr)
+        index_expression_selector(token_evaluator<Json,JsonReference>&& expr)
             : base_selector<Json,JsonReference>(), expr_(std::move(expr))
         {
         }
@@ -1194,7 +1198,7 @@ namespace detail {
     {
         using supertype = base_selector<Json,JsonReference>;
 
-        expression<Json,JsonReference> expr_;
+        token_evaluator<Json,JsonReference> expr_;
 
     public:
         using value_type = typename supertype::value_type;
@@ -1205,7 +1209,7 @@ namespace detail {
         using path_generator_type = path_generator<Json,JsonReference>;
         using node_receiver_type = typename supertype::node_receiver_type;
 
-        function_selector(expression<Json,JsonReference>&& expr)
+        function_selector(token_evaluator<Json,JsonReference>&& expr)
             : base_selector<Json,JsonReference>(), expr_(std::move(expr))
         {
         }

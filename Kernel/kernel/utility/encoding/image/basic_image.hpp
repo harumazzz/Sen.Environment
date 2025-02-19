@@ -3,18 +3,55 @@
 #include "kernel/utility/encoding/image/color.hpp"
 #include "kernel/utility/encoding/image/rectangle.hpp"
 
-namespace Sen::Kernel::Encoding::Image {
-
+namespace Sen::Kernel::Encoding::Image
+{
     struct BasicImage;
 
     using CImage = BasicImage;
 
     using ImageView = CImage;
 
-    struct BasicImage : Rectangle {
+    struct ImageDimension
+    {
+        u32 width;
+        u32 height;
 
+        constexpr explicit ImageDimension(
+
+        ) = default;
+
+        constexpr explicit ImageDimension(
+            u32 const& width,
+            u32 const& height
+        ) noexcept : width(width), height(height)
+        {
+        }
+
+        explicit ImageDimension(
+            const BasicImage& image
+        ) = delete;
+
+        ~ImageDimension(
+        ) = default;
+
+        constexpr auto area() const -> u32
+        {
+            return thiz.width * height;
+        }
+
+        friend auto operator <<(
+            std::ostream& os,
+            const ImageDimension& dimension
+        ) -> std::ostream&
+        {
+            os << "Width: " << dimension.width << ". Height: " << dimension.height << ".";
+            return os;
+        }
+    };
+
+    struct BasicImage : Rectangle
+    {
     protected:
-
         using Rectangle = Rectangle;
 
         using Color = Color;
@@ -25,15 +62,12 @@ namespace Sen::Kernel::Encoding::Image {
         using Array = CArray<T>;
 
     public:
-
         using usize = usize;
 
     protected:
-
         Array<Array<Color>> m_color{};
 
     public:
-
         constexpr explicit BasicImage(
 
         ) = default;
@@ -41,7 +75,8 @@ namespace Sen::Kernel::Encoding::Image {
         explicit BasicImage(
             const u32& width,
             const u32& height
-        ) : Rectangle{width, height}, m_color{} {
+        ) : Rectangle{width, height}, m_color{}
+        {
             thiz.allocate(width, height);
         }
 
@@ -51,7 +86,8 @@ namespace Sen::Kernel::Encoding::Image {
 
         BasicImage(
             BasicImage&& other
-        ) noexcept : Rectangle{other.width, other.height} {
+        ) noexcept : Rectangle{other.width, other.height}
+        {
             thiz.m_color.take_ownership(other.m_color);
             other.width = 0;
             other.height = 0;
@@ -71,9 +107,11 @@ namespace Sen::Kernel::Encoding::Image {
         auto allocate(
             const u32& width,
             const u32& height
-        ) -> void {
+        ) -> void
+        {
             thiz.m_color.allocate(height);
-            for (auto & row : thiz.m_color) {
+            for (auto& row : thiz.m_color)
+            {
                 row.allocate(width);
             }
             thiz.width = width;
@@ -83,7 +121,8 @@ namespace Sen::Kernel::Encoding::Image {
         auto reallocate(
             const u32& width,
             const u32& height
-        ) -> void {
+        ) -> void
+        {
             thiz.m_color.clear();
             thiz.allocate(width, height);
         }
@@ -137,19 +176,26 @@ namespace Sen::Kernel::Encoding::Image {
 
         auto operator [](
             const usize& index
-        ) -> Array<Color>& {
+        ) -> Array<Color>&
+        {
             return thiz.m_color[index];
         }
 
-        constexpr auto data (
-        ) -> Array<Array<Color>>& {
+        constexpr auto dimension() const -> ImageDimension
+        {
+            return ImageDimension{thiz.width, thiz.height};
+        }
+
+        constexpr auto data(
+        ) -> Array<Array<Color>>&
+        {
             return thiz.m_color;
         }
 
         constexpr auto color_size(
-        ) const -> usize {
+        ) const -> usize
+        {
             return thiz.area() * 4;
         }
-
     };
 }

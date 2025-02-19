@@ -27,15 +27,15 @@ namespace Sen::Kernel::Javascript {
             std::invoke(Callable, context, value, arguments, result);
         } catch (...) {
             auto exception = parse_exception();
-            auto error = context.evaluate(StringHelper::make_string(fmt::format(
+            context.throw_exception(context.evaluate(StringHelper::make_string(fmt::format(
             R"(function {0}() {{
 				    let e = new Error(`{1}`);
-				    e.source = `{2}`;
-				    throw e;
+                    e.stack = `    at {0} ({2})\n` + e.stack;
+				    return e;
 			    }}{0}();)",
             exception.function_name, exception.message(), exception.source
-            )), "proxy_native_function"_s);
-            result.set_value(error.release());
+            )), "proxy_native_function"));
+            result.set_value(Subprojects::quickjs::$JS_EXCEPTION);
         }
         return result.release();
     }
@@ -49,8 +49,8 @@ namespace Sen::Kernel::Javascript {
     ) -> void {
         using traits = callable_traits<decltype(function)>;
         constexpr auto count = traits::arg_count;
-        assert_conditional(arguments.size() >= count, fmt::format("Expected at least {} arguments, got {}", count, arguments.size()), "proxy_native_function_wrapper");
-        using Argument = typename traits::args_tuple;
+        assert_conditional(arguments.size() == count, fmt::format("Expected at least {} arguments, got {}", count, arguments.size()), "proxy_native_function_wrapper");
+        using Argument = ConvertTuple<typename traits::args_tuple, TransformWrapper>;
         auto call = [&]<typename... Arguments> requires (is_valid_tuple<Arguments> && ...) (auto&& callable, Arguments&&... extra_args) -> void {
             auto args = Argument{};
             [&]<auto... Index> requires (std::is_same_v<type_of<Index>, usize> && ...) (std::index_sequence<Index...>) -> void {
@@ -88,7 +88,7 @@ namespace Sen::Kernel::Javascript {
             Subprojects::quickjs::JS_NewCFunction2(
                 thiz.m_context,
                 &proxy_native_function<function>,
-                name.cbegin(),
+                name.begin(),
                 0,
                 is_constructor ? JS_CFUNC_constructor : JS_CFUNC_generic,
                 0
@@ -105,7 +105,7 @@ namespace Sen::Kernel::Javascript {
         thiz.m_value = Subprojects::quickjs::JS_NewCFunction2(
             thiz.m_context,
             &proxy_native_function<function>,
-            name.cbegin(),
+            name.begin(),
             0,
             is_constructor ? Subprojects::quickjs::$JS_CFUNC_constructor : Subprojects::quickjs::$JS_CFUNC_generic,
             0

@@ -19,8 +19,8 @@ namespace Sen::Kernel::Encryption::Rijndael {
 
         inline static auto process(
             const Uint8Array& source,
-            const String& key,
-            const String& iv,
+            const StringView& key,
+            const StringView& iv,
             Uint8Array& destination
         ) -> void
         {
@@ -29,8 +29,8 @@ namespace Sen::Kernel::Encryption::Rijndael {
             assert_conditional(is_padded_size(key.size(), 32_size), fmt::format("{}", Language::get("rijndael.key_is_not_padded")), "process");
             assert_conditional(source.size() != 0_size, fmt::format("{}", Language::get("rijndael.encrypt.plain_is_empty")), "process");
             auto rijndael = Subprojects::Rijndael::CRijndael{};
-            rijndael.MakeKey(key.cbegin(), iv.cbegin(), static_cast<int>(key.size()), static_cast<int>(iv.size()));
-            rijndael.Decrypt(reinterpret_cast<char const *>(source.cbegin()), reinterpret_cast<char*>(destination.begin()), source.size(), Mode);
+            rijndael.MakeKey(key.begin(), iv.begin(), static_cast<int>(key.size()), static_cast<int>(iv.size()));
+            rijndael.Decrypt(reinterpret_cast<char const *>(source.begin()), reinterpret_cast<char*>(destination.begin()), source.size(), Mode);
         }
 
     };

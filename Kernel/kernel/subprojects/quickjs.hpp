@@ -11,6 +11,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_NewObjectClass;
 
+	using ::JS_Throw;
+
 	using ::JS_AtomToCString;
 
 	using ::JSPropertyEnum;
@@ -200,6 +202,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	inline static constexpr auto $JS_CFUNC_constructor = JS_CFUNC_constructor;
 
 	inline static constexpr auto $JS_CFUNC_generic = JS_CFUNC_generic;
+
+	inline static const auto $JS_EXCEPTION = JS_EXCEPTION;
 
 	inline auto JS_VALUE_GET_POINTER (
 		JSValue value

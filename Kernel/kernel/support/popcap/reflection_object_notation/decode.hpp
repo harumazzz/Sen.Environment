@@ -12,95 +12,76 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
     private:
         static auto exchange_string(ReadMemoryStream& stream, RtonType const& type, StringStore& string_index) -> String
         {
-            //debug(fmt::format("String Type: 0x{:02x}. Position: 0x{:02x}", static_cast<u8>(type), stream.current_position()));
+            auto content = String{};
             switch (type)
             {
-            case RtonType::string_native:
-                {
-                    auto content = stream.string_v32();
-                    return content;
-                }
-            case RtonType::string_native_indexing:
-                {
-                    auto content = stream.string_v32();
-                 //   string.take_ownership(content);
-                    string_index[string_index.size()] = content;
-                    return content;
-                }
-            case RtonType::string_native_indexed:
-                {
-                    const auto index = stream.v32();
-                    auto content = string_index.at(index);
-                   // string.take_ownership(content);
-                    return content;
-                }
-            case RtonType::string_unicode:
-                {
-                    auto length = stream.v32();
-                    auto content = stream.string_v32();
-                   // string.take_ownership(content);
-                    return content;
-                }
-            case RtonType::string_unicode_indexing:
-                {
-                    auto length = stream.v32();
-                    auto content = stream.string_v32();
-                   // string.take_ownership(content);
-                    string_index[string_index.size() + k_unicode_index] = content;
-                    return content;
-                }
-            case RtonType::string_unicode_indexed:
-                {
-                    const auto index = stream.v32() + k_unicode_index;
-                    auto content = string_index.at(index);
-                  //  string.take_ownership(content);
-                    return content;
-                }
+            case RtonType::string_native: {
+                content = stream.string_v32();
+                break;
+            }
+            case RtonType::string_native_indexing: {
+                content = stream.string_v32();
+                string_index[string_index.size()] = content;
+                break;
+            }
+            case RtonType::string_native_indexed: {
+                const auto index = stream.v32();
+                content = string_index.at(index);
+                break;
+            }
+            case RtonType::string_unicode: {
+                auto length = stream.v32();
+                content = stream.string_v32();
+                break;
+            }
+            case RtonType::string_unicode_indexing: {
+                auto length = stream.v32();
+                content = stream.string_v32();
+                string_index[string_index.size() + k_unicode_index] = content;
+                break;
+            }
+            case RtonType::string_unicode_indexed: {
+                const auto index = stream.v32() + k_unicode_index;
+                content = string_index.at(index);
+                break;
+            }
             case RtonType::string_rtid:
                 {
-                    switch (RTIDType{stream.u8()})
-                    {
-                    case RTIDType::null:
-                        {
-                            auto content = String{RTIDString::null.data(), RTIDString::null.size()};
-                            return content;
-                        }
-                    case RTIDType::uid:
-                        {
-                            auto sheet_length = stream.v32();
-                            auto sheet_content = stream.string_v32();
-                            auto uid_middle = stream.v32();
-                            auto uid_first = stream.v32();
-                            auto uid_last = stream.u32();
-                            auto content = fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content.data());
-                            auto string_content = String{content.data(), content.size()};
-                            return string_content;
-                        }
-                    case RTIDType::alias:
-                        {
-                            auto sheet_length = stream.v32();
-                            auto sheet_content = stream.string_v32();
-                            auto alias_length = stream.v32();
-                            auto alias_content = stream.string_v32();
-                            auto content = fmt::format(RTIDString::alias, alias_content.data(), sheet_content.data());
-                            auto string_content = String{content.data(), content.size()};
-                            return string_content;
-                        }
+                    switch (RTIDType{stream.u8()}) {
+                    case RTIDType::null: {
+                        content = String{RTIDString::null.data(), RTIDString::null.size()};
+                        break;
+                    }
+                    case RTIDType::uid: {
+                        auto sheet_length = stream.v32();
+                        auto sheet_content = stream.string_v32();
+                        auto uid_middle = stream.v32();
+                        auto uid_first = stream.v32();
+                        auto uid_last = stream.u32();
+                        content = StringHelper::make_string(fmt::format(RTIDString::uid, uid_first, uid_middle, uid_last, sheet_content.data()));
+                        break;
+                    }
+                    case RTIDType::alias: {
+                        auto sheet_length = stream.v32();
+                        auto sheet_content = stream.string_v32();
+                        auto alias_length = stream.v32();
+                        auto alias_content = stream.string_v32();
+                        content = StringHelper::make_string(fmt::format(RTIDString::alias, alias_content.data(), sheet_content.data()));
+                        break;
+                    }
                     default:
-                        {
-                            assert_conditional(false, fmt::format("{}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_bytecode"), Kernel::Language::get("offset"), stream.current_position()), "exchange_value");
-                        }
+                        assert_conditional(false, fmt::format("{}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_bytecode"), Kernel::Language::get("offset"), stream.current_position()), "exchange_value");
                     }
                     break;
                 }
-            case RtonType::string_rtid_null:
-                {
-                    auto content = String{RTIDString::null.data(), RTIDString::null.size()};
-                    return content;
-                }
+            case RtonType::string_rtid_null: {
+                content = String{RTIDString::null.data(), RTIDString::null.size()};
+                break;
+            }
             default:
                 assert_conditional(false, fmt::format("{}: 0x{:02x}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_bytecode"), static_cast<u8>(type), Kernel::Language::get("offset"), stream.current_position()), "exchange_value");
             }
+            return content;
         }
 
         static auto exchange_value(ReadMemoryStream& stream, JsonWriter& value, RtonType const& type, StringStore& string_index) -> void
@@ -214,8 +195,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                     value.begin_array();
                     const auto size_byte = stream.u8();
                     assert_conditional(size_byte == static_cast<u8>(RtonType::array_size), fmt::format("{} 0x{:02x}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_rton_array_size"), size_byte, Kernel::Language::get("offset"), stream.current_position()), "exchange_value"); //TODO: add locale.
-                    const auto size = stream.v32();
-                    for (auto i : Range{size})
+                    for (const auto size = stream.v32(); auto _ : Range{size})
                     {
                         const auto value_type = RtonType{stream.u8()};
                         exchange_value(stream, value, value_type, string_index);
@@ -255,30 +235,28 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
         }
 
     public:
-        static auto process_whole(ReadMemoryStream& stream, String& buffer) -> void
+        static auto process_whole(ReadMemoryStream& stream, std::ostringstream& os) -> void
         {
             assert_conditional(stream.string(4_size) == k_magic_identifier, fmt::format("{}", Kernel::Language::get("popcap.rton.decode.invalid_rton_magic")), "process_whole");
             stream += 4_size; //Skip version read.
             auto string_index = StringStore{};
-            auto os = std::ostringstream{};
             auto writer = JsonWriter{os};
             exchange_value(stream, writer, RtonType::object_begin, string_index);
             assert_conditional(stream.string(4_size) == k_done_identifier, fmt::format("{}", Language::get("popcap.rton.done_invalid")), "process_whole");
             writer.flush();
-            auto view = String{os.view().data(), os.view().size()};
-            buffer.take_ownership(view);
-            os.clear();
         }
 
         static auto process_fs(
-            String const& source,
-            String const& destination
+            StringView const& source,
+            StringView const& destination
         ) -> void
         {
             auto stream = ReadMemoryStream{source};
-            auto buffer = String{};
-            process_whole(stream, buffer);
+            auto os = std::ostringstream{};
+            process_whole(stream, os);
+            auto buffer = CharacterArrayView{const_cast<char*>(os.view().data()), os.view().size()};
             FileSystem::write_file(destination, buffer);
+            os.clear();
         }
     };
 }

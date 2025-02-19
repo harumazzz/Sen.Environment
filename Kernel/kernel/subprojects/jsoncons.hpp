@@ -24,6 +24,7 @@ namespace Sen::Kernel::Subprojects::jsoncons {
 
     using ::jsoncons::staj_event_type;
 
+    using ::jsoncons::json;
 
 }
 

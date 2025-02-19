@@ -73,6 +73,12 @@ namespace Sen::Kernel::Javascript {
                 return thiz.m_context;
             }
 
+            inline auto throw_exception (
+                Value&& value
+            ) const -> void {
+                Subprojects::quickjs::JS_Throw(thiz.m_context, value.release());
+            }
+
             inline static auto new_ref (
                 const Pointer<JSContext>& context
             ) -> Context {
@@ -91,14 +97,14 @@ namespace Sen::Kernel::Javascript {
             }
 
             inline auto evaluate (
-                const String& source,
-                const String& name
+                const StringView& source,
+                const StringView& name
             ) const -> Value {
                 const auto result = Subprojects::quickjs::JS_Eval(
                     thiz.m_context,
-                    source.cbegin(),
+                    source.begin(),
                     source.size(),
-                    name.cbegin(),
+                    name.begin(),
                    thiz.m_module ? Subprojects::quickjs::$JS_EVAL_TYPE_MODULE : Subprojects::quickjs::$JS_EVAL_TYPE_GLOBAL | Subprojects::quickjs::$JS_EVAL_FLAG_STRICT
                 );
                 return Value::new_owner(thiz.m_context, result);

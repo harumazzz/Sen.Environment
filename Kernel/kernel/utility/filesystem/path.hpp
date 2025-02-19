@@ -3,6 +3,7 @@
 #include "kernel/utility/algorithm/string_helper.hpp"
 #include "kernel/utility/container/array/byte_array.hpp"
 #include "kernel/utility/container/string/basic_string.hpp"
+#include "kernel/utility/container/string_view/string_view.hpp"
 
 namespace Sen::Kernel::Path {
 
@@ -31,7 +32,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto get_path_type (
-        const String& path
+        const StringView& path
     ) -> PathType {
         #if WINDOWS
         auto type = std::filesystem::status(path.wstring()).type();
@@ -43,7 +44,7 @@ namespace Sen::Kernel::Path {
 
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto count_recursive(
-        const String& source
+        const StringView& source
     ) -> usize {
         auto result = 0_size;
         #if WINDOWS
@@ -71,26 +72,26 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto count_recursive_file (
-        const String& source
+        const StringView& source
     ) -> usize {
         return count_recursive<PathType::File>(source);
     }
 
     inline auto count_recursive_directory (
-        const String& source
+        const StringView& source
     ) -> usize {
         return count_recursive<PathType::File>(source);
     }
 
     inline auto count_recursive_anything (
-        const String& source
+        const StringView& source
     ) -> usize {
         return count_recursive<PathType::None>(source);
     }
 
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto count(
-        const String& source
+        const StringView& source
     ) -> usize {
         auto result = 0_size;
         #if WINDOWS
@@ -119,7 +120,7 @@ namespace Sen::Kernel::Path {
 
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto read_directory (
-        const String& source,
+        const StringView& source,
         List<String>& destination
     ) -> void {
         destination.allocate(count<filter>(source));
@@ -149,7 +150,7 @@ namespace Sen::Kernel::Path {
 
     template <auto filter> requires std::is_same_v<type_of<filter>, PathType>
     inline auto read_recursive_directory (
-        const String& source,
+        const StringView& source,
         List<String>& destination
     ) -> void {
         destination.allocate(count_recursive<filter>(source));
@@ -206,7 +207,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto dirname (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS
@@ -217,7 +218,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto extname (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS
@@ -228,7 +229,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto basename (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS
@@ -239,7 +240,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto base_without_extension (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS
@@ -250,14 +251,14 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto except_extension (
-        const String &source
+        const StringView &source
     ) -> String
     {
         return StringHelper::make_string(fmt::format("{}/{}", dirname(source).view(), base_without_extension(source).view()));
     }
 
     inline auto normalize (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS
@@ -268,7 +269,7 @@ namespace Sen::Kernel::Path {
     }
 
     inline auto resolve (
-        const String &source
+        const StringView &source
     ) -> String
     {
         #if WINDOWS

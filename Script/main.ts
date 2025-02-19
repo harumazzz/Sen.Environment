@@ -328,8 +328,8 @@ namespace Sen.Script {
 			);
 		} else {
 			Console.finished(Kernel.Language.get('method_are_succeeded'));
+			Shell.callback('finish');
 		}
-		Shell.callback('finish');
 	}
 
 	/**

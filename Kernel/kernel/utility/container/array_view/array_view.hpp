@@ -18,7 +18,7 @@ namespace Sen::Kernel {
             const std::size_t& size
         ) noexcept : BaseContainer<T>{data, size} {}
 
-        explicit constexpr CArrayView(const CArray<T>& other) noexcept : BaseContainer<T>{other.cbegin(), other.size()} {
+        explicit constexpr CArrayView(const CArray<T>& other) noexcept : BaseContainer<T>{other.begin(), other.size()} {
 
         }
 
@@ -32,18 +32,18 @@ namespace Sen::Kernel {
             const std::size_t& count = std::dynamic_extent
         ) const -> CArrayView {
             assert_conditional(offset <= thiz.size(), "Accessed index is larger than the size of the array", "subview");
-            auto new_size = count == std::dynamic_extent || offset + count > thiz.size() ? thiz.size() - offset : count;
-            return CArrayView{thiz.data() + offset, new_size};
+            const auto new_size = count == std::dynamic_extent || offset + count > thiz.size() ? thiz.size() - offset : count;
+            return CArrayView{thiz.begin() + offset, new_size};
         }
 
         constexpr auto as_bytes(
         ) const noexcept -> CArrayView<uint8_t> {
-            return CArrayView<uint8_t>{reinterpret_cast<uint8_t*>(thiz.data()), thiz.total_bytes()};
+            return CArrayView<uint8_t>{reinterpret_cast<uint8_t*>(thiz.begin()), thiz.total_bytes()};
         }
 
         constexpr auto as_writable_bytes(
         ) noexcept -> CArrayView<uint8_t> {
-            return CArrayView<uint8_t>(reinterpret_cast<uint8_t*>(thiz.data()), thiz.total_bytes());
+            return CArrayView<uint8_t>(reinterpret_cast<uint8_t*>(thiz.begin()), thiz.total_bytes());
         }
 
 

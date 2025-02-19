@@ -94,7 +94,7 @@ namespace Sen::Kernel {
 				const CList& other
 			) : CList<T>{other._capacity} {
 				for (auto & e : other) {
-					thiz.value.append(e);
+					thiz.append(e);
 				}
 			}
 
@@ -103,7 +103,7 @@ namespace Sen::Kernel {
 			) -> CList& {
 				thiz.allocate(other._capacity);
 				for (auto & e : other) {
-					thiz.value.append(e);
+					thiz.append(e);
 				}
 				return thiz;
 			}
@@ -112,7 +112,7 @@ namespace Sen::Kernel {
 				Size const& index
 			) const -> T&
     		{
-    			assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index{}", index));
+    			assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
     			return thiz.value[index];
     		}
 
@@ -338,4 +338,38 @@ namespace Sen::Kernel {
     		}
 	};
 
+}
+
+namespace jsoncons {
+    template<typename Json, typename T>
+    struct json_type_traits<Json, Sen::Kernel::CList<T>> {
+        using class_type = Sen::Kernel::CList<T>;
+        using allocator_type = typename Json::allocator_type;
+
+        static bool is(const Json& ajson) noexcept {
+            return ajson.is_array();
+        }
+
+        static auto as(const Json& ajson) -> class_type {
+            if (!is(ajson)) throw conv_error(conv_errc::conversion_failed, "Not a List");
+
+            class_type class_instance;
+            for (const auto& item : ajson.array_range()) {
+                class_instance.append(item.template as<T>());
+            }
+            return class_instance;
+        }
+
+        static Json to_json(const class_type& class_instance, allocator_type alloc = allocator_type()) {
+            Json ajson(json_array_arg, alloc);
+            for (const auto& item : class_instance) {
+                ajson.push_back(item);
+            }
+            return ajson;
+        }
+    };
+
+    template<typename T>
+    struct is_json_type_traits_declared<Sen::Kernel::CList<T>> : public std::true_type {
+    };
 }

@@ -8,6 +8,7 @@
 
 #include "kernel/utility/algorithm/math.hpp"
 #include "kernel/utility/algorithm/string_helper.hpp"
+#include "kernel/utility/algorithm/shared.hpp"
 #include "kernel/utility/algorithm/pointer.hpp"
 #include "kernel/utility/algorithm/image/max_rects/max_rects_packer.hpp"
 #include "kernel/utility/algorithm/utility.hpp"

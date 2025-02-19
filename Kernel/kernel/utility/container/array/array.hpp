@@ -5,6 +5,9 @@
 
 namespace Sen::Kernel {
 
+	template <typename T, auto size>
+	using Array = std::array<T, size>;
+
 	template <typename T>
 	class CArray : public BaseContainer<T> {
 

@@ -64,7 +64,7 @@ namespace Sen::Kernel::Javascript {
             const JSString& source,
             Value& destination
         ) -> void {
-            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.begin(), source.size()));
         }
 
     };
@@ -87,7 +87,7 @@ namespace Sen::Kernel::Javascript {
             auto&& source,
             Value& destination
         ) -> void {
-            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.cbegin(), source.size()));
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.begin(), source.size()));
         }
 
     };
@@ -324,7 +324,7 @@ namespace Sen::Kernel::Javascript {
             const Uint8Array& source,
             Value& destination
         ) -> void {
-            destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.cbegin(), source.size()));
+            destination.set_value(Subprojects::quickjs::JS_NewArrayBufferCopy(destination._context(), source.begin(), source.size()));
         }
 
     };

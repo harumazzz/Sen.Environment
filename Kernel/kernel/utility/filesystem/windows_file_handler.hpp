@@ -5,6 +5,7 @@
 #include "kernel/utility/container/list/byte_list.hpp"
 #include "kernel/utility/container/list/list.hpp"
 #include "kernel/utility/container/string/common.hpp"
+#include "kernel/utility/container/string_view/string_view.hpp"
 #include "kernel/utility/filesystem/path.hpp"
 
 namespace Sen::Kernel::FileSystem {
@@ -19,7 +20,7 @@ namespace Sen::Kernel::FileSystem {
 
         public:
 
-            explicit WindowsFileWriter(const String& path) {
+            explicit WindowsFileWriter(const StringView& path) {
                 thiz.handle = CreateFileW(
                     path.wstring().data(),
                     GENERIC_WRITE,
@@ -29,7 +30,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), Path::to_posix(path).view()), "WindowsFileWriter");
+                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "WindowsFileWriter");
             }
 
             ~WindowsFileWriter(
@@ -74,7 +75,7 @@ namespace Sen::Kernel::FileSystem {
                 { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
             }
             auto write (
-                T& data
+                const T& data
             ) -> void {
                 auto byte_written = DWORD{0};
                 auto result = WriteFile(
@@ -87,6 +88,7 @@ namespace Sen::Kernel::FileSystem {
                 assert_conditional(SUCCEEDED(result), "Write file operation has not been completed", "write");
                 assert_conditional(byte_written == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "write");
             }
+
 
             template <typename... Args> requires (is_numeric_v<Args> && ...)
             auto write (
@@ -114,7 +116,7 @@ namespace Sen::Kernel::FileSystem {
 
         public:
 
-            explicit WindowsFileReader(const String& path) {
+            explicit WindowsFileReader(const StringView& path) {
                 thiz.handle = CreateFileW(
                     path.wstring().data(),
                     GENERIC_READ,
@@ -124,7 +126,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), Path::to_posix(path).view()), "WindowsFileReader");
+                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "WindowsFileReader");
             }
 
             ~WindowsFileReader(
@@ -162,17 +164,16 @@ namespace Sen::Kernel::FileSystem {
                 return thiz;
             }
 
-            template <typename T> requires std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
+            template <typename T> requires (std::is_base_of_v<BaseContainer<extract_container_t<T>>, T> && requires (T t) {
                 { t.size() } -> std::convertible_to<usize>;
-                { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
-            }
+            }) || std::is_same_v<T, std::string>
             auto read (
                 T& data
             ) -> void {
                 auto bytes_read = DWORD{0};
                 auto result = ReadFile(
                     thiz.handle,
-                    data.begin(),
+                    data.data(),
                     sizeof(extract_container_t<T>) * data.size(),
                     &bytes_read,
                     nullptr

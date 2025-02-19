@@ -94,7 +94,7 @@ namespace Sen::Kernel::Encoding::XML {
 
         template <typename... Args>
         auto set_element (
-            Args&&... args
+            Args... args
         ) -> void {
             thiz.m_type = Type::Element;
             return thiz.set<Element>(std::forward<Args>(args)...);
@@ -102,7 +102,7 @@ namespace Sen::Kernel::Encoding::XML {
 
         template <typename... Args>
         auto set_comment (
-            Args&&... args
+            Args... args
         ) -> void {
             thiz.m_type = Type::Comment;
             return thiz.set<Comment>(std::forward<Args>(args)...);
@@ -110,7 +110,7 @@ namespace Sen::Kernel::Encoding::XML {
 
         template <typename... Args>
         auto set_text (
-            Args&&... args
+            Args... args
         ) -> void {
             thiz.m_type = Type::Text;
             return thiz.set<Text>(std::forward<Args>(args)...);

@@ -23,4 +23,6 @@ namespace Sen::Kernel {
     template <typename T>
     class CListView;
 
+    struct StringView;
+
 }

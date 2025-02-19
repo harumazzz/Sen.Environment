@@ -12,7 +12,7 @@ namespace Sen::Kernel::Encoding::XML {
 
         HashMap<String, String> m_attribute{};
 
-        List<Node> m_child{};
+        CList<Node> m_child{};
 
     public:
 
@@ -104,7 +104,7 @@ namespace Sen::Kernel::Encoding::XML {
         }
 
         auto child (
-        ) -> List<Node>& {
+        ) -> CList<Node>& {
             return thiz.m_child;
         }
 

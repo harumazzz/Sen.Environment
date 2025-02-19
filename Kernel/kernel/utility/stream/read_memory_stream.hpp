@@ -23,7 +23,7 @@ namespace Sen::Kernel {
         }
 
         explicit ReadMemoryStream(
-            const String &source
+            const StringView &source
         ) : Base{}, m_data{}
         {
             FileSystem::read_file(source, m_data);
@@ -51,7 +51,7 @@ namespace Sen::Kernel {
          ) -> String override {
             assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "string");
             assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "string");
-            assert_conditional(from < to, "From index must be smaller than To index", "string");
+            assert_conditional(from < to, "From index must be smaller than to index", "string");
             auto destination = String{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
             thiz.m_position = to;
@@ -92,7 +92,7 @@ namespace Sen::Kernel {
         ) -> Uint8Array override {
             assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
             assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
-            assert_conditional(from < to, "From index must be smaller than To index", "read");
+            assert_conditional(from < to, "From index must be smaller than to index", "read");
             auto destination = Uint8Array{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
             thiz.m_position = to;

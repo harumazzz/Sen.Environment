@@ -147,7 +147,7 @@ namespace Sen::Kernel::Javascript {
             ) const -> void {
                 Subprojects::quickjs::JS_NewClassID(thiz.m_runtime, &Detail::class_id<T>);
                 const auto definition = Subprojects::quickjs::JSClassDef {
-                    .class_name = name.cbegin(),
+                    .class_name = name.begin(),
                     .finalizer = [](
                         Subprojects::quickjs::JSRuntime* rt,
                         Subprojects::quickjs::JSValue obj

@@ -18,7 +18,7 @@
 #include "kernel/support/popcap/resource_stream_bundle/miscellaneous/unpack_cipher.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/pack.hpp"
 #include "kernel/support/popcap/resource_stream_bundle/common.hpp"
-#include "kernel/support/popcap/resource_stream_group/definition.hpp"
+#include "kernel/support/popcap/resource_stream_group/model.hpp"
 #include "kernel/support/popcap/resource_stream_group/common.hpp"
 #include "kernel/support/popcap/resource_stream_group/unpack.hpp"
 #include "kernel/support/popcap/resource_stream_group/pack.hpp"

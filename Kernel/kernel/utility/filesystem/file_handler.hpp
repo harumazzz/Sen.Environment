@@ -10,16 +10,16 @@ namespace Sen::Kernel::FileSystem {
     struct FileHandler;
 
     inline auto open (
-        const String& source,
-        const String& mode
+        const StringView& source,
+        const StringView& mode
     ) -> FileHandler;
 
     inline auto open_read (
-        const String& source
+        const StringView& source
     ) -> FileHandler;
 
     inline auto open_write (
-        const String& source
+        const StringView& source
     ) -> FileHandler;
 
     struct FileHandler {
@@ -176,33 +176,41 @@ namespace Sen::Kernel::FileSystem {
     };
 
     inline auto open (
-        const String& source,
-        const String& mode
+        const StringView& source,
+        const StringView& mode
     ) -> FileHandler {
         #if WINDOWS
         auto file = _wfopen(source.wstring().data(), mode.wstring().data());
         #else
-        auto file = std::fopen(source.cbegin(), mode.cbegin());
+        auto file = std::fopen(source.begin(), mode.begin());
         #endif
         #if WINDOWS
-        assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), Path::to_posix(source).view()), "open_file");
+        assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source.view()), "open_file");
         #else
         assert_conditional(file != nullptr, fmt::format("{}: {}", Language::get("cannot_read_file"), source.view()), "open_file");
         #endif
         return FileHandler{file};
     }
 
+    namespace Detail {
+
+        inline static auto constexpr read_mode = "rb"_sv;
+
+        inline static auto constexpr write_mode = "wb"_sv;
+
+    }
+
     inline auto open_read (
-        const String& source
+        const StringView& source
     ) -> FileHandler {
-        auto file = open(source, String{"rb"});
+        auto file = open(source, Detail::read_mode);
         return file;
     }
 
     inline auto open_write (
-        const String& source
+        const StringView& source
     ) -> FileHandler {
-        auto file = open(source, String{"wb"});
+        auto file = open(source, Detail::write_mode);
         return file;
     }
 

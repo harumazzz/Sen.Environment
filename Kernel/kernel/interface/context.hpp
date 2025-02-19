@@ -34,14 +34,14 @@ namespace Sen::Kernel::Interface {
         }
 
         [[nodiscard]] auto evaluate (
-            const String& source,
-            const String& name
+            const StringView& source,
+            const StringView& name
         ) const -> Javascript::Value {
             return thiz.m_context.evaluate(source, name);
         }
 
         auto evaluate_fs (
-            const String& source
+            const StringView& source
         ) const -> Javascript::Value {
             auto script = String{};
             FileSystem::read_file(source, script);
