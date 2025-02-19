@@ -222,7 +222,7 @@ namespace Sen::Kernel::Interface::API {
         inline auto read_language (
             const String& source
         ) -> void {
-            return Kernel::Language::read_language([&](std::optional<jsoncons::json>& value){
+            return Kernel::Language::read_language([&](std::optional<jsoncons::json>& value) -> void {
                 auto data = String{};
                 Kernel::FileSystem::read_file(source, data);
                 value.emplace(jsoncons::json::parse(data.view()));

@@ -25,7 +25,7 @@ namespace Sen.Script.Executor {
 		id: string;
 		configuration_file: string;
 		direct_forward: (argument: Argument) => void;
-		batch_forward?: (argument: BatchArgument) => Promise<void>;
+		batch_forward?: (argument: BatchArgument) => void;
 		is_enabled: boolean;
 		configuration: Configuration;
 		filter: [MethodType, RegExp] | [MethodType, ...Array<RegExp>];
@@ -39,7 +39,6 @@ namespace Sen.Script.Executor {
 	export enum Forward {
 		DIRECT,
 		BATCH,
-		ASYNC,
 	}
 
 	/**
@@ -456,11 +455,11 @@ namespace Sen.Script.Executor {
 	 * ----------------------------------------------------------
 	 */
 
-	export async function run_as_module<Argument extends Executor.Base>(
+	export function run_as_module<Argument extends Executor.Base>(
 		id: string,
 		argument: Argument,
 		forward_type: Executor.Forward,
-	): Promise<void> {
+	): void {
 		const worker:
 			| Executor.MethodExecutor<Executor.Base, Executor.Base, Executor.Configuration>
 			| undefined = methods.get(id);
@@ -477,7 +476,7 @@ namespace Sen.Script.Executor {
 					worker.batch_forward !== undefined,
 					format(Kernel.Language.get('method_does_not_support_batch_implementation'), id),
 				);
-				await worker.batch_forward(argument);
+				worker.batch_forward(argument);
 				break;
 
 			case Forward.DIRECT:
@@ -515,26 +514,25 @@ namespace Sen.Script.Executor {
 		}
 	}
 
-	export async function execute<Argument extends Base>(
+	export function execute<Argument extends Base>(
 		argument: Argument,
 		id: string,
 		forward: Forward,
 		load: ExecuteType,
-	): Promise<string> {
+	): string {
 		let result: string = undefined!;
 		try {
 			switch (load) {
 				case 'simple':
-					await run_as_module<Argument>(id, argument, forward);
+					run_as_module<Argument>(id, argument, forward);
 					break;
 				case 'whole':
 					assert(
 						Array.isArray(argument.source),
 						Kernel.Language.get('argument_must_be_list_of_string'),
 					);
-					(argument.source as Array<string>).forEach(
-						async (e) =>
-							await run_as_module<Argument>(id, { ...argument, source: e }, forward),
+					(argument.source as Array<string>).forEach((e) =>
+						run_as_module<Argument>(id, { ...argument, source: e }, forward),
 					);
 			}
 		} catch (e: any) {
@@ -558,10 +556,10 @@ namespace Sen.Script.Executor {
 		}
 	}
 
-	export async function load_module<Argument extends Base>(
+	export function load_module<Argument extends Base>(
 		argument: Argument,
 		load: ExecuteType,
-	): Promise<void> {
+	): void {
 		let modules: Map<bigint, string> = new Map<bigint, string>();
 		const query = (
 			callback:
@@ -606,12 +604,12 @@ namespace Sen.Script.Executor {
 				Console.error(Kernel.Language.get('js.argument_ignored'));
 				break;
 			case 1:
-				execute<Argument>(argument, modules.get(view[0] as bigint)!, Forward.DIRECT, load);
+				execute<Argument>(argument, modules.get(view[0])!, Forward.DIRECT, load);
 				break;
 			default:
 				const input_value: bigint = input_integer([0n, ...view]);
 				if (input_value === 0n) return;
-				await execute<Argument>(argument, modules.get(input_value)!, Forward.DIRECT, load);
+				execute<Argument>(argument, modules.get(input_value)!, Forward.DIRECT, load);
 		}
 	}
 
@@ -699,9 +697,9 @@ namespace Sen.Script.Executor {
 		}
 	}
 
-	export async function input_path<Argument extends Base & { source: Array<string> }>(
+	export function input_path<Argument extends Base & { source: Array<string> }>(
 		argument: Argument,
-	): Promise<void> {
+	): void {
 		let input: string = undefined!;
 		Console.argument(
 			Kernel.Language.get(
@@ -743,7 +741,7 @@ namespace Sen.Script.Executor {
 						Kernel.Language.get('input_directory'),
 						'directory',
 					);
-					await execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
+					execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
 					continue;
 			}
 			if (
@@ -764,7 +762,7 @@ namespace Sen.Script.Executor {
 		Console.warning(Kernel.Language.get('script.input_phase_stopped'));
 	}
 
-	export async function forward<Argument extends Base>(argument: Argument): Promise<void> {
+	export function forward<Argument extends Base>(argument: Argument): void {
 		const loader: ModuleLoader = { method: undefined! };
 		const has_atlas = maybe_contains_atlas(
 			argument as Argument & { source: Array<string> },
@@ -816,7 +814,7 @@ namespace Sen.Script.Executor {
 			const input: bigint = input_integer([0n, 1n, 2n, 3n, 4n]);
 			switch (input) {
 				case 1n:
-					await load_module({ source: argument.source }, 'whole');
+					load_module({ source: argument.source }, 'whole');
 					Console.finished(
 						format(
 							Kernel.Language.get('total_n_files_are_executed'),
@@ -826,13 +824,13 @@ namespace Sen.Script.Executor {
 					break;
 
 				case 2n:
-					(argument.source as Array<string>).forEach(
-						async (e) => await load_module({ source: e }, 'simple'),
+					(argument.source as Array<string>).forEach((e) =>
+						load_module({ source: e }, 'simple'),
 					);
 					break;
 
 				case 3n:
-					await execute<Argument>(
+					execute<Argument>(
 						argument,
 						'popcap.atlas.split_by_resource_group',
 						Forward.DIRECT,
@@ -841,7 +839,7 @@ namespace Sen.Script.Executor {
 					break;
 
 				case 4n:
-					await execute<Argument>(
+					execute<Argument>(
 						argument,
 						'popcap.atlas.split_by_res_info',
 						Forward.DIRECT,
@@ -873,7 +871,7 @@ namespace Sen.Script.Executor {
 		if (message !== null) Console.warning(message);
 	}
 
-	export async function basic_batch<
+	export function basic_batch<
 		Argument extends Executor.Base,
 		BatchArgument extends Executor.Base & { directory: string },
 		Configuration extends Executor.Configuration,
@@ -882,27 +880,14 @@ namespace Sen.Script.Executor {
 		argument: BatchArgument,
 		is_directory: boolean,
 		other?: Record<string, unknown>,
-	): Promise<void> {
+	): void {
 		const callback: (source: string) => boolean = is_directory
 			? Kernel.FileSystem.is_directory
 			: Kernel.FileSystem.is_file;
 		const files: Array<string> = Kernel.FileSystem.read_directory(argument.directory).filter(
 			(path: string) => callback(path) && thiz.filter[1].test(path),
 		);
-		const promises = files.map((source: string) => {
-			return () => {
-				return new Promise<void>((resolve) => {
-					try {
-						thiz.direct_forward({ source: source as string, ...other } as any);
-					} catch (e: any) {
-						Console.warning(Exception.make_exception(e));
-					}
-					resolve();
-				});
-			};
-		});
-
-		await Promise.all(promises.map((e) => e()));
+		files.forEach((e) => thiz.direct_forward({ source: e as string, ...other } as any));
 		Console.finished(format(Kernel.Language.get('batch.process.count'), files.length));
 	}
 }

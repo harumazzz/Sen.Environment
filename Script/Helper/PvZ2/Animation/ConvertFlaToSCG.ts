@@ -713,7 +713,8 @@ namespace Sen.Script.Helper.PopCap.Animation.FlashToAnimation {
 		const type = readline();
 		const dest = Kernel.Path.dirname(source);
 		const resolution = 1536;
-		Kernel.Compression.Zip.Uncompress.process(`${source}`, `${source}_unpack`);
+		// TODO : Fix
+		//Kernel.Compression.Zip.Uncompress.process(`${source}`, `${source}_unpack`);
 		const path = `images/initial/${type}/${animation_name}`.toLowerCase();
 		const data = {
 			'#expand_method': 'advanced',

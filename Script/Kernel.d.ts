@@ -598,54 +598,6 @@ declare namespace Sen {
 		}
 
 		/**
-		 * JavaScript Compression Utilities
-		 *
-		 * This namespace provides functions for various compression and decompression tasks
-		 */
-		declare namespace Compression {
-			/**
-			 * JavaScript Zip Compression and Decompression Utilities
-			 * Based on zip.h library written in C
-			 */
-			declare namespace Zip {
-				/**
-				 * JavaScript Zip Decompression functions
-				 */
-				declare namespace Uncompress {
-					/**
-					 * --------------------------------------------------
-					 * JS Zip uncompression support
-					 *
-					 * Uncompresses a ZIP archive to the specified destination directory.
-					 *
-					 * @param source The path to the ZIP archive to decompress.
-					 * @param destination The destination directory to extract the archive contents.
-					 * --------------------------------------------------
-					 */
-					export function process(source: string, destination: string): void;
-				}
-			}
-		}
-
-		/**
-		 * Namespace for accessing script location information.
-		 *
-		 * This namespace provides a constant (`script`) containing the path to the directory
-		 * where the current script resides. This can be useful for relative path calculations
-		 * within your application.
-		 */
-		declare namespace Home {
-			/**
-			 * The path to the directory containing the current script.
-			 *
-			 * This constant provides the absolute path to the directory where the currently
-			 * executing script is located. It can be used to construct relative paths to other
-			 * resources within your application.
-			 */
-			export function script(): string;
-		}
-
-		/**
 		 * Namespace for functionalities related to kernel support.
 		 *
 		 * This namespace likely interacts with the underlying system or a specific framework

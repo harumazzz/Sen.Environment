@@ -101,7 +101,11 @@ namespace Sen::Kernel::Javascript {
                 if (auto exception = context.catch_exception(); !exception.is_undefined()) {
                     auto error = String{};
                     exception.template get<String>(error);
-                    assert_conditional(false, fmt::format("{}", error.view()), "call_promise");
+                    auto stack = String{};
+                    if (auto stack_trace = exception.get_property("stack"); !stack_trace.is_undefined()) {
+                        stack_trace.template get<String>(stack);
+                    }
+                    assert_conditional(false, fmt::format("{} {}", error.view(), stack.view()), "call_promise");
                 }
 
             }

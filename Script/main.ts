@@ -311,12 +311,12 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export async function main(data: {
+	export function main(data: {
 		arguments: Array<string>;
 		home: string;
 		error: string | undefined;
-	}): Promise<void> {
-		const result: string | undefined = await launch(data.arguments);
+	}): void {
+		const result: string | undefined = launch(data.arguments);
 		if (result !== undefined) {
 			data.error = result;
 			Console.error(result);
@@ -339,7 +339,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export async function launch(args: Array<string>): Promise<string | undefined> {
+	export function launch(args: Array<string>): string | undefined {
 		let result: string | undefined = undefined;
 		try {
 			Home.setup(args[2]);
@@ -361,7 +361,7 @@ namespace Sen.Script {
 					Module.script_list.length + 1,
 				),
 			);
-			await Executor.forward({ source: args });
+			Executor.forward({ source: args });
 		} catch (e: any) {
 			result = Exception.make_exception(e);
 		}
