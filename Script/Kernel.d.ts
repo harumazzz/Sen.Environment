@@ -119,7 +119,7 @@ declare namespace Sen {
 			 *  * **Note:** Consider adding comments on how errors are handled if the source file cannot be loaded.
 			 */
 
-			export function load_language(source: string): void;
+			export function read_language(source: string): void;
 
 			/**
 			 *  * Retrieves the translated string for the given key from the loaded language data.

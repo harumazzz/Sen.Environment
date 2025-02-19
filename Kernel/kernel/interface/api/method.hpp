@@ -142,16 +142,16 @@ namespace Sen::Kernel::Interface::API {
                 Javascript::Value& result
             ) -> void {
                 auto stream = std::istringstream{source};
-                auto destination = jsoncons::json_stream_cursor{stream};
-                result.template set<jsoncons::json_stream_cursor>(destination);
+                auto destination = Subprojects::jsoncons::json_stream_cursor{stream};
+                result.template set<Subprojects::jsoncons::json_stream_cursor>(destination);
             }
 
             inline auto serialize (
                 Kernel::Javascript::Value& object,
                 std::ostringstream& stream
             ) -> void {
-                auto os = jsoncons::json_stream_encoder{stream};
-                object.template get<jsoncons::json_stream_encoder>(os);
+                auto os = Subprojects::jsoncons::json_stream_encoder{stream};
+                object.template get<Subprojects::jsoncons::json_stream_encoder>(os);
                 os.flush();
             }
 
@@ -213,6 +213,26 @@ namespace Sen::Kernel::Interface::API {
             auto data = CharacterArrayView{const_cast<char*>(stream.view().data()), stream.view().size()};
             Kernel::FileSystem::write_file(destination, data);
             result.set_undefined();
+        }
+
+    }
+
+    namespace Language {
+
+        inline auto read_language (
+            const String& source
+        ) -> void {
+            return Kernel::Language::read_language([&](std::optional<jsoncons::json>& value){
+                auto data = String{};
+                Kernel::FileSystem::read_file(source, data);
+                value.emplace(jsoncons::json::parse(data.view()));
+            });
+        }
+
+        inline auto get (
+            const String& key
+        ) -> std::string_view {
+            return Kernel::Language::get(key.view());
         }
 
     }

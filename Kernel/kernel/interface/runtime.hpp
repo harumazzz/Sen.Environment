@@ -23,6 +23,8 @@ namespace Sen::Kernel::Interface::Runtime {
         }
         {
             auto s_Language = s_Kernel.add_space("Language"_s);
+            s_Language.add_function<&Javascript::proxy_native_function_wrapper<&API::Language::read_language>>("read_language"_s)
+            .add_function<&Javascript::proxy_native_function_wrapper<&API::Language::get>>("get"_s);
         }
         {
             auto s_JSON = s_Kernel.add_space("JSON"_s);

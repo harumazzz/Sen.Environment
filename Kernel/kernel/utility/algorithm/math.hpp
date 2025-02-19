@@ -73,18 +73,19 @@ namespace Sen::Kernel::Math {
 		return b;
 	}
 
-	constexpr auto length_of (
+	inline constexpr auto length_of (
 		const char* str
 	) -> usize {
+		assert(str != nullptr, "String must not be nullptr");
 		auto s = str;
-		while (*s) {
+		while (s != nullptr) {
 			++s;
 		}
 		return static_cast<usize>(s - str);
 	}
 
 	template <typename T>
-	constexpr static auto is_greater (
+	inline constexpr auto is_greater (
 		const T& a,
 		const T& b
 	) -> bool
@@ -96,7 +97,7 @@ namespace Sen::Kernel::Math {
 	}
 
 	template <typename T>
-	constexpr static auto is_smaller (
+	inline constexpr auto is_smaller (
 		const T& a,
 		const T& b
 	) -> bool
@@ -108,7 +109,7 @@ namespace Sen::Kernel::Math {
 	}
 
 	template <typename T>
-	constexpr static auto is_equal (
+	inline constexpr auto is_equal (
 		const T& a,
 		const T& b
 	) -> bool
@@ -120,7 +121,7 @@ namespace Sen::Kernel::Math {
 	}
 
 	template <typename Container, typename Compare, typename Projection>
-	constexpr static auto sort(
+	inline constexpr auto sort(
 		Container& arr,
 		Compare&& comp,
 		Projection&& proj

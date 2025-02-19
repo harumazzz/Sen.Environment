@@ -1,25 +1,28 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include "kernel/subprojects/jsoncons.hpp"
+#include <string_view>
+#include <optional>
 
 namespace Sen::Kernel::Language {
-	static std::unordered_map<std::string, std::string> language{};
+
+	static auto language = std::optional<jsoncons::json>{std::nullopt};
 
 	inline auto read_language (
-		std::string_view source
+		const std::function<void(std::optional<jsoncons::json>&)>& callback
 	) -> void {
-
+		callback(language);
 	}
 
-	inline auto get(
-		std::string_view key
-	) -> std::string
-	{
-		auto value = language.find({key.data(), key.size()});
-		if (value == language.end()) {
-			return {key.data(), key.size()};
+	inline auto get (
+		const std::string_view& key
+	) -> std::string_view {
+		if (!language.has_value()) {
+			return key;
 		}
-		return value->second;
+		if (language->contains(key)) {
+			return language->operator[](key).as<std::string_view>();
+		}
+		return key;
 	}
 }

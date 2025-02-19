@@ -424,14 +424,14 @@ namespace Sen::Kernel::Javascript {
     template <>
     struct Trait<Subprojects::jsoncons::json_stream_cursor> {
 
-        static auto to_value(
+        static auto to_value (
             Subprojects::jsoncons::json_stream_cursor& source,
             Value& destination
         ) -> void {
             switch (auto& event = source.current(); event.event_type()) {
                 case Subprojects::jsoncons::staj_event_type::begin_array: {
                     destination.set_array();
-                    auto index = u32{0};
+                    auto index = 0_u32;
                     source.next();
                     while (!source.done()) {
                         if (source.current().event_type() == Subprojects::jsoncons::staj_event_type::end_array) {
@@ -496,7 +496,7 @@ namespace Sen::Kernel::Javascript {
     template <>
     struct Trait<Subprojects::jsoncons::json_stream_encoder> {
 
-        static auto from_value(
+        static auto from_value (
             Value& source,
             Subprojects::jsoncons::json_stream_encoder& destination
         ) -> void {
