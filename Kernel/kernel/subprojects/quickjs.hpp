@@ -59,6 +59,10 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_FreeRuntime;
 
+	using ::JSCFunctionListEntry;
+
+	using ::JS_SetPropertyFunctionList;
+
 	using ::JS_FreeContext;
 
 	using ::JS_FreeAtom;
@@ -223,13 +227,21 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	inline static auto constexpr $JS_TAG_OBJECT = int64_t{JS_TAG_OBJECT};
 
-	inline static auto $JS_VALUE_GET_TAG (
+	inline auto constexpr $JS_VALUE_GET_TAG (
 		const JSValue value
 	) -> int {
 		return JS_VALUE_GET_TAG(value);
 	}
 
-	inline auto JS_VALUE_GET_POINTER (
+	inline auto constexpr $JS_CFUNC_DEF (
+		char const* name,
+		uint8_t length,
+		decltype(JSCFunctionType::generic) func1
+	) -> JSCFunctionListEntry {
+		return JS_CFUNC_DEF(name, length, func1);
+	}
+
+	inline auto constexpr JS_VALUE_GET_POINTER (
 		JSValue value
 	) -> void* {
 		return JS_VALUE_GET_PTR(value);

@@ -156,6 +156,12 @@ namespace Sen::Kernel {
             static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
         }
 
+        auto string(
+            const StringView &value
+        ) -> void {
+            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
+        }
+
     };
 
 }

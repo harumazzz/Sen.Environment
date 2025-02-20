@@ -348,7 +348,17 @@ namespace Sen::Kernel::Javascript {
             Value& destination
         ) -> void {
             assert_conditional(source != nullptr, "Expected the value to be opaque, but the actual type is not", "to_value");
-            auto value = Subprojects::quickjs::JS_NewObjectClass(destination._context(), static_cast<int>(Detail::class_id<T>));
+            const auto value = Subprojects::quickjs::JS_NewObjectClass(destination._context(), static_cast<int>(Detail::class_id<T>));
+            Subprojects::quickjs::JS_SetOpaque(value, source);
+            destination.set_value(value);
+        }
+
+        static auto to_value(
+            Pointer<T>&& source,
+            Value& destination
+        ) -> void {
+            assert_conditional(source != nullptr, "Expected the value to be opaque, but the actual type is not", "to_value");
+            const auto value = Subprojects::quickjs::JS_NewObjectClass(destination._context(), static_cast<int>(Detail::class_id<T>));
             Subprojects::quickjs::JS_SetOpaque(value, source);
             destination.set_value(value);
         }
@@ -626,6 +636,35 @@ namespace Sen::Kernel::Javascript {
                 }
             }
         }
+    };
+
+    template <>
+    struct Trait<Uint8ArrayView> {
+
+        static auto from_value(
+            Value& source,
+            Uint8ArrayView& destination
+        ) -> void {
+            assert_conditional(source.is_array_buffer(), "Expected the value to be ArrayBuffer, but the actual type is not", "from_value");
+            auto size = usize{};
+            const auto buffer = Subprojects::quickjs::JS_GetArrayBuffer(source._context(), &size, source.value());
+            destination = Uint8ArrayView{buffer, size};
+        }
+
+        static auto to_value(
+            const Uint8ArrayView& source,
+            Value& destination
+        ) -> void {
+            destination.template set_array_buffer_view<false>(source);
+        }
+
+        static auto to_value(
+            Uint8ArrayView&& source,
+            Value& destination
+        ) -> void {
+            destination.template set_array_buffer_view<true>(source);
+        }
+
     };
 
 }

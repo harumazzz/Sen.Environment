@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 project(
 	jsoncons
-	VERSION 1.10
+	VERSION 1.2.0
 	HOMEPAGE_URL https://github.com/danielaparker/jsoncons
 	LANGUAGES CXX
 )

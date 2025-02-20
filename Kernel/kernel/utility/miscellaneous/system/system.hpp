@@ -17,7 +17,7 @@ namespace Sen::Kernel {
 	struct Process {
 
 		static auto run(
-			const String& command
+			const StringView& command
 		) -> void
 		{
 			#if WINDOWS
@@ -28,7 +28,7 @@ namespace Sen::Kernel {
 		}
 
 		static auto get_environment(
-			const String& str
+			const StringView& str
 		) 
 		{
 			#if WINDOWS
@@ -50,7 +50,7 @@ namespace Sen::Kernel {
 		}
 
 		static auto get_path_environment(
-			const String& str
+			const StringView& str
 		) -> String
 		{
 			auto environment = get_environment(str);
@@ -62,7 +62,7 @@ namespace Sen::Kernel {
 		}
 
 		static auto execute(
-			const String& command
+			const StringView& command
 		) -> String
 		{
 			#if WINDOWS

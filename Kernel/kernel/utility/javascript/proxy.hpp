@@ -54,14 +54,15 @@ namespace Sen::Kernel::Javascript {
         auto call = [&]<typename... Arguments> requires (is_valid_tuple<Arguments> && ...) (auto&& callable, Arguments&&... extra_args) -> void {
             auto args = Argument{};
             [&]<auto... Index> requires (std::is_same_v<type_of<Index>, usize> && ...) (std::index_sequence<Index...>) -> void {
-                ((arguments[Index].template get<std::tuple_element_t<Index, Argument>>(std::get<Index>(args))), ...);
+                ((arguments[Index].template get<std::remove_reference_t<std::tuple_element_t<Index, Argument>>>(std::get<Index>(args))), ...);
             }(std::make_index_sequence<count>{});
+            auto argument = std::tuple_cat(std::forward_as_tuple(std::forward<Arguments>(extra_args)...), std::move(args));
             if constexpr (std::is_void_v<typename traits::return_type>) {
-                std::apply(callable, std::tuple_cat(std::make_tuple(std::forward<Arguments>(extra_args)...), std::move(args)));
+                std::apply(callable, argument);
                 result.set_undefined();
             } else {
                 result.set<typename traits::return_type>(
-                    std::apply(callable, std::tuple_cat(std::make_tuple(std::forward<Arguments>(extra_args)...), std::move(args)))
+                    std::apply(callable, argument)
                 );
             }
         };
@@ -196,6 +197,12 @@ namespace Sen::Kernel::Javascript {
             return thiz;
         }
 
+        template <auto function>
+        auto add_constructor_by_proxy (
+        ) -> ClassBuilder& {
+            return thiz.template add_constructor<&Javascript::proxy_native_function_wrapper<function>>();
+        }
+
         template<auto function> requires is_global_function_v<function> &&
         std::is_same_v<typename is_global_function<std::decay_t<type_of<function>>>::Arguments, std::tuple<Context&, Value&, Array<Value>&, Value&>> &&
         std::is_void_v<typename is_global_function<std::decay_t<type_of<function>>>::ReturnType>
@@ -204,6 +211,13 @@ namespace Sen::Kernel::Javascript {
         ) -> ClassBuilder& {
             thiz.m_proto.template add_function<function, false>(name);
             return thiz;
+        }
+
+        template<auto function>
+        auto add_member_function_by_proxy (
+            const String& name
+        ) -> ClassBuilder& {
+            return thiz.template add_member_function<&Javascript::proxy_native_function_wrapper<function>>(name);
         }
 
         template <typename U>
@@ -225,6 +239,13 @@ namespace Sen::Kernel::Javascript {
         ) -> ClassBuilder& {
             thiz.m_constructor.template add_function<function, false>(name);
             return thiz;
+        }
+
+        template<auto function>
+        auto add_static_function_by_proxy (
+            const String& name
+        ) -> ClassBuilder& {
+            return thiz.template add_member_function<&Javascript::proxy_native_function_wrapper<function>>(name);
         }
 
         template <typename U>
@@ -326,6 +347,13 @@ namespace Sen::Kernel::Javascript {
             const String& name
         ) -> ClassBuilder<T> {
             return ClassBuilder<T>{name, thiz.m_object};
+        }
+
+        template<auto function>
+        auto add_function_by_proxy (
+            const String& name
+        ) -> NamespaceBuilder & {
+            return thiz.template add_function<&Javascript::proxy_native_function_wrapper<function>>(name);
         }
 
 

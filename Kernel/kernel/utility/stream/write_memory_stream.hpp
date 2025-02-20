@@ -49,12 +49,6 @@ namespace Sen::Kernel {
             return thiz.m_data.size();
         }
 
-        constexpr auto size(
-            const usize &size
-        ) -> void {
-            return thiz.m_data.resize(size);
-        }
-
         constexpr auto resize(
             const usize& size
         ) -> void {

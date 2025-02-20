@@ -305,9 +305,8 @@ public:
     using typename super_type::char_type;
     using typename super_type::string_type;
 
-    static constexpr uint8_t indent_size_default = 1;
+    static constexpr uint8_t indent_size_default = 4;
     static constexpr size_t line_length_limit_default = 120;
-    static constexpr char indent_char_default = '\t';
 private:
     bool escape_all_non_ascii_:1;
     bool escape_solidus_:1;
@@ -325,7 +324,6 @@ private:
     spaces_option spaces_around_comma_;
     int8_t precision_{0};
     uint8_t indent_size_{indent_size_default};
-    char indent_char_{indent_char_default};
     std::size_t line_length_limit_{line_length_limit_default};
     string_type new_line_chars_;
 public:
@@ -580,11 +578,6 @@ public:
     basic_json_options& indent_size(uint8_t value)
     {
         this->indent_size_ = value;
-        return *this;
-    }
-
-    basic_json_options& indent_char(char value) {
-        this->indent_char_ = value;
         return *this;
     }
 
