@@ -745,6 +745,17 @@ declare namespace Sen {
 			 * Notation (RTON) processing.
 			 */
 			declare namespace PopCap {
+				declare namespace TextTable {
+					export type Type = 'utf8-text' | 'utf16-text' | 'json-map' | 'json-array';
+
+					export function convert_fs(
+						source: string,
+						destination: string,
+						source_type: Type,
+						destination_type: Type,
+					);
+				}
+
 				/**
 				 * Namespace for Reflection Object Notation (RTON) processing.
 				 *

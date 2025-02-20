@@ -296,6 +296,7 @@ add_library(
         utility/container/string_view/string_view.hpp
         support/popcap/text_table/common.hpp
         support/popcap/text_table/convert.hpp
+        utility/container/map/linear_map.hpp
 
 )
 

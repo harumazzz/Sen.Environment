@@ -303,7 +303,7 @@ namespace Sen::Kernel::FileSystem {
         auto buffer = CharacterArray{file_size};
         file.read(buffer);
         auto offset = 0_size;
-        if (file_size >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[1] == 0xBF) {
+        if (file_size >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF) {
             offset = 3;
         }
         return String{buffer.data() + offset, buffer.size() - offset};

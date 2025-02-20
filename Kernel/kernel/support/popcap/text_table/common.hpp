@@ -1,7 +1,7 @@
 #pragma once
 
-#include "convert.hpp"
 #include "kernel/utility/utility.hpp"
+#include "kernel/utility/container/map/linear_map.hpp"
 
 namespace Sen::Kernel::Support::PopCap::TextTable {
 
@@ -19,7 +19,9 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
 
     struct Common {
 
-        static constexpr auto entry_pattern = ctll::fixed_string{R"(\[([^\]]+)\]\s*([\s\S]*?)(?=\n*\[|$))"};
+        inline static constexpr auto key_regex = Subprojects::ctre::fixed_string{R"(\[([^\]]+)\])"};
+
+        inline static constexpr auto value_regex = Subprojects::ctre::fixed_string{R"((?s)\n*(.*?)(?=\[|$))"};
 
     };
 
@@ -30,7 +32,7 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
     }
 
     struct ObjectData {
-        HashMap<String, String> LocStringValues;
+        LinearMap<String, String> LocStringValues;
     };
 
     struct ObjectList {
@@ -64,12 +66,25 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
 
     using ListLawnStrings = LawnStrings<false>;
 
+    inline static constexpr auto k_supported = std::to_array<Type>({Type::utf16_text, Type::utf8_text, Type::json_map, Type::json_array});
+
+    constexpr auto type_index(
+        const Type& t
+    ) -> std::optional<usize> {
+        if (const auto it = std::ranges::find(k_supported, t); it != k_supported.end()) {
+            return std::distance(k_supported.begin(), it);
+        }
+        return std::nullopt;
+    }
+
 
 }
 
 using namespace Sen::Kernel::Support::PopCap::TextTable;
 
 JSONCONS_ALL_MEMBER_TRAITS(ObjectData, LocStringValues)
+
+JSONCONS_ALL_MEMBER_TRAITS(ObjectList, LocStringValues)
 
 JSONCONS_ALL_MEMBER_TRAITS(ObjectEntry<true>, aliases, objclass, objdata)
 

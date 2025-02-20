@@ -75,6 +75,7 @@ class MouseListener extends StatelessWidget {
                     itemProfile.selectRect!.width / viewportScale,
                     itemProfile.selectRect!.height / viewportScale);
                 final selected = sectionRect.overlaps(itemRect);
+                
                 if (selected) {
                   if (!panTool && !eraseTool && !multiSelect) {
                     if (selectedList.contains(id)) {
@@ -86,6 +87,7 @@ class MouseListener extends StatelessWidget {
                           const ChangeCursorEvent(
                               cursor: SystemMouseCursors.click));
                     }
+                    context.read<SelectedBloc>().add(const SetHoverSelected(selected: true));
                   }
                   context
                       .read<SelectedBloc>()
@@ -94,8 +96,9 @@ class MouseListener extends StatelessWidget {
                 } else {
                   if (!panTool && !eraseTool && !multiSelect) {
                     context.read<MouseCursorBloc>().add(
-                        const ChangeCursorEvent(cursor: MouseCursor.defer));
+                        const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
                   }
+                  context.read<SelectedBloc>().add(const SetHoverSelected(selected: false));
                 }
               }
               context.read<SelectedBloc>().add(const SetOnSelectedNull());

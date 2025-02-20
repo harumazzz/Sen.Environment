@@ -70,7 +70,7 @@ class BoxStage extends StatelessWidget {
         .state
         .canvasController
         .transformationController;
-    final stage = mapGrid
+    final stage =  mapGrid
         ? GridPaper(
             interval: 200,
             divisions: 1,

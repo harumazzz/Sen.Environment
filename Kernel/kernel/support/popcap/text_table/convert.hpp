@@ -6,39 +6,26 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
 
     struct Convert : Common {
 
-        static auto process_text (
-            String& source_text,
+        static auto process_text(
+            std::string_view source,
             List<String>& destination
         ) -> void {
-            auto source = source_text.string();
-            std::regex key_regex(R"(\[.+?\])");  // Matches section headers
-            std::regex value_regex(
-                R"([\s\S]*?(?=\n*\[|$))");
-
-            std::sregex_iterator key_it(source.begin(), source.end(),
-                                key_regex);
-            std::sregex_iterator key_end;
-
-            size_t search_pos = 0;
-
-            while (key_it != key_end) {
-                std::smatch key_match = *key_it;
-                std::string key = key_match.str().substr(
-                    1, key_match.length() - 2);  // Remove brackets
-
-                search_pos = key_match.position() + key_match.length() +
-                             1;  // Move past section header
-
-                std::string remaining_text = source.substr(search_pos);
-                std::smatch value_match;
-
-                if (std::regex_search(remaining_text, value_match, value_regex)) {
-                    destination.append(StringHelper::make_string(key));
-                    destination.append(StringHelper::make_string(value_match.str(0)));
-                    search_pos += value_match.length();  // Move past value
+            while (!source.empty()) {
+                if (auto key_match = Subprojects::ctre::search<key_regex>(source)) {
+                    auto key = key_match.get<1>().to_string();
+                    source.remove_prefix(key_match.view().end() - source.begin());
+                    if (auto value_match = Subprojects::ctre::search<value_regex>(source)) {
+                        auto value = value_match.get<1>().to_string();
+                        while (!value.empty() && value.back() == '\n') {
+                            value.pop_back();
+                        }
+                        destination.append(StringHelper::make_string(key));
+                        destination.append(StringHelper::make_string(value));
+                        source.remove_prefix(value_match.view().end() - source.begin());
+                    }
+                } else {
+                    break;
                 }
-
-                ++key_it;  // Move to next section
             }
         }
 
@@ -88,11 +75,11 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
             auto result = List<String>{};
             if constexpr (from == Type::utf8_text) {
                 auto source_text = FileSystem::read_utf8_bom(source);
-                process_text(source_text, result);
+                process_text(source_text.view(), result);
             }
             if constexpr (from == Type::utf16_text) {
                 auto source_text = FileSystem::read_utf16(source);
-                process_text(source_text, result);
+                process_text(source_text.view(), result);
             }
             if constexpr (from == Type::json_map) {
                 auto data = Subprojects::jsoncons::json{};
@@ -133,46 +120,37 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
                         .aliases = make_list<String>("LawnStringsData"_s),
                         .objclass = "LawnStringsData"_s,
                         .objdata = ObjectData{
-                            .LocStringValues = HashMap<String, String>{},
+                            .LocStringValues = LinearMap<String, String>{},
                         },
                     })
                 };
                 auto& LocStringValues = data.objects[0].objdata.LocStringValues;
                 for (auto index = 0_size; index < result.size(); index += 2) {
-                    LocStringValues.emplace(result[index], result[index + 1]);
+                    LocStringValues.append(std::make_pair(result[index], result[index + 1]));
                 }
                 FileSystem::write_json(destination, data);
             }
             if constexpr (to == Type::json_array) {
-                auto data = static_cast<Subprojects::jsoncons::ojson>(Subprojects::jsoncons::json::object({
-                    {"version", 1},
-                    {"objects", json::array({
-                        json::object({
-                            {"aliases", json::array({"LawnStringsData"})},
-                            {"objclass", "LawnStringsData"},
-                            {"objdata", json::object({
-                                {"LocStringValues", json::array()},
-                            })}
-                        })
-                    })}
-                }));
-                auto &LocStringValues = data["objects"][0]["objdata"]["LocStringValues"];
-                for (auto index : Range{result.size()}) {
-                    LocStringValues.push_back(result[index]);
-                }
+                auto data = ListLawnStrings{
+                    .version = 1,
+                    .objects = make_list<ObjectEntry<false>>(ObjectEntry<false>{
+                        .aliases = make_list<String>("LawnStringsData"_s),
+                        .objclass = "LawnStringsData"_s,
+                        .objdata = ObjectList {
+                            .LocStringValues = std::move(result),
+                        },
+                    })
+                };
                 FileSystem::write_json(destination, data);
             }
         }
 
-        template <auto From, auto... Is> requires std::is_same_v<type_of<From>, Type> && (std::is_same_v<type_of<Is>, usize> && ...)
-        static auto process(
-            const StringView& source,
-            const StringView& destination,
-            const Type& to,
-            std::index_sequence<Is...>
-        ) -> void {
-            ((to == Detail::all_types[Is] ? (process_whole<From, Detail::all_types[Is]>(source, destination), void()) : void()), ...);
-        }
+        static constexpr auto process_table = std::to_array({
+            std::to_array({process_whole<Type::utf16_text, Type::utf16_text>, process_whole<Type::utf16_text, Type::utf8_text>, process_whole<Type::utf16_text, Type::json_map>, process_whole<Type::utf16_text, Type::json_array>}),
+            std::to_array({process_whole<Type::utf8_text, Type::utf16_text>, process_whole<Type::utf8_text, Type::utf8_text>, process_whole<Type::utf8_text, Type::json_map>, process_whole<Type::utf8_text, Type::json_array>}),
+            std::to_array({process_whole<Type::json_map, Type::utf16_text>, process_whole<Type::json_map, Type::utf8_text>, process_whole<Type::json_map, Type::json_map>, process_whole<Type::json_map, Type::json_array>}),
+            std::to_array({process_whole<Type::json_array, Type::utf16_text>, process_whole<Type::json_array, Type::utf8_text>, process_whole<Type::json_array, Type::json_map>, process_whole<Type::json_array, Type::json_array>})
+        });
 
         static auto process_fs(
             const StringView& source,
@@ -180,8 +158,11 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
             const Type& from,
             const Type& to
         ) -> void {
-            process_whole<Type::utf16_text, Type::json_map>(source, destination);
+            const auto from_index = type_index(from);
+            const auto to_index = type_index(to);
+            process_table[from_index.operator*()][to_index.operator*()](source, destination);
         }
+
 
     };
 

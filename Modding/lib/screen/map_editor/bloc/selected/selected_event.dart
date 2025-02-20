@@ -76,3 +76,12 @@ final class SetOnSelectedNull extends SelectedEvent {
   @override
   List<Object> get props => [];
 }
+
+final class SetHoverSelected extends SelectedEvent {
+  const SetHoverSelected({required this.selected});
+
+  final bool selected;
+
+  @override
+  List<Object> get props => [selected];
+}

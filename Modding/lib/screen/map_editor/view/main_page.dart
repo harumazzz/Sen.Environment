@@ -16,6 +16,7 @@ import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/selected/selected_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
+import 'package:sen/screen/map_editor/bloc/shortcut/shortcut_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/suggestion/suggestion_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/ticker/ticker_bloc.dart';
@@ -129,6 +130,15 @@ class MainPage extends StatelessWidget {
           los: los,
         ),
       ),
+      BlocProvider<ShortcutBloc>(
+          create: (context) => ShortcutBloc(
+              stageBloc: context.read<StageBloc>(),
+              layerBloc: context.read<LayerBloc>(),
+              selectedBloc: context.read<SelectedBloc>(),
+              itemBloc: context.read<ItemBloc>(),
+              historyBloc: context.read<HistoryBloc>(),
+              settingBloc: context.read<SettingBloc>(),
+              cubit: context.read<MapEditorConfigurationCubit>()))
     ], child: const MainPageChild());
   }
 }

@@ -337,7 +337,7 @@ namespace Sen::Kernel {
 
     template <typename T, typename... Args>
 	inline auto make_list (
-		Args&& args
+		Args&&... args
     ) -> List<T> {
     	auto result = List<T>{sizeof...(args)};
 		result.append(std::forward<Args>(args)...);

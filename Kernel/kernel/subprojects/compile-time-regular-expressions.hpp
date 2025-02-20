@@ -18,6 +18,8 @@
 
 namespace Sen::Kernel::Subprojects::ctre {
 
-	// use third
+	using ::ctre::search;
+
+	using ::ctll::fixed_string;
 
 }

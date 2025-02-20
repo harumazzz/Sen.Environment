@@ -3,49 +3,43 @@ namespace Sen.Script.Executor.Functions.PopCap.PvZ2.LawnStrings {
 		export interface Argument extends Executor.Base {
 			source: string;
 			destination?: string;
-			source_type?: Support.PopCap.LawnStrings.Convert.Conversion;
-			destination_type?: Support.PopCap.LawnStrings.Convert.Conversion;
+			source_type?: Kernel.Support.PopCap.TextTable.Type;
+			destination_type?: Kernel.Support.PopCap.TextTable.Type;
 		}
 
 		export interface BatchArgument extends Executor.Base {}
 
 		export interface Configuration extends Executor.Configuration {
-			source_type: Support.PopCap.LawnStrings.Convert.Conversion | '?';
-			destination_type: Support.PopCap.LawnStrings.Convert.Conversion | '?';
+			source_type: Kernel.Support.PopCap.TextTable.Type | '?';
+			destination_type: Kernel.Support.PopCap.TextTable.Type | '?';
 		}
 	}
 
 	export namespace Detail {
-		export function type(): Array<[bigint, string, string]> {
+		export function type(): Array<[bigint, Kernel.Support.PopCap.TextTable.Type, string]> {
 			return [
-				[1n, 'text', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.text')],
-				[2n, 'array', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.array')],
-				[3n, 'map', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.map')],
-				[4n, 'cn-text', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.cn_text')],
+				[1n, 'utf16-text', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.text')],
+				[2n, 'json-array', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.array')],
+				[3n, 'json-map', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.map')],
+				[4n, 'utf8-text', Kernel.Language.get('popcap.pvz2.lawnstrings.convert.cn_text')],
 			];
 		}
 
-		export const rule: Array<Support.PopCap.LawnStrings.Convert.Conversion> = [
-			'text',
-			'array',
-			'map',
-			'cn-text',
+		export const rule: Array<Kernel.Support.PopCap.TextTable.Type> = [
+			'utf8-text',
+			'json-array',
+			'json-map',
+			'utf16-text',
 		];
 
-		export function extension(
-			destination: Support.PopCap.LawnStrings.Convert.Conversion,
-		): string {
+		export function extension(destination: Kernel.Support.PopCap.TextTable.Type): string {
 			switch (destination) {
-				case 'array':
-				case 'map':
+				case 'json-array':
+				case 'json-map':
 					return 'json';
-
-				case 'cn-text':
-				case 'text':
+				case 'utf8-text':
+				case 'utf16-text':
 					return 'txt';
-
-				default:
-					return 'unknown';
 			}
 		}
 	}
@@ -88,7 +82,7 @@ namespace Sen.Script.Executor.Functions.PopCap.PvZ2.LawnStrings {
 				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
 				clock.start_safe();
-				Support.PopCap.LawnStrings.Convert.process_fs(
+				Kernel.Support.PopCap.TextTable.convert_fs(
 					argument.source,
 					argument.destination!,
 					argument.source_type!,

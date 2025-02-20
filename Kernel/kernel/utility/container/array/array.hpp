@@ -189,4 +189,17 @@ namespace Sen::Kernel {
 			}
 	};
 
+	template <typename T, typename... Args>
+	inline constexpr auto make_array (
+		Args&&... args
+	) -> CArray<T> {
+		auto value = CArray<T>{};
+		value.allocate(sizeof...(args));
+		{
+			auto index = 0;
+			((value[index++] = std::forward<Args>(args)), ...);
+		}
+		return value;
+	}
+
 }
