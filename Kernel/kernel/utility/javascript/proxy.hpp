@@ -27,7 +27,7 @@ namespace Sen::Kernel::Javascript {
             std::invoke(Callable, context, value, arguments, result);
         } catch (...) {
             auto exception = parse_exception();
-            context.throw_exception(context.evaluate(StringHelper::make_string(fmt::format(
+            context.throw_exception(context.evaluate(make_string_view(fmt::format(
             R"(function {0}() {{
 				    let e = new Error(`{1}`);
                     e.stack = `    at {0} ({2})\n` + e.stack;

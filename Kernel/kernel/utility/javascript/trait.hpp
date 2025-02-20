@@ -355,61 +355,125 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <>
-    struct Trait<jsoncons::json> {
+    struct Trait<Subprojects::jsoncons::json> {
 
-        static auto from_value(
+        static auto from_value (
             Value& source,
-            jsoncons::json& destination
+            Subprojects::jsoncons::json& destination
         ) -> void {
-
+            switch (source.get_type()) {
+                case ValueType::array: {
+                    destination = Subprojects::jsoncons::json::array();
+                    auto length = u32{};
+                    Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+                    destination.resize(length);
+                    for (const auto index : Range{length}) {
+                        auto current = source.get_property(index);
+                        from_value(current, destination[index]);
+                    }
+                    break;
+                }
+                case ValueType::object: {
+                    destination = Subprojects::jsoncons::json::object();
+                    auto property_count = u32{};
+                    auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
+                    Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
+                    destination.resize(property_count);
+                    for (const auto index : Range{property_count}) {
+                        const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
+                        if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
+                            auto make_element = [&]() -> Subprojects::jsoncons::json  {
+                                auto current_element = Subprojects::jsoncons::json{};
+                                from_value(element, current_element);
+                                return current_element;
+                            };
+                            destination[key] = make_element();
+                        }
+                        Subprojects::quickjs::JS_FreeCString(source._context(), key);
+                    }
+                    Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
+                    break;
+                }
+                case ValueType::bigint: {
+                    auto value = i64{};
+                    source.template get<i64>(value);
+                    destination = value;
+                    break;
+                }
+                case ValueType::boolean: {
+                    auto value = bool{};
+                    source.template get<bool>(value);
+                    destination = value;
+                    break;
+                }
+                case ValueType::number: {
+                    auto value = f64{};
+                    source.template get<f64>(value);
+                    destination = value;
+                    break;
+                }
+                case ValueType::null: {
+                    destination = Subprojects::jsoncons::json::null();
+                    break;
+                }
+                case ValueType::string: {
+                    auto value = std::string{};
+                    source.template get<std::string>(value);
+                    destination = value;
+                    break;
+                }
+                default: {
+                    assert_conditional(false, "Unsupported JSON value", "from_value");
+                }
+            }
         }
 
-        static auto to_value(
-            const jsoncons::json& source,
+        static auto to_value (
+            const Subprojects::jsoncons::json& source,
             Value& destination
         ) -> void {
             switch (source.type()) {
-                case jsoncons::json_type::array_value: {
+                case Subprojects::jsoncons::json_type::array_value: {
                     destination.set_array();
                     auto index = u32{};
                     for (const auto& item : source.array_range()) {
                         auto value = Value::new_value(destination._context());
-                        Trait<jsoncons::json>::to_value(item, value);
+                        Trait<Subprojects::jsoncons::json>::to_value(item, value);
                         destination.set_property(index, value.release());
                         ++index;
                     }
                     break;
                 }
-                case jsoncons::json_type::object_value: {
+                case Subprojects::jsoncons::json_type::object_value: {
                     destination.set_object();
                     for (auto& [key, value] : source.object_range()) {
                         auto new_value = Value::new_value(destination._context());
-                        Trait<jsoncons::json>::to_value(value, new_value);
+                        Trait<Subprojects::jsoncons::json>::to_value(value, new_value);
                         destination.set_property(key, new_value.release());
                     }
                     break;
                 }
-                case jsoncons::json_type::string_value: {
+                case Subprojects::jsoncons::json_type::string_value: {
                     destination.template set<std::string_view>(source.template as<std::string>());
                     break;
                 }
-                case jsoncons::json_type::bool_value: {
+                case Subprojects::jsoncons::json_type::bool_value: {
                     destination.template set<bool>(source.template as<bool>());
                     break;
                 }
-                case jsoncons::json_type::double_value: {
+                case Subprojects::jsoncons::json_type::double_value: {
                     destination.template set<double>(source.template as<double>());
                     break;
                 }
-                case jsoncons::json_type::int64_value: {
+                case Subprojects::jsoncons::json_type::int64_value: {
                     destination.template set<int64_t>(source.template as<int64_t>());
                     break;
                 }
-                case jsoncons::json_type::uint64_value: {
+                case Subprojects::jsoncons::json_type::uint64_value: {
                     destination.template set<uint64_t>(source.template as<uint64_t>());
                     break;
                 }
-                case jsoncons::json_type::null_value: {
+                case Subprojects::jsoncons::json_type::null_value: {
                     destination.set_null();
                     break;
                 }
@@ -500,50 +564,66 @@ namespace Sen::Kernel::Javascript {
             Value& source,
             Subprojects::jsoncons::json_stream_encoder& destination
         ) -> void {
-            if (source.is_array()) {
-                destination.begin_array();
-                auto length = u32{};
-                Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
-                for (const auto index : Range{length}) {
-                    auto current = source.get_property(index);
-                    from_value(current, destination);
-                }
-                destination.end_array();
-            } else if (source.is_object_of_object()) {
-                destination.begin_object();
-                auto property_count = u32{};
-                auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
-                Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
-                for (const auto index : Range{property_count}) {
-                    const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
-                    if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
-                        destination.key(StringHelper::make_string_view(key));
-                        from_value(element, destination);
+            switch (source.get_type()) {
+                case ValueType::array: {
+                    destination.begin_array();
+                    auto length = u32{};
+                    Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+                    for (const auto index : Range{length}) {
+                        auto current = source.get_property(index);
+                        from_value(current, destination);
                     }
-                    Subprojects::quickjs::JS_FreeCString(source._context(), key);
+                    destination.end_array();
+                    break;
                 }
-                Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
-                destination.end_object();
-            } else if (source.is_bigint()) {
-                auto value = i64{};
-                source.template get<i64>(value);
-                destination.int64_value(value);
-            } else if (source.is_boolean()) {
-                auto value = bool{};
-                source.template get<bool>(value);
-                destination.bool_value(value);
-            } else if (source.is_number()) {
-                auto value = f64{};
-                source.template get<f64>(value);
-                destination.double_value(value);
-            } else if (source.is_null()) {
-                destination.null_value();
-            } else if (source.is_string()) {
-                auto value = String{};
-                source.template get<String>(value);
-                destination.string_value(value.view());
-            } else {
-                assert_conditional(false, "Unsupported JSON value", "from_value");
+                case ValueType::object: {
+                    destination.begin_object();
+                    auto property_count = u32{};
+                    auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
+                    Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
+                    for (const auto index : Range{property_count}) {
+                        const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
+                        if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
+                            destination.key(StringHelper::make_string_view(key));
+                            from_value(element, destination);
+                        }
+                        Subprojects::quickjs::JS_FreeCString(source._context(), key);
+                    }
+                    Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
+                    destination.end_object();
+                    break;
+                }
+                case ValueType::bigint: {
+                    auto value = i64{};
+                    source.template get<i64>(value);
+                    destination.int64_value(value);
+                    break;
+                }
+                case ValueType::boolean: {
+                    auto value = bool{};
+                    source.template get<bool>(value);
+                    destination.bool_value(value);
+                    break;
+                }
+                case ValueType::number: {
+                    auto value = f64{};
+                    source.template get<f64>(value);
+                    destination.double_value(value);
+                    break;
+                }
+                case ValueType::null: {
+                    destination.null_value();
+                    break;
+                }
+                case ValueType::string: {
+                    auto value = String{};
+                    source.template get<String>(value);
+                    destination.string_value(value.view());
+                    break;
+                }
+                default: {
+                    assert_conditional(false, "Unsupported JSON value", "from_value");
+                }
             }
         }
     };

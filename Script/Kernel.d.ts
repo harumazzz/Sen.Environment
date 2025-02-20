@@ -4415,7 +4415,7 @@ declare namespace Sen {
 			 * @param object - The object to be cloned. While it can be any JavaScript value, it's typically used for objects.
 			 * @returns A new, independent copy of the provided object.
 			 */
-			export function make_copy<T extends any>(object: T): T;
+			export function deep_copy<T extends any>(object: T): T;
 
 			/**
 			 * to_apng function

@@ -362,7 +362,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 					layer.color = change.color;
 				}
 			}
-			visual_frame_sprite.push(Kernel.Miscellaneous.make_copy(layer_list));
+			visual_frame_sprite.push(Kernel.Miscellaneous.deep_copy(layer_list));
 		}
 		return visual_frame_sprite;
 	}

@@ -139,6 +139,10 @@ namespace Sen::Kernel::Interface::Runtime {
             s_ReAnimation.add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReAnimation::Decode::process_fs>>("decode_fs"_s)
             .add_function<&Javascript::proxy_native_function_wrapper<&Support::PopCap::ReAnimation::Encode::process_fs>>("encode_fs"_s);
         }
+        {
+            auto s_Miscellaneous = s_Kernel.add_space("Miscellaneous"_s);
+            s_Miscellaneous.add_function<&API::Miscellaneous::deep_copy>("deep_copy"_s);
+        }
     }
 
     inline auto make_exception(

@@ -40,6 +40,10 @@ namespace Sen::Kernel {
 			const std::string_view& data
 		) noexcept : StringView{data.data(), data.size()} {}
 
+		constexpr StringView(
+			std::string_view&& data
+		) noexcept : StringView{data.data(), data.size()} {}
+
         explicit constexpr StringView(const BasicString& other) noexcept : Base{other.begin(), other.size()} {
 
         }

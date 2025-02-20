@@ -109,6 +109,41 @@ namespace Sen::Kernel::Javascript {
                 return static_cast<bool>(Subprojects::quickjs::JS_IsArrayBuffer(thiz.m_value));
             }
 
+            inline auto get_type (
+            ) const -> ValueType {
+                switch (Subprojects::quickjs::$JS_VALUE_GET_TAG(thiz.m_value)) {
+                    case Subprojects::quickjs::$JS_TAG_OBJECT: {
+                        auto name = NativeString{};
+                        auto name_property = thiz.get_property("constructor"_sv).get_property("name"_sv);
+                        name_property.template get<NativeString>(name);
+                        switch (hash_string(name.view())) {
+                            case hash_string("Object"_sv):
+                                return ValueType::object;
+                            case hash_string("Array"_sv):
+                                return ValueType::array;
+                            default:
+                                return ValueType::unknown;
+                        }
+                    }
+                    case Subprojects::quickjs::$JS_TAG_BIG_INT:
+                        return ValueType::bigint;
+                    case Subprojects::quickjs::$JS_TAG_BOOL:
+                        return ValueType::boolean;
+                    case Subprojects::quickjs::$JS_TAG_UNDEFINED:
+                        return ValueType::undefined;
+                    case Subprojects::quickjs::$JS_TAG_STRING:
+                        return ValueType::string;
+                    case Subprojects::quickjs::$JS_TAG_NULL:
+                        return ValueType::null;
+                    case Subprojects::quickjs::$JS_TAG_INT:
+                        [[fallthrough]];
+                    case Subprojects::quickjs::$JS_TAG_FLOAT64:
+                        return ValueType::number;
+                    default:
+                        return ValueType::unknown;
+                }
+            }
+
             inline auto is_null(
 
             ) const -> bool
@@ -179,9 +214,9 @@ namespace Sen::Kernel::Javascript {
                 if (!thiz.is_object()) {
                     return false;
                 }
-                auto name = String{};
+                auto name = NativeString{};
                 auto name_property = thiz.get_property("constructor"_sv).get_property("name"_sv);
-                name_property.template get<String>(name);
+                name_property.template get<NativeString>(name);
                 return static_cast<bool>(name == "Object"_sv);
             }
 
@@ -503,6 +538,89 @@ namespace Sen::Kernel::Javascript {
                 auto arguments = Array<Subprojects::quickjs::JSValue>{args.begin(), args.end()};
                 const auto result = Subprojects::quickjs::JS_Call(thiz.m_context, thiz.m_value, JS_UNDEFINED, static_cast<int>(arguments.size()), arguments.data());
                 return new_owner(thiz.m_context, result);
+            }
+
+        protected:
+
+            static auto deep_copy (
+                Value& source,
+                Value& destination
+            ) -> void {
+                switch (source.get_type()) {
+                    case ValueType::array: {
+                        destination.set_array();
+                        auto length = u32{};
+                        Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+                        for (const auto index : Range{length}) {
+                            auto current = source.get_property(index);
+                            auto value = Value::new_value(destination._context());
+                            deep_copy(current, value);
+                            destination.set_property(index, value.release());
+                        }
+                        break;
+                    }
+                    case ValueType::object: {
+                        destination.set_object();
+                        auto property_count = u32{};
+                        auto property_enum = std::add_pointer_t<Subprojects::quickjs::JSPropertyEnum>{nullptr};
+                        Subprojects::quickjs::JS_GetOwnPropertyNames(source._context(), &property_enum, &property_count, source.value(), Subprojects::quickjs::$JS_GPN_STRING_MASK);
+                        for (const auto index : Range{property_count}) {
+                            const auto key = Subprojects::quickjs::JS_AtomToCString(source._context(), property_enum[index].atom);
+                            if (auto element = source.get_property(StringHelper::make_string_view(key)); !element.is_undefined()) {
+                                auto value = destination.new_value();
+                                deep_copy(element, value);
+                                destination.set_property(StringHelper::make_string_view(key), value.release());
+                            }
+                            Subprojects::quickjs::JS_FreeCString(source._context(), key);
+                        }
+                        Subprojects::quickjs::JS_FreePropertyEnum(source._context(), property_enum, property_count);
+                        break;
+                    }
+                    case ValueType::bigint: {
+                        auto value = i64{};
+                        source.template get<i64>(value);
+                        destination.template set<i64>(value);
+                        break;
+                    }
+                    case ValueType::boolean: {
+                        auto value = bool{};
+                        source.template get<bool>(value);
+                        destination.template set<bool>(value);
+                        break;
+                    }
+                    case ValueType::number: {
+                        auto value = f64{};
+                        source.template get<f64>(value);
+                        destination.template set<f64>(value);
+                        break;
+                    }
+                    case ValueType::null: {
+                        destination.set_null();
+                        break;
+                    }
+                    case ValueType::string: {
+                        auto value = String{};
+                        source.template get<String>(value);
+                        destination.template set<String>(value);
+                        break;
+                    }
+                    case ValueType::undefined: {
+                        destination.set_undefined();
+                        break;
+                    }
+                    default: {
+                        assert_conditional(false, "Unsupported JSON value", "from_value");
+                    }
+                }
+            }
+
+        public:
+
+            inline auto deep_copy (
+            )  -> Value {
+                auto value = thiz.new_value();
+                deep_copy(thiz, value);
+                return value;
             }
 
     };

@@ -50,4 +50,27 @@ namespace Sen::Kernel::Javascript {
 
     }
 
+    enum class ValueType : u8 {
+
+        undefined,
+
+        null,
+
+        boolean,
+
+        number,
+
+        bigint,
+
+        string,
+
+        object,
+
+        array,
+
+        unknown,
+
+    };
+
+
 }

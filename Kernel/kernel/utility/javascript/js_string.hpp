@@ -107,6 +107,10 @@ namespace Sen::Kernel::Javascript {
                 return std::string_view{ thiz.value, thiz._size };
             }
 
+            constexpr auto operator==(const std::string_view& other) const noexcept -> bool {
+                return this->size() == other.size() && std::memcmp(thiz.begin(), other.data(), this->size()) == 0;
+            }
+
     };
 
 }

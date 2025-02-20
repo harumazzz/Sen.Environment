@@ -205,6 +205,30 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	inline static const auto $JS_EXCEPTION = JS_EXCEPTION;
 
+	inline static auto constexpr $JS_TAG_INT = int64_t{JS_TAG_INT};
+
+	inline static auto constexpr $JS_TAG_BOOL = int64_t{JS_TAG_BOOL};
+
+	inline static auto constexpr $JS_TAG_NULL = int64_t{JS_TAG_NULL};
+
+	inline static auto constexpr $JS_TAG_UNDEFINED = int64_t{JS_TAG_UNDEFINED};
+
+	inline static auto constexpr $JS_TAG_UNINITIALIZED = int64_t{JS_TAG_UNINITIALIZED};
+
+	inline static auto constexpr $JS_TAG_FLOAT64 = int64_t{JS_TAG_FLOAT64};
+
+	inline static auto constexpr $JS_TAG_BIG_INT = int64_t{JS_TAG_BIG_INT};
+
+	inline static auto constexpr $JS_TAG_STRING = int64_t{JS_TAG_STRING};
+
+	inline static auto constexpr $JS_TAG_OBJECT = int64_t{JS_TAG_OBJECT};
+
+	inline static auto $JS_VALUE_GET_TAG (
+		const JSValue value
+	) -> int {
+		return JS_VALUE_GET_TAG(value);
+	}
+
 	inline auto JS_VALUE_GET_POINTER (
 		JSValue value
 	) -> void* {

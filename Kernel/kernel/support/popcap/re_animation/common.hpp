@@ -125,8 +125,8 @@ struct Sen::Kernel::Javascript::Trait<Sen::Kernel::Support::PopCap::ReAnimation:
         VersionPlatform& destination
     ) -> void {
         assert_conditional(source.is_string(), "Expected the value to be number, but the actual type is not", "from_value");
-        auto value = String{};
-        Trait<String>::from_value(source, value);
+        auto value = NativeString{};
+        Trait<NativeString>::from_value(source, value);
         switch (hash_string(value.view())) {
             case k_desktop_hash:
                 destination = VersionPlatform::desktop;

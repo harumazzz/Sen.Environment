@@ -261,4 +261,19 @@ namespace Sen::Kernel::Interface::API {
 
     }
 
+    namespace Miscellaneous {
+
+        inline auto deep_copy (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            // TODO : Add loc
+            assert_conditional(arguments.size() == 1, "Expected one argument", "deep_copy");
+            result.set_value(arguments[0].deep_copy().release());
+        }
+
+    }
+
 }
