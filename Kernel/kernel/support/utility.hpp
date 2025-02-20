@@ -65,6 +65,7 @@
 #include "kernel/support/popcap/re_animation/convert/from_flash.hpp"
 #include "kernel/support/popcap/re_animation/convert/to_flash.hpp"
 #include "kernel/support/popcap/re_animation/convert/instance.hpp"
+#include "kernel/support/popcap/text_table/convert.hpp"
 #include "kernel/support/wwise/sound_bank/encode.hpp"
 #include "kernel/support/wwise/sound_bank/decode.hpp"
 #include "kernel/support/wwise/sound_bank/common.hpp"

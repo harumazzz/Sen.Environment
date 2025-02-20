@@ -294,6 +294,8 @@ add_library(
         utility/container/array_view/byte_view.hpp
         support/popcap/new_type_object_notation/common.hpp
         utility/container/string_view/string_view.hpp
+        support/popcap/text_table/common.hpp
+        support/popcap/text_table/convert.hpp
 
 )
 

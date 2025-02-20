@@ -108,7 +108,7 @@ namespace Sen::Kernel::FileSystem {
             { t.begin() } -> std::convertible_to<extract_container_t<T>*>;
         }
         auto write (
-            T& data
+            const T& data
         ) -> void {
             auto count = std::fwrite(data.begin(), sizeof(extract_container_t<T>) * data.size(), 1, thiz.value);
             assert_conditional(count == 1, fmt::format("{}", "Missing bytes when writing the file"), "write");
@@ -118,7 +118,7 @@ namespace Sen::Kernel::FileSystem {
             const uint8_t* data,
             const usize& size
         ) const -> void {
-            auto count = std::fwrite(data, size, 1, thiz.value);
+            const auto count = std::fwrite(data, size, 1, thiz.value);
             assert_conditional(count == 1, fmt::format("{}", "Missing bytes when writing the file"), "write");
         }
 
@@ -126,10 +126,11 @@ namespace Sen::Kernel::FileSystem {
         auto write (
             Args&&... args
         ) -> void {
-            auto buffer = Uint8Array{total_sizeof<Args>()...};
+            auto buffer = Uint8Array{};
+            buffer.allocate(total_sizeof<Args...>());
             {
                 auto offset = 0_size;
-                (forward_bytes (std::forward<Args>(args), buffer, offset), ...);
+                (forward_bytes(std::forward<Args>(args), buffer, offset), ...);
             }
             thiz.write(buffer);
         }

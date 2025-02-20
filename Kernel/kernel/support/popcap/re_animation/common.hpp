@@ -145,5 +145,4 @@ struct Sen::Kernel::Javascript::Trait<Sen::Kernel::Support::PopCap::ReAnimation:
         }
     }
 
-
 };

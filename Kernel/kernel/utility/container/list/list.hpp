@@ -208,24 +208,21 @@ namespace Sen::Kernel {
 		    	BaseContainer<T>::clear();
 			}
 
-    		constexpr auto reallocate (
+    		constexpr auto reallocate(
 				const Size& size
 			) -> void {
-				if (thiz._capacity < size) {
-					auto new_value = new T[size];
-					if constexpr (is_numeric_v<T>) {
-						std::memcpy(new_value, thiz.value, thiz._size * sizeof(T));
-					}
-					else {
-						std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
-					}
-					if (thiz.value != nullptr) {
-						delete[] thiz.value;
-					}
-					thiz.value = new_value;
-					thiz._capacity = size;
-				}
-			}
+    			if (thiz._capacity < size) {
+    				auto new_value = new T[size];
+    				if constexpr (std::is_trivially_copyable_v<T>) {
+    					std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
+    				} else {
+    					std::uninitialized_move(thiz.value, thiz.value + thiz._size, new_value);
+    				}
+    				delete[] thiz.value;
+    				thiz.value = new_value;
+    				thiz._capacity = size;
+    			}
+    		}
 
     		template <typename U>
     		constexpr auto append (
@@ -234,7 +231,7 @@ namespace Sen::Kernel {
 				if (thiz._size + 1 > thiz._capacity) {
 					thiz.reallocate(thiz._capacity * 4);
 				}
-				thiz.value[thiz._size] = std::forward<T>(value);
+    			new (&thiz.value[thiz._size]) T(std::forward<U>(value));
 				++thiz._size;
 			}
 
@@ -337,6 +334,15 @@ namespace Sen::Kernel {
     			return result;
     		}
 	};
+
+    template <typename T, typename... Args>
+	inline auto make_list (
+		Args&& args
+    ) -> List<T> {
+    	auto result = List<T>{sizeof...(args)};
+		result.append(std::forward<Args>(args)...);
+		return result;
+    }
 
 }
 

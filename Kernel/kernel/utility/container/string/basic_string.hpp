@@ -87,11 +87,19 @@ namespace Sen::Kernel {
 			Size const& size
 		) -> void
 		{
+			thiz.allocate_full(size);
+			thiz._size = size;
+		}
+
+    	constexpr auto allocate_full (
+			Size const& size
+		) -> void
+		{
 			delete[] thiz.value;
 			thiz._capacity = size + 1;
 			thiz.value = new Character[thiz._capacity];
 			std::memset(thiz.value, 0, thiz._capacity);
-			thiz._size = size;
+			thiz._size = 0;
 		}
 
     	auto reallocate(
@@ -685,9 +693,9 @@ namespace Sen::Kernel {
 			const Size& to
 		) const -> String {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
-			assert_conditional(from <= to, "From index must be smaller than to index", "substring");
+			assert_conditional(from <= to, fmt::format("From index must be smaller than to index, from: {}, to: {}", from, to), "substring");
 			auto result = String{to - from};
-			std::memcpy(result.value, thiz.value, to - from);
+			std::memcpy(result.value, thiz.value + from, to - from);
 			return result;
 		}
 
@@ -702,9 +710,9 @@ namespace Sen::Kernel {
 			const Size& to
 		) -> void {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
-			assert_conditional(from <= to, "From index must be smaller than to index", "substring");
+			assert_conditional(from <= to, fmt::format("From index must be smaller than to index, from: {}, to: {}", from, to), "substring");
 			const auto result = new Character[to - from];
-			std::memcpy(result, thiz.value, to - from);
+			std::memcpy(result, thiz.value + from, to - from);
 			delete[] thiz.value;
 			thiz.value = result;
 			thiz._size = to - from;

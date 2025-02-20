@@ -193,7 +193,12 @@ namespace Sen::Kernel::Interface::Runtime {
         {
             auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
             s_ReAnimation.add_function_by_proxy<&Support::PopCap::ReAnimation::Decode::process_fs>("decode_fs"_s)
-            .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s);
+            .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s)
+            .add_function_by_proxy<&Support::PopCap::ReAnimation::ToXML::process_fs>("to_xml"_s);
+        }
+        {
+            auto s_TextTable = s_PopCap.add_space("TextTable"_s);
+            s_TextTable.add_function_by_proxy<&Support::PopCap::TextTable::Convert::process_fs>("convert_fs"_s);
         }
         {
             auto s_Miscellaneous = s_Kernel.add_space("Miscellaneous"_s);

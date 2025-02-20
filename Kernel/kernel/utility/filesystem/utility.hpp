@@ -94,23 +94,28 @@ namespace Sen::Kernel::FileSystem {
             const T& value
         ) -> void {
             auto os = std::string{};
-            if constexpr (pretty) {
-                if constexpr (order_key) {
-                    jsoncons::encode_json_pretty<jsoncons::ojson>(value, os);
-                }
-                else {
+            if constexpr (jsoncons::extension_traits::is_basic_json<T>::value) {
+                if constexpr (pretty) {
                     jsoncons::encode_json_pretty(value, os);
-                }
-            }
-            else {
-                if constexpr (order_key) {
-                    jsoncons::encode_json<jsoncons::ojson>(value, os);
-                }
-                else {
+                } else {
                     jsoncons::encode_json(value, os);
                 }
+            } else {
+                if constexpr (pretty) {
+                    if constexpr (order_key) {
+                        jsoncons::encode_json_pretty<jsoncons::ojson>(value, os);
+                    } else {
+                        jsoncons::encode_json_pretty(value, os);
+                    }
+                } else {
+                    if constexpr (order_key) {
+                        jsoncons::encode_json<jsoncons::ojson>(value, os);
+                    } else {
+                        jsoncons::encode_json(value, os);
+                    }
+                }
             }
-            auto buffer = CharacterArrayView{os.data(), os.size()};
+            const auto buffer = CharacterArrayView{os.data(), os.size()};
             write_file(source, buffer);
         }
 
@@ -290,10 +295,24 @@ namespace Sen::Kernel::FileSystem {
         return String{value.data(), value.size()};
     }
 
+    inline auto read_utf8_bom (
+        const StringView& source
+    ) -> String {
+        auto file = open_read(source);
+        const auto file_size = file.size();
+        auto buffer = CharacterArray{file_size};
+        file.read(buffer);
+        auto offset = 0_size;
+        if (file_size >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[1] == 0xBF) {
+            offset = 3;
+        }
+        return String{buffer.data() + offset, buffer.size() - offset};
+    }
+
     template <auto is_utf16, auto write_bom> requires std::is_same_v<type_of<write_bom>, bool> && std::is_same_v<type_of<is_utf16>, bool>
     inline auto write_file_s (
         const StringView& source,
-        String& data
+        const String& data
     ) -> void {
         auto file = open_write(source);
         if constexpr (is_utf16) {

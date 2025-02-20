@@ -113,7 +113,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_track(List<Track> &value_list, XMLNode const &node) -> void
         {
            // const auto track_child = exchange_child_node(node, "track"_sv);

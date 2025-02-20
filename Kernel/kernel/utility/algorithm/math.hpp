@@ -171,4 +171,5 @@ namespace Sen::Kernel::Math {
 		}
 		return arr;
 	}
+
 }

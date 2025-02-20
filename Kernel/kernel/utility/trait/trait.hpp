@@ -347,4 +347,7 @@ namespace Sen::Kernel {
 	template <typename Tuple, template <typename> class Transformer>
 	using ConvertTuple = typename TupleConverter<Tuple, Transformer>::type;
 
+	template <typename... Args>
+	using Tuple = std::tuple<Args...>;
+
 }

@@ -133,7 +133,7 @@ namespace Sen::Kernel {
         auto write_impl(
             const Args &... args
         ) -> void {
-            auto temporary = Uint8Array{total_sizeof<Args>()...}; {
+            auto temporary = Uint8Array{total_sizeof<Args...>()}; {
                 auto offset = 0_size;
                 (forward_bytes(std::forward<Args>(args), temporary, offset), ...);
             }

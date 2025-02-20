@@ -26,6 +26,8 @@ namespace Sen::Kernel::Subprojects::jsoncons {
 
     using ::jsoncons::json;
 
+    using ::jsoncons::ojson;
+
     using ::jsoncons::json_type;
 
 }

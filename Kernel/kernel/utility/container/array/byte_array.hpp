@@ -63,7 +63,7 @@ namespace Sen::Kernel {
 		Uint8Array& buffer,
 		size_t& offset
 	) -> void {
-		std::memcpy(buffer.data() + offset, &arg, sizeof(T));
+		std::memcpy(buffer.begin() + offset, &arg, sizeof(T));
 		offset += sizeof(T);
 	}
 

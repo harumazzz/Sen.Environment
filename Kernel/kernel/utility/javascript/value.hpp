@@ -102,6 +102,12 @@ namespace Sen::Kernel::Javascript {
                 return static_cast<bool>(Subprojects::quickjs::JS_IsUndefined(thiz.m_value));
             }
 
+            inline auto is_equals (
+                const Value& other
+            ) const -> bool {
+                return static_cast<bool>(Subprojects::quickjs::JS_IsStrictEqual(thiz.m_context, thiz.m_value, other.m_value));
+            }
+
             inline auto is_array_buffer(
 
             ) const -> bool
@@ -279,6 +285,13 @@ namespace Sen::Kernel::Javascript {
             template <typename T>
             inline auto set (
                 T& value
+            ) -> void {
+                return Trait<T>::to_value(value, thiz);
+            }
+
+            template <typename T>
+            inline auto set (
+                const T& value
             ) -> void {
                 return Trait<T>::to_value(value, thiz);
             }

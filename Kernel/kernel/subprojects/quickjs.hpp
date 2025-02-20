@@ -227,6 +227,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	inline static auto constexpr $JS_TAG_OBJECT = int64_t{JS_TAG_OBJECT};
 
+	using ::JS_IsStrictEqual;
+
 	inline auto constexpr $JS_VALUE_GET_TAG (
 		const JSValue value
 	) -> int {

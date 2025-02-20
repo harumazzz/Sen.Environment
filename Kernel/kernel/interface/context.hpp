@@ -56,28 +56,31 @@ namespace Sen::Kernel::Interface {
         auto make_argument (
             List<String>&& arguments
         ) -> List<Javascript::Value> {
-            auto data = Javascript::Value::new_value(thiz.context().context());
-            data.set_object();
-            auto set_home = [&]() -> void {
-                auto home = data.new_value();
-                home.template set<std::string_view>(arguments[2].view());
-                data.define_property("home"_s, home.release());
+            auto make_data = [&]() -> Javascript::Value {
+                auto data = Javascript::Value::new_value(thiz.context().context());
+                data.set_object();
+                auto set_home = [&]() -> void {
+                    auto home = data.new_value();
+                    home.template set<std::string_view>(arguments[2].view());
+                    data.define_property("home"_s, home.release());
+                };
+                auto set_argument = [&]() -> void {
+                    auto argument = data.new_value();
+                    argument.template set<List<String>>(as_move(arguments));
+                    data.define_property("arguments"_s, argument.release());
+                };
+                auto set_error = [&]() -> void {
+                    auto error = data.new_value();
+                    error.set_undefined();
+                    data.define_property("error"_s, error.release());
+                };
+                set_home();
+                set_argument();
+                set_error();
+                return data;
             };
-            auto set_argument = [&]() -> void {
-                auto argument = data.new_value();
-                argument.template set<List<String>>(as_move(arguments));
-                data.define_property("arguments"_s, argument.release());
-            };
-            auto set_error = [&]() -> void {
-                auto error = data.new_value();
-                error.set_undefined();
-                data.define_property("error"_s, error.release());
-            };
-            set_home();
-            set_argument();
-            set_error();
             auto result = List<Javascript::Value>{1_size};
-            result.append(data);
+            result.append(make_data());
             return result;
         }
 
