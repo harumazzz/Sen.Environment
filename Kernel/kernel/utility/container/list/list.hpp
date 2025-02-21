@@ -340,7 +340,7 @@ namespace Sen::Kernel {
 		Args&&... args
     ) -> List<T> {
     	auto result = List<T>{sizeof...(args)};
-		result.append(std::forward<Args>(args)...);
+		(result.append(std::forward<Args>(args)), ...);
 		return result;
     }
 
@@ -357,7 +357,7 @@ namespace jsoncons {
         }
 
         static auto as(const Json& ajson) -> class_type {
-            if (!is(ajson)) throw conv_error(conv_errc::conversion_failed, "Not a List");
+            if (!is(ajson)) throw conv_error(conv_errc::conversion_failed, "Not an Array");
 
             class_type class_instance;
             for (const auto& item : ajson.array_range()) {

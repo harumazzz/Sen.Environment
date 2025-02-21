@@ -27,7 +27,6 @@ namespace Sen::Kernel::Encoding::Image {
             png_set_read_fn(png_struct, &data, &read_png_data);
             auto png_info = png_create_info_struct(png_struct);
             png_read_info(png_struct, png_info);
-            debug("ok");
             image.allocate(png_info->width, png_info->height);
             switch (png_info->color_type) {
                 case Subprojects::libpng::$PNG_COLOR_TYPE_PALETTE : {
@@ -43,7 +42,7 @@ namespace Sen::Kernel::Encoding::Image {
                     [[fallthrough]];
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_GRAY_ALPHA : {
-                    if ((*png_info).bit_depth == 16) {
+                    if (png_info->bit_depth == 16) {
                         png_set_scale_16(png_struct);
                     }
                     png_set_gray_to_rgb(png_struct);
@@ -54,7 +53,7 @@ namespace Sen::Kernel::Encoding::Image {
                     [[fallthrough]];
                 }
                 case Subprojects::libpng::$PNG_COLOR_TYPE_RGB_ALPHA : {
-                    if ((*png_info).bit_depth == 16) {
+                    if (png_info->bit_depth == 16) {
                         png_set_scale_16(png_struct);
                     }
                     break;
@@ -106,6 +105,13 @@ namespace Sen::Kernel::Encoding::Image {
             auto source_view = Uint8Array{};
             FileSystem::read_file(source, source_view);
             return process(source_view, image);
+        }
+
+        static auto process_js (
+            const StringView& source,
+            Image* image
+        ) -> void {
+            return process_fs(source, *image);
         }
 
 

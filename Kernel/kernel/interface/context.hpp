@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/interface/api/service.hpp"
 #include "kernel/interface/shell.hpp"
 #include "kernel/utility/utility.hpp"
 
@@ -7,20 +8,25 @@ namespace Sen::Kernel::Interface {
 
     class Context {
 
+    private:
+
+        using Client = Interface::API::Client;
+
     protected:
 
         Javascript::Runtime m_runtime;
 
         Javascript::Context m_context;
 
+        Client m_client;
+
     public:
 
         explicit Context(
             const Pointer<Service>& service
         ) : m_runtime{Javascript::Runtime::new_instance()},
-            m_context{m_runtime.context()}
-        {
-            thiz.m_context.set_opaque<Service>(service);
+            m_context{m_runtime.context()}, m_client{service} {
+            thiz.m_context.set_opaque<Client>(&thiz.m_client);
         }
 
         auto runtime (

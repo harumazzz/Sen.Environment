@@ -297,6 +297,8 @@ add_library(
         support/popcap/text_table/common.hpp
         support/popcap/text_table/convert.hpp
         utility/container/map/linear_map.hpp
+        interface/api/service.hpp
+        utility/container/set/common.hpp
 
 )
 

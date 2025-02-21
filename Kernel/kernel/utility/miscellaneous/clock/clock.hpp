@@ -39,7 +39,7 @@ namespace Sen::Kernel {
 			) -> void
 			{
 				if (running_) {
-					auto end_time = std::chrono::steady_clock::now();
+					const auto end_time = std::chrono::steady_clock::now();
 					duration_ += std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time_).count();
 					running_ = false;
 				}
@@ -64,7 +64,7 @@ namespace Sen::Kernel {
 
 			) const -> double
 			{
-				return static_cast<double>(duration_ / 1000);
+				return static_cast<double>(duration_)  / 1000.0;
 			}
 
 			inline auto is_started(

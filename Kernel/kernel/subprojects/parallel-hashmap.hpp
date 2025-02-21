@@ -21,6 +21,9 @@ namespace Sen::Kernel::Subprojects::phmap {
 	template <typename Key, typename Value>
 	using flat_hash_map = ::phmap::flat_hash_map<Key, Value>;
 
+	template <typename Key>
+	using flat_hash_set = ::phmap::flat_hash_set<Key>;
+
 	template <typename Key, typename Value>
 	using node_hash_map = ::phmap::node_hash_map<Key, Value>;
 

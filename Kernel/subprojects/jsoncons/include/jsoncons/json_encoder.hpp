@@ -1052,7 +1052,8 @@ namespace detail {
             sink_.append(options_.new_line_chars().data(),options_.new_line_chars().length());
             for (int i = 0; i < indent_amount_; ++i)
             {
-                sink_.push_back(' ');
+                // Haruma : modify
+                sink_.push_back('\t');
             }
             column_ = indent_amount_;
         }
@@ -1062,7 +1063,8 @@ namespace detail {
             sink_.append(options_.new_line_chars().data(),options_.new_line_chars().length());
             for (std::size_t i = 0; i < len; ++i)
             {
-                sink_.push_back(' ');
+                // Haruma : modify
+                sink_.push_back('\t');
             }
             column_ = len;
         }

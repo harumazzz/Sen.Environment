@@ -26,10 +26,13 @@
 #include "kernel/utility/container/list_view/byte_view.hpp"
 #include "kernel/utility/container/array_view/array_view.hpp"
 #include "kernel/utility/container/array_view/byte_view.hpp"
+#include "kernel/utility/container/set/common.hpp"
 #include "kernel/utility/stream/read_file_stream.hpp"
 #include "kernel/utility/stream/write_file_stream.hpp"
 #include "kernel/utility/stream/read_memory_stream.hpp"
 #include "kernel/utility/stream/write_memory_stream.hpp"
+#include "kernel/utility/encoding/image/read.hpp"
+#include "kernel/utility/encoding/image/write.hpp"
 
 #include "kernel/utility/container/list/common.hpp"
 #include "kernel/utility/container/list/list.hpp"

@@ -286,6 +286,12 @@ namespace Sen::Kernel::Javascript {
 
         Value m_object;
 
+        explicit NamespaceBuilder(
+            const Value& other
+        ) : m_object{other.new_reference()} {
+
+        }
+
     public:
 
         explicit NamespaceBuilder(
@@ -293,7 +299,7 @@ namespace Sen::Kernel::Javascript {
             const Value& parent
         ) : m_object{} {
             thiz.m_object = parent.new_object();
-            parent.define_property(name, Value::new_ref(thiz.m_object._context(), thiz.m_object.value()));
+            parent.define_property(name, thiz.m_object.new_reference());
         }
 
         auto operator = (
@@ -356,7 +362,20 @@ namespace Sen::Kernel::Javascript {
             return thiz.template add_function<&Javascript::proxy_native_function_wrapper<function>>(name);
         }
 
+        static auto get (
+            const Value& value
+        ) -> NamespaceBuilder {
+            return NamespaceBuilder{value};
+        }
 
     };
+
+    inline auto get_namespace (
+        const Value& value,
+        const String& name
+    ) -> NamespaceBuilder {
+        assert_conditional(value.has_property(name), "Property does not exist", "get_namespace");
+        return NamespaceBuilder::get(value.get_property(name));
+    }
 
 }

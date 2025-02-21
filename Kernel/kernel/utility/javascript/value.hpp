@@ -206,6 +206,11 @@ namespace Sen::Kernel::Javascript {
                 return static_cast<bool>(Subprojects::quickjs::JS_IsString(thiz.m_value));
             }
 
+            inline auto new_reference (
+            ) const -> Value {
+                return Value{thiz.m_context, Subprojects::quickjs::JS_DupValue(thiz.m_context, thiz.m_value)};
+            }
+
             inline auto is_object(
 
             ) const -> bool

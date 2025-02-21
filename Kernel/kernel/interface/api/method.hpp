@@ -1,7 +1,9 @@
 #pragma once
 
+
 #include "kernel/interface/api/class.hpp"
 #include "kernel/interface/version.hpp"
+#include "kernel/utility/javascript/proxy.hpp"
 #include "kernel/utility/javascript/runtime.hpp"
 
 namespace Sen::Kernel::Interface::API {
@@ -137,7 +139,7 @@ namespace Sen::Kernel::Interface::API {
         ) -> void {
             // TODO : Add loc
             assert_conditional(arguments.size() >= 1, "Expected at least one argument", "callback");
-            const auto service = context.get_opaque<Service>();
+            const auto service = context.get_opaque<Client>()->service();
             auto message = std::unique_ptr<Message, decltype(&free_message)>{nullptr, &free_message};
             auto destination = std::unique_ptr<Message, decltype(&free_message)>{new Message{}, &free_message};
             auto source = List<String>{arguments.size()};
@@ -273,6 +275,84 @@ namespace Sen::Kernel::Interface::API {
             assert_conditional(arguments.size() == 1, "Expected one argument", "deep_copy");
             result.set_value(arguments[0].deep_copy().release());
         }
+
+    }
+
+    namespace Module {
+
+        namespace Detail {
+
+            inline auto get_object (
+                const Javascript::Value& value,
+                const String& name
+            ) -> Javascript::Value {
+                return value.get_property(name);
+            }
+
+            inline auto get_sen (
+                const Javascript::Context& context
+            ) -> Javascript::Value {
+                return get_object(context.global_object(), "Sen"_s);
+            }
+
+            inline auto get_kernel (
+                const Javascript::Context& context
+            ) -> Javascript::Value {
+                return get_object(get_sen(context), "Kernel"_s);
+            }
+
+            inline auto get_support (
+                const Javascript::Context& context
+            ) -> Javascript::Value {
+                return get_object(get_kernel(context), "Support"_s);
+            }
+
+            inline auto kernel_builder (
+                const Javascript::Context& context
+            ) -> Javascript::NamespaceBuilder {
+                return Javascript::get_namespace(get_sen(context), "Kernel"_s);
+            }
+
+            inline auto support_builder (
+                const Javascript::Context& context
+            ) -> Javascript::NamespaceBuilder {
+                return Javascript::get_namespace(get_kernel(context), "Support"_s);
+            }
+
+        }
+
+        inline auto add_support (
+            Javascript::Context& context,
+            Javascript::Value& value,
+            Array<Javascript::Value>& arguments,
+            Javascript::Value& result
+        ) -> void {
+            auto request = Javascript::NativeString{};
+            arguments[0].template get<Javascript::NativeString>(request);
+            if (context.get_opaque<Client>()->has(request)) {
+                return;
+            }
+            context.get_opaque<Client>()->add(StringHelper::make_string(request.view()));
+            switch (hash_string(request.view())) {
+                case hash_string("zlib"_sv): {
+                    break;
+                }
+                case hash_string("image"_sv): {
+                    auto builder = Detail::kernel_builder(context);
+                    auto image = builder.add_space("Image"_s);
+                    break;
+                }
+                case hash_string("zip"_sv): {
+                    break;
+                }
+                default: {
+                    break;
+                }
+
+            }
+        }
+
+
 
     }
 

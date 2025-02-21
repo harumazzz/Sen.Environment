@@ -22,6 +22,10 @@ namespace Sen::Kernel::Interface::Runtime {
             s_Shell.add_function<&API::Shell::callback>("callback"_s);
         }
         {
+            auto s_Module = s_Kernel.add_space("Module"_s);
+            s_Module.add_function<&API::Module::add_support>("add_support"_s);
+        }
+        {
             auto s_Language = s_Kernel.add_space("Language"_s);
             s_Language.add_function_by_proxy<&API::Language::read_language>("read_language"_s)
             .add_function_by_proxy<&API::Language::get>("get"_s);

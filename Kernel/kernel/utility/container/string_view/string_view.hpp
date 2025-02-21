@@ -57,7 +57,7 @@ namespace Sen::Kernel {
             return StringView{thiz.begin() + offset, new_size};
         }
 
-        constexpr auto operator==(const StringView& other) const noexcept -> bool {
+        constexpr auto operator ==(const StringView& other) const noexcept -> bool {
             return this->size() == other.size() && std::memcmp(this->begin(), other.begin(), this->size()) == 0;
         }
 
@@ -318,6 +318,15 @@ namespace Sen::Kernel {
 			return std::string_view{ thiz.value, thiz._size };
         }
 
+		constexpr auto operator ==(
+			const BasicString &other
+		) const -> bool {
+        	if (thiz._size != other.size()) {
+        		return false;
+        	}
+        	return std::memcmp(thiz.value, other.begin(), thiz._size) == 0;
+        }
+
     	[[nodiscard]] auto wstring(
 
 		) const -> std::wstring
@@ -371,6 +380,16 @@ namespace Sen::Kernel {
 	constexpr auto String::as_view() const -> StringView {
 		return StringView{ thiz.value, thiz._size };
 	}
+
+	inline auto String::operator==(
+		const StringView &other
+	) const -> bool {
+		if (thiz._size != other.size()) {
+			return false;
+		}
+		return std::memcmp(thiz.value, other.begin(), thiz._size) == 0;
+	}
+
 
 	inline auto constexpr make_string_view (
 		const std::string& value

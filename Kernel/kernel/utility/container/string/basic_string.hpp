@@ -125,7 +125,11 @@ namespace Sen::Kernel {
 			}
 		}
 
-    	BasicString(
+		auto operator==(
+			const StringView & other
+		) const -> bool;
+
+		BasicString(
 			const BasicString& other
 		) {
 			thiz.value = new Character[other._capacity];
