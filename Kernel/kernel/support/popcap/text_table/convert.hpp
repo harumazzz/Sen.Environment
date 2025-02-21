@@ -160,7 +160,7 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
         ) -> void {
             const auto from_index = type_index(from);
             const auto to_index = type_index(to);
-            process_table[from_index.operator*()][to_index.operator*()](source, destination);
+            return process_table[from_index.operator*()][to_index.operator*()](source, destination);
         }
 
 

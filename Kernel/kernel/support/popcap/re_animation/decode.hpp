@@ -11,7 +11,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct Decode : Common
     {
     private:
-        template <auto platform, is_class TransformClass>
+        template <auto platform, typename TransformClass> requires is_between_v<platform, desktop, television> && is_class<TransformClass>
         static auto exchange_transform_value(ReadMemoryStream &stream, TransformClass &value) -> void
         {
             exchange_number_fixed<float>(stream, value.x);
@@ -38,7 +38,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_transform_list(ReadMemoryStream &stream, List<Transform> &value_list) -> void
         {
             exchange_raw_constant(stream, static_cast<u32>(get_transform_data_size<platform>()));
@@ -99,7 +99,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_track_list(ReadMemoryStream &stream, List<Track> &value_list) -> void
         {
             exchange_raw_constant(stream, static_cast<u32>(get_track_data_size<platform>()));

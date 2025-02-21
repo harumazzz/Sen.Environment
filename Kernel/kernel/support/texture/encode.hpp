@@ -91,7 +91,7 @@ namespace Sen::Kernel::Support::Texture
 
 
         template <auto format>
-        static constexpr auto compute_padded_image_size(ImageDimension &dimension) -> void
+        static constexpr auto compute_padded_image_size(Rectangle &dimension) -> void
         {
             static_assert(sizeof(format) == sizeof(Format), "Invalid Format");
             if constexpr (format == Format::RGB_ETC1_A_8 || format == Format::RGB_ETC1_A_PALETTE)
@@ -111,7 +111,7 @@ namespace Sen::Kernel::Support::Texture
         }
 
         template <auto format>
-        static constexpr auto compute_data_size(ImageDimension &dimension) -> usize
+        static constexpr auto compute_data_size(Rectangle &dimension) -> usize
         {
             static_assert(sizeof(format) == sizeof(Format), "Invalid Format");
             compute_padded_image_size<format>(dimension);
@@ -128,8 +128,10 @@ namespace Sen::Kernel::Support::Texture
         {
             static_assert(sizeof(format) == sizeof(Format), "Invalid Format");
             auto position = k_begin_index;
-            auto image_dimension = image.dimension();
-            value.allocate(compute_data_size<format>(image_dimension));
+            {
+                auto rectangle = image.new_rectangle();
+                value.allocate(compute_data_size<format>(rectangle));
+            }
             for (const auto y : Range{image.height})
             {
                 for (const auto x : Range{image.width})
@@ -147,8 +149,10 @@ namespace Sen::Kernel::Support::Texture
         {
             static_assert(sizeof(format) == sizeof(Format), "Invalid Format");
             auto position = k_begin_index;
-            auto image_dimension = image.dimension();
-            value.allocate(compute_data_size<format>(image_dimension));
+            {
+                auto rectangle = image.new_rectangle();
+                value.allocate(compute_data_size<format>(rectangle));
+            }
             for (const auto y : Range{image.height})
             {
                 for (const auto x : Range{image.width})

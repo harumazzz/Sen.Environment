@@ -29,9 +29,9 @@ namespace Sen::Kernel::Support::Texture {
         //LA_88,
     };
 
-    using Encoding::Image::ImageDimension;
-
     using Image = Encoding::Image::BasicImage;
+
+    using Rectangle = Encoding::Image::BasicRectangle<u32>;
 
     using Color = Encoding::Image::BasicColor<u8>;
 

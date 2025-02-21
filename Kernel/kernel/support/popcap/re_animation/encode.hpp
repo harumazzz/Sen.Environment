@@ -9,7 +9,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct Encode : Common
     {
     private:
-        template <auto platform, is_class TransformClass>
+        template <auto platform, typename TransformClass> requires is_between_v<platform, desktop, television> && is_class<TransformClass>
         static auto exchange_transform_value(WriteMemoryStream &stream, TransformClass const &value) -> void
         {
             exchange_number_fixed<float>(stream, value.x);
@@ -28,7 +28,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_transform_list(WriteMemoryStream &stream, List<Transform> const &value_list) -> void
         {
             exchange_null_block(stream, get_transform_data_size<platform>());
@@ -79,7 +79,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, desktop, television>
         static auto exchange_track_list(WriteMemoryStream &stream, List<Track> const &value_list) -> void
         {
             exchange_null_block(stream, get_transform_data_size<platform>());

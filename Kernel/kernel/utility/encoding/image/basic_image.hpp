@@ -11,44 +11,6 @@ namespace Sen::Kernel::Encoding::Image
 
     using ImageView = CImage;
 
-    struct ImageDimension
-    {
-        u32 width;
-        u32 height;
-
-        constexpr explicit ImageDimension(
-
-        ) = default;
-
-        constexpr explicit ImageDimension(
-            u32 const& width,
-            u32 const& height
-        ) noexcept : width(width), height(height)
-        {
-        }
-
-        explicit ImageDimension(
-            const BasicImage& image
-        ) = delete;
-
-        ~ImageDimension(
-        ) = default;
-
-        constexpr auto area() const -> u32
-        {
-            return thiz.width * height;
-        }
-
-        friend auto operator <<(
-            std::ostream& os,
-            const ImageDimension& dimension
-        ) -> std::ostream&
-        {
-            os << "Width: " << dimension.width << ". Height: " << dimension.height << ".";
-            return os;
-        }
-    };
-
     struct BasicImage : Rectangle
     {
     protected:
@@ -181,11 +143,6 @@ namespace Sen::Kernel::Encoding::Image
             return thiz.m_color[index];
         }
 
-        constexpr auto dimension() const -> ImageDimension
-        {
-            return ImageDimension{thiz.width, thiz.height};
-        }
-
         constexpr auto data(
         ) -> Array<Array<Color>>&
         {
@@ -196,6 +153,12 @@ namespace Sen::Kernel::Encoding::Image
         ) const -> usize
         {
             return thiz.area() * 4;
+        }
+
+        constexpr auto new_rectangle (
+
+        ) -> Rectangle {
+            return Rectangle{thiz.width, thiz.height};
         }
     };
 }
