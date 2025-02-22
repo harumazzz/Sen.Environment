@@ -32,10 +32,94 @@
 		<!-- Favicon -->
 		<link rel="icon" type="image/png" href="favicon.png" />
 
-		<title>website</title>
+		<title>Sen: Installation page</title>
 		<link rel="manifest" href="manifest.json" />
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+				width: 100vw;
+				background-color: #fffafb;
+			}
+
+			#splash-screen {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				height: 100%;
+				transition: opacity 0.5s ease-out;
+			}
+
+			#splash-logo {
+				width: 20vw;
+				max-width: 100px;
+				height: auto;
+				margin-bottom: 15px;
+			}
+
+			#loading-spinner {
+				width: 8vw;
+				max-width: 40px;
+				height: 8vw;
+				max-height: 40px;
+				border-radius: 50%;
+				border: 4px solid transparent;
+				border-top: 4px solid #ff69b4;
+				border-right: 4px solid #ff1493;
+				border-bottom: 4px solid #db7093;
+				animation: spin 1s linear infinite;
+				box-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+			}
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+
+			#loading-text {
+				margin-top: 12px;
+				font-family: 'Arial', sans-serif;
+				font-size: 1rem;
+				font-weight: bold;
+				color: #0c0509;
+				animation: fadeBlink 1.5s infinite alternate;
+			}
+
+			@keyframes fadeBlink {
+				0% {
+					opacity: 1;
+				}
+				100% {
+					opacity: 0.6;
+				}
+			}
+		</style>
 	</head>
 	<body>
+		<div id="splash-screen">
+			<img id="splash-logo" src="icons/Icon-192.png" alt="Loading..." />
+			<div id="loading-spinner"></div>
+			<p id="loading-text">Haruma is cooking, please wait...</p>
+		</div>
+
 		<script src="flutter_bootstrap.js" async></script>
+		<script>
+			window.flutterWebRendererReady = function () {
+				let splash = document.getElementById('splash-screen');
+				if (splash !== undefined) {
+					splash.style.opacity = '0';
+					setTimeout(() => (splash.style.display = 'none'), 500);
+				}
+			};
+		</script>
 	</body>
 </html>
