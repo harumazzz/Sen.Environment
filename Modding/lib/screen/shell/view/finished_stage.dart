@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class FinishedStage extends StatelessWidget {
   final VoidCallback onConfirm;

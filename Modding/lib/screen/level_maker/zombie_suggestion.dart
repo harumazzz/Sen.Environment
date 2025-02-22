@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class ZombieSelection extends StatefulWidget {
   const ZombieSelection({

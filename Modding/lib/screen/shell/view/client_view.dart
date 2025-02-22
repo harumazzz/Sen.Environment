@@ -3,7 +3,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/screen/shell/model/running_state.dart';
 import 'package:sen/screen/shell/view/message_card.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class ClientView extends StatelessWidget {
   final RunningState state;

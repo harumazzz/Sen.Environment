@@ -7,7 +7,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/screen/miscellaneous/backup_setting.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:dio/dio.dart';
 

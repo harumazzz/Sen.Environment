@@ -5,7 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/image_page.dart';
 import 'package:sen/screen/animation_viewer/media_page.dart';
 import 'package:sen/screen/animation_viewer/sprite_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 
 class MediaScreen extends StatelessWidget {

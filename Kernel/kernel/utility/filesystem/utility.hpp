@@ -148,7 +148,6 @@ namespace Sen::Kernel::FileSystem {
     ) -> bool {
         return get_path_type(path) == PathType::Directory;
     }
-
     inline auto is_file (
         const StringView& path
     ) -> bool {
@@ -170,6 +169,13 @@ namespace Sen::Kernel::FileSystem {
         std::filesystem::create_directory(target.view());
         #endif
     }
+
+    inline auto make_directory(const StringView& target) -> void {
+        if (!is_directory(target)) {
+            create_directory(target);
+        }
+    }
+
 
     inline auto count_file (
         const StringView& source

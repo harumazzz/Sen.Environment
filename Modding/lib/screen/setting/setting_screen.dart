@@ -12,7 +12,7 @@ import 'package:sen/screen/setting/theme_option.dart';
 import 'package:sen/screen/setting/translator_page.dart';
 import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/file_helper.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/widget/hyperlink.dart';
 
 class SettingScreen extends StatefulWidget {

@@ -16,7 +16,7 @@ import 'package:sen/screen/level_maker/level_maker.dart';
 import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/widget/animated_floating.dart';
 
 part 'grid_card.dart';

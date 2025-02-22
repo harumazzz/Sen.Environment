@@ -7,7 +7,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/windows_helper.dart';
 
 @immutable

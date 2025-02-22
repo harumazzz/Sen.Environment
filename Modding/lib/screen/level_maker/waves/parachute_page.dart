@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/zombie_suggestion.dart';
 
@@ -123,10 +123,7 @@ class _ParachutePageState extends State<ParachutePage> {
           children: [
             Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20.0),
             ...children,
@@ -190,27 +187,20 @@ class _ParachutePageState extends State<ParachutePage> {
                     _buildFormField(
                       labelText: '${los.delay_between_groups}:',
                       controller: _timeBetweenGroupController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     ),
                     _buildFormField(
                       labelText: '${los.fall_time}:',
                       controller: _fallTimeController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-                      ],
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                     ),
                     _buildFormField(
                       labelText: '${los.group_size}:',
                       controller: _groupSizeController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-                      ],
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                     ),
                     TextField(
                       controller: _messageController,

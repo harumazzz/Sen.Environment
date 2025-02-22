@@ -4,7 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class MapEditorConfiguration extends StatefulWidget {
   const MapEditorConfiguration({
@@ -73,10 +73,7 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
             const SizedBox(height: 12.0),
             Text(
               los.settings,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12.0),
             Row(

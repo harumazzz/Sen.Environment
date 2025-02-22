@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/model/wave.dart';
 
 // TODO : Find the grid items, do the level lawn
@@ -44,8 +44,7 @@ class _NecromancyPageState extends State<NecromancyPage> {
     _additionalPlantFoodController = TextEditingController(
       text: widget.wave.additionalPlantFood.toString(),
     );
-    _suppressActionIfNoGridItemsFound =
-        widget.wave.suppressActionIfNoGridItemsFound;
+    _suppressActionIfNoGridItemsFound = widget.wave.suppressActionIfNoGridItemsFound;
     _zombies = [...widget.wave.zombies];
     _gridTypes = [...widget.wave.gridTypes];
   }
@@ -164,10 +163,7 @@ class _NecromancyPageState extends State<NecromancyPage> {
                     children: [
                       Text(
                         los.entry,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16.0),
                       _buildValidateFormBody(los),

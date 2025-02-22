@@ -60,51 +60,51 @@ class ShortCutMenuWidget extends StatelessWidget {
                     keyMapList: const ['Del'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Move Up', //TODO: add locale
+                    shortcutName: los.move_up,
                     keyMapList: const ['W'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Move Left', //TODO: add locale
+                    shortcutName: los.move_left,
                     keyMapList: const ['A'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Move Down', //TODO: add locale
+                    shortcutName: los.move_down,
                     keyMapList: const ['S'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Move Right', //TODO: add locale
+                    shortcutName: los.move_right,
                     keyMapList: const ['D'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Rotate Counter Clockwise', //TODO: add locale
+                    shortcutName: los.rotate_counter_clockwise,
                     keyMapList: const ['Z'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Rotate Clockwise', //TODO: add locale
+                    shortcutName: los.rotate_clockwise,
                     keyMapList: const ['X'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Decrease Scale X', //TODO: add locale
+                    shortcutName: los.decrease_scale_x,
                     keyMapList: const ['J'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Increase Scale X', //TODO: add locale
+                    shortcutName: los.increase_scale_x,
                     keyMapList: const ['K'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Decrease Scale Y', //TODO: add locale
+                    shortcutName: los.decrease_scale_y,
                     keyMapList: const ['N'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Increase Scale Y', //TODO: add locale
+                    shortcutName: los.increase_scale_y,
                     keyMapList: const ['M'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Flip', //TODO: add locale
+                    shortcutName: los.flip,
                     keyMapList: const ['F'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Cut', //TODO: add locale
+                    shortcutName: los.cut,
                     keyMapList: const ['Ctrl', 'X'],
                   ),
                   ShortcutTile(
@@ -124,19 +124,19 @@ class ShortCutMenuWidget extends StatelessWidget {
                     keyMapList: const ['Ctrl', 'Y'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Section Select', //TODO: add locale
+                    shortcutName: los.section_select,
                     keyMapList: const ['Ctrl', '1'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Section Island image', //TODO: add locale
+                    shortcutName: los.section_island_image,
                     keyMapList: const ['Ctrl', '2'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Section Island animation', //TODO: add locale
+                    shortcutName: los.section_island_animation,
                     keyMapList: const ['Ctrl', '3'],
                   ),
                   ShortcutTile(
-                    shortcutName: 'Section Event', //TODO: add locale
+                    shortcutName: los.section_event,
                     keyMapList: const ['Ctrl', '4'],
                   ),
                   ShortcutTile(
@@ -166,8 +166,7 @@ class ShortCutMenuWidget extends StatelessWidget {
 }
 
 class ShortcutTile extends StatelessWidget {
-  const ShortcutTile(
-      {super.key, required this.shortcutName, required this.keyMapList});
+  const ShortcutTile({super.key, required this.shortcutName, required this.keyMapList});
 
   final String shortcutName;
 
@@ -182,9 +181,7 @@ class ShortcutTile extends StatelessWidget {
             children: [
               Text(
                 shortcutName,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               const Spacer(),
               ...keyMapList.map((e) => KeyCap(
@@ -212,9 +209,7 @@ class KeyCap extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
         child: Text(
           keyName,
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ),
     );

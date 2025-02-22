@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sen/model/wave.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class RaidingPartyPage extends StatefulWidget {
   const RaidingPartyPage({
@@ -92,10 +92,7 @@ class _RaidingPartyPageState extends State<RaidingPartyPage> {
           children: [
             Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20.0),
             ...children,
@@ -150,11 +147,8 @@ class _RaidingPartyPageState extends State<RaidingPartyPage> {
                     _buildFormField(
                       label: los.delay_between_groups,
                       controller: _delayBetweenGroupController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-                      ],
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                     ),
                   ],
                 ),

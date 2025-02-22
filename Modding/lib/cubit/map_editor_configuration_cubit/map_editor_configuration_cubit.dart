@@ -20,7 +20,7 @@ import 'package:sen/screen/map_editor/models/editor_resource.dart';
 import 'package:sen/screen/map_editor/models/event_node.dart';
 import 'package:sen/screen/map_editor/models/game_resource.dart';
 import 'package:sen/service/file_helper.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 part 'map_editor_configuration_state.dart';
 
@@ -32,8 +32,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   void _setState(MapEditorConfigurationState state) => emit(state);
 
   void _throwErrorState(String ex) {
-    emit(MapEditorConfigurationState(
-        status: AppConfigurationStatus.failed, errorSnapShot: ex));
+    emit(MapEditorConfigurationState(status: AppConfigurationStatus.failed, errorSnapShot: ex));
   }
 
   ConfigModel _loadConfig(AppLocalizations los, String path) {
@@ -48,57 +47,45 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     AppLocalizations los,
     String path,
   ) async {
-    final eraseCursor = _isAvailable
-        ? await CustomMouseCursor.icon(Symbols.ink_eraser,
-            size: 28, color: Colors.white)
-        : null;
-    final panCursor = _isAvailable
-        ? await CustomMouseCursor.icon(Symbols.pan_tool,
-            size: 28, color: Colors.white)
-        : null;
-    final multiSelectCursor = _isAvailable
-        ? await CustomMouseCursor.icon(Symbols.pan_tool_alt,
-            size: 28, color: Colors.white)
-        : null;
+    final eraseCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white) : null;
+    final panCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white) : null;
+    final multiSelectCursor =
+        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white) : null;
     final pickItemSound = AudioPlayer();
     try {
-      pickItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
+      pickItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final removeItemSound = AudioPlayer();
     try {
-      removeItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
+      removeItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final setItemSound = AudioPlayer();
     try {
-      setItemSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
+      setItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final mapLoadedSound = AudioPlayer();
     try {
-      mapLoadedSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
+      mapLoadedSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final clearMapSound = AudioPlayer();
     try {
-      clearMapSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
+      clearMapSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
     final switchResourceSound = AudioPlayer();
     try {
-      switchResourceSound.setSourceBytes(
-          FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
+      switchResourceSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
     }
     // ignore: empty_catches
     catch (ex) {}
@@ -127,8 +114,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       final listener = ImageStreamListener((info, _) {
         completer.complete(info.image);
       });
-      final stream = MemoryImage(data).resolve(const ImageConfiguration())
-        ..addListener(listener);
+      final stream = MemoryImage(data).resolve(const ImageConfiguration())..addListener(listener);
       final image = await completer.future;
       stream.removeListener(listener);
       return image;
@@ -137,32 +123,26 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     }
   }
 
-  Future<VisualAnimation?> loadVisualAnimation(String path,
-      {FilterQuality? filterQuality}) async {
+  Future<VisualAnimation?> loadVisualAnimation(String path, {FilterQuality? filterQuality}) async {
     try {
       final animationPath = '$path/animation.pam.json';
       final mediaPath = '$path/media';
-      final visual = await VisualAnimation.create(animationPath, mediaPath,
-          filterQuality: filterQuality);
+      final visual = await VisualAnimation.create(animationPath, mediaPath, filterQuality: filterQuality);
       return visual;
     } catch (ex) {
       return null;
     }
   }
 
-  Future<VisualAnimation?> loadPlantVisualAnimation(
-      String path, String plantType, bool enableCostume,
+  Future<VisualAnimation?> loadPlantVisualAnimation(String path, String plantType, bool enableCostume,
       {FilterQuality? filterQuality}) async {
     try {
       final animationPath = '$path/animation.pam.json';
       final mediaPath = '$path/media';
-      final animation =
-          SexyAnimation.fromJson(FileHelper.readJson(source: animationPath));
-      final spriteDisable = getCostumeSpriteDisable(
-          plantType.toLowerCase(), animation.sprite.map((e) => e.name),
+      final animation = SexyAnimation.fromJson(FileHelper.readJson(source: animationPath));
+      final spriteDisable = getCostumeSpriteDisable(plantType.toLowerCase(), animation.sprite.map((e) => e.name),
           enableCostume: enableCostume);
-      final visual = await VisualAnimation.createByAnimation(
-          animation, mediaPath,
+      final visual = await VisualAnimation.createByAnimation(animation, mediaPath,
           filterQuality: filterQuality, spriteDisable: spriteDisable);
       return visual;
     } catch (ex) {
@@ -170,13 +150,11 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     }
   }
 
-  Future<GameResource> _loadGameResource(
-      AppLocalizations los, String path, ConfigModel config) async {
+  Future<GameResource> _loadGameResource(AppLocalizations los, String path, ConfigModel config) async {
     final filterQuality = config.setting.filterQuality;
     final commonImage = HashMap<ImageCommonType, VisualImage>();
     //
-    final missingArtPiece =
-        await loadVisualImage('$path/alwaysloaded/missing_artpiece.png');
+    final missingArtPiece = await loadVisualImage('$path/alwaysloaded/missing_artpiece.png');
     if (missingArtPiece == null) {
       throw Exception(los.cannot_load_missing_artpiece);
     }
@@ -188,41 +166,35 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     commonImage[ImageCommonType.readySeedBank] = readySeedBank;
     final readyPacket = await loadVisualImage('$path/packet/sunflower.png');
     if (readyPacket == null) {
-      throw Exception('cannot load ready packet'); //TODO.
+      throw Exception(los.cannot_load_ready_packet);
     }
     commonImage[ImageCommonType.readyPacket] = readyPacket;
-    final spaceSpiral =
-        await loadVisualImage('$path/alwaysloaded/space_spiral.png');
+    final spaceSpiral = await loadVisualImage('$path/alwaysloaded/space_spiral.png');
     if (spaceSpiral == null) {
       throw Exception(los.cannot_load_space_spiral);
     }
     commonImage[ImageCommonType.spaceSpiral] = spaceSpiral;
-    final spaceDust =
-        await loadVisualImage('$path/alwaysloaded/space_dust.png');
+    final spaceDust = await loadVisualImage('$path/alwaysloaded/space_dust.png');
     if (spaceDust == null) {
       throw Exception(los.cannot_load_space_dust);
     }
     commonImage[ImageCommonType.spaceDust] = spaceDust;
-    final freePinata =
-        await loadVisualImage('$path/pinata/pinata_free_spine.png');
+    final freePinata = await loadVisualImage('$path/pinata/pinata_free_spine.png');
     if (freePinata == null) {
       throw Exception(los.cannot_load_free_pinata);
     }
     commonImage[ImageCommonType.freePinata] = freePinata;
-    final freePinataOpen =
-        await loadVisualImage('$path/pinata/pinatas_dust_spine_free.png');
+    final freePinataOpen = await loadVisualImage('$path/pinata/pinatas_dust_spine_free.png');
     if (freePinataOpen == null) {
       throw Exception(los.cannot_load_free_pinata_dust);
     }
     commonImage[ImageCommonType.freePinataOpen] = freePinataOpen;
-    final buttonHudBackNormal =
-        await loadVisualImage('$path/common/buttons_hud_back_normal.png');
+    final buttonHudBackNormal = await loadVisualImage('$path/common/buttons_hud_back_normal.png');
     if (buttonHudBackNormal == null) {
       throw Exception(los.cannot_load_buttons_hud_back_normal);
     }
     commonImage[ImageCommonType.buttonHudBackNormal] = buttonHudBackNormal;
-    final buttonHudBackSelected =
-        await loadVisualImage('$path/common/buttons_hud_back_selected.png');
+    final buttonHudBackSelected = await loadVisualImage('$path/common/buttons_hud_back_selected.png');
     if (buttonHudBackSelected == null) {
       throw Exception(los.cannot_load_buttons_hud_back_selected);
     }
@@ -256,56 +228,46 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     //-----------------
     final commonAnimation = HashMap<AnimationCommonType, VisualAnimation>();
     //
-    final giftBox = await loadVisualAnimation('$path/common/giftbox_world_map',
-        filterQuality: filterQuality);
+    final giftBox = await loadVisualAnimation('$path/common/giftbox_world_map', filterQuality: filterQuality);
     if (giftBox == null) {
       throw Exception(los.cannot_load_giftbox_world_map);
     }
     commonAnimation[AnimationCommonType.giftBox] = giftBox;
-    final levelNode = await loadVisualAnimation('$path/common/level_node',
-        filterQuality: filterQuality);
+    final levelNode = await loadVisualAnimation('$path/common/level_node', filterQuality: filterQuality);
     if (levelNode == null) {
       throw Exception(los.cannot_load_level_node);
     }
     commonAnimation[AnimationCommonType.levelNode] = levelNode;
-    final levelNodeGargantuar = await loadVisualAnimation(
-        '$path/common/level_node_gargantuar',
-        filterQuality: filterQuality);
+    final levelNodeGargantuar =
+        await loadVisualAnimation('$path/common/level_node_gargantuar', filterQuality: filterQuality);
     if (levelNodeGargantuar == null) {
       throw Exception(los.cannot_load_level_node_gargantuar);
     }
-    commonAnimation[AnimationCommonType.levelNodeGargantuar] =
-        levelNodeGargantuar;
-    final levelNodeMinigame = await loadVisualAnimation(
-        '$path/common/level_node_minigame',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.levelNodeGargantuar] = levelNodeGargantuar;
+    final levelNodeMinigame =
+        await loadVisualAnimation('$path/common/level_node_minigame', filterQuality: filterQuality);
     if (levelNodeMinigame == null) {
       throw Exception(los.cannot_load_level_node_minigame);
     }
     commonAnimation[AnimationCommonType.levelNodeMinigame] = levelNodeMinigame;
-    final mapPath = await loadVisualAnimation('$path/common/map_path',
-        filterQuality: filterQuality);
+    final mapPath = await loadVisualAnimation('$path/common/map_path', filterQuality: filterQuality);
     if (mapPath == null) {
       throw Exception(los.cannot_load_map_path);
     }
     commonAnimation[AnimationCommonType.mapPath] = mapPath;
-    final yetiIcon = await loadVisualAnimation('$path/common/yeti_icon',
-        filterQuality: filterQuality);
+    final yetiIcon = await loadVisualAnimation('$path/common/yeti_icon', filterQuality: filterQuality);
     if (yetiIcon == null) {
       throw Exception(los.cannot_load_yeti_icon);
     }
     commonAnimation[AnimationCommonType.yetiIcon] = yetiIcon;
-    final zombossNodeHologram = await loadVisualAnimation(
-        '$path/common/zomboss_node_hologram',
-        filterQuality: filterQuality);
+    final zombossNodeHologram =
+        await loadVisualAnimation('$path/common/zomboss_node_hologram', filterQuality: filterQuality);
     if (zombossNodeHologram == null) {
       throw Exception(los.cannot_load_zomboss_node_hologram);
     }
-    commonAnimation[AnimationCommonType.zombossNodeHologram] =
-        zombossNodeHologram;
-    final missingArtPieceAnimation = await loadVisualAnimation(
-        '$path/alwaysloaded/missing_artpiece',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.zombossNodeHologram] = zombossNodeHologram;
+    final missingArtPieceAnimation =
+        await loadVisualAnimation('$path/alwaysloaded/missing_artpiece', filterQuality: filterQuality);
     if (missingArtPieceAnimation == null) {
       throw Exception(los.cannot_load_map_path);
     }
@@ -320,35 +282,28 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       throw Exception(los.cannot_load_ready_plant);
     }
     commonAnimation[AnimationCommonType.readyPlant] = readyPlant;
-    commonAnimation[AnimationCommonType.missingArtPieceAnimation] =
-        missingArtPieceAnimation;
-    final stargate = await loadVisualAnimation('$path/common/stargate',
-        filterQuality: filterQuality);
+    commonAnimation[AnimationCommonType.missingArtPieceAnimation] = missingArtPieceAnimation;
+    final stargate = await loadVisualAnimation('$path/common/stargate', filterQuality: filterQuality);
     if (stargate == null) {
       throw Exception(los.cannot_load_star_gate);
     }
     commonAnimation[AnimationCommonType.stargate] = stargate;
-    final sodRoll = await loadVisualAnimation('$path/common/sod_roll',
-        filterQuality: filterQuality);
+    final sodRoll = await loadVisualAnimation('$path/common/sod_roll', filterQuality: filterQuality);
     if (sodRoll == null) {
       throw Exception(los.cannot_load_sod_roll);
     }
     commonAnimation[AnimationCommonType.sodRoll] = sodRoll;
-    final collectedUpgradeEffect = await loadVisualAnimation(
-        '$path/common/collected_upgrade_effect',
-        filterQuality: filterQuality);
+    final collectedUpgradeEffect =
+        await loadVisualAnimation('$path/common/collected_upgrade_effect', filterQuality: filterQuality);
     if (collectedUpgradeEffect == null) {
       throw Exception(los.cannot_load_collected_upgrade_effect);
     }
-    commonAnimation[AnimationCommonType.collectedUpgradeEffect] =
-        collectedUpgradeEffect;
+    commonAnimation[AnimationCommonType.collectedUpgradeEffect] = collectedUpgradeEffect;
     //-----------------
     final uiUniverse = HashMap<String, VisualImage>();
     //
     for (final mapName in config.resource.worldmap.keys) {
-      uiUniverse[mapName] = await loadVisualImage(
-              '$path/alwaysloaded/ui_universe/$mapName.png') ??
-          missingArtPiece;
+      uiUniverse[mapName] = await loadVisualImage('$path/alwaysloaded/ui_universe/$mapName.png') ?? missingArtPiece;
     }
     //-----------------
     final seedBank = HashMap<String, VisualImage?>();
@@ -358,8 +313,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     for (final plantName in config.resource.plant.keys) {
       final seedBankName = config.resource.plant[plantName];
       if (!seedBank.containsKey(seedBankName)) {
-        seedBank[seedBankName] =
-            await loadVisualImage('$path/packet/$seedBankName.png');
+        seedBank[seedBankName] = await loadVisualImage('$path/packet/$seedBankName.png');
       }
       packet[plantName] = await loadVisualImage('$path/packet/$plantName.png');
       // plant[plantName] = await loadVisualAnimation(
@@ -372,8 +326,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     //
     for (final upgradeName in config.resource.upgrade.keys) {
       final src = config.resource.upgrade[upgradeName];
-      upgrade[upgradeName] =
-          await loadVisualImage('$path/upgrade/upgrade_$src.png');
+      upgrade[upgradeName] = await loadVisualImage('$path/upgrade/upgrade_$src.png');
     }
     //-----------------
     return GameResource(
@@ -508,59 +461,57 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
 
   HashMap<ActionType, String> _initlActionTypeString(AppLocalizations los) {
     final actionTypeLocalization = HashMap<ActionType, String>.from({
-      //TODO: add locale
-      ActionType.islandChangeID: 'Change Island ID',
-      ActionType.islandScale: 'Scale Island',
-      ActionType.islandChangeLayer: 'Change Island Layer',
-      ActionType.islandChangeParallax: 'Change Island Parallax',
-      ActionType.islandRotate: 'Rotate Island',
-      ActionType.islandChangeRotationRate: 'Change Rotation Rate',
-      ActionType.islandArtFlip: 'Flip Island',
-      ActionType.eventChangeID: 'Change Event ID',
-      ActionType.eventChangeName: 'Change Event Name',
-      ActionType.eventChangeParent: 'Change Event Parent',
-      ActionType.eventChangeUnlockedFrom: 'Change Unlocked From',
-      ActionType.eventChangeVisibleFrom: 'Change Visibile From',
-      ActionType.eventChangeAutoVisible: 'Change Auto Visible',
-      ActionType.eventChangeLevelData: 'Change Level Data',
-      ActionType.eventChangeDisplayText: 'Change Display Text',
-      ActionType.eventChangeNarUnlocked: 'Change Narration Unlocked',
-      ActionType.eventChangeNarCompleted: 'Change Narration Completed',
-      ActionType.eventChangeTutorial: 'Change Level Tutorial',
-      ActionType.eventChangeTutorialUnlocked: 'Change Tutorial Unlocked',
-      ActionType.eventChangeLevelToggle: 'Change Level Toggle',
-      ActionType.eventChangePlantType: 'Change Plant Type',
-      ActionType.eventChangeUpgradeType: 'Change Upgrade Type',
-      ActionType.eventChangeStarCost: 'Change Star Cost',
-      ActionType.eventChangeKeyCost: 'Change Key Cost',
-      ActionType.eventArtFlip: 'Flip Event',
-      ActionType.addItem: 'Add Item',
-      ActionType.moveItem: 'Move Item',
-      ActionType.eraseItem: 'Erase Item',
-      ActionType.pasteItem: 'Paste Item',
-      ActionType.selectItem: 'Select Item',
-      ActionType.rectangleSelect: 'Rectangle Select',
-      ActionType.deSelect: 'Deselect',
-      ActionType.mapChangeName: 'Change World Name',
-      ActionType.mapChangeWorldID: 'Change World ID',
-      ActionType.mapChangeResID: 'Change Res ID',
-      ActionType.mapChangeBounding: 'Resize Map Bounding',
-      ActionType.newMapEditor: 'New Window',
-      ActionType.loadWorldResource: 'Load World Resource',
-      ActionType.openWorldMap: 'Open World Map',
-      ActionType.createNewLayer: 'Create New Layer',
-      ActionType.deleteLayer: 'Delete Layer',
-      ActionType.mergeDownLayer: 'Merge Down Layer',
-      ActionType.moveUpLayer: 'Move Up Layer',
-      ActionType.moveDownLayer: 'Move Down Layer',
+      ActionType.islandChangeID: los.island_change_id,
+      ActionType.islandScale: los.island_scale,
+      ActionType.islandChangeLayer: los.island_change_layer,
+      ActionType.islandChangeParallax: los.island_change_parallax,
+      ActionType.islandRotate: los.island_rotate,
+      ActionType.islandChangeRotationRate: los.island_change_rotation_rate,
+      ActionType.islandArtFlip: los.island_art_flip,
+      ActionType.eventChangeID: los.event_change_id,
+      ActionType.eventChangeName: los.event_change_name,
+      ActionType.eventChangeParent: los.event_change_parent,
+      ActionType.eventChangeUnlockedFrom: los.event_change_unlocked_from,
+      ActionType.eventChangeVisibleFrom: los.event_change_visible_from,
+      ActionType.eventChangeAutoVisible: los.event_change_auto_visible,
+      ActionType.eventChangeLevelData: los.event_change_level_data,
+      ActionType.eventChangeDisplayText: los.event_change_display_text,
+      ActionType.eventChangeNarUnlocked: los.event_change_nar_unlocked,
+      ActionType.eventChangeNarCompleted: los.event_change_nar_completed,
+      ActionType.eventChangeTutorial: los.event_change_tutorial,
+      ActionType.eventChangeTutorialUnlocked: los.event_change_tutorial_unlocked,
+      ActionType.eventChangeLevelToggle: los.event_change_level_toggle,
+      ActionType.eventChangePlantType: los.event_change_plant_type,
+      ActionType.eventChangeUpgradeType: los.event_change_upgrade_type,
+      ActionType.eventChangeStarCost: los.event_change_star_cost,
+      ActionType.eventChangeKeyCost: los.event_change_key_cost,
+      ActionType.eventArtFlip: los.event_art_flip,
+      ActionType.addItem: los.add_item,
+      ActionType.moveItem: los.move_item,
+      ActionType.eraseItem: los.erase_item,
+      ActionType.pasteItem: los.paste_item,
+      ActionType.selectItem: los.select_item,
+      ActionType.rectangleSelect: los.rectangle_select,
+      ActionType.deSelect: los.deselect,
+      ActionType.mapChangeName: los.map_change_name,
+      ActionType.mapChangeWorldID: los.map_change_world_id,
+      ActionType.mapChangeResID: los.map_change_res_id,
+      ActionType.mapChangeBounding: los.map_change_bounding,
+      ActionType.newMapEditor: los.new_map_editor,
+      ActionType.loadWorldResource: los.load_world_resource,
+      ActionType.openWorldMap: los.open_world_map,
+      ActionType.createNewLayer: los.create_new_layer,
+      ActionType.deleteLayer: los.delete_layer,
+      ActionType.mergeDownLayer: los.merge_down_layer,
+      ActionType.moveUpLayer: los.move_up_layer,
+      ActionType.moveDownLayer: los.move_down_layer,
     });
     return actionTypeLocalization;
   }
 
   Future<void> load(AppLocalizations los, String resourceLocation) async {
     try {
-      final newState =
-          MapEditorConfigurationState(status: AppConfigurationStatus.success);
+      final newState = MapEditorConfigurationState(status: AppConfigurationStatus.success);
       await Future.delayed(const Duration(milliseconds: 10));
       newState.settingPath = resourceLocation;
       newState.toolItem = _initailizeTool(los);
@@ -568,10 +519,8 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       newState.extensionItem = _initailizeExtension(los);
       newState.actionTypeLocalization = _initlActionTypeString(los);
       newState.configModel = _loadConfig(los, '$resourceLocation/config.json');
-      newState.editorResource =
-          await _loadEditorResource(los, resourceLocation);
-      newState.gameResource =
-          await _loadGameResource(los, resourceLocation, newState.configModel);
+      newState.editorResource = await _loadEditorResource(los, resourceLocation);
+      newState.gameResource = await _loadGameResource(los, resourceLocation, newState.configModel);
       _setState(newState);
     } catch (ex) {
       _throwErrorState(ex.toString());

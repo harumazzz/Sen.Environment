@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 part 'load_script_event.dart';
 part 'load_script_state.dart';

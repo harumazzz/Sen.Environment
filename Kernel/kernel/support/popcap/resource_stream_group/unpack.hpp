@@ -17,7 +17,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
                 value.emplace(std::in_place_type<TextureResource>);
                 auto &texture = std::get<TextureResource>(value.operator*());
                 texture.path = String{path.data(), path.size()};
-                std::ranges::replace(texture.path, '\\', '/');
                 exchange_number_fixed<u32>(stream, texture._mapping.offset);
                 exchange_number_fixed<u32>(stream, texture._mapping.size);
                 exchange_null_block(stream, sizeof(u32) * 3_size); // skip
@@ -27,7 +26,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
                 value.emplace(std::in_place_type<GeneralResource>);
                 auto &general = std::get<GeneralResource>(value.operator*());
                 general.path = String{path.data(), path.size()};
-                std::ranges::replace(general.path, '\\', '/');
                 exchange_number_fixed<u32>(stream, general._mapping.offset);
                 exchange_number_fixed<u32>(stream, general._mapping.size);
             }
@@ -58,7 +56,12 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
                     if (current_character == k_none_size) {
                         break;
                     }
-                    string_stream << static_cast<char>(current_character);
+                    if (current_character == 0x5C) {
+                        string_stream << static_cast<char>(0x2F);
+                    }
+                    else {
+                        string_stream << static_cast<char>(current_character);
+                    }
                 }
                 if (string_stream.view().empty()) {
                     break;
@@ -108,10 +111,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
         template <typename ResourceClass> requires is_class<ResourceClass>
         static auto exchange_write(ResourceClass const &value, Uint8ArrayView const &general, Uint8ArrayView const &texture, StringView const &resource_directory) -> void {
             const auto file_destination = Path::join(resource_directory, value.path);
-            if (!FileSystem::exist(Path::dirname(file_destination)))
-            {
-                FileSystem::create_directory(Path::dirname(file_destination));
-            }
+            FileSystem::make_directory(Path::dirname(file_destination));
             const auto item_resource_offset = value._mapping.offset;
             const auto item_resource_size = value._mapping.size;
             if constexpr (std::is_same_v<ResourceClass, TextureResource>) {
@@ -119,8 +119,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
                 FileSystem::write_file(file_destination, data_view);
             }
             else {
-                auto view = general.subview(item_resource_offset, item_resource_size);
-                FileSystem::write_file(file_destination, view);
+                auto data_view = general.subview(item_resource_offset, item_resource_size);
+                FileSystem::write_file(file_destination, data_view);
             }
         }
 

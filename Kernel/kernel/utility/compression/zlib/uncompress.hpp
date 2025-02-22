@@ -8,11 +8,11 @@ namespace Sen::Kernel::Compression::Zlib {
 
     struct Uncompress : Common {
 
-        template <auto format, auto windows_bits, typename SourceContainer, typename DestinationContainer>
+        template <auto format, auto windows_bits, typename Source, typename Destination>
         requires is_valid_uncompress<format, windows_bits>
         static auto process_whole (
-            const SourceContainer& source,
-            DestinationContainer& destination
+            const Source& source,
+            Destination& destination
         ) -> void {
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -20,12 +20,12 @@ namespace Sen::Kernel::Compression::Zlib {
             if constexpr (format == Type::deflate) {
                 actual_window_bits = -actual_window_bits;
             } else if constexpr (format == Type::zlib) {
-                //actual_window_bits = actual_window_bits;
+                actual_window_bits = actual_window_bits;
             } else {
                 actual_window_bits += 16_size;
             }
             auto avail_out = k_none_size;
-            if constexpr (std::is_same_v<DestinationContainer, Uint8Array>) {
+            if constexpr (std::is_same_v<Destination, Uint8Array>) {
                 avail_out = destination.size();
             }
             else {
@@ -65,7 +65,7 @@ namespace Sen::Kernel::Compression::Zlib {
                 &z_stream
             );
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to uncompress zlib state", "process_whole");
-            if constexpr (std::is_same_v<DestinationContainer, Uint8List>) {
+            if constexpr (std::is_same_v<Destination, Uint8List>) {
                 destination.resize(z_stream.total_out);
             }
             #pragma clang diagnostic pop

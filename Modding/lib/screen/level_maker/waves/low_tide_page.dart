@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/zombie_suggestion.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class LowTidePage extends StatefulWidget {
   const LowTidePage({
@@ -117,10 +117,7 @@ class _LowTidePageState extends State<LowTidePage> {
           children: [
             Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20.0),
             ...children,
@@ -169,11 +166,8 @@ class _LowTidePageState extends State<LowTidePage> {
                     _buildFormField(
                       labelText: los.delay_between_groups,
                       controller: _delay,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-                      ],
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                     ),
                     TextField(
                       controller: _message,

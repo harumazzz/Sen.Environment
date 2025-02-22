@@ -124,7 +124,6 @@ class VisualHelper {
     if (0 <= index && index < animation.image.length) {
       result = animation.image[index];
     } else {
-      // TODO
       throw Exception();
     }
     return result;
@@ -145,11 +144,11 @@ class VisualHelper {
   }
 
   bool containSprite(int index) {
-  if (0 <= index && index <= animation.sprite.length) {
-        return true;
-      } else {
-        return false;
-      }
+    if (0 <= index && index <= animation.sprite.length) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Widget visualizeImage(
@@ -187,7 +186,6 @@ class VisualHelper {
       }
       for (final action in frame.append) {
         if (layerList.containsKey(action.index)) {
-          // TODO
           throw Exception();
         }
         final currentLabel = context.read<SelectedLabelBloc>().state.label;

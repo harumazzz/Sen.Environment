@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/model/wave.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class FrostWindPage extends StatefulWidget {
   const FrostWindPage({
@@ -377,8 +377,7 @@ class __EditFrostWindState extends State<_EditFrostWind> {
     _direction = wind.direction;
     _row = wind.row;
     widget.map['onEdit'] = () {
-      widget.frostWind.winds[widget.index] =
-          Wind(row: _row, direction: _direction);
+      widget.frostWind.winds[widget.index] = Wind(row: _row, direction: _direction);
     };
     super.initState();
   }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sen/model/wave.dart';
 import 'package:sen/screen/level_maker/zombie_suggestion.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/file_helper.dart';
 
 class StormPage extends StatefulWidget {

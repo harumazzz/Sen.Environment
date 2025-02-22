@@ -11,7 +11,7 @@ import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/screen/map_editor/models/config.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/file_helper.dart';
 
 part 'toolbar_event.dart';

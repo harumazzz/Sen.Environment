@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/model/wave.dart';
 
 class TidalPage extends StatefulWidget {
@@ -83,10 +83,7 @@ class _TidalPageState extends State<TidalPage> {
   ) {
     return Text(
       los.entry,
-      style: Theme.of(context)
-          .textTheme
-          .titleLarge
-          ?.copyWith(fontWeight: FontWeight.bold),
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 

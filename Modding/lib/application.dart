@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';

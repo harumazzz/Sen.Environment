@@ -15,9 +15,6 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
     on<CopySelectedList>(_copySelected);
     on<ClearCopyList>(_clearSelected);
     on<SetHoverSelected>(_setHoverSelected);
-    // TODO : Add resize event, add map view, add better vertical scrolling support
-    // TODO : Add phone view (the view in game)
-    // TODO : Add Menu Bar ?
   }
 
   void _onSelectedUpdate(OnSelectUpdated event, Emitter<SelectedState> emit) {

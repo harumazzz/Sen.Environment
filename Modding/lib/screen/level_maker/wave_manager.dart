@@ -13,7 +13,7 @@ import 'package:sen/screen/level_maker/waves/raiding_party_page.dart';
 import 'package:sen/screen/level_maker/waves/regular_page.dart';
 import 'package:sen/screen/level_maker/waves/spider_page.dart';
 import 'package:sen/screen/level_maker/waves/storm_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/screen/level_maker/waves/tidal_page.dart';
 
 class WaveManager extends StatefulWidget {
@@ -70,11 +70,7 @@ class _WaveManagerState extends State<WaveManager> {
       } else if (wave is LowTide) {
         return LowTidePage(zombies: widget.zombies, wave: wave, index: index);
       } else if (wave is StormEvent) {
-        return StormPage(
-            resource: widget.resource,
-            wave: wave,
-            index: index,
-            zombies: widget.zombies);
+        return StormPage(resource: widget.resource, wave: wave, index: index, zombies: widget.zombies);
       } else if (wave is ParachuteRain) {
         return ParachutePage(wave: wave, index: index, zombies: widget.zombies);
       } else if (wave is SpiderRain) {
@@ -88,25 +84,13 @@ class _WaveManagerState extends State<WaveManager> {
       } else if (wave is TidalChange) {
         return TidalPage(wave: wave, index: index);
       } else if (wave is JamWave) {
-        return JamPage(
-            wave: wave,
-            index: index,
-            notificationEvent: widget.levelModule.notificationEvent!);
+        return JamPage(wave: wave, index: index, notificationEvent: widget.levelModule.notificationEvent!);
       } else if (wave is PortalWave) {
-        return PortalPage(
-            wave: wave, index: index, portal: widget.levelModule.portal!);
+        return PortalPage(wave: wave, index: index, portal: widget.levelModule.portal!);
       } else if (wave is GroundSpawn) {
-        return GroundPage(
-            wave: wave,
-            index: index,
-            resource: widget.resource,
-            zombies: widget.zombies);
+        return GroundPage(wave: wave, index: index, resource: widget.resource, zombies: widget.zombies);
       } else if (wave is Necromancy) {
-        return NecromancyPage(
-            wave: wave,
-            index: index,
-            resource: widget.resource,
-            zombies: widget.zombies);
+        return NecromancyPage(wave: wave, index: index, resource: widget.resource, zombies: widget.zombies);
       } else {
         throw UnsupportedError("Wave type not supported: ${wave.runtimeType}");
       }

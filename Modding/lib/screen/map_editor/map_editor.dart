@@ -14,44 +14,6 @@ import 'package:sen/service/file_helper.dart';
 class MapEditor extends StatelessWidget {
   const MapEditor({super.key});
 
-  void _showHelp(
-    BuildContext context,
-  ) async {
-    Future<void> showHelpDialog(String directory) async {
-      await showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Help'),
-            content: SingleChildScrollView(
-              child: Column(
-                // TODO : Add localization
-                children: [
-                  Text(
-                      'The tool will save the map every 5 minutes automatically in $directory'),
-                  const Text(
-                      'After you save the map, SUI will automatically clean all the files in the directory'),
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(context.los.okay),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    final String directory = await FileHelper.getWorkingDirectory();
-
-    await showHelpDialog(directory);
-  }
-
   Future<void> _showDialog(Uint8List image, BuildContext context) async {
     final los = context.los;
     await showDialog(
@@ -68,10 +30,7 @@ class MapEditor extends StatelessWidget {
               onPressed: () async {
                 void closeDialog() => Navigator.of(context).pop();
                 var file = await FileHelper.saveFile(
-                  initialDirectory:
-                      BlocProvider.of<InitialDirectoryCubit>(context)
-                          .state
-                          .initialDirectory,
+                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
                   suggestedName: 'screenshot.png',
                 );
                 if (file != null) {
@@ -95,42 +54,29 @@ class MapEditor extends StatelessWidget {
     );
   }
 
-  /*
-  void _takeScreenshot(
-      BuildContext context, ScreenshotController screenshotController) async {
-    final imageBytes = await screenshotController.capture();
-
-    if (imageBytes != null && context.mounted) {
-      await _showDialog(imageBytes, context);
-    }
-  }
-  */
-
   Future<bool?> _confirmExit(BuildContext context) async {
     final los = context.los;
     return await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-      title: Text('Exit'), //TODO: add locale
-      content: Text('Are you sure want to leave the page?'),
-      actions: [
-        ElevatedButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)))),
-          child: Text(los.cancel),
-          onPressed: () => Navigator.of(context).pop(false),
-        ),
-        ElevatedButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)))),
-          child: Text(los.yes),
-          onPressed: () => Navigator.of(context).pop(true),
-        ),
-      ],
-    );
+          title: Text(los.exit),
+          content: Text(los.confirm_exit),
+          actions: [
+            ElevatedButton(
+              style: ButtonStyle(
+                  shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+              child: Text(los.cancel),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton(
+              style: ButtonStyle(
+                  shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+              child: Text(los.yes),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
       },
     );
   }
@@ -150,7 +96,7 @@ class MapEditor extends StatelessWidget {
                 forceMaterialTransparency: true,
                 title: Text(los.map_editor),
                 leading: Tooltip(
-                    message: 'Back', //TODO: add locale
+                    message: los.back,
                     child: IconButton(
                         onPressed: () async {
                           final status = context.read<MapEditorConfigurationCubit>().state.status;
@@ -160,11 +106,9 @@ class MapEditor extends StatelessWidget {
                                 Navigator.of(context).pop();
                               }
                             }
-                          }
-                          else {
+                          } else {
                             Navigator.of(context).pop();
                           }
-                          
                         },
                         icon: const Icon(Icons.arrow_back))),
                 actions: [
@@ -179,29 +123,19 @@ class MapEditor extends StatelessWidget {
                     },
                     icon: const Icon(Symbols.screenshot),
                   ),
-                  IconButton(
-                    icon: const Icon(Symbols.help),
-                    onPressed: () => _showHelp(context),
-                  ),
                 ],
               ),
-              body: BlocBuilder<MapEditorConfigurationCubit,
-                  MapEditorConfigurationState>(
+              body: BlocBuilder<MapEditorConfigurationCubit, MapEditorConfigurationState>(
                 buildWhen: (prev, state) => prev.status != state.status,
                 builder: (context, state) {
                   final status = state.status;
                   if (status == AppConfigurationStatus.initial) {
-                    final resourceLocation =
-                        context.read<SettingsCubit>().state.mapEditorResource;
-                    context
-                        .read<MapEditorConfigurationCubit>()
-                        .load(context.los, resourceLocation);
+                    final resourceLocation = context.read<SettingsCubit>().state.mapEditorResource;
+                    context.read<MapEditorConfigurationCubit>().load(context.los, resourceLocation);
                   }
                   if (status == AppConfigurationStatus.success) {
                     return Background(
-                      child: MainPage(
-                          mapEditorConfigurationCubit:
-                              context.read<MapEditorConfigurationCubit>()),
+                      child: MainPage(mapEditorConfigurationCubit: context.read<MapEditorConfigurationCubit>()),
                     );
                   } else if (status == AppConfigurationStatus.failed) {
                     return Background(

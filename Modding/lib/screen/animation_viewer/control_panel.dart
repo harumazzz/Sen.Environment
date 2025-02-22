@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/control_button.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';

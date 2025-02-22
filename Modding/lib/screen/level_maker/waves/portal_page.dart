@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sen/model/wave.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 class PortalPage extends StatefulWidget {
   const PortalPage({
@@ -100,10 +100,7 @@ class _PortalPageState extends State<PortalPage> {
           children: [
             Text(
               los.entry,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20.0),
             _buildMovableRow(
@@ -271,9 +268,7 @@ class __LevelLawnState extends State<_LevelLawn> {
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? Colors.black
-                      : Colors.white,
+                  color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white,
                   width: 1.0,
                 ),
                 color: Colors.white,

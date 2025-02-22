@@ -13,7 +13,7 @@ import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/screen/map_editor/models/action_model.dart';
 import 'package:sen/screen/map_editor/models/action_service.dart';
 import 'package:sen/screen/map_editor/models/layer_node.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 
 part 'layer_event.dart';
 part 'layer_state.dart';

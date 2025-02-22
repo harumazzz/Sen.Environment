@@ -7,7 +7,7 @@ import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/widget/hotkey.dart';
 
 class BackupSetting extends StatefulWidget {
