@@ -29,6 +29,14 @@ namespace Sen::Kernel {
 				return Iterator<T>{ start_, -step_ };
 			}
 
+			friend auto operator << (
+				std::ostream& os,
+				const ReverseRange& other
+			) -> std::ostream& {
+				os << "ReverseRange(" << other.start_ << ", " << other.end_ << ", " << other.step_ << ")";
+				return os;
+			}
+
 		private:
 			T start_, end_, step_;
 	};

@@ -68,7 +68,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             exchange_node_value(value.f, node, k_f);
             exchange_node_value(value.a, node, k_a);
             exchange_node_value(value.image, node, k_i);
-            if constexpr (platform == television)
+            if constexpr (platform == VersionPlatform::television)
             {
                 exchange_node_value(value.image_path, node, k_resource);
                 exchange_node_value(value.image_another, node, k_i2);
@@ -78,12 +78,12 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             exchange_node_value(value.text, node, k_text);
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_transform(List<Transform> &value_list, XMLNode const &node) -> void
         {
             for (auto node_transform = node.child(k_t); node_transform != nullptr; node_transform = node_transform.next_sibling())
             {
-                if constexpr (platform == desktop)
+                if constexpr (platform == VersionPlatform::desktop)
                 {
                     auto make_value = [&] () -> TransformDesktop {
                         auto transform = TransformDesktop{};
@@ -92,7 +92,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     };
                     value_list.append(make_value());
                 }
-                if constexpr (platform == mobile32 || platform == mobile64)
+                if constexpr (platform == VersionPlatform::mobile32 || platform == VersionPlatform::mobile64)
                 {
                     auto make_value = [&] () -> TransformMobile {
                         auto transform = TransformMobile{};
@@ -101,7 +101,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     };
                     value_list.append(make_value());
                 }
-                if constexpr (platform == television)
+                if constexpr (platform == VersionPlatform::television)
                 {
                     auto make_value = [&] () -> TransformTelevision {
                         auto transform = TransformTelevision{};
@@ -113,7 +113,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform> requires is_between_v<platform, desktop, television>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_track(List<Track> &value_list, XMLNode const &node) -> void
         {
            // const auto track_child = exchange_child_node(node, "track"_sv);
@@ -130,7 +130,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform> requires is_between_v<platform, desktop, television>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_animation(ReanimInfo & model, XMLNode const &value) -> void
         {
             const auto fps_child = exchange_child_node<false>(value, k_fps);
@@ -143,24 +143,24 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         {
             switch (platform)
             {
-            case desktop:
+            case VersionPlatform::desktop:
                 {
-                    exchange_animation<desktop>(model, value);
+                    exchange_animation<VersionPlatform::desktop>(model, value);
                     break;
                 }
-            case mobile32:
+            case VersionPlatform::mobile32:
                 {
-                    exchange_animation<mobile32>(model, value);
+                    exchange_animation<VersionPlatform::mobile32>(model, value);
                     break;
                 }
-            case mobile64:
+            case VersionPlatform::mobile64:
                 {
-                    exchange_animation<mobile64>(model, value);
+                    exchange_animation<VersionPlatform::mobile64>(model, value);
                     break;
                 }
-            case television:
+            case VersionPlatform::television:
                 {
-                    exchange_animation<television>(model, value);
+                    exchange_animation<VersionPlatform::television>(model, value);
                     break;
                 }
             default:

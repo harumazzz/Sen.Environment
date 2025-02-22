@@ -333,6 +333,27 @@ namespace Sen::Kernel {
     			std::move(init.begin(), init.end(), init.begin());
     			return result;
     		}
+    };
+
+	template <typename T>
+	inline auto operator<<(
+		std::ostream& os,
+		const CList<T>& array
+	) -> std::ostream& {
+		os << "[";
+		for (auto index : Range{array.size()}) {
+			os << array[index];
+			if (index < array.size() - 1) {
+				os << ", ";
+			}
+		}
+		os << "]";
+		return os;
+	}
+
+	template <typename T>
+	struct is_list<CList<T>> : std::true_type {
+
 	};
 
     template <typename T, typename... Args>

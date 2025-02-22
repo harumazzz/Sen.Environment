@@ -11,7 +11,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct Decode : Common
     {
     private:
-        template <auto platform, typename TransformClass> requires is_between_v<platform, desktop, television> && is_class<TransformClass>
+        template <auto platform, typename TransformClass> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television> && is_class<TransformClass>
         static auto exchange_transform_value(ReadMemoryStream &stream, TransformClass &value) -> void
         {
             exchange_number_fixed<float>(stream, value.x);
@@ -32,29 +32,29 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             compare_value_to_reset(value.a, k_transform_float_end);
             constexpr auto ignored_size = sizeof(integer_or_platform<platform>);
             exchange_null_block(stream, ignored_size * 3);
-            if constexpr (platform == television)
+            if constexpr (platform == VersionPlatform::television)
             {
                 exchange_null_block(stream, ignored_size);
             }
         }
 
-        template <auto platform> requires is_between_v<platform, desktop, television>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_transform_list(ReadMemoryStream &stream, List<Transform> &value_list) -> void
         {
             exchange_raw_constant(stream, static_cast<u32>(get_transform_data_size<platform>()));
             for (auto & value : value_list)
             {
-                if constexpr (platform == desktop)
+                if constexpr (platform == VersionPlatform::desktop)
                 {
                     auto &transform = std::get<TransformDesktop>(value);
                     exchange_transform_value<platform>(stream, transform);
                 }
-                if constexpr (platform == mobile32 || platform == mobile64)
+                if constexpr (platform == VersionPlatform::mobile32 || platform == VersionPlatform::mobile64)
                 {
                     auto &transform = std::get<TransformMobile>(value);
                     exchange_transform_value<platform>(stream, transform);
                 }
-                if constexpr (platform == television)
+                if constexpr (platform == VersionPlatform::television)
                 {
                     auto &transform = std::get<TransformTelevision>(value);
                     exchange_transform_value<platform>(stream, transform);
@@ -62,7 +62,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
             for (auto & value : value_list)
             {
-                if constexpr (platform == desktop)
+                if constexpr (platform == VersionPlatform::desktop)
                 {
                     auto &transform = std::get<TransformDesktop>(value);
                     exchange_string_block<u32>(stream, transform.image);
@@ -72,7 +72,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     compare_value_to_reset(transform.font, k_string_empty);
                     compare_value_to_reset(transform.text, k_string_empty);
                 }
-                if constexpr (platform == mobile32 || platform == mobile64)
+                if constexpr (platform == VersionPlatform::mobile32 || platform == VersionPlatform::mobile64)
                 {
                     auto &transform = std::get<TransformMobile>(value);
                     exchange_number_fixed<u32>(stream, transform.image);
@@ -82,7 +82,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     compare_value_to_reset(transform.font, k_string_empty);
                     compare_value_to_reset(transform.text, k_string_empty);
                 }
-                if constexpr (platform == television)
+                if constexpr (platform == VersionPlatform::television)
                 {
                     auto &transform = std::get<TransformTelevision>(value);
                     exchange_string_block<u32>(stream, transform.image_path);
@@ -99,7 +99,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform> requires is_between_v<platform, desktop, television>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_track_list(ReadMemoryStream &stream, List<Track> &value_list) -> void
         {
             exchange_raw_constant(stream, static_cast<u32>(get_track_data_size<platform>()));
@@ -107,12 +107,12 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             {
                 constexpr auto ignored_size = sizeof(integer_or_platform<platform>);
                 exchange_null_block(stream, ignored_size * 2);
-                if constexpr (platform == mobile32 || platform == mobile64)
+                if constexpr (platform == VersionPlatform::mobile32 || platform == VersionPlatform::mobile64)
                 {
                     exchange_null_block(stream, ignored_size);
                 }
                 exchange_list_size<u32>(stream, value.transform);
-                if constexpr (platform == television)
+                if constexpr (platform == VersionPlatform::television)
                 {
                     exchange_null_block(stream, ignored_size);
                 }
@@ -124,7 +124,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             }
         }
 
-        template <auto platform> requires is_between_v<platform, desktop, television>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static auto exchange_animation(ReadMemoryStream &stream, ReanimInfo &model) -> void
         {
             constexpr auto ignored_size = sizeof(integer_or_platform<platform>);
@@ -140,28 +140,28 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         {
             switch (platform)
             {
-            case desktop:
+            case VersionPlatform::desktop:
                 {
                     assert_conditional(stream.u32() == k_desktop_magic_identifier, fmt::format("{}", Language::get("popcap.reanim.decode.invalid_pc_reanim_magic")), "process_whole");
-                    exchange_animation<desktop>(stream, model);
+                    exchange_animation<VersionPlatform::desktop>(stream, model);
                     break;
                 }
-            case mobile32:
+            case VersionPlatform::mobile32:
                 {
                     assert_conditional(stream.u32() == k_mobile32_magic_identifier, fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_32_reanim_magic")), "process_whole");
-                    exchange_animation<mobile32>(stream, model);
+                    exchange_animation<VersionPlatform::mobile32>(stream, model);
                     break;
                 }
-            case mobile64:
+            case VersionPlatform::mobile64:
                 {
                     assert_conditional(stream.u32() == k_mobile64_magic_identifier, fmt::format("{}", Language::get("popcap.reanim.decode.invalid_phone_64_reanim_magic")), "process_whole");
-                    exchange_animation<mobile64>(stream, model);
+                    exchange_animation<VersionPlatform::mobile64>(stream, model);
                     break;
                 }
-            case television:
+            case VersionPlatform::television:
                 {
                     assert_conditional(stream.u32() == k_television_magic_identifier, fmt::format("{}", Language::get("popcap.reanim.decode.invalid_tv_reanim_magic")), "process_whole");
-                    exchange_animation<television>(stream, model);
+                    exchange_animation<VersionPlatform::television>(stream, model);
                     break;
                 }
                 default:

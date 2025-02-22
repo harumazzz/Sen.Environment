@@ -21,6 +21,16 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
         constexpr explicit TransformDesktop() = default;
 
         ~TransformDesktop() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const TransformDesktop& other
+        ) -> std::ostream& {
+            os << "TransformDesktop(" << other.x << ", " << other.y << ", " << other.kx << ", " << other.ky << ", " <<
+                other.sx << ", " << other.sy << ", " << other.f << ", " << other.a << ", " << other.image << ", " <<
+                other.font << ", " << other.text << ")";
+            return os;
+        }
     };
 
     struct TransformMobile
@@ -40,6 +50,16 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
         constexpr explicit TransformMobile() = default;
 
         ~TransformMobile() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const TransformMobile& other
+        ) -> std::ostream& {
+            os << "TransformMobile(" << other.x << ", " << other.y << ", " << other.kx << ", " << other.ky << ", " <<
+                other.sx << ", " << other.sy << ", " << other.f << ", " << other.a << ", " << other.image << ", " <<
+                other.font << ", " << other.text << ")";
+            return os;
+        }
     };
 
     struct TransformTelevision
@@ -62,6 +82,17 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
         constexpr explicit TransformTelevision() = default;
 
         ~TransformTelevision() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const TransformTelevision& other
+        ) -> std::ostream& {
+            os << "TransformTelevision(" << other.x << ", " << other.y << ", " << other.kx << ", " << other.ky << ", " <<
+                other.sx << ", " << other.sy << ", " << other.f << ", " << other.a << ", " << other.image << ", " <<
+                other.image_path << ", " << other.image_another << ", " << other.image_path_another << ", " <<
+                other.font << ", " << other.text << ")";
+            return os;
+        }
     };
 
     using Transform = std::variant<TransformDesktop, TransformMobile, TransformTelevision>;
@@ -74,6 +105,14 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
         constexpr explicit Track() = default;
 
         ~Track() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const Track& other
+        ) -> std::ostream& {
+            os << "Track(" << other.name << ", " << other.transform << ")";
+            return os;
+        }
     };
 
     struct ReanimInfo
@@ -84,6 +123,14 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
         constexpr explicit ReanimInfo() = default;
 
         ~ReanimInfo() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const ReanimInfo& other
+        ) -> std::ostream& {
+            os << "ReanimInfo(" << other.frame_rate << ", " << other.track << ")";
+            return os;
+        }
     };
 }
 

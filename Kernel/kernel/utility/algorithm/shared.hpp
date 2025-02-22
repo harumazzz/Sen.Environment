@@ -7,30 +7,19 @@
 #include "kernel/utility/stream/read_file_stream.hpp"
 #include "kernel/utility/stream/write_file_stream.hpp"
 
-
-#define VAR_TO_STRING(x) #x
-
 namespace Sen::Kernel {
-    template<typename T>
-    concept is_not_void = (!std::is_void_v<T>);
 
     template<typename T>
-    concept is_class = std::is_class_v<T> && (!std::is_void_v<T>);
+    concept is_readable_stream = std::is_same_v<T, ReadMemoryStream> || std::is_same_v<T, ReadFileStream>;
 
     template<typename T>
-    concept is_exchanger = std::is_same_v<T, std::remove_cvref_t<T>> && (!std::is_void_v<T>) && (!std::is_reference_v<T>);
+    concept is_writable_stream = std::is_same_v<T, WriteMemoryStream> || std::is_same_v<T, WriteFileStream>;
 
-    template<typename T>
-    concept is_integer = std::is_arithmetic_v<T> && (!std::is_floating_point_v<T>);
+    template <auto T>
+    constexpr auto is_readable_stream_of_v = is_readable_stream<type_of<T>>;
 
-    template<typename T>
-    concept is_list = std::is_same_v<T, List<typename T::value_type>>;
-
-    template<typename T>
-    concept read_stream = std::is_same_v<T, ReadMemoryStream> || std::is_same_v<T, ReadFileStream>;
-
-    template<typename T>
-    concept write_stream = std::is_same_v<T, WriteMemoryStream> || std::is_same_v<T, WriteFileStream>;
+    template <auto T>
+    constexpr auto is_writable_stream_of_v = is_writable_stream<type_of<T>>;
 
     static constexpr auto k_block_size = 4_size;
 
@@ -96,7 +85,7 @@ namespace Sen::Kernel {
     }
 
     template <typename Size, typename Type, typename Exchanger, typename ReadStream>
-    requires (std::is_void_v<Size> || is_integer<Size>) && is_not_void<Type> && is_exchanger<Exchanger> && read_stream<ReadStream>
+    requires (std::is_void_v<Size> || is_integer<Size>) && is_not_void<Type> && is_exchanger<Exchanger> && is_readable_stream<ReadStream>
     static auto exchange_list(Exchanger const &exchanger, ReadStream &stream, List<Type> &value) -> void {
           if constexpr (!std::is_void_v<Size>) {
               value.resize(static_cast<size_t>(stream.template read_impl<Size>()));
@@ -107,7 +96,7 @@ namespace Sen::Kernel {
     }
 
     template <typename Size, typename Type, typename Exchanger, typename WriteStream>
-    requires (std::is_void_v<Size> || is_integer<Size>) && is_not_void<Type> && is_exchanger<Exchanger> && write_stream<WriteStream>
+    requires (std::is_void_v<Size> || is_integer<Size>) && is_not_void<Type> && is_exchanger<Exchanger> && is_writable_stream<WriteStream>
     static auto exchange_list(Exchanger const &exchanger, WriteStream &stream, List<Type> const &value) -> void {
         if constexpr (!std::is_void_v<Size>) {
             stream.template write<Size>(static_cast<Size>(value.size()));
@@ -118,7 +107,7 @@ namespace Sen::Kernel {
     }
 
     template <typename Raw, typename Type, typename ReadStream>
-    requires std::is_arithmetic_v<Raw> && std::is_enum_v<Type> && read_stream<ReadStream>
+    requires std::is_arithmetic_v<Raw> && std::is_enum_v<Type> && is_readable_stream<ReadStream>
     static auto exchange_enumeration(ReadStream &stream, Type &value) -> void {
         using underlying_type = std::underlying_type_t<Type>;
         auto index = stream.template read_impl<Raw>();
@@ -127,7 +116,7 @@ namespace Sen::Kernel {
         value = static_cast<Type>(index);
     }
 
-    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_enum_v<Type> && write_stream<WriteStream>
+    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_enum_v<Type> && is_writable_stream<WriteStream>
     static auto exchange_enumeration(WriteStream &stream, Type const &value) -> void {
         using underlying_type = std::underlying_type_t<Type>;
         const auto index = static_cast<Raw>(value);
@@ -136,98 +125,98 @@ namespace Sen::Kernel {
         stream.template write<Raw>(index);
     }
 
-    template <typename Raw, typename Type, typename ReadStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && read_stream<ReadStream>
+    template <typename Raw, typename Type, typename ReadStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && is_readable_stream<ReadStream>
     static auto exchange_number_fixed(ReadStream &stream, Type &value) -> void {
         value = static_cast<Type>(stream.template read_impl<Raw>());
     }
 
-    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && write_stream<WriteStream>
+    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && is_writable_stream<WriteStream>
     static auto exchange_number_fixed(WriteStream &stream, Type const &value) -> void {
         stream.template write<Raw>(static_cast<Raw>(value));
     }
 
-    template <typename Raw, typename Type, typename ReadStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && read_stream<ReadStream>
+    template <typename Raw, typename Type, typename ReadStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && is_readable_stream<ReadStream>
     static auto exchange_number_fixed(ReadStream &stream, Optional<Type> &value) -> void {
         value = Type{};
         exchange_number_fixed<Raw, Type>(stream, *value);
     }
 
-    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && write_stream<WriteStream>
+    template <typename Raw, typename Type, typename WriteStream> requires std::is_arithmetic_v<Raw> && std::is_arithmetic_v<Type> && is_writable_stream<WriteStream>
     static auto exchange_number_fixed(WriteStream &stream, Optional<Type> const &value) -> void {
         auto c_value = value.has_value() ? *value : Type{};
         exchange_number_fixed<Raw, Type>(stream, c_value);
     }
 
-    template <typename Size, typename Type, typename ReadStream> requires read_stream<ReadStream> && is_integer<Size> && is_list<Type>
+    template <typename Size, typename Type, typename ReadStream> requires is_readable_stream<ReadStream> && is_integer<Size> && is_list_v<Type>
     static auto exchange_list_size(ReadStream &stream, Type &value) -> void {
         value.resize(static_cast<size_t>(stream.template read_impl<Size>()));
     }
 
-    template <typename Size, typename Type, typename WriteStream> requires write_stream<WriteStream> && is_integer<Size> && is_list<Type>
+    template <typename Size, typename Type, typename WriteStream> requires is_writable_stream<WriteStream> && is_integer<Size> && is_list_v<Type>
     static auto exchange_list_size(WriteStream &stream, Type const &value) -> void {
         stream.template write<Size>(static_cast<Size>(value.size()));
     }
 
-    template <typename Type, typename ReadStream> requires std::is_arithmetic_v<Type> && read_stream<ReadStream>
+    template <typename Type, typename ReadStream> requires std::is_arithmetic_v<Type> && is_readable_stream<ReadStream>
     static auto exchange_number(ReadStream &stream, Type &value) -> void {
         value = stream.template read_impl<Type>();
     }
 
-    template <typename Type, typename WriteStream> requires std::is_arithmetic_v<Type> && write_stream<WriteStream>
+    template <typename Type, typename WriteStream> requires std::is_arithmetic_v<Type> && is_writable_stream<WriteStream>
     static auto exchange_number(WriteStream &stream, Type const &value) -> void {
         stream.template write<Type>(static_cast<Type>(value));
     }
 
-    template <typename Type, typename ReadStream> requires is_integer<Type> && read_stream<ReadStream>
+    template <typename Type, typename ReadStream> requires is_integer<Type> && is_readable_stream<ReadStream>
     static auto exchange_unicode_fixed(ReadStream &stream, String &value) -> void {
         value = stream.string(sizeof(Type));
     }
 
-    template <typename Type, typename WriteStream> requires is_integer<Type> && write_stream<WriteStream>
+    template <typename Type, typename WriteStream> requires is_integer<Type> && is_writable_stream<WriteStream>
     static auto exchange_unicode_fixed(WriteStream &stream, String const &value) -> void {
         assert_conditional(value.size() == sizeof(Type), "Unicode must be 2 size", "exchange_unicode_fixed");
         stream.string(value);
     }
 
-    template <typename Type, typename ReadStream> requires is_integer<Type> && read_stream<ReadStream>
+    template <typename Type, typename ReadStream> requires is_integer<Type> && is_readable_stream<ReadStream>
     static auto exchange_string_block(ReadStream &stream, String &value) -> void {
         value = stream.template string_of<Type>();
     }
 
-    template <typename Type, typename WriteStream> requires is_integer<Type> && write_stream<WriteStream>
+    template <typename Type, typename WriteStream> requires is_integer<Type> && is_writable_stream<WriteStream>
     static auto exchange_string_block(WriteStream &stream, String const &value) -> void {
         stream.template string_of<Type>(value);
     }
 
-    template <typename Type, typename ReadStream> requires is_integer<Type> && read_stream<ReadStream>
+    template <typename Type, typename ReadStream> requires is_integer<Type> && is_readable_stream<ReadStream>
     static auto exchange_string_block(ReadStream &stream, Optional<String> &value) -> void {
         value = String{};
         exchange_string_block<Type>(stream, *value);
     }
 
-    template <typename Type, typename WriteStream> requires is_integer<Type> && write_stream<WriteStream>
+    template <typename Type, typename WriteStream> requires is_integer<Type> && is_writable_stream<WriteStream>
     static auto exchange_string_block(WriteStream &stream, Optional<String> const &value) -> void {
         auto c_value = value.has_value() ? *value : String{};
         exchange_string_block<Type>(stream, c_value);
     }
 
-    template <typename ReadStream> requires read_stream<ReadStream>
+    template <typename ReadStream> requires is_readable_stream<ReadStream>
     static auto exchange_boolean(ReadStream &stream, bool &value) -> void {
         value = stream.boolean();
     }
 
-    template <typename WriteStream> requires write_stream<WriteStream>
+    template <typename WriteStream> requires is_writable_stream<WriteStream>
     static auto exchange_boolean(WriteStream &stream, bool const &value) -> void {
         stream.boolean(value);
     }
 
-    template <typename ReadStream> requires read_stream<ReadStream>
+    template <typename ReadStream> requires is_readable_stream<ReadStream>
     static auto exchange_boolean(ReadStream &stream, Optional<bool> &value) -> void {
         value = false;
         exchange_boolean(stream, *value);
     }
 
-    template <typename WriteStream> requires write_stream<WriteStream>
+    template <typename WriteStream> requires is_writable_stream<WriteStream>
     static auto exchange_boolean(WriteStream &stream, Optional<bool> const &value) -> void {
         auto c_value = value.has_value() ? *value : false;
         exchange_boolean(stream, c_value);
@@ -259,18 +248,18 @@ namespace Sen::Kernel {
     */
 
     template <auto rate, typename Type, typename ReadStream> requires std::is_arithmetic_v<Type> &&
-        std::is_same_v<type_of<rate>, f32> && is_integer<Type> && read_stream<ReadStream>
+        std::is_same_v<type_of<rate>, f32> && is_integer<Type> && is_readable_stream<ReadStream>
     static auto exchange_floater_with_rate(ReadStream &stream, double &value) -> void {
         value = static_cast<double>(stream.template read_impl<Type>() / rate);
     }
 
     template <auto rate, typename Type, typename WriteStream> requires std::is_arithmetic_v<Type> &&
-        std::is_same_v<type_of<rate>, f32> && is_integer<Type> && write_stream<WriteStream>
+        std::is_same_v<type_of<rate>, f32> && is_integer<Type> && is_writable_stream<WriteStream>
     static auto exchange_floater_with_rate(WriteStream &stream, double const &value) -> void {
         stream.template write<Type>(static_cast<Type>(std::round(value * rate)));
     }
 
-    template <typename Type, typename ReadStream> requires is_integer<Type> && read_stream<ReadStream>
+    template <typename Type, typename ReadStream> requires is_integer<Type> && is_readable_stream<ReadStream>
     static auto exchange_raw_constant(ReadStream &stream, Type const&value) -> void
     {
         auto v = Type{};
@@ -278,19 +267,19 @@ namespace Sen::Kernel {
         assert_conditional(v == value, "exchange_raw_constant failed", "exchange_raw_constant"); //TODO
     }
 
-    template <typename Type, typename WriteStream> requires is_integer<Type> && write_stream<WriteStream>
+    template <typename Type, typename WriteStream> requires is_integer<Type> && is_writable_stream<WriteStream>
     static auto exchange_raw_constant(WriteStream &stream, Type const&value) -> void
     {
         exchange_number_fixed<Type>(stream, value);
     }
 
-    template <typename ReadStream> requires read_stream<ReadStream>
+    template <typename ReadStream> requires is_readable_stream<ReadStream>
     static auto exchange_null_block(ReadStream &stream, size_t const&size) -> void
     {
         stream += size;
     }
 
-    template <typename WriteStream> requires write_stream<WriteStream>
+    template <typename WriteStream> requires is_writable_stream<WriteStream>
     static auto exchange_null_block(WriteStream &stream, size_t const&size) -> void
     {
         stream.null(size);
@@ -302,7 +291,7 @@ namespace Sen::Kernel {
     }
 
     template <typename Type, typename ReadStream, typename ...Args> requires (std::is_same_v<Args, String> && ...)
-    && read_stream<ReadStream> && is_integer<Type> && is_greater_than_zero_v<sizeof...(Args)>
+    && is_readable_stream<ReadStream> && is_integer<Type> && is_greater_than_zero_v<sizeof...(Args)>
     static auto exchange_mutil_by_string_block(
         ReadStream &stream,
         const std::string_view& delimiter,
@@ -318,7 +307,7 @@ namespace Sen::Kernel {
     }
 
     template <typename Type, typename WriteStream, typename ...Args> requires (std::is_same_v<Args, String> && ...)
-    && write_stream<WriteStream> && is_integer<Type> && is_greater_than_zero_v<sizeof...(Args)>
+    && is_writable_stream<WriteStream> && is_integer<Type> && is_greater_than_zero_v<sizeof...(Args)>
     static auto exchange_mutil_by_string_block(WriteStream &stream, const std::string_view delimiter, Args const & ...args) -> void {
         constexpr auto N = sizeof...(Args);
         auto delimiter_string = String{delimiter};

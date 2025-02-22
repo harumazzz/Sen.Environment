@@ -27,6 +27,8 @@
 #include "kernel/utility/container/array_view/array_view.hpp"
 #include "kernel/utility/container/array_view/byte_view.hpp"
 #include "kernel/utility/container/set/common.hpp"
+#include "kernel/utility/container/optional/optional.hpp"
+#include "kernel/utility/container/variant/common.hpp"
 #include "kernel/utility/stream/read_file_stream.hpp"
 #include "kernel/utility/stream/write_file_stream.hpp"
 #include "kernel/utility/stream/read_memory_stream.hpp"

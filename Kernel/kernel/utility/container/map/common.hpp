@@ -10,6 +10,11 @@ namespace Sen::Kernel {
     template <typename Key, typename Value>
     using Map = HashMap<Key, Value>;
 
+    template <typename Key, typename Value>
+    struct is_map<HashMap<Key, Value>> : std::true_type {
+
+    };
+
 }
 
 template<typename Json>

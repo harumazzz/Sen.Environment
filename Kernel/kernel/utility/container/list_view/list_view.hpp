@@ -52,7 +52,27 @@ namespace Sen::Kernel {
             return CListView<uint8_t>(reinterpret_cast<uint8_t*>(thiz.data()), thiz.total_bytes());
         }
 
+    };
+
+    template <typename T>
+    struct is_list<CListView<T>> : std::true_type {
 
     };
+
+    template <typename T>
+    inline auto operator<<(
+        std::ostream& os,
+        const CListView<T>& array
+    ) -> std::ostream& {
+        os << "[";
+        for (auto index : Range{array.size()}) {
+            os << array[index];
+            if (index < array.size() - 1) {
+                os << ", ";
+            }
+        }
+        os << "]";
+        return os;
+    }
 
 }

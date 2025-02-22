@@ -15,7 +15,7 @@ namespace Sen::Kernel::Support::PopCap::Package
 
         static constexpr auto k_version = 0_ui;
 
-        enum ResourceInformationListStateFlag : uint8_t
+        enum struct ResourceInformationListStateFlag : uint8_t
         {
             next = 0x0,
             done = 0x80
@@ -31,6 +31,14 @@ namespace Sen::Kernel::Support::PopCap::Package
             constexpr explicit ResourceInformation() = default;
 
             ~ResourceInformation() = default;
+
+            friend auto operator << (
+                std::ostream& os,
+                const ResourceInformation& other
+            ) -> std::ostream& {
+                os << "ResourceInformation(" << other.path << ", " << other.size << ", " << other.size_original << ", " << other.time << ")";
+                return os;
+            }
         };
     };
 }

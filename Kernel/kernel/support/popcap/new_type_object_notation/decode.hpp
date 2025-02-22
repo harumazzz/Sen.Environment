@@ -85,7 +85,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	        compare_value_to_reset(value.cols, k_default_cols);
 	        compare_value_to_reset(value.rows, k_default_rows);
             exchange_null_block(stream, k_null_block_count);
-            if (value.type == pop_anim) {
+            if (value.type == ResourceTypeEnumeration::pop_anim) {
                 exchange_boolean(stream, value.forceOriginalVectorSymbolSize);
             }
             else {
@@ -148,7 +148,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             exchange_enumeration<u8>(stream, group_type);
 	        switch (group_type)
 	        {
-	        case composite:
+	        case GroupType::composite:
 	            {
 	                auto composite = CompositeGroup{};
 	                composite.type = GroupType::composite;
@@ -156,7 +156,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	                value.emplace<CompositeGroup>(composite);
 	                break;
 	            }
-	        case simple:
+	        case GroupType::simple:
 	            {
 	                auto simple = SimpleResource{};
 	                simple.type = GroupType::simple;

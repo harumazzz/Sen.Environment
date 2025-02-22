@@ -47,6 +47,14 @@ namespace Sen::Kernel {
 				return Iterator<T>{end_, step_};
 			}
 
+			friend auto operator << (
+				std::ostream& os,
+				const Range& other
+			) -> std::ostream& {
+				os << "Range(" << other.start_ << ", " << other.end_ << ", " << other.step_ << ")";
+				return os;
+			}
+
 		private:
 
 			T start_, end_, step_;

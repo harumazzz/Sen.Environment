@@ -102,6 +102,16 @@ namespace Sen::Kernel::Javascript {
                 return thiz.m_context;
             }
 
+            friend auto operator <<(
+                std::ostream &os,
+                const NativeString& other
+            ) -> std::ostream& {
+                if (other.value != nullptr) {
+                    os.write(other.value, static_cast<std::streamsize>(other._size));
+                }
+                return os;
+            }
+
             [[nodiscard]] auto view (
             ) const -> std::string_view override {
                 return std::string_view{ thiz.value, thiz._size };

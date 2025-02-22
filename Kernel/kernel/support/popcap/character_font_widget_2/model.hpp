@@ -12,6 +12,14 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
         constexpr explicit CharacterItem() = default;
 
         ~CharacterItem() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const CharacterItem& other
+        ) -> std::ostream& {
+            os << "CharacterItem(" << other.index << ", " << other.value << ")";
+            return os;
+        }
     };
 
     struct FontKerning
@@ -22,6 +30,14 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
         constexpr explicit FontKerning() = default;
 
         ~FontKerning() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const FontKerning& other
+        ) -> std::ostream& {
+            os << "FontKerning(" << other.index << ", " << other.offset << ")";
+            return os;
+        }
     };
 
     struct FontCharacter
@@ -41,6 +57,17 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
         constexpr explicit FontCharacter() = default;
 
         ~FontCharacter() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const FontCharacter& other
+        ) -> std::ostream& {
+            os << "FontCharacter(" << other.index << ", " << other.image_rect_x << ", " << other.image_rect_y << ", "
+                << other.image_rect_width << ", " << other.image_rect_height << ", " << other.image_offset_x << ", "
+                << other.image_offset_y << ", " << other.kerning_first << ", " << other.kerning_count << ", "
+                << other.width << ", " << other.order << ")";
+            return os;
+        }
     };
 
     struct FontLayer
@@ -76,6 +103,21 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
         constexpr explicit FontLayer() = default;
 
         ~FontLayer() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const FontLayer& other
+        ) -> std::ostream& {
+            os << "FontLayer(" << other.name << ", " << other.tag_require << ", " << other.tag_exclude << ", "
+                << other.kerning << ", " << other.character << ", " << other.multiply_red << ", "
+                << other.multiply_green << ", " << other.multiply_blue << ", " << other.multiply_alpha << ", "
+                << other.add_red << ", " << other.add_green << ", " << other.add_blue << ", " << other.add_alpha << ", "
+                << other.image_file << ", " << other.draw_mode << ", " << other.offset_x << ", " << other.offset_y << ", "
+                << other.spacing << ", " << other.minimum_point_size << ", " << other.maximum_point_size << ", "
+                << other.point_size << ", " << other.ascent << ", " << other.ascent_padding << ", " << other.height << ", "
+                << other.default_height << ", " << other.line_spacing_offset << ", " << other.base_order << ")";
+            return os;
+        }
     };
 
 
@@ -100,6 +142,18 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
         constexpr explicit FontWidget() = default;
 
         ~FontWidget() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const FontWidget& other
+        ) -> std::ostream& {
+            os << "FontWidget(" << other.ascent << ", " << other.ascent_padding << ", " << other.height << ", "
+                << other.line_sepacing_offset << ", " << other.initialized << ", " << other.default_point_size << ", "
+                << other.character << ", " << other.layer << ", " << other.source_file << ", " << other.error_header << ", "
+                << other.point_size << ", " << other.tag << ", " << other.scale << ", " << other.force_scaled_image_white << ", "
+                << other.activate_all_layer << ")";
+            return os;
+        }
     };
 }
 

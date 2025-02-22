@@ -70,8 +70,8 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             exchange_enumeration<u8>(stream, value.type);
         	exchange_number_fixed<u32>(stream, value.slot);
             exchange_null_block(stream, compute_type_null_block_count());
-            const auto x = value.type == pop_anim ? k_default_x_atlas : value.x.has_value() ? *value.x : k_default_x_texture;
-            const auto y = value.type == pop_anim ? k_default_y_atlas : value.y.has_value() ? *value.y : k_default_y_texture;
+            const auto x = value.type == ResourceTypeEnumeration::pop_anim ? k_default_x_atlas : value.x.has_value() ? *value.x : k_default_x_texture;
+            const auto y = value.type == ResourceTypeEnumeration::pop_anim ? k_default_y_atlas : value.y.has_value() ? *value.y : k_default_y_texture;
             exchange_number_fixed<i32>(stream, x);
             exchange_number_fixed<i32>(stream, y);
             exchange_number_fixed<i32>(stream, value.ax);
@@ -83,7 +83,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             exchange_number_fixed<i32>(stream, cols);
             exchange_number_fixed<i32>(stream, rows);
             exchange_null_block(stream, k_null_block_count);
-            if (value.type == pop_anim)
+            if (value.type == ResourceTypeEnumeration::pop_anim)
             {
                 exchange_boolean(stream, value.forceOriginalVectorSymbolSize);
             }

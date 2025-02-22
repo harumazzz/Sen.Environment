@@ -4,7 +4,7 @@
 
 namespace Sen::Kernel::Support::PopCap::ReAnimation
 {
-    enum VersionPlatform : uint8_t
+    enum struct VersionPlatform : uint8_t
     {
         desktop,
         mobile32,
@@ -65,31 +65,31 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
         static constexpr auto k_fps = "fps"_sv;
 
         template <auto condition>
-        using integer_or_platform = std::conditional_t<condition != mobile64, u32, u64>;
+        using integer_or_platform = std::conditional_t<condition != VersionPlatform::mobile64, u32, u64>;
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static constexpr auto get_transform_data_size() -> size_t
         {
             auto size = k_none_size;
             size += sizeof(float) * 8;
             size += sizeof(integer_or_platform<platform>) * 3;
-            if constexpr (platform == television)
+            if constexpr (platform == VersionPlatform::television)
             {
                 size += sizeof(integer_or_platform<platform>);
             }
             return size;
         }
 
-        template <auto platform>
+        template <auto platform> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television>
         static constexpr auto get_track_data_size() -> size_t
         {
             auto size = k_none_size;
             size += sizeof(integer_or_platform<platform>) * 3;
-            if constexpr (platform == mobile32 || platform == mobile64)
+            if constexpr (platform == VersionPlatform::mobile32 || platform == VersionPlatform::mobile64)
             {
                 size += sizeof(integer_or_platform<platform>);
             }
-            if constexpr (platform == television)
+            if constexpr (platform == VersionPlatform::television)
             {
                 size += sizeof(integer_or_platform<platform>);
             }

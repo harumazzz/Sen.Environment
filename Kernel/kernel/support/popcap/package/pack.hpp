@@ -8,10 +8,9 @@ namespace Sen::Kernel::Support::PopCap::Package
     struct Pack : Common
     {
     private:
-        template <auto compress, write_stream WriteStream>
+        template <auto compress, typename WriteStream> requires is_writable_stream<WriteStream> && std::is_same_v<type_of<compress>, bool>
         static auto process_package(WriteStream &stream, PackageInfo const &model, StringView const &resource_directory) -> void
         {
-            static_assert(compress == true || compress == false, "compress must be true or false");
             exchange_number_fixed<u32>(stream, k_magic_identifier);
             exchange_number_fixed<u32>(stream, k_version);
             auto resource_data_section_view_stored_list = List<Uint8Array>{};
@@ -45,7 +44,7 @@ namespace Sen::Kernel::Support::PopCap::Package
         }
 
     public:
-        template <typename WriteStream> requires write_stream<WriteStream>
+        template <typename WriteStream> requires is_writable_stream<WriteStream>
         static auto process_whole(WriteStream &stream, PackageInfo const &model, StringView const &destination, bool const& compressed) -> void
         {
             const auto resource_directory = Path::join(destination, String{"resource"});

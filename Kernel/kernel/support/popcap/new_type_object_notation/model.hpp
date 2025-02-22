@@ -4,7 +4,7 @@
 
 namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 
-    enum ResourceTypeEnumeration : uint8_t {
+    enum struct ResourceTypeEnumeration : uint8_t {
         image = 0x01,
         pop_anim ,
         sound_bank,
@@ -14,10 +14,64 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         decoded_sound_bank
     };
 
-    enum GroupType : uint8_t {
+    inline auto operator<<(
+        std::ostream& os,
+        const ResourceTypeEnumeration& type
+    ) -> std::ostream& {
+        switch (type) {
+            case ResourceTypeEnumeration::image: {
+                os << "Image";
+                break;
+            }
+            case ResourceTypeEnumeration::pop_anim: {
+                os << "PopAnim";
+                break;
+            }
+            case ResourceTypeEnumeration::sound_bank: {
+                os << "SoundBank";
+                break;
+            }
+            case ResourceTypeEnumeration::file: {
+                os << "File";
+                break;
+            }
+            case ResourceTypeEnumeration::prime_font: {
+                os << "PrimeFont";
+                break;
+            }
+            case ResourceTypeEnumeration::render_effect: {
+                os << "RenderEffect";
+                break;
+            }
+            case ResourceTypeEnumeration::decoded_sound_bank: {
+                os << "DecodedSoundBank";
+                break;
+            }
+        }
+        return os;
+    }
+
+    enum struct GroupType : uint8_t {
         composite = 0x01,
         simple
     };
+
+    inline auto operator<<(
+        std::ostream& os,
+        const GroupType &type
+    ) -> std::ostream& {
+        switch (type) {
+            case GroupType::composite: {
+                os << "composite";
+                break;
+            }
+            case GroupType::simple: {
+                os << "simple";
+                break;
+            }
+        }
+        return os;
+    }
 
     using ResType = ResourceTypeEnumeration;
 
@@ -40,6 +94,17 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         constexpr explicit TypeInfo() = default;
 
         ~TypeInfo() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const TypeInfo& other
+        ) -> std::ostream& {
+            os << "TypeInfo(" << other.type << ", " << other.slot << ", " << other.x << ", " << other.y << ", "
+                << other.ax << ", " << other.ay << ", " << other.aw << ", " << other.ah << ", " << other.cols <<
+                ", " << other.rows << ", " << other.id << ", " << other.path << ", " << other.parent << ", "
+            << other.forceOriginalVectorSymbolSize << ")";
+            return os;
+        }
     };
 
     struct AtlasInfo {
@@ -55,6 +120,16 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         constexpr explicit AtlasInfo() = default;
 
         ~AtlasInfo() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AtlasInfo& other
+        ) -> std::ostream& {
+            os << "AtlasInfo(" << other.type << ", " << other.slot << ", " <<
+                other.width << ", " << other.height << ", " << other.atlas << ", " <<
+                    other.runtime << ", " << other.id << ", " << other.path << ")";
+            return os;
+        }
     };
 
     using SimpleInfo = std::variant<AtlasInfo, TypeInfo>;
@@ -69,6 +144,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         constexpr explicit SimpleResource() = default;
 
         ~SimpleResource() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const SimpleResource& other
+        ) -> std::ostream& {
+            os << "SimpleResource(" << other.type << ", " << other.res << ", " <<
+                other.parent << ", " << other.resources <<")";
+            return os;
+        }
     };
 
     struct CompositeSubgroup {
@@ -78,6 +162,14 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         constexpr explicit CompositeSubgroup() = default;
 
         ~CompositeSubgroup() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const CompositeSubgroup& other
+        ) -> std::ostream& {
+            os << "CompositeSubgroup(" << other.res << ", " << other.id <<")";
+            return os;
+        }
     };
 
     struct CompositeGroup {
@@ -88,6 +180,14 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
         constexpr explicit CompositeGroup() = default;
 
         ~CompositeGroup() = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const CompositeGroup& other
+        ) -> std::ostream& {
+            os << "CompositeGroup(" << other.type << ", " << other.id << ", " << other.subgroups <<")";
+            return os;
+        }
     };
 
     using GroupInfo = std::variant<CompositeGroup, SimpleResource>;
@@ -101,6 +201,14 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	    constexpr explicit ResourcesModel() = default;
 
          ~ResourcesModel() = default;
+
+	    friend auto operator << (
+            std::ostream& os,
+            const ResourcesModel& other
+        ) -> std::ostream& {
+	        os << "ResourcesModel(" << other.version << ", " << other.content_version << ", " << other.slot_count << ", " << other.groups <<")";
+	        return os;
+	    }
      };
 }
 

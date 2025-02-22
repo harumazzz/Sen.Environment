@@ -299,6 +299,12 @@ add_library(
         utility/container/map/linear_map.hpp
         interface/api/service.hpp
         utility/container/set/common.hpp
+        utility/trait/pointer.hpp
+        utility/trait/callable.hpp
+        utility/trait/container.hpp
+        utility/trait/utility.hpp
+        utility/trait/numeric.hpp
+        utility/container/variant/common.hpp
 
 )
 
@@ -448,6 +454,13 @@ elseif (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
             /D "NDEBUG"
     )
+endif ()
+
+option(DEBUG_LOG "Enable debug log" ON)
+
+if (DEBUG_LOG)
+    add_definitions(-DDEBUG_LOG)
+    message(STATUS "Enabled debug log")
 endif ()
 
 if (NOT MSVC)

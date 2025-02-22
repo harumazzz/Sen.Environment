@@ -10,7 +10,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
     {
     private:
 
-        template<is_integer RawShort, is_integer RawLong, is_list Container>
+        template<typename RawShort, typename RawLong, typename Container> requires is_integer<RawShort> && is_integer<RawLong> && is_list_v<Container>
         static auto exchange_integer_variant_and_resize(ReadMemoryStream& stream, Container &list) -> void
         {
             constexpr auto value_short_maximum = value_max<RawShort>();
@@ -28,7 +28,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
             list.resize(value_long);
         }
 
-        template<is_integer RawShort, is_integer RawLong, auto flag_count>
+        template<typename RawShort, typename RawLong, auto flag_count> requires is_integer<RawShort> && is_integer<RawLong>
         static auto exchange_integer_variant_with_flag(ReadMemoryStream& stream, u32 &value, std::bitset<flag_count> &flag) -> void
         {
             constexpr auto value_short_bit_count = type_bit_count<RawShort>() - static_cast<size_t>(flag_count);

@@ -4,7 +4,22 @@
 
 #define thiz (*this)
 
-#define debug(arg) std::cout << arg << '\n' << std::flush;
+#define VAR_TO_STRING(x) #x
+
+#ifdef DEBUG_LOG
+
+    template<typename... Args>
+    auto debugger(
+        Args&&... args
+    ) -> void {
+        (std::cout << ... << args) << '\n' << std::flush;
+    }
+
+    #define debug(...) debugger(__VA_ARGS__)
+#else
+    #define debug(...)
+#endif
+
 
 #define debug_json(arg) std::cout << arg << '\n' << std::flush;
 

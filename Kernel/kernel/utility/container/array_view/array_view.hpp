@@ -49,4 +49,25 @@ namespace Sen::Kernel {
 
     };
 
+    template <typename Value>
+    struct is_array<CArrayView<Value>> : std::true_type {
+
+    };
+
+    template <typename T>
+    inline auto operator<<(
+        std::ostream& os,
+        const CArrayView<T>& array
+    ) -> std::ostream& {
+        os << "[";
+        for (auto index : Range{array.size()}) {
+            os << array[index];
+            if (index < array.size() - 1) {
+                os << ", ";
+            }
+        }
+        os << "]";
+        return os;
+    }
+
 }

@@ -9,16 +9,15 @@ namespace Sen::Kernel::Support::PopCap::Package
     struct Unpack : Common
     {
     private:
-        template <auto compress, read_stream ReadStream>
+        template <auto compress, typename ReadStream> requires is_readable_stream<ReadStream> && std::is_same_v<type_of<compress>, bool>
         static auto process_package(ReadStream &stream, PackageInfo &model, StringView const &resource_directory) -> void
         {
-            static_assert(compress == true || compress == false, "compress must be true or false");
             assert_conditional(stream.u32() == k_magic_identifier, fmt::format("{}", Language::get("popcap.pak.unpack.invalid_pak_header")), "process_package");
             assert_conditional(stream.u32() == k_version, fmt::format("{}", Language::get("popcap.package.invalid_version")) , "process_package");
             auto resource_information_list = List<ResourceInformation>{};
             while (true)
             {
-                const auto flag = stream.u8();
+                const auto flag = static_cast<ResourceInformationListStateFlag>(stream.u8());
                 if (flag == ResourceInformationListStateFlag::done)
                 {
                     break;
@@ -62,7 +61,7 @@ namespace Sen::Kernel::Support::PopCap::Package
         }
 
     public:
-        template <read_stream ReadStream>
+        template <typename ReadStream> requires is_readable_stream<ReadStream>
         static auto process_whole(ReadStream &stream, PackageInfo &model, StringView const &destination, bool const& compressed) -> void
         {
             const auto resource_directory = Path::join(destination, String{"resource"});

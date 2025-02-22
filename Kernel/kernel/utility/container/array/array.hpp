@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kernel/utility/container/base/base.hpp"
+#include "kernel/utility/trait/container.hpp"
 #include "kernel/utility/trait/trait.hpp"
 
 namespace Sen::Kernel {
@@ -188,6 +189,27 @@ namespace Sen::Kernel {
 				return CArray{init};
 			}
 	};
+
+	template <typename Value>
+	struct is_array<CArray<Value>> : std::true_type {
+
+	};
+
+	template <typename T>
+	inline auto operator<<(
+		std::ostream& os,
+		const CArray<T>& array
+	) -> std::ostream& {
+		os << "[";
+		for (auto index : Range{array.size()}) {
+			os << array[index];
+			if (index < array.size() - 1) {
+				os << ", ";
+			}
+		}
+		os << "]";
+		return os;
+	}
 
 	template <typename T, typename... Args>
 	inline constexpr auto make_array (

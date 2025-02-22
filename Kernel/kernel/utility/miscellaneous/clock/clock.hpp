@@ -80,6 +80,14 @@ namespace Sen::Kernel {
 			{
 				return !running_;
 			}
+
+			friend auto operator << (
+				std::ostream& os,
+				const Clock& other
+			) -> std::ostream& {
+				os << "Clock(" << other.start_time_.time_since_epoch().count() << ", " << other.duration_ << ", " << other.running_ << ")";
+				return os;
+			}
 	};
 
 }

@@ -74,6 +74,11 @@ namespace Sen::Kernel {
 
     };
 
+    template <typename Key, typename Value>
+    struct is_map<LinearMap<Key, Value>> : std::true_type {
+
+    };
+
 }
 
 

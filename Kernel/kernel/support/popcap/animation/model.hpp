@@ -20,7 +20,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationPosition(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationPosition& other
+        ) -> std::ostream& {
+            os << "AnimationPosition(" << other.x << ", " << other.y << ")";
+            return os;
+        }
     };
 
     struct Dimension {
@@ -31,7 +39,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~Dimension(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const Dimension& other
+        ) -> std::ostream& {
+            os << "Dimension(" << other.width << ", " << other.height << ")";
+            return os;
+        }
     };
 
     struct AnimationSize {
@@ -42,7 +58,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationSize(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationSize& other
+        ) -> std::ostream& {
+            os << "AnimationSize(" << other.width << ", " << other.height << ")";
+            return os;
+        }
     };
 
     struct AnimationImage {
@@ -55,7 +79,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationImage(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationImage& other
+        ) -> std::ostream& {
+            os << "AnimationImage(" << other.path << ", " << other.id << ", " << other.dimension << ", " << other.transform << ")";
+            return os;
+        }
     };
 
     struct AnimationWorkArea {
@@ -66,7 +98,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationWorkArea(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationWorkArea& other
+        ) -> std::ostream& {
+            os << "AnimationWorkArea(" << other.start << ", " << other.duration << ")";
+            return os;
+        }
     };
 
     struct AnimationCommand {
@@ -77,7 +117,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationCommand(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationCommand& other
+        ) -> std::ostream& {
+            os << "AnimationCommand(" << other.command << ", " << other.argument << ")";
+            return os;
+        }
     };
 
     struct AnimationAppend {
@@ -87,13 +135,22 @@ namespace Sen::Kernel::Support::PopCap::Animation {
         bool sprite;
         bool additive;
         u16 preload_frame;
-        double time_scale = 1.0;
+        double time_scale{1.0};
 
         constexpr explicit AnimationAppend() = default;
 
         ~AnimationAppend(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationAppend& other
+        ) -> std::ostream& {
+            os << "AnimationAppend(" << other.index << ", " << other.name << ", " << other.resource << ", " <<
+                other.sprite << ", " << other.additive << ", " << other.preload_frame << ", " << other.time_scale << ")";
+            return os;
+        }
     };
 
     struct AnimationChange {
@@ -107,7 +164,16 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationChange(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationChange& other
+        ) -> std::ostream& {
+            os << "AnimationChange(" << other.index << ", " << other.transform << ", " << other.color << ", " <<
+                other.source_rectangle << ", " << other.sprite_frame_number << ")";
+            return os;
+        }
     };
 
     struct AnimationFrame {
@@ -122,7 +188,16 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationFrame(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationFrame& other
+        ) -> std::ostream& {
+            os << "AnimationFrame(" << other.label << ", " << other.stop << ", " << other.remove << ", " <<
+                other.command << ", " << other.append << ", " << other.change << ")";
+            return os;
+        }
     };
 
     struct AnimationSprite {
@@ -134,7 +209,15 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~AnimationSprite(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const AnimationSprite& other
+        ) -> std::ostream& {
+            os << "AnimationSprite(" << other.name << ", " << other.work_area << ", " << other.frame << ")";
+            return os;
+        }
     };
 
     struct SexyAnimation {
@@ -150,7 +233,16 @@ namespace Sen::Kernel::Support::PopCap::Animation {
 
         ~SexyAnimation(
 
-            ) = default;
+        ) = default;
+
+        friend auto operator << (
+            std::ostream& os,
+            const SexyAnimation& other
+        ) -> std::ostream& {
+            os << "SexyAnimation(" << other.version << ", " << other.frame_rate << ", " << other.position
+            << ", " << other.size << ", " << other.image << ", " << other.sprite << ", " << other.main_sprite << ")";
+            return os;
+        }
 
     };
 }
