@@ -29768,7 +29768,7 @@ s=A.ag("")
 if(s==null)s=t.K.a(s)
 q.setAttribute("flt-viewport",s)
 q.name="viewport"
-q.content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+q.content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"
 self.document.head.append(q)
 $.ag6()},
 gnf(){return this.a}}
