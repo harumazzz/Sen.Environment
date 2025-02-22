@@ -119,6 +119,13 @@
 					splash.style.opacity = '0';
 					setTimeout(() => (splash.style.display = 'none'), 500);
 				}
+				let metaViewport = document.querySelector('meta[name="viewport"]');
+				if (metaViewport !== undefined) {
+					metaViewport.setAttribute(
+						'content',
+						'width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1.0, maximum-scale=5.0',
+					);
+				}
 			};
 		</script>
 	</body>
