@@ -10,110 +10,103 @@ class ChangelogCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.brightness == Brightness.dark ? Colors.white : Colors.black87;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
     return Card(
-      margin: const EdgeInsets.all(16.0),
+      margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
       elevation: 4,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(isSmallScreen ? 12.0 : 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/logo.png'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Version: ${changelog.version}',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Date: ${changelog.date?.toLocal().toString().split(' ')[0]}',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            _buildHeader(isSmallScreen, textColor),
+            const SizedBox(height: 12),
+            const Divider(),
+            _buildSectionTitle('Update Changes:', textColor, isSmallScreen),
+            _buildListSection(changelog.updateChanges, textColor, isSmallScreen),
+            const Divider(),
+            _buildSectionTitle('Special Thanks To:', textColor, isSmallScreen),
+            _buildListSection(changelog.specialThanks, textColor, isSmallScreen),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool isSmallScreen, Color textColor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: isSmallScreen ? 30 : 40,
+          height: isSmallScreen ? 30 : 40,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/logo.png'),
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 16),
-            Divider(color: Colors.grey.shade300),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              'Update Changes:',
+              'Version: ${changelog.version}',
               style: TextStyle(
                 color: textColor,
-                fontSize: 16,
+                fontSize: isSmallScreen ? 16 : 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            ...changelog.updateChanges!.map(
-              (change) => Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 8),
-                    Text(
-                      '- $change',
-                      style: TextStyle(color: textColor, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Divider(color: Colors.grey.shade300),
+            const SizedBox(height: 4),
             Text(
-              'Special Thanks To:',
+              'Date: ${changelog.date?.toLocal().toString().split(' ')[0]}',
               style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...changelog.specialThanks!.map(
-              (thanks) => Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 8),
-                    Text(
-                      '- $thanks',
-                      style: TextStyle(color: textColor, fontSize: 14),
-                    ),
-                  ],
-                ),
+                color: Colors.grey.shade600,
+                fontSize: isSmallScreen ? 12 : 14,
               ),
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title, Color textColor, bool isSmallScreen) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: textColor,
+          fontSize: isSmallScreen ? 14 : 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
+    );
+  }
+
+  Widget _buildListSection(List<String>? items, Color textColor, bool isSmallScreen) {
+    if (items == null || items.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items.map((item) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(
+            '- $item',
+            style: TextStyle(color: textColor, fontSize: isSmallScreen ? 14 : 16),
+          ),
+        );
+      }).toList(),
     );
   }
 }

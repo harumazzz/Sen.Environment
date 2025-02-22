@@ -18,31 +18,54 @@ class FooterWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sen is currently supporting for these mods and much more',
+            'Sen is currently supporting these mods and much more',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16.0),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                ...<String>['addendum', 'altverz', 'fallen', 'requiem', 'resonance', 'reimagined'].map(
-                  (e) => Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/icons/$e.png',
-                        width: 200,
-                        height: 200,
-                      ),
-                      const SizedBox(width: 15.0),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          _buildHorizontalView(
+            context: context,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHorizontalView({
+    required BuildContext context,
+  }) {
+    List<Widget> childList(double resolution) => [
+          ...<String>['addendum', 'altverz', 'fallen', 'requiem', 'resonance', 'reimagined'].map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(right: 15.0),
+              child: Image.asset(
+                'assets/images/icons/$e.png',
+                width: resolution,
+                height: resolution,
+              ),
+            ),
+          ),
+        ];
+    if (MediaQuery.of(context).size.width < 600) {
+      return SizedBox(
+        height: 120,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: childList(100),
+        ),
+      );
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: childList(200),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 
@@ -57,79 +80,51 @@ class FooterWidget extends StatelessWidget {
           _supported(context),
           const Divider(),
           const SizedBox(height: 16.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmallScreen = constraints.maxWidth < 600;
+              return Wrap(
+                spacing: 32.0,
+                runSpacing: 16.0,
+                alignment: WrapAlignment.center,
                 children: [
-                  Text(
-                    'Quick Links',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8.0),
-                  TextButton(
-                    onPressed: () => onNavigate(0),
-                    child: const Text('Home'),
-                  ),
-                  TextButton(
-                    onPressed: () => onNavigate(1),
-                    child: const Text('Download'),
-                  ),
-                  TextButton(
-                    onPressed: () => onNavigate(2),
-                    child: const Text('Features'),
-                  ),
-                  TextButton(
-                    onPressed: () => onNavigate(3),
-                    child: const Text('Contact Us'),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Resources',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8.0),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Documentation'),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Support'),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Community Forum'),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('FAQ'),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Contact',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8.0),
-                  const Row(
-                    children: [
-                      Icon(Symbols.email, size: 16.0),
-                      SizedBox(width: 8.0),
-                      Text('harumatsx@gmail.com'),
+                  _buildFooterColumn(
+                    context,
+                    title: 'Quick Links',
+                    links: [
+                      _buildNavLink('Home', 0),
+                      _buildNavLink('Download', 1),
+                      _buildNavLink('Features', 2),
+                      _buildNavLink('Contact Us', 3),
                     ],
                   ),
+                  _buildFooterColumn(
+                    context,
+                    title: 'Resources',
+                    links: [
+                      _buildNavLink('Documentation'),
+                      _buildNavLink('Support'),
+                      _buildNavLink('Community Forum'),
+                      _buildNavLink('FAQ'),
+                    ],
+                  ),
+                  if (!isSmallScreen)
+                    _buildFooterColumn(
+                      context,
+                      title: 'Contact',
+                      links: [
+                        const Row(
+                          children: [
+                            Icon(Symbols.email, size: 16.0),
+                            SizedBox(width: 8.0),
+                            Text('harumatsx@gmail.com'),
+                          ],
+                        ),
+                      ],
+                    ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
           const SizedBox(height: 16.0),
           Row(
@@ -155,6 +150,24 @@ class FooterWidget extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFooterColumn(BuildContext context, {required String title, required List<Widget> links}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle(context, title),
+        const SizedBox(height: 8.0),
+        ...links,
+      ],
+    );
+  }
+
+  Widget _buildNavLink(String text, [int? index]) {
+    return TextButton(
+      onPressed: index != null ? () => onNavigate(index) : () {},
+      child: Text(text),
     );
   }
 }

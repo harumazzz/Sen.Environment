@@ -107,15 +107,15 @@ namespace Sen::Kernel {
 
         constexpr auto current_iterator(
 
-        ) -> decltype(thiz.m_data.begin() + thiz.m_position) {
+        ) const -> decltype(thiz.m_data.begin() + thiz.m_position) {
             return thiz.m_data.begin() + thiz.m_position;
         }
 
-        constexpr auto begin() -> decltype(thiz.m_data.begin()) {
+        constexpr auto begin() const -> decltype(thiz.m_data.begin()) {
             return thiz.m_data.begin();
         }
 
-        constexpr auto end() -> decltype(thiz.m_data.end()) {
+        constexpr auto end() const -> decltype(thiz.m_data.end()) {
             return thiz.m_data.end();
         }
 

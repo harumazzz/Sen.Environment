@@ -39,20 +39,7 @@ class _RootPageState extends State<RootPage> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  Widget _buildMenuItem(
-    String title,
-    int index,
-  ) {
-    return ListTile(
-      title: Text(title),
-      selected: _selectedIndex == index,
-      onTap: () {
-        _onItemTapped(index);
-        Navigator.pop(context);
-      },
-    );
+    Navigator.of(context).pop();
   }
 
   @override
@@ -85,71 +72,116 @@ class _RootPageState extends State<RootPage> {
           ],
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+      drawer: AppDrawer(
+        onNavigate: _onItemTapped,
+        selectedIndex: _selectedIndex,
+      ),
+    );
+  }
+}
+
+class AppDrawer extends StatelessWidget {
+  const AppDrawer({
+    super.key,
+    required this.onNavigate,
+    required this.selectedIndex,
+  });
+
+  final void Function(int index) onNavigate;
+
+  final int selectedIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDarkTheme ? Colors.grey[850] : Colors.pink[100];
+    final textColor = isDarkTheme ? Colors.white : Colors.black;
+    final subtitleColor = isDarkTheme ? Colors.grey[300] : Colors.grey[700];
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _buildDrawerHeader(context, backgroundColor, textColor, subtitleColor),
+          _buildMenuItem('Home', 0),
+          _buildMenuItem('Download', 1),
+          _buildMenuItem('Changelog', 2),
+          _buildMenuItem('About', 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader(
+    BuildContext context,
+    Color? backgroundColor,
+    Color? textColor,
+    Color? subtitleColor,
+  ) {
+    return DrawerHeader(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.grey.withValues(alpha: 0.3),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[850] : Colors.pink[100],
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black.withValues(alpha: 0.5)
-                        : Colors.grey.withValues(alpha: 0.3),
-                    spreadRadius: 1,
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.0),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12.0),
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(width: 12.0),
-                        Text(
-                          'Sen: Environment',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-                                fontSize: 22.0,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12.0),
-                    Text(
-                      'Make your own PvZ2 mod with Sen.',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                            fontSize: 14.0,
-                          ),
-                    ),
-                  ],
                 ),
-              ),
+                const SizedBox(width: 12.0),
+                Text(
+                  'Sen: Environment',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        fontSize: 22.0,
+                      ),
+                ),
+              ],
             ),
-            _buildMenuItem('Home', 0),
-            _buildMenuItem('Download', 1),
-            _buildMenuItem('Changelog', 2),
-            _buildMenuItem('About', 3),
+            const SizedBox(height: 12.0),
+            Text(
+              'Make your own PvZ2 mod with Sen.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: subtitleColor,
+                  ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMenuItem(
+    String title,
+    int index,
+  ) {
+    return ListTile(
+      title: Text(title),
+      selected: selectedIndex == index,
+      onTap: () {
+        onNavigate(index);
+      },
     );
   }
 }

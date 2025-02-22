@@ -33,7 +33,7 @@ if (flutterVersionName == null) {
 android {
     namespace = "com.haruma.sen.environment"
     compileSdk = 35
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.2.12479018"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

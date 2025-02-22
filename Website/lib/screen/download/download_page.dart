@@ -7,10 +7,7 @@ import 'package:website/service/download_helper.dart';
 import 'package:website/service_locator/service_locator.dart';
 
 class DownloadPage extends StatefulWidget {
-  const DownloadPage({
-    super.key,
-    required this.onNavigate,
-  });
+  const DownloadPage({super.key, required this.onNavigate});
   final void Function(int index) onNavigate;
 
   @override
@@ -28,16 +25,6 @@ class _DownloadPageState extends State<DownloadPage> {
     super.initState();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
   void _calculateTotalDownloadCount(GitHub response) {
     if (_totalDownloadCount != 0) return;
     for (var e in response.assets!) {
@@ -45,271 +32,52 @@ class _DownloadPageState extends State<DownloadPage> {
     }
   }
 
-  Widget _introduceText() {
-    return Center(
-      child: Text(
-        'Sen: Environment',
-        style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _agreeLicense() {
-    return Center(
-      child: Text(
-        'By downloading and using Sen, you agree to the license terms and privacy statement.',
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
-      ),
-    );
-  }
-
-  Widget _displayLogo() {
-    return Center(
-      child: Image.asset(
-        'assets/images/logo.png',
-        width: 150,
-        height: 150,
-      ),
-    );
-  }
-
-  Widget _downloadCount() {
-    return Center(
-      child: Text(
-        'There are $_totalDownloadCount users have downloaded this Sen version.',
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
-      ),
-    );
-  }
-
-  Widget _subtitleText() {
-    return Center(
-      child: Text(
-        'Free and open-source. Fast and efficient, low device requirement.',
-        maxLines: 4,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
-      ),
-    );
-  }
-
-  Widget _buildWindowsInstallation() {
-    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/win-x64.zip';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Image.asset(
-          'assets/images/logos/windows.png',
-          width: 100,
-          height: 100,
-        ),
-        const SizedBox(height: 16.0),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-          ),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ThankyouPage(
-                  link: link,
-                  isWindows: true,
-                  onNavigate: widget.onNavigate,
-                ),
-              ),
-            );
-            DownloadHelper.downloadFile(link);
-          },
-          child: Tooltip(
-            message: 'Download',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 16.0,
-              ),
-              child: Text(
-                'Download for Windows',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Table(
-              columnWidths: const {
-                0: FixedColumnWidth(150),
-                1: FixedColumnWidth(100),
-              },
-              children: const [
-                TableRow(
-                  children: [
-                    Text('Windows version: '),
-                    Text('Windows 10+'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Text('System: '),
-                    Text('x64, arm-64'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Text('File type: '),
-                    Text('Zip'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAndroidInstallation() {
-    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/android-arm64-v8a.zip';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Image.asset(
-          'assets/images/logos/android.png',
-          width: 100,
-          height: 100,
-        ),
-        const SizedBox(height: 16.0),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-          ),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ThankyouPage(
-                  link: link,
-                  isWindows: false,
-                  onNavigate: widget.onNavigate,
-                ),
-              ),
-            );
-            DownloadHelper.downloadFile(link);
-          },
-          child: Tooltip(
-            message: 'Download',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8.0,
-                horizontal: 16.0,
-              ),
-              child: Text(
-                'Download for Android',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Table(
-              columnWidths: const {
-                0: FixedColumnWidth(150),
-                1: FixedColumnWidth(100),
-              },
-              children: const [
-                TableRow(
-                  children: [
-                    Text('Android version: '),
-                    Text('Android 7+'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Text('System: '),
-                    Text('arm-64'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Text('File type: '),
-                    Text('Zip'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return FutureBuilder(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator.adaptive(),
-          );
+          return const Center(child: CircularProgressIndicator.adaptive());
         } else if (snapshot.hasError) {
-          return Center(
-            child: Text(snapshot.error.toString()),
-          );
+          return Center(child: Text(snapshot.error.toString()));
         } else if (snapshot.hasData) {
           final data = snapshot.data!;
           _calculateTotalDownloadCount(data);
+
           return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _displayLogo(),
-                    const SizedBox(height: 8.0),
-                    _introduceText(),
-                    const SizedBox(height: 16.0),
-                    _subtitleText(),
-                    const SizedBox(height: 16.0),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildWindowsInstallation(),
-                        const SizedBox(width: 32.0),
-                        _buildAndroidInstallation(),
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
-                    _agreeLicense(),
-                    const SizedBox(height: 8.0),
-                    _downloadCount(),
-                    const SizedBox(height: 32.0),
-                  ],
-                ),
-                FooterWidget(
-                  onNavigate: widget.onNavigate,
-                )
+                _displayLogo(isSmallScreen),
+                const SizedBox(height: 8.0),
+                _introduceText(isSmallScreen),
+                const SizedBox(height: 16.0),
+                _subtitleText(isSmallScreen),
+                const SizedBox(height: 16.0),
+                if (isSmallScreen) ...[
+                  _buildWindowsInstallation(isSmallScreen),
+                  const SizedBox(height: 24.0),
+                  _buildAndroidInstallation(isSmallScreen),
+                ] else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(child: _buildWindowsInstallation(isSmallScreen)),
+                      const SizedBox(width: 32.0),
+                      Expanded(child: _buildAndroidInstallation(isSmallScreen)),
+                    ],
+                  ),
+                const SizedBox(height: 16.0),
+                _agreeLicense(isSmallScreen),
+                const SizedBox(height: 8.0),
+                _downloadCount(isSmallScreen),
+                const SizedBox(height: 32.0),
+                FooterWidget(onNavigate: widget.onNavigate),
               ],
             ),
           );
@@ -318,5 +86,171 @@ class _DownloadPageState extends State<DownloadPage> {
         }
       },
     );
+  }
+
+  Widget _introduceText(bool isSmallScreen) {
+    return Center(
+      child: Text(
+        'Sen: Environment',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+              fontSize: isSmallScreen ? 20 : 28,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    );
+  }
+
+  Widget _subtitleText(bool isSmallScreen) {
+    return Center(
+      child: Text(
+        'Free and open-source. Fast and efficient, low device requirement.',
+        maxLines: 4,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontSize: isSmallScreen ? 16 : 20,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    );
+  }
+
+  Widget _agreeLicense(bool isSmallScreen) {
+    return Center(
+      child: Text(
+        'By downloading and using Sen, you agree to the license terms and privacy statement.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontSize: isSmallScreen ? 12 : 14,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+            ),
+      ),
+    );
+  }
+
+  Widget _downloadCount(bool isSmallScreen) {
+    return Center(
+      child: Text(
+        'There are $_totalDownloadCount users who have downloaded this Sen version.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontSize: isSmallScreen ? 12 : 14,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+            ),
+      ),
+    );
+  }
+
+  Widget _displayLogo(bool isSmallScreen) {
+    return Center(
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: isSmallScreen ? 100 : 150,
+        height: isSmallScreen ? 100 : 150,
+      ),
+    );
+  }
+
+  Widget _buildWindowsInstallation(bool isSmallScreen) {
+    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/win-x64.zip';
+    return _buildDownloadCard(
+      title: 'Windows 10+',
+      system: 'x64, arm-64',
+      fileType: 'Zip',
+      imagePath: 'assets/images/logos/windows.png',
+      buttonText: 'Download for Windows',
+      link: link,
+      isWindows: true,
+      isSmallScreen: isSmallScreen,
+    );
+  }
+
+  Widget _buildAndroidInstallation(bool isSmallScreen) {
+    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/android-arm64-v8a.zip';
+    return _buildDownloadCard(
+      title: 'Android 7+',
+      system: 'arm-64',
+      fileType: 'Zip',
+      imagePath: 'assets/images/logos/android.png',
+      buttonText: 'Download for Android',
+      link: link,
+      isWindows: false,
+      isSmallScreen: isSmallScreen,
+    );
+  }
+
+  Widget _buildDownloadCard({
+    required String title,
+    required String system,
+    required String fileType,
+    required String imagePath,
+    required String buttonText,
+    required String link,
+    required bool isWindows,
+    required bool isSmallScreen,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Image.asset(
+          imagePath,
+          width: isSmallScreen ? 80 : 100,
+          height: isSmallScreen ? 80 : 100,
+        ),
+        const SizedBox(height: 16.0),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.symmetric(
+              vertical: isSmallScreen ? 12.0 : 20.0,
+              horizontal: isSmallScreen ? 16.0 : 24.0,
+            ),
+          ),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ThankYouPage(
+                  link: link,
+                  isWindows: isWindows,
+                  onNavigate: widget.onNavigate,
+                ),
+              ),
+            );
+            DownloadHelper.downloadFile(link);
+          },
+          child: Text(
+            buttonText,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 16.0),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Table(
+              columnWidths: const {
+                0: FixedColumnWidth(150),
+                1: FixedColumnWidth(100),
+              },
+              children: [
+                _buildTableRow('Version:', title),
+                _buildTableRow('System:', system),
+                _buildTableRow('File type:', fileType),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TableRow _buildTableRow(
+    String label,
+    String value,
+  ) {
+    return TableRow(children: [
+      Padding(padding: const EdgeInsets.symmetric(vertical: 4.0), child: Text(label)),
+      Padding(padding: const EdgeInsets.symmetric(vertical: 4.0), child: Text(value)),
+    ]);
   }
 }

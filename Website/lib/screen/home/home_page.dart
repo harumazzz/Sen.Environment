@@ -30,161 +30,223 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Widget _introduceText() {
+  Widget _introduceText(
+    BuildContext context,
+  ) {
     return Center(
-      child: Text(
-        'Build your PvZ2 mod faster!',
-        style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            double fontSize = constraints.maxWidth < 400 ? 20 : 24;
+            return Text(
+              'Build your PvZ2 mod faster!',
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+              softWrap: true,
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _displayText() {
+  Widget _displayText(BuildContext context) {
     return Center(
-      child: Text(
-        'Sen is what you need! The all-in-one tool, is recommended by most modders.',
-        maxLines: 4,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            double fontSize = constraints.maxWidth < 350 ? 16 : 20;
+            return Text(
+              'Sen is what you need! The all-in-one tool, is recommended by most modders.',
+              maxLines: 4,
+              softWrap: true,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+                  ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buttonRow() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          alignment: WrapAlignment.center,
+          children: [
+            _downloadButton(),
+            _viewLogButton(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _downloadButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-      ),
-      onPressed: () async {
-        widget.onNavigate(1);
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(
-          'Download now',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      ),
-    );
+    return _responsiveButton('Download now', Colors.blue, () {
+      widget.onNavigate(1);
+    });
   }
 
   Widget _viewLogButton() {
+    return _responsiveButton('Join Discord', const Color(0xFF5865F2), () async {
+      await UrlHelper.launch(link: 'https://discord.gg/C2Xr2kaBYJ');
+    });
+  }
+
+  Widget _responsiveButton(String text, Color color, VoidCallback onPressed) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF5865F2),
-      ),
-      onPressed: () async {
-        await UrlHelper.launch(link: 'https://discord.gg/C2Xr2kaBYJ');
-      },
+      style: ElevatedButton.styleFrom(backgroundColor: color),
+      onPressed: onPressed,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.symmetric(
+          vertical: 12.0,
+          horizontal: MediaQuery.of(context).size.width < 350 ? 8.0 : 16.0,
+        ),
         child: Text(
-          'Join discord community',
+          text,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
   }
 
-  Widget _previewImage() {
+  Widget _buildDisplayPreviewImage(BuildContext context) {
+    if (MediaQuery.of(context).size.width < 600) {
+      return Image.asset(
+        Theme.of(context).brightness == Brightness.dark
+            ? 'assets/images/dark/phone.jpg'
+            : 'assets/images/light/phone.jpg',
+      );
+    }
+    return Image.asset(
+      Theme.of(context).brightness == Brightness.dark
+          ? 'assets/images/dark/launcher.png'
+          : 'assets/images/light/launcher.png',
+    );
+  }
+
+  Widget _previewImage(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-          child: Image.asset(Theme.of(context).brightness == Brightness.dark
-              ? 'assets/images/dark/launcher.png'
-              : 'assets/images/light/launcher.png'),
+          child: _buildDisplayPreviewImage(context),
         ),
       ),
     );
   }
 
-  Widget _description() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Flexible(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+  Widget _descriptionImage(BuildContext context) {
+    if (MediaQuery.of(context).size.width > 600) {
+      return Image.asset(
+        'assets/images/terminal.png',
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      'assets/images/phone_view.jpg',
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _description(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          bool isSmallScreen = constraints.maxWidth < 600;
+          return Wrap(
+            spacing: 16.0,
+            runSpacing: 16.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
             children: [
-              Text(
-                'Why Sen?',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16.0),
-              Text(
-                'Improve your mod production speed by 20% with Sen',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                    ),
-                softWrap: true,
-              ),
-              const SizedBox(height: 16.0),
-              Text.rich(
-                TextSpan(
+              SizedBox(
+                width: isSmallScreen ? double.infinity : constraints.maxWidth * 0.6,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextSpan(
-                      text: 'Community Support: ',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                          ),
+                    Text(
+                      'Why Sen?',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    TextSpan(
-                      text: 'Sen comes with a big community to help you modify the game easily.',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    const SizedBox(height: 12.0),
+                    _buildText('Improve your mod production speed by 20% with Sen'),
+                    const SizedBox(height: 12.0),
+                    _buildRichText(
+                      'Community Support: ',
+                      'Sen comes with a big community to help you modify the game easily.',
+                    ),
+                    const SizedBox(height: 12.0),
+                    _buildRichText(
+                      'Quality Assurance: ',
+                      'Sen offers tons of tools to streamline your workflow.',
                     ),
                   ],
                 ),
-                softWrap: true,
               ),
-              const SizedBox(height: 16.0),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Quality Assurance: ',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                          ),
-                    ),
-                    TextSpan(
-                      text: 'Sen offers tons of tools to streamline your workflow.',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
+              if (!isSmallScreen) const SizedBox(width: 16.0),
+              SizedBox(
+                width: isSmallScreen ? constraints.maxWidth * 0.8 : constraints.maxWidth * 0.3,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: _descriptionImage(context),
                 ),
-                softWrap: true,
               ),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildText(String text) {
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
           ),
-        ),
-        const SizedBox(width: 32.0),
-        Flexible(
-          flex: 2,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-            child: Image.asset(
-              'assets/images/terminal.png',
-            ),
+      softWrap: true,
+    );
+  }
+
+  Widget _buildRichText(String boldText, String normalText) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: boldText,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+                ),
           ),
-        ),
-      ],
+          TextSpan(
+            text: normalText,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ],
+      ),
+      softWrap: true,
     );
   }
 
@@ -201,23 +263,15 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _introduceText(),
+                _introduceText(context),
                 const SizedBox(height: 16.0),
-                _displayText(),
+                _displayText(context),
                 const SizedBox(height: 16.0),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _downloadButton(),
-                    const SizedBox(width: 8.0),
-                    _viewLogButton(),
-                  ],
-                ),
+                _buttonRow(),
                 const SizedBox(height: 16.0),
-                _previewImage(),
+                _previewImage(context),
                 const SizedBox(height: 32.0),
-                _description(),
+                _description(context),
                 const SizedBox(height: 32.0),
               ],
             ),

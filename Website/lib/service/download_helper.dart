@@ -1,9 +1,10 @@
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 
 class DownloadHelper {
   static void downloadFile(String url) {
-    html.AnchorElement anchorElement = html.AnchorElement(href: url);
-    anchorElement.download = url;
-    anchorElement.click();
+    final anchor = web.document.createElement('a') as web.HTMLAnchorElement;
+    anchor.href = url;
+    anchor.download = url;
+    anchor.click();
   }
 }
