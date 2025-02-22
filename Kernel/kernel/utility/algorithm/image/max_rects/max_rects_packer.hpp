@@ -99,9 +99,12 @@ namespace Sen::Kernel::Image::MaxRects {
                     return true;
                 }
             }
-            auto bin = MaxRectsBin{width, height};
-            bin.add(rect);
-            thiz.bins.append(as_move(bin));
+            auto make_bin = [&]() -> MaxRectsBin {
+                auto bin = MaxRectsBin{width, height};
+                bin.add(rect);
+                return bin;
+            };
+            thiz.bins.append(make_bin());
             return rect.rect_used;
         }
 

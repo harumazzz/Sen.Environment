@@ -228,10 +228,13 @@ namespace Sen::Kernel::Javascript {
             Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
             destination.allocate(length);
             for (auto index : Range{static_cast<usize>(length)}) {
-                auto value = T{};
-                auto current_value = source.get_property(index);
-                Trait<T>::from_value(current_value, value);
-                destination.append(value);
+                auto make_value = [&]() -> T {
+                    auto value = T{};
+                    auto current_value = source.get_property(index);
+                    Trait<T>::from_value(current_value, value);
+                    return value;
+                };
+                destination.append(make_value());
             }
         }
 

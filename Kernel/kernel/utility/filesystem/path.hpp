@@ -131,19 +131,21 @@ namespace Sen::Kernel::Path {
         #endif
         for (auto& entry : directory) {
             const auto type = get_path_type(entry.status().type());
-            auto file = StringHelper::make_string(entry.path().generic_u8string());
+            auto make_file = [&]() -> String {
+                return StringHelper::make_string(entry.path().generic_u8string());
+            };
             if constexpr (filter == PathType::File) {
                 if (type == PathType::File) {
-                    destination.append(file);
+                    destination.append(make_file());
                 }
             }
             if constexpr (filter == PathType::Directory) {
                 if (type == PathType::Directory) {
-                    destination.append(file);
+                    destination.append(make_file());
                 }
             }
             if constexpr (filter == PathType::None) {
-                destination.append(file);
+                destination.append(make_file());
             }
         }
     }
@@ -161,19 +163,21 @@ namespace Sen::Kernel::Path {
         #endif
         for (auto& entry : directory) {
             const auto type = get_path_type(entry.status().type());
-            auto file = StringHelper::make_string(entry.path().generic_u8string());
+            auto make_file = [&]() -> String {
+                return StringHelper::make_string(entry.path().generic_u8string());
+            };
             if constexpr (filter == PathType::File) {
                 if (type == PathType::File) {
-                    destination.append(file);
+                    destination.append(make_file());
                 }
             }
             if constexpr (filter == PathType::Directory) {
                 if (type == PathType::Directory) {
-                    destination.append(file);
+                    destination.append(make_file());
                 }
             }
             if constexpr (filter == PathType::None) {
-                destination.append(file);
+                destination.append(make_file());
             }
         }
     }

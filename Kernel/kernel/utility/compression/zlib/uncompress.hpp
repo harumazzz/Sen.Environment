@@ -8,10 +8,11 @@ namespace Sen::Kernel::Compression::Zlib {
 
     struct Uncompress : Common {
 
-        template <auto format, auto windows_bits, typename Container> requires is_valid_uncompress<format, windows_bits>
+        template <auto format, auto windows_bits, typename SourceContainer, typename DestinationContainer>
+        requires is_valid_uncompress<format, windows_bits>
         static auto process_whole (
-            Uint8Array& source,
-            Container& destination
+            const SourceContainer& source,
+            DestinationContainer& destination
         ) -> void {
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -24,7 +25,7 @@ namespace Sen::Kernel::Compression::Zlib {
                 actual_window_bits += 16_size;
             }
             auto avail_out = k_none_size;
-            if constexpr (std::is_same_v<Container, Uint8Array>) {
+            if constexpr (std::is_same_v<DestinationContainer, Uint8Array>) {
                 avail_out = destination.size();
             }
             else {
@@ -64,16 +65,17 @@ namespace Sen::Kernel::Compression::Zlib {
                 &z_stream
             );
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to uncompress zlib state", "process_whole");
-            if constexpr (std::is_same_v<Container, Uint8List>) {
+            if constexpr (std::is_same_v<DestinationContainer, Uint8List>) {
                 destination.resize(z_stream.total_out);
             }
             #pragma clang diagnostic pop
         }
 
-        template <auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Container> requires is_valid_uncompress<type, windows_bits> && is_buffer_container<Container>
+        template <auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Source, typename Destination>
+        requires is_valid_uncompress<type, windows_bits> && is_buffer_container<Destination>
         static auto process (
-            Uint8Array& source,
-            Container& destination
+            Source& source,
+            Destination& destination
         ) -> void {
             process_whole<type, windows_bits>(source, destination);
         }

@@ -166,6 +166,28 @@ namespace Sen::Kernel {
             that.assign(thiz.m_data);
         }
 
+        auto read_view (
+            const usize& from, 
+            const usize& to
+        ) -> Uint8ArrayView {
+            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read_view");
+            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read_view");
+            assert_conditional(from <= to, "From index must be smaller than to index", "read_view");
+            auto destination = Uint8ArrayView{thiz.m_data.begin() + from, to - from};
+            thiz.m_position = to;
+            return destination;
+        }
+
+        auto subview(
+            const usize&offset, 
+            const usize& size
+        ) -> Uint8ArrayView {
+            const auto current_position = m_position;
+            auto value = read_view(offset, offset + size);
+            thiz.m_position = current_position;
+            return value;
+        }
+
     };
 
 }

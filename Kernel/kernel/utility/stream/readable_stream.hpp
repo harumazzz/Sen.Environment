@@ -166,7 +166,10 @@ namespace Sen::Kernel {
             return read(m_position, m_position + size);
         }
 
-        auto get_bytes(const usize&offset, const usize& size) -> Uint8Array {
+        auto sub(
+            const usize&offset, 
+            const usize& size
+        ) -> Uint8Array {
             auto current_position = m_position;
             auto value = read(offset, offset + size);
             thiz.m_position = current_position;

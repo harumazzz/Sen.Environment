@@ -24,15 +24,18 @@ namespace Sen::Kernel::Support::PopCap::Package
                 }
                 if (flag == ResourceInformationListStateFlag::next)
                 {
-                    auto resource_information = ResourceInformation{};
-                    exchange_string_block<u8>(stream, resource_information.path);
-                    exchange_number_fixed<u32>(stream, resource_information.size);
-                    if constexpr (compress)
-                    {
-                        exchange_number_fixed<u32>(stream, resource_information.size_original);
-                    }
-                    exchange_null_block(stream, sizeof(u64));
-                    resource_information_list.append(resource_information);
+                    auto make_resource = [&]() -> ResourceInformation {
+                        auto resource_information = ResourceInformation{};
+                        exchange_string_block<u8>(stream, resource_information.path);
+                        exchange_number_fixed<u32>(stream, resource_information.size);
+                        if constexpr (compress)
+                        {
+                            exchange_number_fixed<u32>(stream, resource_information.size_original);
+                        }
+                        exchange_null_block(stream, sizeof(u64));
+                        return resource_information;
+                    };
+                    resource_information_list.append(make_resource());
                 }
                 assert_conditional(false, fmt::format("{}", Language::get("popcap.package.unpack_failed")), "process_package");
             }
