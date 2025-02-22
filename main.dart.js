@@ -22392,8 +22392,9 @@ this.b=b},
 Cs:function Cs(a,b,c){this.c=a
 this.d=b
 this.a=c},
-RF:function RF(a,b){this.a=a
-this.b=b},
+RF:function RF(a,b,c){this.a=a
+this.b=b
+this.c=c},
 a5e:function a5e(a){this.a=a},
 afJ(){var s=0,r=A.O(t.H)
 var $async$afJ=A.J(function(a,b){if(a===1)return A.L(b,r)
@@ -29768,7 +29769,7 @@ s=A.ag("")
 if(s==null)s=t.K.a(s)
 q.setAttribute("flt-viewport",s)
 q.name="viewport"
-q.content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"
+q.content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 self.document.head.append(q)
 $.ag6()},
 gnf(){return this.a}}
@@ -70154,11 +70155,7 @@ s.e=new A.Gg()
 s.aY()},
 m(){this.aE()},
 b3(){this.cF()},
-a_Q(a){var s
-this.aG(new A.acG(this,a))
-s=this.c
-s.toString
-A.G2(s).fz()},
+a_Q(a){this.aG(new A.acG(this,a))},
 P(a){var s,r,q=this,p=A.ajX(B.OW),o=q.e
 o===$&&A.a()
 s=q.d
@@ -70172,11 +70169,12 @@ A.Cs.prototype={
 P(a){var s=this,r=null,q=A.U(a).ax.a===B.y,p=q?B.e1:B.yR,o=q?B.j:B.l,n=q?B.bp:B.aB,m=A.c([new A.dI(1,B.j6,A.U(a).ax.a===B.y?B.l.kz(0.5):B.FO.kz(0.3),B.Gj,8)],t.sq),l=A.agr(A.k0(12),A.kl("assets/images/logo.png",B.bn,50,50)),k=A.U(a).p1.r,j=t.p
 k=A.q2(A.c([l,B.iB,A.bL("Sen: Environment",r,r,k==null?r:k.Lx(o,22,B.T),r)],j),B.Z,B.D,B.E)
 l=A.U(a).p1.z
-return new A.E7(A.am2(A.c([new A.Eb(new A.dl(p,r,r,r,m,r,B.az),new A.bf(B.ee,A.cC(A.c([k,B.cv,A.bL("Make your own PvZ2 mod with Sen.",r,r,l==null?r:l.dO(n),r)],j),B.a1,B.D,B.E),r),r),s.rm("Home",0),s.rm("Download",1),s.rm("Changelog",2),s.rm("About",3)],j),B.aU,B.ay),r)},
-rm(a,b){var s=null
-return new A.Fw(A.bL(a,s,s,s,s),new A.RF(this,b),this.d===b,s)}}
+return new A.E7(A.am2(A.c([new A.Eb(new A.dl(p,r,r,r,m,r,B.az),new A.bf(B.ee,A.cC(A.c([k,B.cv,A.bL("Make your own PvZ2 mod with Sen.",r,r,l==null?r:l.dO(n),r)],j),B.a1,B.D,B.E),r),r),s.rm("Home",0,a),s.rm("Download",1,a),s.rm("Changelog",2,a),s.rm("About",3,a)],j),B.aU,B.ay),r)},
+rm(a,b,c){var s=null
+return new A.Fw(A.bL(a,s,s,s,s),new A.RF(this,b,c),this.d===b,s)}}
 A.RF.prototype={
-$0(){this.a.c.$1(this.b)},
+$0(){this.a.c.$1(this.b)
+A.G2(this.c).fz()},
 $S:0}
 A.a5e.prototype={
 Oe(a,b){var s,r,q=this.a
