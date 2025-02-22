@@ -2,6 +2,30 @@
 
 namespace Sen::Kernel {
 
+	using u8 = std::uint8_t;
+
+	using u16 = std::uint16_t;
+
+	using u32 = std::uint32_t;
+
+	using u64 = std::uint64_t;
+
+	using i8 = std::int8_t;
+
+	using i16 = std::int16_t;
+
+	using i32 = std::int32_t;
+
+	using i64 = std::int64_t;
+
+	using usize = std::size_t;
+
+	using uchar = unsigned char;
+
+	using f32 = float;
+
+	using f64 = double;
+
 	inline constexpr auto operator "" _c(
 		char c
 	) -> char
@@ -55,7 +79,7 @@ namespace Sen::Kernel {
 		const char* str, std::size_t len
 	) noexcept -> std::string_view
 	{
-		return { str, len };
+		return std::string_view{ str, len };
 	}
 
 	inline constexpr auto operator "" _u8(

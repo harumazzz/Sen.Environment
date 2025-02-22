@@ -12,6 +12,7 @@
     auto debugger(
         Args&&... args
     ) -> void {
+        std::cout << std::boolalpha;
         (std::cout << ... << args) << '\n' << std::flush;
     }
 
