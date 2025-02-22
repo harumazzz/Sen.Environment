@@ -80,19 +80,17 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
 
 }
 
-using namespace Sen::Kernel::Support::PopCap::TextTable;
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::ObjectData, LocStringValues)
 
-JSONCONS_ALL_MEMBER_TRAITS(ObjectData, LocStringValues)
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::ObjectList, LocStringValues)
 
-JSONCONS_ALL_MEMBER_TRAITS(ObjectList, LocStringValues)
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::ObjectEntry<true>, aliases, objclass, objdata)
 
-JSONCONS_ALL_MEMBER_TRAITS(ObjectEntry<true>, aliases, objclass, objdata)
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::ObjectEntry<false>, aliases, objclass, objdata)
 
-JSONCONS_ALL_MEMBER_TRAITS(ObjectEntry<false>, aliases, objclass, objdata)
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::MapLawnStrings, version, objects)
 
-JSONCONS_ALL_MEMBER_TRAITS(MapLawnStrings, version, objects)
-
-JSONCONS_ALL_MEMBER_TRAITS(ListLawnStrings, version, objects)
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::TextTable::ListLawnStrings, version, objects)
 
 template <>
 struct Sen::Kernel::Javascript::Trait<Sen::Kernel::Support::PopCap::TextTable::Type> {

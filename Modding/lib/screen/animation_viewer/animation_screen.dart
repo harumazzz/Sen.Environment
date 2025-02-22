@@ -60,6 +60,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
   late Widget? _animationVisual;
   bool _isPause = false;
 
+  Matrix4? _matrix;
+
   double _maxFrame = 0;
 
   @override
@@ -86,9 +88,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
       splashColor: Colors.blue.withAlpha(30),
       onTap: widget.onUploadFile,
       child: Center(
-        child: _dragging
-            ? Text(los.drop_file_to_upload)
-            : Text(los.upload_file_to_continue),
+        child: _dragging ? Text(los.drop_file_to_upload) : Text(los.upload_file_to_continue),
       ),
     );
   }
@@ -113,8 +113,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
           final file = details.files.first;
           widget.onDragFile(file.path);
           if (widget.visualHelper.hasAnimation) {
-            widget.visualHelper.workingFrameRate =
-                widget.visualHelper.animation.frameRate.toDouble();
+            widget.visualHelper.workingFrameRate = widget.visualHelper.animation.frameRate.toDouble();
           }
         }
       },
@@ -123,23 +122,17 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   void _loadWorkingSprite(int index) {
-    final labelInfo =
-        widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
-    final duration = ((labelInfo.endIndex - labelInfo.startIndex) /
-            widget.visualHelper.workingFrameRate *
-            1000)
-        .toInt();
+    final labelInfo = widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
+    final duration =
+        ((labelInfo.endIndex - labelInfo.startIndex) / widget.visualHelper.workingFrameRate * 1000).toInt();
     widget.animationController.duration = Duration(milliseconds: duration);
-    _animationVisual =
-        widget.visualHelper.visualizeSprite(index, widget.animationController);
+    _animationVisual = widget.visualHelper.visualizeSprite(index, widget.animationController);
     _animationVisual = SizedBox.fromSize(
-      size: Size(widget.visualHelper.animation.size.width,
-          widget.visualHelper.animation.size.height),
+      size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
       child: UnconstrainedBox(
         child: SizedOverflowBox(
           alignment: AlignmentDirectional.topStart,
-          size: Size(widget.visualHelper.animation.size.width,
-              widget.visualHelper.animation.size.height),
+          size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
           child: _animationVisual,
         ),
       ),
@@ -151,94 +144,40 @@ class _AnimationScreenState extends State<AnimationScreen> {
     if (!_isPause) {
       widget.animationController.repeat();
     }
-    final matrix = _transformationController.value;
-    matrix[0] = 2;
-    matrix[1] = 0;
-    matrix[4] = 0;
-    matrix[5] = 2;
-    matrix[12] = -widget.visualHelper.animation.size.width * 4;
-    matrix[13] = -widget.visualHelper.animation.size.height * 4;
-    _transformationController.value = matrix;
+    if (_matrix == null) {
+      final matrix = _transformationController.value;
+      matrix[0] = 2;
+      matrix[1] = 0;
+      matrix[4] = 0;
+      matrix[5] = 2;
+      matrix[12] = -widget.visualHelper.animation.size.width * 4;
+      matrix[13] = -widget.visualHelper.animation.size.height * 4;
+      _matrix = matrix.clone();
+    }
+    _transformationController.value = _matrix!.clone();
   }
-
-  /*
-
-  Widget _buildMainContainer({
-    required double scale,
-    required double xOffset,
-    required double yOffset,
-  }) {
-    return Builder(builder: (context) {
-      return Screenshot(
-        controller: widget.controller,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Transform(
-            transform: widget.visualHelper.transformMatrixFromVariant([
-              xOffset,
-              yOffset,
-            ]),
-            child: Transform.scale(
-              scale: scale,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.6,
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: _animationVisual,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    });
-  }
-  */
-
-  /*
-  Widget _buildAnimationVisual() {
-    return ValueListenableBuilder<double>(
-      valueListenable: _yOffsetNotifier,
-      builder: (context, yOffset, child) {
-        return ValueListenableBuilder<double>(
-          valueListenable: _xOffsetNotifier,
-          builder: (context, xOffset, child) => ValueListenableBuilder<double>(
-            valueListenable: _scaleNotifier,
-            builder: (context, scale, child) {
-              return _buildMainContainer(
-                  scale: scale, xOffset: xOffset, yOffset: yOffset);
-            },
-          ),
-        );
-      },
-    );
-  }
-  */
 
   Widget _buildMainAnimationScreen() {
     return Screenshot(
         controller: widget.controller,
-        child:  ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: InteractiveViewer.builder(
-          panEnabled: true,
-          scaleEnabled: true,
-          scaleFactor: 1000,
-          maxScale: 10,
-          transformationController: _transformationController,
-          builder: (context, quad) {
-            return Transform.scale(
-              scale: 0.5,
-              child: SizedBox(
-                  width: widget.visualHelper.animation.size.width * 5,
-                  height: widget.visualHelper.animation.size.height * 5,
-                  child: _animationVisual),
-            );
-          }),
-    ));
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: InteractiveViewer.builder(
+              panEnabled: true,
+              scaleEnabled: true,
+              scaleFactor: 1000,
+              maxScale: 10,
+              transformationController: _transformationController,
+              builder: (context, quad) {
+                return Transform.scale(
+                  scale: 0.5,
+                  child: SizedBox(
+                      width: widget.visualHelper.animation.size.width * 5,
+                      height: widget.visualHelper.animation.size.height * 5,
+                      child: _animationVisual),
+                );
+              }),
+        ));
   }
 
   Widget _painterOrUpload() {
@@ -262,43 +201,50 @@ class _AnimationScreenState extends State<AnimationScreen> {
     return ValueListenableBuilder<double>(
       valueListenable: notifier,
       builder: (context, value, child) {
+        final textStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
+
         return Card(
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              Text(
-                label,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall!
-                    .copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: Tooltip(
-                  message: (value * _maxFrame).toStringAsFixed(0),
-                  showDuration: Duration.zero,
-                  child: Slider(
-                    value: value,
-                    min: min,
-                    max: max,
-                    onChanged: (val) {
-                      if (_maxFrame > 0) {
-                        widget.animationController
-                            .animateTo(val, duration: Duration.zero);
-                        if (!_isPause) {
-                          widget.animationController.repeat();
-                        }
-                      }
-                    },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Text('$label: ', style: textStyle),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Tooltip(
+                    message: (value * _maxFrame).toStringAsFixed(0),
+                    showDuration: Duration.zero,
+                    child: Row(
+                      children: [
+                        Text(min.toStringAsFixed(0), style: textStyle),
+                        Expanded(
+                          child: Slider(
+                            value: value,
+                            min: min,
+                            max: max,
+                            onChanged: (val) => _onSliderChanged(val),
+                          ),
+                        ),
+                        Text(_maxFrame.toStringAsFixed(0), style: textStyle),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  void _onSliderChanged(double val) {
+    if (_maxFrame > 0) {
+      widget.animationController.animateTo(val, duration: Duration.zero);
+      if (!_isPause) {
+        widget.animationController.repeat();
+      }
+    }
   }
 
   Widget _buildContainer() {
@@ -335,7 +281,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildFrameSilder(
-                label: "Frame", //TODO:
+                label: los.frame,
                 notifier: _frameNotifier,
                 min: widget.animationController.lowerBound,
                 max: widget.animationController.upperBound,
@@ -353,6 +299,13 @@ class _AnimationScreenState extends State<AnimationScreen> {
           },
           scaleNotifier: _scaleNotifier,
           setState: setState,
+          resetFocus: () {
+            setState(() {
+              if (_matrix != null) {
+                _transformationController.value = _matrix!.clone();
+              }
+            });
+          },
           forcePlay: () {
             setState(() {
               _isPause = false;

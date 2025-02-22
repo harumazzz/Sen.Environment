@@ -90,10 +90,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
     };
 }
 
-using namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup;
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::GeneralResource, path);
 
-JSONCONS_ALL_MEMBER_TRAITS(GeneralResource, path);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::TextureResource, path, dimension);
 
-JSONCONS_ALL_MEMBER_TRAITS(TextureResource, path, dimension);
-
-JSONCONS_ALL_MEMBER_TRAITS(PacketInformation, version, compression, resources);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::PacketInformation, version, compression, resources);

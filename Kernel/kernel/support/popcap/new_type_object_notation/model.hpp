@@ -212,21 +212,19 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
      };
 }
 
-using namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation;
+JSONCONS_ENUM_NAME_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::GroupType, (simple, "simple"), (composite, "composite"));
 
-JSONCONS_ENUM_NAME_TRAITS(GroupType, (simple, "simple"), (composite, "composite"));
+JSONCONS_ENUM_NAME_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::ResourceTypeEnumeration, (image, "Image"), (pop_anim, "PopAnim"), (sound_bank, "SoundBank"), (file, "File"), (prime_font, "PrimeFont"), (render_effect, "RenderEffect"), (decoded_sound_bank, "DecodedSoundBank"));
 
-JSONCONS_ENUM_NAME_TRAITS(ResourceTypeEnumeration, (image, "Image"), (pop_anim, "PopAnim"), (sound_bank, "SoundBank"), (file, "File"), (prime_font, "PrimeFont"), (render_effect, "RenderEffect"), (decoded_sound_bank, "DecodedSoundBank"));
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::TypeInfo, 2, type, slot, x, y, ax, ay, aw, ah, cols, rows, id, path, parent, forceOriginalVectorSymbolSize);
 
-JSONCONS_N_MEMBER_TRAITS(TypeInfo, 2, type, slot, x, y, ax, ay, aw, ah, cols, rows, id, path, parent, forceOriginalVectorSymbolSize);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::AtlasInfo, type, slot, width, height, atlas, runtime, id, path);
 
-JSONCONS_ALL_MEMBER_TRAITS(AtlasInfo, type, slot, width, height, atlas, runtime, id, path);
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::SimpleResource, 1, type, res, id, parent, resources);
 
-JSONCONS_N_MEMBER_TRAITS(SimpleResource, 1, type, res, id, parent, resources);
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::CompositeSubgroup, 0, res, id);
 
-JSONCONS_N_MEMBER_TRAITS(CompositeSubgroup, 0, res, id);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::CompositeGroup, type, id, subgroups);
 
-JSONCONS_ALL_MEMBER_TRAITS(CompositeGroup, type, id, subgroups);
-
-JSONCONS_ALL_MEMBER_TRAITS(ResourcesModel, version, content_version, slot_count, groups);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::NewTypeObjectNotation::ResourcesModel, version, content_version, slot_count, groups);
 

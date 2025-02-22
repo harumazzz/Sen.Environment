@@ -157,14 +157,12 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
     };
 }
 
-using namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2;
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::CharacterFontWidget2::CharacterItem, index, value);
 
-JSONCONS_ALL_MEMBER_TRAITS(CharacterItem, index, value);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::CharacterFontWidget2::FontKerning, index, offset);
 
-JSONCONS_ALL_MEMBER_TRAITS(FontKerning, index, offset);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::CharacterFontWidget2::FontCharacter, index, image_rect_x, image_rect_y, image_rect_width, image_rect_height, image_offset_x, image_offset_y, kerning_first, kerning_count, width, order);
 
-JSONCONS_ALL_MEMBER_TRAITS(FontCharacter, index, image_rect_x, image_rect_y, image_rect_width, image_rect_height, image_offset_x, image_offset_y, kerning_first, kerning_count, width, order);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::CharacterFontWidget2::FontLayer, name, tag_require, tag_exclude, kerning, character, multiply_red, multiply_green, multiply_blue, multiply_alpha, add_red, add_green, add_blue, add_alpha, image_file, draw_mode, offset_x, offset_y, spacing, minimum_point_size, maximum_point_size, point_size, ascent, ascent_padding, height, default_height, line_spacing_offset, base_order);
 
-JSONCONS_ALL_MEMBER_TRAITS(FontLayer, name, tag_require, tag_exclude, kerning, character, multiply_red, multiply_green, multiply_blue, multiply_alpha, add_red, add_green, add_blue, add_alpha, image_file, draw_mode, offset_x, offset_y, spacing, minimum_point_size, maximum_point_size, point_size, ascent, ascent_padding, height, default_height, line_spacing_offset, base_order);
-
-JSONCONS_ALL_MEMBER_TRAITS(FontWidget, ascent, ascent_padding, height, line_sepacing_offset, initialized, default_point_size, character, layer, source_file, error_header, point_size, tag, scale, force_scaled_image_white, activate_all_layer);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::CharacterFontWidget2::FontWidget, ascent, ascent_padding, height, line_sepacing_offset, initialized, default_point_size, character, layer, source_file, error_header, point_size, tag, scale, force_scaled_image_white, activate_all_layer);

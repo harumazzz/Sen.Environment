@@ -20,11 +20,11 @@ namespace Sen::Kernel::Compression::Zlib {
             if constexpr (type == Type::deflate) {
                 actual_window_bits = -actual_window_bits;
             } else if constexpr (type == Type::zlib) {
-              //  actual_window_bits = actual_window_bits;
+              actual_window_bits = actual_window_bits;
             } else {
                 actual_window_bits += 16_size;
             }
-            const auto allocate_size = compressBound(source.size());
+            const auto allocate_size = Subprojects::zlib::compressBound(source.size());
             destination.allocate(allocate_size);
             auto z_stream = Subprojects::zlib::z_stream{
                 .next_in = reinterpret_cast<Subprojects::zlib::Bytef*>(source.begin()),
@@ -72,28 +72,6 @@ namespace Sen::Kernel::Compression::Zlib {
             destination.resize(z_stream.total_out);
             #pragma clang diagnostic pop
         }
-
-        /*
-        static auto estimate_size(
-            const usize& raw_size
-        ) -> usize
-        {
-            auto wrap_size = 0_size;
-            if constexpr (Format == Type::deflate) {
-                wrap_size = 0_size;
-            }
-            else if constexpr (Format == Type::zlib) {
-                wrap_size = 2_size + 4_size + 4_size;
-            }
-            else {
-                wrap_size = 10_size + 8_size;
-            }
-            if (WindowsBits == 15_size && MemoryLevel == 8_size) {
-                return wrap_size + (raw_size + (raw_size >> 12_size) + (raw_size >> 14_size) + (raw_size >> 25_size) + 13_size - 6_size);
-            }
-            return wrap_size + (raw_size + ((raw_size + 7_size) >> 3_size) + ((raw_size + 63_size) >> 6_size) + 5_size);
-        }
-        */
 
         template <auto level = 9, auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, auto memory_level = Subprojects::zlib::$MAX_MEM_LEVEL, auto strategy = Strategy::default_mode> requires is_valid_compress<type, level, windows_bits, memory_level, strategy>
         static auto process (

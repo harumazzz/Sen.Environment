@@ -26,6 +26,9 @@ namespace Sen::Kernel::Compression::Zlib {
             is_between_v<level, 0_size, Subprojects::zlib::$Z_BEST_COMPRESSION> && is_between_v<windows_bits, 8_size, Subprojects::zlib::$MAX_WBITS> && is_between_v<memory_level, 1_size, Subprojects::zlib::$MAX_MEM_LEVEL>
     && (!(windows_bits == 8_size && type == Type::zlib)) && std::is_same_v<type_of<strategy>, Strategy>;
 
+    template <typename T>
+    concept is_buffer_container = (std::is_same_v<T, Uint8Array> || std::is_same_v<T, Uint8List>);
+
     struct Common {
 
     };

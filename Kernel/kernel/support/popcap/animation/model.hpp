@@ -247,28 +247,26 @@ namespace Sen::Kernel::Support::PopCap::Animation {
     };
 }
 
-using namespace Sen::Kernel::Support::PopCap::Animation;
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationPosition, x, y);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationPosition, x, y);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationSize, width, height);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationSize, width, height);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::Dimension, width, height);
 
-JSONCONS_ALL_MEMBER_TRAITS(Dimension, width, height);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationImage, path, id, dimension, transform);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationImage, path, id, dimension, transform);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationWorkArea, start, duration);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationWorkArea, start, duration);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationCommand, command, argument);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationCommand, command, argument);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationChange, index, transform, color, source_rectangle, sprite_frame_number);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationChange, index, transform, color, source_rectangle, sprite_frame_number);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationAppend, index, name, resource, sprite, additive, preload_frame, time_scale);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationAppend, index, name, resource, sprite, additive, preload_frame, time_scale);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationFrame, label, stop, remove, command, append, change);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationFrame, label, stop, remove, command, append, change);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::AnimationSprite, name, work_area, frame);
 
-JSONCONS_ALL_MEMBER_TRAITS(AnimationSprite, name, work_area, frame);
-
-JSONCONS_ALL_MEMBER_TRAITS(SexyAnimation, version, frame_rate, position, size, image, sprite, main_sprite);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Animation::SexyAnimation, version, frame_rate, position, size, image, sprite, main_sprite);
 
 

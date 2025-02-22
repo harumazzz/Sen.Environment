@@ -8,10 +8,10 @@ namespace Sen::Kernel::Compression::Zlib {
 
     struct Uncompress : Common {
 
-        template <auto format, auto windows_bits> requires is_valid_uncompress<format, windows_bits>
+        template <auto format, auto windows_bits, typename Container> requires is_valid_uncompress<format, windows_bits>
         static auto process_whole (
             Uint8Array& source,
-            Uint8List& destination
+            Container& destination
         ) -> void {
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -23,13 +23,20 @@ namespace Sen::Kernel::Compression::Zlib {
             } else {
                 actual_window_bits += 16_size;
             }
-            destination.allocate(source.size() * 4_size);
+            auto avail_out = k_none_size;
+            if constexpr (std::is_same_v<Container, Uint8Array>) {
+                avail_out = destination.size();
+            }
+            else {
+                destination.allocate(source.size() * 8_size);
+                avail_out = destination.capacity();
+            }
             auto z_stream = Subprojects::zlib::z_stream{
                 .next_in = reinterpret_cast<Subprojects::zlib::Bytef*>(source.begin()),
                 .avail_in = static_cast<Subprojects::zlib::uInt>(source.size()),
                 .total_in = 0,
                 .next_out = reinterpret_cast<Subprojects::zlib::Bytef*>(destination.begin()),
-                .avail_out = static_cast<Subprojects::zlib::uInt>(destination.capacity()),
+                .avail_out = static_cast<Subprojects::zlib::uInt>(avail_out),
                 .total_out = 0,
                 .msg = nullptr,
                 .state = nullptr,
@@ -56,20 +63,19 @@ namespace Sen::Kernel::Compression::Zlib {
             state = Subprojects::zlib::inflateEnd(
                 &z_stream
             );
-            assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to uncompress zlib", "process_whole");
-            assert_conditional(z_stream.avail_in == 0, "Failed to uncompress zlib", "process_whole");
-            destination.resize(z_stream.total_out);
+            assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to uncompress zlib state", "process_whole");
+            if constexpr (std::is_same_v<Container, Uint8List>) {
+                destination.resize(z_stream.total_out);
+            }
             #pragma clang diagnostic pop
         }
 
-        template <auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS> requires is_valid_uncompress<type, windows_bits>
+        template <auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Container> requires is_valid_uncompress<type, windows_bits> && is_buffer_container<Container>
         static auto process (
             Uint8Array& source,
-            Uint8Array& destination
+            Container& destination
         ) -> void {
-            auto buffer = Uint8List{};
-            process_whole<type, windows_bits>(source, buffer);
-            destination.assign(buffer);
+            process_whole<type, windows_bits>(source, destination);
         }
     };
 

@@ -134,14 +134,12 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
     };
 }
 
-using namespace Sen::Kernel::Support::PopCap::ReAnimation;
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ReAnimation::TransformDesktop, 0, x, y, kx, ky, sx, sy, f, a, image, font, text);
 
-JSONCONS_N_MEMBER_TRAITS(TransformDesktop, 0, x, y, kx, ky, sx, sy, f, a, image, font, text);
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ReAnimation::TransformMobile, 0, x, y, kx, ky, sx, sy, f, a, image, font, text);
 
-JSONCONS_N_MEMBER_TRAITS(TransformMobile, 0, x, y, kx, ky, sx, sy, f, a, image, font, text);
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ReAnimation::TransformTelevision, 0, x, y, kx, ky, sx, sy, f, a, image, image_path, image_another, image_path_another, font, text);
 
-JSONCONS_N_MEMBER_TRAITS(TransformTelevision, 0, x, y, kx, ky, sx, sy, f, a, image, image_path, image_another, image_path_another, font, text);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ReAnimation::Track, name, transform);
 
-JSONCONS_ALL_MEMBER_TRAITS(Track, name, transform);
-
-JSONCONS_ALL_MEMBER_TRAITS(ReanimInfo, frame_rate, track);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ReAnimation::ReanimInfo, frame_rate, track);

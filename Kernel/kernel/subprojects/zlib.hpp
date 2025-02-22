@@ -55,6 +55,8 @@ namespace Sen::Kernel::Subprojects::zlib {
 	using ::inflate;
 
 	using ::inflateEnd;
+
+	using ::compressBound;
 	
 
 }

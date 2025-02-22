@@ -39,8 +39,6 @@ namespace Sen::Kernel::Support::PopCap::Package
     };
 }
 
-using namespace Sen::Kernel::Support::PopCap::Package;
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Package::Resource, path);
 
-JSONCONS_ALL_MEMBER_TRAITS(Resource, path);
-
-JSONCONS_ALL_MEMBER_TRAITS(PackageInfo, resource);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::Package::PackageInfo, resource);

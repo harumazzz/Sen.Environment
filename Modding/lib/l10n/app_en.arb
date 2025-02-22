@@ -352,5 +352,7 @@
 	"narration_completed": "Narration Completed",
 	"level_tutorial_when": "Level Tutorial When",
 	"level_toggle": "Level Toggle",
-	"event_settings": "Event Settings"
+	"event_settings": "Event Settings",
+	"frame": "Frame",
+	"reset_focus": "Reset Focus"
 }

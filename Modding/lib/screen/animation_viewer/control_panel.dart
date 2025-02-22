@@ -14,6 +14,7 @@ class ControlPanel extends StatelessWidget {
     required this.setState,
     required this.scaleNotifier,
     required this.forcePlay,
+    required this.resetFocus,
     required this.visualHelper,
   });
 
@@ -31,19 +32,7 @@ class ControlPanel extends StatelessWidget {
 
   final void Function() forcePlay;
 
-  void _zoomInAction() {
-    scaleNotifier.value *= 2;
-    if (scaleNotifier.value > 300) {
-      scaleNotifier.value = 300;
-    }
-  }
-
-  void _zoomOutAction() {
-    scaleNotifier.value /= 2;
-    if (scaleNotifier.value < 0.1) {
-      scaleNotifier.value = 0.1;
-    }
-  }
+  final void Function() resetFocus;
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +49,9 @@ class ControlPanel extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ControlButton(
-              icon: Symbols.zoom_out,
-              tooltip: los.zoom_out,
-              onPressed: _zoomOutAction,
+              icon: Symbols.reset_focus,
+              tooltip: los.reset_focus,
+              onPressed: resetFocus,
             ),
             ControlButton(
               icon: Symbols.arrow_back,
@@ -101,11 +90,6 @@ class ControlPanel extends StatelessWidget {
                 }
                 setState(() {});
               },
-            ),
-            ControlButton(
-              icon: Symbols.zoom_in,
-              tooltip: los.zoom_in,
-              onPressed: _zoomInAction,
             ),
             ControlButton(
               icon: Symbols.repeat,
