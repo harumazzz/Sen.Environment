@@ -77,6 +77,14 @@ namespace Sen::Kernel {
             return value;
         }
 
+        auto set_position(
+            const usize &index
+        ) -> void {
+             assert_conditional(index < thiz.m_file.size(), "Index must be smaller than data size", "set_position");
+             thiz.m_position = index;
+         }
+
+
         auto operator +=(
            const usize& index
        ) -> ReadFileStream& {

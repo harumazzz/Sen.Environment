@@ -50,25 +50,32 @@ class AnimationScreen extends StatefulWidget {
 }
 
 class _AnimationScreenState extends State<AnimationScreen> {
-  late ValueNotifier<double> _xOffsetNotifier;
-  late ValueNotifier<double> _yOffsetNotifier;
+  // late ValueNotifier<double> _xOffsetNotifier;
+  // late ValueNotifier<double> _yOffsetNotifier;
   bool _dragging = false;
   late ValueNotifier<double> _scaleNotifier;
+  late ValueNotifier<double> _frameNotifier;
+  late TransformationController _transformationController;
 
   late Widget? _animationVisual;
   bool _isPause = false;
 
+  double _maxFrame = 0;
+
   @override
   void initState() {
     _scaleNotifier = ValueNotifier(1.0);
-    _xOffsetNotifier = ValueNotifier(0.0);
-    _yOffsetNotifier = ValueNotifier(0.0);
+    // _xOffsetNotifier = ValueNotifier(0.0);
+    // _yOffsetNotifier = ValueNotifier(0.0);
+    _frameNotifier = ValueNotifier(0.0);
     super.initState();
     _animationVisual = null;
+    _transformationController = TransformationController();
   }
 
   @override
   void dispose() {
+    _transformationController.dispose();
     super.dispose();
     return;
   }
@@ -79,7 +86,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
       splashColor: Colors.blue.withAlpha(30),
       onTap: widget.onUploadFile,
       child: Center(
-        child: _dragging ? Text(los.drop_file_to_upload) : Text(los.upload_file_to_continue),
+        child: _dragging
+            ? Text(los.drop_file_to_upload)
+            : Text(los.upload_file_to_continue),
       ),
     );
   }
@@ -104,7 +113,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
           final file = details.files.first;
           widget.onDragFile(file.path);
           if (widget.visualHelper.hasAnimation) {
-            widget.visualHelper.workingFrameRate = widget.visualHelper.animation.frameRate.toDouble();
+            widget.visualHelper.workingFrameRate =
+                widget.visualHelper.animation.frameRate.toDouble();
           }
         }
       },
@@ -113,25 +123,45 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   void _loadWorkingSprite(int index) {
-    final labelInfo = widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
-    final duration =
-        ((labelInfo.endIndex - labelInfo.startIndex) / widget.visualHelper.workingFrameRate * 1000).toInt();
+    final labelInfo =
+        widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
+    final duration = ((labelInfo.endIndex - labelInfo.startIndex) /
+            widget.visualHelper.workingFrameRate *
+            1000)
+        .toInt();
     widget.animationController.duration = Duration(milliseconds: duration);
-    _animationVisual = widget.visualHelper.visualizeSprite(index, widget.animationController);
+    _animationVisual =
+        widget.visualHelper.visualizeSprite(index, widget.animationController);
     _animationVisual = SizedBox.fromSize(
-      size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+      size: Size(widget.visualHelper.animation.size.width,
+          widget.visualHelper.animation.size.height),
       child: UnconstrainedBox(
         child: SizedOverflowBox(
           alignment: AlignmentDirectional.topStart,
-          size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+          size: Size(widget.visualHelper.animation.size.width,
+              widget.visualHelper.animation.size.height),
           child: _animationVisual,
         ),
       ),
     );
+    _maxFrame = (labelInfo.endIndex - labelInfo.startIndex).toDouble();
+    widget.animationController.addListener(() {
+      _frameNotifier.value = widget.animationController.value;
+    });
     if (!_isPause) {
       widget.animationController.repeat();
     }
+    final matrix = _transformationController.value;
+    matrix[0] = 2;
+    matrix[1] = 0;
+    matrix[4] = 0;
+    matrix[5] = 2;
+    matrix[12] = -widget.visualHelper.animation.size.width * 4;
+    matrix[13] = -widget.visualHelper.animation.size.height * 4;
+    _transformationController.value = matrix;
   }
+
+  /*
 
   Widget _buildMainContainer({
     required double scale,
@@ -166,7 +196,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
       );
     });
   }
+  */
 
+  /*
   Widget _buildAnimationVisual() {
     return ValueListenableBuilder<double>(
       valueListenable: _yOffsetNotifier,
@@ -176,18 +208,43 @@ class _AnimationScreenState extends State<AnimationScreen> {
           builder: (context, xOffset, child) => ValueListenableBuilder<double>(
             valueListenable: _scaleNotifier,
             builder: (context, scale, child) {
-              return _buildMainContainer(scale: scale, xOffset: xOffset, yOffset: yOffset);
+              return _buildMainContainer(
+                  scale: scale, xOffset: xOffset, yOffset: yOffset);
             },
           ),
         );
       },
     );
   }
+  */
+
+  Widget _buildMainAnimationScreen() {
+    return Screenshot(
+        controller: widget.controller,
+        child:  ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: InteractiveViewer.builder(
+          panEnabled: true,
+          scaleEnabled: true,
+          scaleFactor: 1000,
+          maxScale: 10,
+          transformationController: _transformationController,
+          builder: (context, quad) {
+            return Transform.scale(
+              scale: 0.5,
+              child: SizedBox(
+                  width: widget.visualHelper.animation.size.width * 5,
+                  height: widget.visualHelper.animation.size.height * 5,
+                  child: _animationVisual),
+            );
+          }),
+    ));
+  }
 
   Widget _painterOrUpload() {
     if (widget.visualHelper.hasAnimation && widget.visualHelper.hasMedia) {
       _loadWorkingSprite(widget.visualHelper.animation.sprite.length);
-      return _buildAnimationVisual();
+      return _buildMainAnimationScreen();
     } else {
       return ClipRRect(
         clipBehavior: Clip.hardEdge,
@@ -196,7 +253,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
     }
   }
 
-  Widget _buildSliderRow({
+  Widget _buildFrameSilder({
     required String label,
     required ValueNotifier<double> notifier,
     required double min,
@@ -211,18 +268,28 @@ class _AnimationScreenState extends State<AnimationScreen> {
               const SizedBox(width: 16),
               Text(
                 label,
-                style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall!
+                    .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(width: 8.0),
               Expanded(
                 child: Tooltip(
-                  message: value.toStringAsFixed(2),
+                  message: (value * _maxFrame).toStringAsFixed(0),
+                  showDuration: Duration.zero,
                   child: Slider(
-                    value: value.clamp(min, max),
+                    value: value,
                     min: min,
                     max: max,
                     onChanged: (val) {
-                      notifier.value = val;
+                      if (_maxFrame > 0) {
+                        widget.animationController
+                            .animateTo(val, duration: Duration.zero);
+                        if (!_isPause) {
+                          widget.animationController.repeat();
+                        }
+                      }
                     },
                   ),
                 ),
@@ -267,21 +334,12 @@ class _AnimationScreenState extends State<AnimationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSliderRow(
-                label: los.x,
-                notifier: _xOffsetNotifier,
-                min: -800,
-                max: 800,
-              ),
-              const SizedBox(height: 4.0),
-              const Divider(),
-              const SizedBox(height: 4.0),
-              _buildSliderRow(
-                label: los.y,
-                notifier: _yOffsetNotifier,
-                min: -400,
-                max: 400,
-              ),
+              _buildFrameSilder(
+                label: "Frame", //TODO:
+                notifier: _frameNotifier,
+                min: widget.animationController.lowerBound,
+                max: widget.animationController.upperBound,
+              )
             ],
           ),
         ),

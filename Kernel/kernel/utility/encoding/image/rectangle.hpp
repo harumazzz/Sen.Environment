@@ -125,3 +125,6 @@ namespace Sen::Kernel::Encoding::Image {
 
     };
 }
+
+
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Encoding::Image::Rectangle, width, height);

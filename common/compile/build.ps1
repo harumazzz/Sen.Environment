@@ -5,7 +5,7 @@ cd ../Script
 cd ../Shell
 ./build.ps1
 cd ../
-Copy-Item -Path ./Shell/build/Debug/Shell.exe -Destination ./Kernel/build/kernel/Debug/
+Copy-Item -Path ./Shell/build/Release/Shell.exe -Destination ./Kernel/build/kernel/Release/
 $string = '@echo off
 
 set home=%~dp0%
@@ -20,8 +20,8 @@ set /p _=Press ^<ENTER^> to ^exit^ program...
 set ERRORLEVEL=0
 '
 $script_target = (Get-Item .).FullName + "\Script\build\main.js"
-Set-Content ./Kernel/build/kernel/Debug/launch.bat $string.Replace("destination", $script_target)
-$TargetPath = (Get-Item .).FullName + "/Kernel/build/kernel/Debug"
+Set-Content ./Kernel/build/kernel/Release/launch.bat $string.Replace("destination", $script_target)
+$TargetPath = (Get-Item .).FullName + "/Kernel/build/kernel/Release"
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\launch.lnk")
 $Shortcut.TargetPath = $TargetPath + ".\launch.bat"

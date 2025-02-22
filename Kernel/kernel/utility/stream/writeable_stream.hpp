@@ -117,6 +117,7 @@ namespace Sen::Kernel {
         auto string_of(const String &value) -> void {
             thiz.template write<T>(static_cast<T>(value.size()));
             thiz.string(value);
+
         }
 
         auto string_null_terminator(
@@ -147,19 +148,28 @@ namespace Sen::Kernel {
         auto string(
             const std::string_view &source
         ) -> void {
-            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(source.data()), source.size());
+            if (!source.empty())
+            {
+                static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(source.data()), source.size());
+            }
         }
 
         auto string(
             const String &value
         ) -> void {
-            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
+            if (!value.empty())
+            {
+                static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
+            }
         }
 
         auto string(
             const StringView &value
         ) -> void {
-            static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
+            if (!value.empty())
+            {
+                static_cast<Derived*>(this)->raw(reinterpret_cast<const uint8_t *>(value.begin()), value.size());
+            }
         }
 
     };

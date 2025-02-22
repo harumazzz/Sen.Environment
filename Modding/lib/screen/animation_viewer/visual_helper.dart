@@ -144,6 +144,14 @@ class VisualHelper {
     return result;
   }
 
+  bool containSprite(int index) {
+  if (0 <= index && index <= animation.sprite.length) {
+        return true;
+      } else {
+        return false;
+      }
+  }
+
   Widget visualizeImage(
     int index,
   ) {

@@ -37,7 +37,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
 
   late List<String> _sprite;
@@ -46,6 +46,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   late List<String> _label;
   late TextEditingController _controller;
   late AnimationController _animationController;
+  late AnimationController _staticController;
   String? _animationFile;
   String? _mediaDirectory;
 
@@ -55,6 +56,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     _animationController = AnimationController(vsync: this);
+    _staticController = AnimationController(vsync: this);
+    _staticController.stop();
     _controller = TextEditingController();
     _visualHelper = VisualHelper(
       context: context,
@@ -71,6 +74,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
+    _staticController.dispose();
     _controller.dispose();
     _visualHelper.dispose();
     super.dispose();
@@ -328,6 +332,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   void _updateScreens() {
     final mediaScreen = MediaScreen(
+      staticController: _staticController,
       visualHelper: _visualHelper,
       sprite: _sprite,
       image: _image,

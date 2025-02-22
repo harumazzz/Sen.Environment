@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/screen/animation_viewer/visual_helper.dart';
 
 class ImagePage extends StatelessWidget {
   const ImagePage({
     super.key,
+    required this.visualHelper,
     required this.image,
   });
+
+  final VisualHelper visualHelper;
 
   final List<String> image;
 
@@ -23,7 +27,17 @@ class ImagePage extends StatelessWidget {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(12),
-          leading: const Icon(Symbols.image, size: 40),
+          leading: visualHelper.imageSource[index] == null
+              ? const Icon(Symbols.broken_image, size: 40)
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image(
+                    image: visualHelper.imageSource[index]!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
           title: Text(image[index], style: Theme.of(context).textTheme.titleSmall),
           trailing: Checkbox(
             value: context.watch<SelectedImageBloc>().state.value[index],

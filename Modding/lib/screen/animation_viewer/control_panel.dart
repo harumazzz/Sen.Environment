@@ -76,7 +76,7 @@ class ControlPanel extends StatelessWidget {
               },
             ),
             ControlButton(
-              icon: !isPause ? Symbols.play_arrow : Symbols.pause,
+              icon: !isPause ? Symbols.pause : Symbols.play_arrow,
               tooltip: isPause ? los.play : los.stop,
               onPressed: () {
                 setState(() {

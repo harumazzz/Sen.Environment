@@ -166,6 +166,13 @@ namespace Sen::Kernel {
             return read(m_position, m_position + size);
         }
 
+        auto get_bytes(const usize&offset, const usize& size) -> Uint8Array {
+            auto current_position = m_position;
+            auto value = read(offset, offset + size);
+            thiz.m_position = current_position;
+            return value;
+        }
+
         template<typename T> requires is_numeric_v<T>
         auto read() -> T {
             return static_cast<Derived*>(this)->template read_impl<T>();

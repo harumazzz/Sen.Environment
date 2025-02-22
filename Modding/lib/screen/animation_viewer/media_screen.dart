@@ -13,6 +13,7 @@ class MediaScreen extends StatelessWidget {
   final List<String> image;
   final List<String> media;
   final VisualHelper visualHelper;
+  final AnimationController staticController;
 
   const MediaScreen({
     super.key,
@@ -20,6 +21,7 @@ class MediaScreen extends StatelessWidget {
     required this.image,
     required this.media,
     required this.visualHelper,
+    required this.staticController,
   });
 
   @override
@@ -74,9 +76,12 @@ class MediaScreen extends StatelessWidget {
                 media: media,
               ),
               ImagePage(
+                visualHelper: visualHelper,
                 image: image,
               ),
               SpritePage(
+                staticController: staticController,
+                visualHelper: visualHelper,
                 sprite: sprite,
               ),
             ],

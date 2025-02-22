@@ -195,6 +195,11 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_function_by_proxy<&Support::PopCap::Animation::Encode::process_fs>("encode_fs"_s);
         }
         {
+            auto s_ResourceStreamGroup = s_PopCap.add_space("ResourceStreamGroup"_s);
+            s_ResourceStreamGroup.add_function_by_proxy<&Support::PopCap::ResourceStreamGroup::Unpack::process_fs>("unpack_fs"_s)
+            .add_function_by_proxy<&Support::PopCap::ResourceStreamGroup::Pack::process_fs>("pack_fs"_s);
+        }
+        {
             auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
             s_ReAnimation.add_function_by_proxy<&Support::PopCap::ReAnimation::Decode::process_fs>("decode_fs"_s)
             .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s)
@@ -212,12 +217,12 @@ namespace Sen::Kernel::Interface::Runtime {
 
     inline auto make_exception(
     ) -> List<String> {
-        auto exception_message = List<String>{4_size};
-        exception_message.append("display"_s);
-        exception_message.append(StringHelper::make_string(parse_exception().what()));
-        exception_message.append(""_s);
-        exception_message.append("red"_s);
-        return exception_message;
+        return make_list<String>(
+            "display"_s,
+            StringHelper::make_string(parse_exception().what()),
+            ""_s,
+            "red"_s
+        );
     };
 
 }		
