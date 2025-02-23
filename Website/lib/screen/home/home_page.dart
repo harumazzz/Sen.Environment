@@ -223,19 +223,17 @@ class _HomePageState extends State<HomePage> {
                 width: isSmallScreen ? double.infinity : constraints.maxWidth * 0.6,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 12.0,
                   children: [
                     Text(
                       'Why Sen?',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 12.0),
                     _buildText('Improve your mod production speed by 20% with Sen'),
-                    const SizedBox(height: 12.0),
                     _buildRichText(
                       'Community Support: ',
                       'Sen comes with a big community to help you modify the game easily.',
                     ),
-                    const SizedBox(height: 12.0),
                     _buildRichText(
                       'Quality Assurance: ',
                       'Sen offers tons of tools to streamline your workflow.',
@@ -302,19 +300,16 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 16.0,
               children: [
                 _displayLogo(MediaQuery.of(context).size.width < 600),
-                const SizedBox(height: 16.0),
                 _introduceText(context),
-                const SizedBox(height: 16.0),
                 _displayText(context),
-                const SizedBox(height: 16.0),
                 _buttonRow(),
-                const SizedBox(height: 16.0),
                 _previewImage(context),
-                const SizedBox(height: 32.0),
+                const SizedBox(height: 16.0),
                 _description(context),
-                const SizedBox(height: 32.0),
+                const SizedBox(height: 16.0),
               ],
             ),
           ),

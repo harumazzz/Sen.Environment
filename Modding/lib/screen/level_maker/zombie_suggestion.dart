@@ -84,6 +84,7 @@ class _ZombieSelectionState extends State<ZombieSelection> {
         }
         return Row(
           mainAxisSize: MainAxisSize.min,
+          spacing: 20.0,
           children: [
             Expanded(
               child: TextField(
@@ -91,7 +92,6 @@ class _ZombieSelectionState extends State<ZombieSelection> {
                 focusNode: focusNode,
               ),
             ),
-            const SizedBox(width: 20),
             Tooltip(
               message: los.pick_a_zombie,
               child: IconButton(

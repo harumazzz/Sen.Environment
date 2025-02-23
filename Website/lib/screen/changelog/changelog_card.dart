@@ -42,6 +42,7 @@ class ChangelogCard extends StatelessWidget {
   Widget _buildHeader(bool isSmallScreen, Color textColor) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 12.0,
       children: [
         Container(
           width: isSmallScreen ? 30 : 40,
@@ -53,9 +54,9 @@ class ChangelogCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 4.0,
           children: [
             Text(
               'Version: ${changelog.version}',
@@ -65,7 +66,6 @@ class ChangelogCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
             Text(
               'Date: ${changelog.date?.toLocal().toString().split(' ')[0]}',
               style: TextStyle(

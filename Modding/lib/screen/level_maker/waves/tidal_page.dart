@@ -45,9 +45,9 @@ class _TidalPageState extends State<TidalPage> {
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         child: Column(
+          spacing: 20.0,
           children: [
             _buildTidalCard(context, los),
-            const SizedBox(height: 20.0),
             _buildSaveButton(los),
           ],
         ),
@@ -67,9 +67,9 @@ class _TidalPageState extends State<TidalPage> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16.0,
           children: [
             _buildCardHeader(context, los),
-            const SizedBox(height: 16.0),
             _buildDropdownRow(los),
           ],
         ),
@@ -89,9 +89,9 @@ class _TidalPageState extends State<TidalPage> {
 
   Widget _buildDropdownRow(AppLocalizations los) {
     return Row(
+      spacing: 15.0,
       children: [
         Text('${los.tide_coordinate}:'),
-        const SizedBox(width: 15.0),
         Expanded(
           child: DropdownButton<int>(
             items: _buildDropdownItems(),

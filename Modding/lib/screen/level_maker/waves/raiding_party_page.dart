@@ -126,6 +126,7 @@ class _RaidingPartyPageState extends State<RaidingPartyPage> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
+              spacing: 20.0,
               children: [
                 _buildCard(
                   title: los.entry,
@@ -152,7 +153,6 @@ class _RaidingPartyPageState extends State<RaidingPartyPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: _onSubmit,
                   child: SizedBox(
@@ -163,7 +163,6 @@ class _RaidingPartyPageState extends State<RaidingPartyPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20.0),
               ],
             ),
           ),

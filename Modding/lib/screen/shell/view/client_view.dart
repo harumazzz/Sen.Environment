@@ -91,10 +91,9 @@ class ClientView extends StatelessWidget {
       return _containerWrap(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 4.0,
           children: [
-            const SizedBox(height: 4),
             _loadingState(context),
-            const SizedBox(height: 4),
             Card(
               child: ListTile(
                 leading: _leading(context),
@@ -140,12 +139,12 @@ class ClientView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 25.0,
           children: [
             LoadingAnimationWidget.hexagonDots(
               color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-              size: 150,
+              size: 100,
             ),
-            const SizedBox(height: 25.0),
             Text('${los.waiting_for_user}...'),
           ],
         ),

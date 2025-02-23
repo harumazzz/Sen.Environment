@@ -44,13 +44,13 @@ class TranslatorPage extends StatelessWidget {
         if (translator.discord != null)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 8.0,
             children: [
               const Icon(
                 Icons.discord_outlined,
                 color: Colors.grey,
                 size: 20.0,
               ),
-              const SizedBox(width: 8.0),
               Row(
                 children: [
                   Text(
@@ -82,6 +82,7 @@ class TranslatorPage extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 6.0),
               child: Row(
+                spacing: 8.0,
                 children: [
                   isLink
                       ? const Icon(
@@ -90,7 +91,6 @@ class TranslatorPage extends StatelessWidget {
                           size: 20.0,
                         )
                       : Text(e[0]),
-                  const SizedBox(width: 8.0),
                   isLink ? Hyperlink(title: e[0], link: e[1]) : Text(e[1]),
                 ],
               ),

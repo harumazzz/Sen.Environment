@@ -177,6 +177,7 @@ class AboutPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12.0,
           children: [
             _asWrappable(
               isSmallScreen: isSmallScreen,
@@ -192,7 +193,6 @@ class AboutPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12.0),
             content,
           ],
         ),
@@ -241,9 +241,9 @@ class AboutPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 4.0,
             children: [
               Text(item['title']!, style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4.0),
               Text(
                 item['description']!,
                 style: TextStyle(fontSize: 14.0, color: isDarkTheme ? Colors.white54 : Colors.black54),

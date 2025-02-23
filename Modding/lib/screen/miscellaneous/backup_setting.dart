@@ -308,6 +308,7 @@ class _BackupSettingState extends State<BackupSetting> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
+              spacing: 15.0,
               children: [
                 Card(
                   child: ListTile(
@@ -318,7 +319,6 @@ class _BackupSettingState extends State<BackupSetting> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
                 Row(
                   children: [
                     Expanded(
@@ -332,7 +332,6 @@ class _BackupSettingState extends State<BackupSetting> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 15.0),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _onApplyConfiguration(
@@ -346,7 +345,6 @@ class _BackupSettingState extends State<BackupSetting> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
                 _configuration == null ? const SizedBox.shrink() : _buildExpandableList(),
               ],
             ),

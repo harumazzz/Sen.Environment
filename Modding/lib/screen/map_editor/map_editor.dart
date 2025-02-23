@@ -106,7 +106,7 @@ class MapEditor extends StatelessWidget {
                         Navigator.of(context).pop();
                       }
                     },
-                    icon: const Icon(Icons.arrow_back))),
+                    icon: const Icon(Symbols.arrow_back))),
             actions: [
               IconButton(
                 onPressed: () async {

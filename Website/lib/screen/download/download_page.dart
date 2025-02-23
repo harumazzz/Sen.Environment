@@ -55,31 +55,33 @@ class _DownloadPageState extends State<DownloadPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0),
                   child: Column(
+                    spacing: 16.0,
                     children: [
                       _displayLogo(isSmallScreen),
-                      const SizedBox(height: 16.0),
                       _introduceText(isSmallScreen),
-                      const SizedBox(height: 16.0),
                       _subtitleText(isSmallScreen),
-                      const SizedBox(height: 16.0),
-                      if (isSmallScreen) ...[
-                        _buildWindowsInstallation(isSmallScreen),
-                        const SizedBox(height: 24.0),
-                        _buildAndroidInstallation(isSmallScreen),
-                      ] else
+                      if (isSmallScreen)
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 24.0,
+                          children: [
+                            _buildWindowsInstallation(isSmallScreen),
+                            _buildAndroidInstallation(isSmallScreen),
+                          ],
+                        )
+                      else
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 32.0,
                           children: [
                             Expanded(child: _buildWindowsInstallation(isSmallScreen)),
-                            const SizedBox(width: 32.0),
                             Expanded(child: _buildAndroidInstallation(isSmallScreen)),
                           ],
                         ),
-                      const SizedBox(height: 16.0),
                       _agreeLicense(isSmallScreen),
-                      const SizedBox(height: 16.0),
                       _downloadCount(isSmallScreen),
-                      const SizedBox(height: 32.0),
+                      const SizedBox(height: 16.0),
                     ],
                   ),
                 ),
@@ -197,13 +199,13 @@ class _DownloadPageState extends State<DownloadPage> {
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 16.0,
       children: [
         Image.asset(
           imagePath,
           width: isSmallScreen ? 80 : 100,
           height: isSmallScreen ? 80 : 100,
         ),
-        const SizedBox(height: 16.0),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -229,7 +231,6 @@ class _DownloadPageState extends State<DownloadPage> {
             style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
           ),
         ),
-        const SizedBox(height: 16.0),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(12.0),

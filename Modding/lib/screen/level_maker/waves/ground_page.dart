@@ -151,11 +151,15 @@ class _GroundPageState extends State<GroundPage> {
     );
   }
 
-  Widget _buildCard(String title, List<Widget> children) {
+  Widget _buildCard(
+    String title,
+    List<Widget> children,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
+          spacing: 20.0,
           children: [
             Text(
               title,
@@ -163,7 +167,6 @@ class _GroundPageState extends State<GroundPage> {
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            const SizedBox(height: 20.0),
             ...children,
           ],
         ),
@@ -204,6 +207,7 @@ class _GroundPageState extends State<GroundPage> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
+              spacing: 15.0,
               children: [
                 _buildCard(
                   los.entry,
@@ -226,21 +230,18 @@ class _GroundPageState extends State<GroundPage> {
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                     ),
-                    const SizedBox(height: 10.0),
                     Text(
                       los.zombie,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    const SizedBox(height: 20.0),
                     _LevelLawn(
                       onTap: _onLevelLawnSpawn,
                       cellItems: _cellItems,
                     ),
                   ],
                 ),
-                const SizedBox(height: 20.0),
                 _buildSaveButton(),
               ],
             ),

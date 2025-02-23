@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
@@ -40,7 +41,7 @@ class EditorSettingWidget extends StatelessWidget {
                                 .read<SectionBloc>()
                                 .add(const ExtensionToggled(type: ExtensionType.setting, enabled: false));
                           },
-                          icon: const Icon(Icons.close))
+                          icon: const Icon(Symbols.close))
                     ],
                   ),
                 ),

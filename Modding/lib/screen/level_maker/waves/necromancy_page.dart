@@ -70,6 +70,7 @@ class _NecromancyPageState extends State<NecromancyPage> {
 
   Widget _buildValidateFormBody(AppLocalizations los) {
     return Column(
+      spacing: 12.0,
       children: [
         Row(
           children: [
@@ -81,7 +82,6 @@ class _NecromancyPageState extends State<NecromancyPage> {
             ),
           ],
         ),
-        const SizedBox(height: 12.0),
         Row(
           children: [
             Expanded(
@@ -98,7 +98,6 @@ class _NecromancyPageState extends State<NecromancyPage> {
             ),
           ],
         ),
-        const SizedBox(height: 12.0),
         Row(
           children: [
             Expanded(
@@ -115,7 +114,6 @@ class _NecromancyPageState extends State<NecromancyPage> {
             ),
           ],
         ),
-        const SizedBox(height: 12.0),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -150,6 +148,7 @@ class _NecromancyPageState extends State<NecromancyPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 20.0,
             children: [
               Card(
                 child: Padding(
@@ -160,18 +159,17 @@ class _NecromancyPageState extends State<NecromancyPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
+                    spacing: 16.0,
                     children: [
                       Text(
                         los.entry,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16.0),
                       _buildValidateFormBody(los),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20.0),
               _buildSaveButton(los),
             ],
           ),

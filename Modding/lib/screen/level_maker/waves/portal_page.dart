@@ -69,11 +69,12 @@ class _PortalPageState extends State<PortalPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
+      spacing: 8.0,
       children: [
         Row(
+          spacing: 12.0,
           children: [
             Text('$title:'),
-            const SizedBox(width: 12.0),
             Expanded(
               child: TextField(
                 controller: controller,
@@ -82,7 +83,6 @@ class _PortalPageState extends State<PortalPage> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
       ],
     );
   }
@@ -181,11 +181,10 @@ class _PortalPageState extends State<PortalPage> {
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         child: Column(
+          spacing: 20.0,
           children: [
             _buildEntry(los),
-            const SizedBox(height: 20.0),
             _buildLawn(),
-            const SizedBox(height: 20.0),
             _buildSaveButton(los),
           ],
         ),

@@ -17,11 +17,11 @@ class FinishedStage extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 10.0,
       children: [
-        const SizedBox(height: 10),
         Text(los.execute_again),
-        const SizedBox(height: 10),
         Row(
+          spacing: 10.0,
           children: [
             Expanded(
               child: ElevatedButton(
@@ -32,7 +32,6 @@ class FinishedStage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 onPressed: onLeave,

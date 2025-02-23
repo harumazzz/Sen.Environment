@@ -207,9 +207,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
+              spacing: 8.0,
               children: [
                 Text('$label: ', style: textStyle),
-                const SizedBox(width: 8.0),
                 Expanded(
                   child: Tooltip(
                     message: (value * _maxFrame).toStringAsFixed(0),

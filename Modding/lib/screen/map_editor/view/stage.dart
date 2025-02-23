@@ -23,8 +23,7 @@ import 'package:sen/screen/map_editor/widgets/box_stage.dart';
 class MapStageView extends StatelessWidget {
   const MapStageView({super.key});
 
-  bool get _isAvailable =>
-      Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  bool get _isAvailable => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +39,7 @@ class MapStageView extends StatelessWidget {
       for (final id in itemStore.keys) {
         stackList.add(itemStore[id]!.widget!);
       }
-      final editorResource =
-          context.read<MapEditorConfigurationCubit>().state.editorResource;
+      final editorResource = context.read<MapEditorConfigurationCubit>().state.editorResource;
       final controller = context.read<CanvasBloc>().state.canvasController;
       return BlocBuilder<SelectedBloc, SelectedState>(
           buildWhen: (prev, state) => prev.copyList != state.copyList,
@@ -52,17 +50,12 @@ class MapStageView extends StatelessWidget {
                   return Hotkey(
                       controller: controller,
                       child: BlocBuilder<ToolBarBloc, ToolBarState>(
-                          buildWhen: (prev, state) =>
-                              prev.toolStatus != state.toolStatus,
+                          buildWhen: (prev, state) => prev.toolStatus != state.toolStatus,
                           builder: (context, toolState) {
-                            final panTool =
-                                toolState.toolStatus[ToolType.panTool]!;
-                            final resize =
-                                toolState.toolStatus[ToolType.resizeTool]!;
-                            final multiSelect =
-                                toolState.toolStatus[ToolType.rectangleTool]!;
-                            final eraseTool =
-                                toolState.toolStatus[ToolType.eraseTool]!;
+                            final panTool = toolState.toolStatus[ToolType.panTool]!;
+                            final resize = toolState.toolStatus[ToolType.resizeTool]!;
+                            final multiSelect = toolState.toolStatus[ToolType.rectangleTool]!;
+                            final eraseTool = toolState.toolStatus[ToolType.eraseTool]!;
                             return MouseListener(
                                 itemStore: itemStore,
                                 multiSelect: multiSelect,
@@ -80,105 +73,85 @@ class MapStageView extends StatelessWidget {
                                           ),
                                         );
                                   } else if (eraseTool && _isAvailable) {
-                                    context.read<MouseCursorBloc>().add(
-                                        ChangeCursorEvent(
-                                            cursor:
-                                                editorResource.eraseCursor!));
+                                    context
+                                        .read<MouseCursorBloc>()
+                                        .add(ChangeCursorEvent(cursor: editorResource.eraseCursor!));
                                   } else if (multiSelect && _isAvailable) {
-                                    context.read<MouseCursorBloc>().add(
-                                        ChangeCursorEvent(
-                                            cursor: editorResource
-                                                .multiSelectCursor!));
+                                    context
+                                        .read<MouseCursorBloc>()
+                                        .add(ChangeCursorEvent(cursor: editorResource.multiSelectCursor!));
                                   } else {
                                     if (state.onSelect == null) {
-                                      context.read<MouseCursorBloc>().add(
-                                          const ChangeCursorEvent(
-                                              cursor:
-                                                  SystemMouseCursors.basic));
+                                      context
+                                          .read<MouseCursorBloc>()
+                                          .add(const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
                                     }
                                   }
-																	final shortcutBloc = context.read<ShortcutBloc>();
+                                  final shortcutBloc = context.read<ShortcutBloc>();
                                   final pieceMenuAction = <PieAction>[
-                                    if (selectedList.isNotEmpty &&
-                                        hoverSelected)
+                                    if (selectedList.isNotEmpty && hoverSelected)
                                       PieAction(
                                           tooltip: nil,
                                           onSelect: () {
-																						shortcutBloc.cut(controller);
-																					},
-                                          child: const Icon(Icons.content_cut)),
-                                    if (selectedList.isNotEmpty &&
-                                        hoverSelected)
+                                            shortcutBloc.cut(controller);
+                                          },
+                                          child: const Icon(Symbols.content_cut)),
+                                    if (selectedList.isNotEmpty && hoverSelected)
                                       PieAction(
                                           tooltip: nil,
                                           onSelect: () {
-																						shortcutBloc.copy(controller);
-																					},
-                                          child:
-                                              const Icon(Symbols.content_copy)),
-                                    if (selectedList.isNotEmpty &&
-                                        hoverSelected)
+                                            shortcutBloc.copy(controller);
+                                          },
+                                          child: const Icon(Symbols.content_copy)),
+                                    if (selectedList.isNotEmpty && hoverSelected)
                                       PieAction(
                                           tooltip: nil,
                                           onSelect: () {
-																						shortcutBloc.delete();
-																					},
+                                            shortcutBloc.delete();
+                                          },
                                           child: const Icon(Symbols.delete)),
-																		if (state.copyList.isNotEmpty)
-                                    PieAction(
-                                        tooltip: nil,
-                                        onSelect: () {
-																					shortcutBloc.paste(controller);
-																				},
-                                        child:
-                                            const Icon(Symbols.content_paste))
+                                    if (state.copyList.isNotEmpty)
+                                      PieAction(
+                                          tooltip: nil,
+                                          onSelect: () {
+                                            shortcutBloc.paste(controller);
+                                          },
+                                          child: const Icon(Symbols.content_paste))
                                   ];
                                   final child = MouseRegion(
                                       cursor: mouseState.cursor,
                                       onHover: (details) {
-                                        controller
-                                            .listenerPointerHover(details);
+                                        controller.listenerPointerHover(details);
                                       },
                                       child: BoxStage(
                                           mapGrid: settingState.mapGrid,
                                           usePanTool: panTool,
                                           useResizeTool: resize,
-                                          boundBackground:
-                                              settingState.boundBackground,
-                                          boxStageColor:
-                                              settingState.boundingColor,
+                                          boundBackground: settingState.boundBackground,
+                                          boxStageColor: settingState.boundingColor,
                                           children: [
                                             ...stackList,
                                             if (!panTool &&
                                                 !resize &&
                                                 onSelectedId != null &&
-                                                itemStore.containsKey(
-                                                    onSelectedId) &&
-                                                !selectedList
-                                                    .contains(onSelectedId))
+                                                itemStore.containsKey(onSelectedId) &&
+                                                !selectedList.contains(onSelectedId))
                                               HoverBox(
-                                                matrix: itemStore[onSelectedId]!
-                                                    .matrix!,
-                                                rect: itemStore[onSelectedId]!
-                                                        .itemRect ??
-                                                    Rect.zero,
+                                                matrix: itemStore[onSelectedId]!.matrix!,
+                                                rect: itemStore[onSelectedId]!.itemRect ?? Rect.zero,
                                               ),
-                                            if (!panTool &&
-                                                selectedList.isNotEmpty)
+                                            if (!panTool && selectedList.isNotEmpty)
                                               MultiSelectBox(
                                                 idList: selectedList.toList(),
                                                 itemStore: itemStore,
                                               ),
-                                            if (controller.marqueeStart !=
-                                                    null &&
+                                            if (controller.marqueeStart != null &&
                                                 controller.marqueeEnd != null &&
                                                 multiSelect)
                                               Positioned.fill(
                                                 child: Marquee(
-                                                  start: controller.toLocal(
-                                                      controller.marqueeStart!),
-                                                  end: controller.toLocal(
-                                                      controller.marqueeEnd!),
+                                                  start: controller.toLocal(controller.marqueeStart!),
+                                                  end: controller.toLocal(controller.marqueeEnd!),
                                                 ),
                                               ),
                                           ]));
@@ -186,14 +159,10 @@ class MapStageView extends StatelessWidget {
                                     return PieMenu(
                                         theme: PieTheme(
                                           buttonTheme: PieButtonTheme(
-                                              backgroundColor: colorScheme
-                                                  .secondaryContainer,
-                                              iconColor:
-                                                  colorScheme.inverseSurface),
+                                              backgroundColor: colorScheme.secondaryContainer,
+                                              iconColor: colorScheme.inverseSurface),
                                           buttonThemeHovered: PieButtonTheme(
-                                              backgroundColor: backgroundColor,
-                                              iconColor:
-                                                  colorScheme.inverseSurface),
+                                              backgroundColor: backgroundColor, iconColor: colorScheme.inverseSurface),
                                           delayDuration: Duration.zero,
                                           spacing: 4,
                                           radius: 60,

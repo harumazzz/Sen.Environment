@@ -67,24 +67,22 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12.0,
           children: <Widget>[
-            const SizedBox(height: 12.0),
             Text(
               los.settings,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12.0),
             Row(
+              spacing: 8.0,
               children: [
                 Text('${los.resource_location}: '),
-                const SizedBox(width: 8.0),
                 Expanded(
                   child: TextField(
                     controller: _resourceLocationController,
                     onChanged: _onChangeSetting,
                   ),
                 ),
-                const SizedBox(width: 4.0),
                 IconButton(
                   onPressed: _onUploadDirectory,
                   icon: Tooltip(

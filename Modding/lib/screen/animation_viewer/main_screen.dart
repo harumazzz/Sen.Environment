@@ -265,17 +265,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 10.0,
             children: [
               Text(los.animation_file(_animationFile ?? los.unselected)),
-              const SizedBox(height: 10.0),
               Text(los.media_directory(_mediaDirectory ?? los.unselected)),
-              const SizedBox(height: 10.0),
               Row(
+                spacing: 10.0,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text('${los.image}: '),
-                  const SizedBox(width: 10.0),
                   ControlButton(
                     tooltip: los.enable_all_image,
                     icon: Symbols.select_all,
@@ -283,7 +282,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       widget.selectedImageBloc.add(const SelectedImageEnableAllEvent());
                     },
                   ),
-                  const SizedBox(width: 10.0),
                   ControlButton(
                     tooltip: los.disable_all_image,
                     icon: Symbols.deselect,
@@ -293,13 +291,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   )
                 ],
               ),
-              const SizedBox(height: 10.0),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
+                spacing: 10.0,
                 children: [
                   Text('${los.sprite}: '),
-                  const SizedBox(width: 10.0),
                   ControlButton(
                     tooltip: los.enable_all_sprite,
                     icon: Symbols.select_all,
@@ -307,7 +304,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       widget.selectedSpriteBloc.add(const SelectedSpriteEnableAllEvent());
                     },
                   ),
-                  const SizedBox(width: 10.0),
                   ControlButton(
                     tooltip: los.disable_all_sprite,
                     icon: Symbols.deselect,

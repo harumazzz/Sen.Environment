@@ -16,12 +16,12 @@ class FooterWidget extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 16.0,
         children: [
           Text(
             'Sen is currently supporting these mods and much more',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16.0),
           _buildHorizontalView(
             context: context,
           ),
@@ -77,10 +77,10 @@ class FooterWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 16.0,
         children: [
           _supported(context),
           const Divider(),
-          const SizedBox(height: 16.0),
           LayoutBuilder(
             builder: (context, constraints) {
               return Wrap(
@@ -112,7 +112,6 @@ class FooterWidget extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 16.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -126,7 +125,6 @@ class FooterWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16.0),
           Text(
             '© ${DateTime.now().year} copyright Haruma. All rights reserved.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -142,9 +140,9 @@ class FooterWidget extends StatelessWidget {
   Widget _buildFooterColumn(BuildContext context, {required String title, required List<Widget> links}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8.0,
       children: [
         _buildSectionTitle(context, title),
-        const SizedBox(height: 8.0),
         ...links,
       ],
     );

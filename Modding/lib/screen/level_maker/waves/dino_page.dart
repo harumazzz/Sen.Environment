@@ -64,6 +64,7 @@ class _DinoPageState extends State<DinoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
+          spacing: 20.0,
           children: [
             Card(
               child: Padding(
@@ -74,20 +75,18 @@ class _DinoPageState extends State<DinoPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: 16.0,
                   children: [
                     Text(
                       los.entry,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 16.0),
                     _buildDinoTypeDropdown(los),
-                    const SizedBox(height: 16.0),
                     _buildRowDropdown(los),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 20.0),
             _buildSaveButton(los),
           ],
         ),
@@ -118,9 +117,9 @@ class _DinoPageState extends State<DinoPage> {
 
   Widget _buildDinoTypeDropdown(AppLocalizations los) {
     return Row(
+      spacing: 20.0,
       children: [
         Text('${los.dino_type}:'),
-        const SizedBox(width: 20.0),
         Expanded(
           child: DropdownButton<String>(
             value: _dinoType,
@@ -129,6 +128,7 @@ class _DinoPageState extends State<DinoPage> {
                   (e) => DropdownMenuItem(
                     value: e.dinoType,
                     child: Row(
+                      spacing: 5.0,
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -138,7 +138,6 @@ class _DinoPageState extends State<DinoPage> {
                           width: 40,
                           height: 40,
                         ),
-                        const SizedBox(width: 5.0),
                         Text(e.dinoType),
                       ],
                     ),
@@ -160,9 +159,9 @@ class _DinoPageState extends State<DinoPage> {
 
   Widget _buildRowDropdown(AppLocalizations los) {
     return Row(
+      spacing: 20.0,
       children: [
         Text('${los.row}:'),
-        const SizedBox(width: 20.0),
         Expanded(
           child: DropdownButton<int>(
             value: _row,

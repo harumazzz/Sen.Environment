@@ -134,9 +134,11 @@ class AppDrawer extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          spacing: 12.0,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              spacing: 12.0,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12.0),
@@ -147,7 +149,6 @@ class AppDrawer extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 12.0),
                 Text(
                   'Sen: Environment',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -158,7 +159,6 @@ class AppDrawer extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12.0),
             Text(
               'Make your own PvZ2 mod with Sen.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(

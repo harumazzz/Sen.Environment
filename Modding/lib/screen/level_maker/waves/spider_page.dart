@@ -162,6 +162,7 @@ class _SpiderPageState extends State<SpiderPage> {
           padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
             child: Column(
+              spacing: 20.0,
               children: [
                 _buildCard(
                   title: los.entry,
@@ -219,7 +220,6 @@ class _SpiderPageState extends State<SpiderPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: _onSubmit,
                   child: SizedBox(
@@ -230,7 +230,6 @@ class _SpiderPageState extends State<SpiderPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20.0),
               ],
             ),
           ),

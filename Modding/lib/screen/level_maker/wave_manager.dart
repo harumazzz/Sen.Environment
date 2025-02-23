@@ -233,12 +233,11 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
       leading: const Icon(Symbols.waves),
       title: Text('${los.wave} ${widget.index}'),
       trailing: Row(
+        spacing: 15.0,
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildPopupMenuButton(waveFactories),
-          const SizedBox(width: 15.0),
           _buildExpandIcon(los),
-          const SizedBox(width: 15.0),
           _buildDeleteButton(los),
         ],
       ),
@@ -324,9 +323,9 @@ class __ExpandedWaveState extends State<_ExpandedWave> {
         title: Text(_exchangeEventName(e, widget.index)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
+          spacing: 8.0,
           children: [
             _buildEditButton(element, los),
-            const SizedBox(width: 8.0),
             _buildDeleteWaveButton(index, los),
           ],
         ),

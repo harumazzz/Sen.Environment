@@ -64,6 +64,7 @@ class _FrostWindPageState extends State<FrostWindPage> {
                 title: Text('${e.key}'),
                 subtitle: Text(makeDescription(e.value)),
                 trailing: Row(
+                  spacing: 15.0,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
@@ -73,7 +74,6 @@ class _FrostWindPageState extends State<FrostWindPage> {
                         child: const Icon(Symbols.edit),
                       ),
                     ),
-                    const SizedBox(width: 15.0),
                     IconButton(
                       onPressed: () => _onDelete(index: e.key),
                       icon: Tooltip(
@@ -290,9 +290,9 @@ class __AddFrostWindState extends State<_AddFrostWind> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          spacing: 15.0,
           children: [
             Text(los.direction),
-            const SizedBox(width: 15.0),
             Expanded(
               child: DropdownButton<String>(
                 items: _directions
@@ -315,9 +315,9 @@ class __AddFrostWindState extends State<_AddFrostWind> {
           ],
         ),
         Row(
+          spacing: 15.0,
           children: [
             Text(los.row),
-            const SizedBox(width: 15.0),
             Expanded(
               child: DropdownButton<int>(
                 items: _rows
@@ -411,9 +411,9 @@ class __EditFrostWindState extends State<_EditFrostWind> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          spacing: 15.0,
           children: [
             Text(los.direction),
-            const SizedBox(width: 15.0),
             Expanded(
               child: DropdownButton<String>(
                 items: _directions
@@ -436,9 +436,9 @@ class __EditFrostWindState extends State<_EditFrostWind> {
           ],
         ),
         Row(
+          spacing: 15.0,
           children: [
             Text(los.row),
-            const SizedBox(width: 15.0),
             Expanded(
               child: DropdownButton<int>(
                 items: _rows

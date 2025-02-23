@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/map_editor/include/scalable_item/scale_direction_enum.dart';
 
 const defaultDotColor = Colors.blue;
@@ -57,29 +58,26 @@ class ScalableItem extends StatelessWidget {
             : cornerDotColor
         : Colors.transparent;
 
-    final Decoration localOverScaleBorderDecoration =
-        overScaleBorderDecoration ??
-            BoxDecoration(
-              border: Border.all(
-                width: defaultScaleBorderWidth,
-                color: computedDotColor,
-              ),
-              shape: BoxShape.rectangle,
-            );
+    final Decoration localOverScaleBorderDecoration = overScaleBorderDecoration ??
+        BoxDecoration(
+          border: Border.all(
+            width: defaultScaleBorderWidth,
+            color: computedDotColor,
+          ),
+          shape: BoxShape.rectangle,
+        );
 
-    final Decoration localDefaultScaleBorderDecoration =
-        defaultScaleBorderDecoration ??
-            BoxDecoration(
-              border: Border.all(
-                width: defaultScaleBorderWidth,
-                color: Colors.grey[100]!,
-              ),
-              shape: BoxShape.rectangle,
-            );
+    final Decoration localDefaultScaleBorderDecoration = defaultScaleBorderDecoration ??
+        BoxDecoration(
+          border: Border.all(
+            width: defaultScaleBorderWidth,
+            color: Colors.grey[100]!,
+          ),
+          shape: BoxShape.rectangle,
+        );
 
-    final Decoration borderDecoration = showOverScaleBorder
-        ? localOverScaleBorderDecoration
-        : localDefaultScaleBorderDecoration;
+    final Decoration borderDecoration =
+        showOverScaleBorder ? localOverScaleBorderDecoration : localDefaultScaleBorderDecoration;
 
     return Stack(
       fit: StackFit.passthrough,
@@ -253,7 +251,7 @@ class ScalableItem extends StatelessWidget {
 
   Widget _buildDot(Color color) {
     return Icon(
-      Icons.square,
+      Symbols.square,
       size: 25,
       color: color,
     );
