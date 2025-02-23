@@ -18,10 +18,8 @@ class GridCard extends StatelessWidget {
   void _onClick(BuildContext context) {
     Navigator.push(
       context,
-      PageTransition(
-        duration: const Duration(milliseconds: 300),
-        type: PageTransitionType.rightToLeft,
-        child: item.onWidget?.call(),
+      MaterialPageRoute(
+        builder: (context) => item.onWidget?.call(),
       ),
     );
   }

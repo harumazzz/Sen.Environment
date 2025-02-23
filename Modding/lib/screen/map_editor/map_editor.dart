@@ -63,15 +63,11 @@ class MapEditor extends StatelessWidget {
           title: Text(los.exit),
           content: Text(los.confirm_exit),
           actions: [
-            ElevatedButton(
-              style: ButtonStyle(
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+            TextButton(
               child: Text(los.cancel),
               onPressed: () => Navigator.of(context).pop(false),
             ),
-            ElevatedButton(
-              style: ButtonStyle(
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+            TextButton(
               child: Text(los.yes),
               onPressed: () => Navigator.of(context).pop(true),
             ),
@@ -86,74 +82,87 @@ class MapEditor extends StatelessWidget {
     final los = context.los;
     Future<Uint8List?> Function()? takeShoot;
     return BlocProvider<InitBloc>(
-        create: (_) => InitBloc(),
-        child: BlocListener<InitBloc, InitState>(
-            listener: (context, state) {
-              takeShoot = state.takeShoot;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                forceMaterialTransparency: true,
-                title: Text(los.map_editor),
-                leading: Tooltip(
-                    message: los.back,
-                    child: IconButton(
-                        onPressed: () async {
-                          final status = context.read<MapEditorConfigurationCubit>().state.status;
-                          if (status == AppConfigurationStatus.success) {
-                            if (await _confirmExit(context) ?? false) {
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            }
-                          } else {
+      create: (_) => InitBloc(),
+      child: BlocListener<InitBloc, InitState>(
+        listener: (context, state) {
+          takeShoot = state.takeShoot;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            forceMaterialTransparency: true,
+            title: Text(los.map_editor),
+            leading: Tooltip(
+                message: los.back,
+                child: IconButton(
+                    onPressed: () async {
+                      final status = context.read<MapEditorConfigurationCubit>().state.status;
+                      if (status == AppConfigurationStatus.success) {
+                        if (await _confirmExit(context) ?? false) {
+                          if (context.mounted) {
                             Navigator.of(context).pop();
                           }
-                        },
-                        icon: const Icon(Icons.arrow_back))),
-                actions: [
-                  IconButton(
-                    onPressed: () async {
-                      if (takeShoot != null) {
-                        final imageBytes = await takeShoot!();
-                        if (imageBytes != null && context.mounted) {
-                          await _showDialog(imageBytes, context);
                         }
+                      } else {
+                        Navigator.of(context).pop();
                       }
                     },
-                    icon: const Icon(Symbols.screenshot),
-                  ),
-                ],
-              ),
-              body: BlocBuilder<MapEditorConfigurationCubit, MapEditorConfigurationState>(
-                buildWhen: (prev, state) => prev.status != state.status,
-                builder: (context, state) {
-                  final status = state.status;
-                  if (status == AppConfigurationStatus.initial) {
-                    final resourceLocation = context.read<SettingsCubit>().state.mapEditorResource;
-                    context.read<MapEditorConfigurationCubit>().load(context.los, resourceLocation);
+                    icon: const Icon(Icons.arrow_back))),
+            actions: [
+              IconButton(
+                onPressed: () async {
+                  if (takeShoot != null) {
+                    final imageBytes = await takeShoot!();
+                    if (imageBytes != null && context.mounted) {
+                      await _showDialog(imageBytes, context);
+                    }
                   }
-                  if (status == AppConfigurationStatus.success) {
-                    return Background(
-                      child: MainPage(mapEditorConfigurationCubit: context.read<MapEditorConfigurationCubit>()),
-                    );
-                  } else if (status == AppConfigurationStatus.failed) {
-                    return Background(
-                        child: Center(
-                      child: Text(
-                        '${los.loading_error}: ${state.errorSnapShot}',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    ));
-                  }
-                  return const Background(
-                    child: Center(
-                      child: CircularProgressIndicator.adaptive(),
-                    ),
-                  );
                 },
+                icon: const Icon(Symbols.screenshot),
               ),
-            )));
+            ],
+          ),
+          body: BlocBuilder<MapEditorConfigurationCubit, MapEditorConfigurationState>(
+            buildWhen: (prev, state) => prev.status != state.status,
+            builder: (context, state) {
+              final status = state.status;
+              if (status == AppConfigurationStatus.initial) {
+                final resourceLocation = context.read<SettingsCubit>().state.mapEditorResource;
+                context.read<MapEditorConfigurationCubit>().load(context.los, resourceLocation);
+              }
+              if (status == AppConfigurationStatus.success) {
+                return Background(
+                  child: MainPage(mapEditorConfigurationCubit: context.read<MapEditorConfigurationCubit>()),
+                );
+              } else if (status == AppConfigurationStatus.failed) {
+                return Background(
+                    child: Center(
+                  child: Text(
+                    '${los.loading_error}: ${state.errorSnapShot}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ));
+              }
+              return Background(
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 16.0,
+                    children: [
+                      const CircularProgressIndicator.adaptive(),
+                      Text(
+                        los.loading_map_resources,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -49,34 +49,40 @@ class _DownloadPageState extends State<DownloadPage> {
           _calculateTotalDownloadCount(data);
 
           return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _displayLogo(isSmallScreen),
-                const SizedBox(height: 8.0),
-                _introduceText(isSmallScreen),
-                const SizedBox(height: 16.0),
-                _subtitleText(isSmallScreen),
-                const SizedBox(height: 16.0),
-                if (isSmallScreen) ...[
-                  _buildWindowsInstallation(isSmallScreen),
-                  const SizedBox(height: 24.0),
-                  _buildAndroidInstallation(isSmallScreen),
-                ] else
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0),
+                  child: Column(
                     children: [
-                      Expanded(child: _buildWindowsInstallation(isSmallScreen)),
-                      const SizedBox(width: 32.0),
-                      Expanded(child: _buildAndroidInstallation(isSmallScreen)),
+                      _displayLogo(isSmallScreen),
+                      const SizedBox(height: 16.0),
+                      _introduceText(isSmallScreen),
+                      const SizedBox(height: 16.0),
+                      _subtitleText(isSmallScreen),
+                      const SizedBox(height: 16.0),
+                      if (isSmallScreen) ...[
+                        _buildWindowsInstallation(isSmallScreen),
+                        const SizedBox(height: 24.0),
+                        _buildAndroidInstallation(isSmallScreen),
+                      ] else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(child: _buildWindowsInstallation(isSmallScreen)),
+                            const SizedBox(width: 32.0),
+                            Expanded(child: _buildAndroidInstallation(isSmallScreen)),
+                          ],
+                        ),
+                      const SizedBox(height: 16.0),
+                      _agreeLicense(isSmallScreen),
+                      const SizedBox(height: 16.0),
+                      _downloadCount(isSmallScreen),
+                      const SizedBox(height: 32.0),
                     ],
                   ),
-                const SizedBox(height: 16.0),
-                _agreeLicense(isSmallScreen),
-                const SizedBox(height: 8.0),
-                _downloadCount(isSmallScreen),
-                const SizedBox(height: 32.0),
+                ),
                 FooterWidget(onNavigate: widget.onNavigate),
               ],
             ),
@@ -121,7 +127,7 @@ class _DownloadPageState extends State<DownloadPage> {
         'By downloading and using Sen, you agree to the license terms and privacy statement.',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: isSmallScreen ? 12 : 14,
+              fontSize: isSmallScreen ? 14 : 16,
               color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
             ),
       ),
@@ -134,7 +140,7 @@ class _DownloadPageState extends State<DownloadPage> {
         'There are $_totalDownloadCount users who have downloaded this Sen version.',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: isSmallScreen ? 12 : 14,
+              fontSize: isSmallScreen ? 14 : 16,
               color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
             ),
       ),
@@ -155,7 +161,7 @@ class _DownloadPageState extends State<DownloadPage> {
     const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/win-x64.zip';
     return _buildDownloadCard(
       title: 'Windows 10+',
-      system: 'x64, arm-64',
+      system: 'x64',
       fileType: 'Zip',
       imagePath: 'assets/images/logos/windows.png',
       buttonText: 'Download for Windows',
@@ -168,7 +174,7 @@ class _DownloadPageState extends State<DownloadPage> {
   Widget _buildAndroidInstallation(bool isSmallScreen) {
     const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/android-arm64-v8a.zip';
     return _buildDownloadCard(
-      title: 'Android 7+',
+      title: 'Android 7.0+',
       system: 'arm-64',
       fileType: 'Zip',
       imagePath: 'assets/images/logos/android.png',

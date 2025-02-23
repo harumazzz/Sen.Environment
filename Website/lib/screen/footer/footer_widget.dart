@@ -48,9 +48,10 @@ class FooterWidget extends StatelessWidget {
     if (MediaQuery.of(context).size.width < 600) {
       return SizedBox(
         height: 120,
-        child: ListView(
+        child: CarouselView.weighted(
+          flexWeights: const <int>[1, 4, 1],
           scrollDirection: Axis.horizontal,
-          children: childList(100),
+          children: childList(120),
         ),
       );
     }
@@ -82,7 +83,6 @@ class FooterWidget extends StatelessWidget {
           const SizedBox(height: 16.0),
           LayoutBuilder(
             builder: (context, constraints) {
-              final isSmallScreen = constraints.maxWidth < 600;
               return Wrap(
                 spacing: 32.0,
                 runSpacing: 16.0,
@@ -108,20 +108,6 @@ class FooterWidget extends StatelessWidget {
                       _buildNavLink('FAQ'),
                     ],
                   ),
-                  if (!isSmallScreen)
-                    _buildFooterColumn(
-                      context,
-                      title: 'Contact',
-                      links: [
-                        const Row(
-                          children: [
-                            Icon(Symbols.email, size: 16.0),
-                            SizedBox(width: 8.0),
-                            Text('harumatsx@gmail.com'),
-                          ],
-                        ),
-                      ],
-                    ),
                 ],
               );
             },

@@ -13,84 +13,45 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0, vertical: 16.0),
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 24.0),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: Theme.of(context).brightness == Brightness.light
-                          ? [Colors.blueAccent, Colors.lightBlue.shade100]
-                          : [Colors.blueAccent, Colors.pinkAccent.shade100],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Sen.Environment',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 36.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8.0),
-                      const Text(
-                        'An open-source project created by Haruma.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildHeader(context, isSmallScreen),
                 const SizedBox(height: 24.0),
                 _infoCard(
                   icon: Symbols.info,
                   title: 'About',
-                  content: const Text(
-                      'Sen.Environment is a project designed to summarize my personal expertise in C++ & TypeScript, offering cross-platform capabilities and a robust modular architecture.'),
+                  content: Text(
+                    'Sen.Environment is a project designed to summarize my personal expertise in C++ & TypeScript, offering cross-platform capabilities and a robust modular architecture.',
+                    style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0),
+                  ),
+                  isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.open_in_new,
                   title: 'Open Source Project',
-                  content: const Text(
-                      'This project is licensed under the GPL-3.0 License, allowing free use and modification as long as the terms are followed.'),
+                  content: Text(
+                    'This project is licensed under the GPL-3.0 License, allowing free use and modification as long as the terms are followed.',
+                    style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0),
+                  ),
+                  isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.devices,
                   title: 'Platform Support',
                   content: _bulletPoints(
-                    [
-                      'Windows x64',
-                      'Linux x64',
-                      'Macintosh x64',
-                      'iOS 10.0+',
-                      'Android 7.0+',
-                    ],
+                    ['Windows x64', 'Linux x64', 'Macintosh x64', 'iOS 10.0+', 'Android 7.0+'],
                     isDarkTheme,
+                    isSmallScreen,
                   ),
+                  isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.category,
@@ -102,28 +63,112 @@ class AboutPage extends StatelessWidget {
                       'Script - Script control flows of the tool.',
                     ],
                     isDarkTheme,
+                    isSmallScreen,
                   ),
+                  isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.code,
                   title: 'Technology',
-                  content: _detailedBulletPoints([
-                    {'title': 'CMake', 'description': 'Cross-platform build system for C++.'},
-                    {'title': 'Flutter', 'description': 'Beautiful UI development framework.'},
-                  ], isDarkTheme),
+                  content: _detailedBulletPoints(
+                    [
+                      {
+                        'title': 'CMake',
+                        'description':
+                            'Cross-platform build system for C++. It is a wide used tool in the C++ community.',
+                      },
+                      {
+                        'title': 'Flutter',
+                        'description':
+                            'Beautiful UI development framework developed by Google. It is mainly used in the GUI app and also this website.',
+                      },
+                    ],
+                    isDarkTheme,
+                  ),
+                  isSmallScreen: isSmallScreen,
                 ),
               ],
             ),
           ),
-          FooterWidget(
-            onNavigate: onNavigate,
-          )
+          FooterWidget(onNavigate: onNavigate),
         ],
       ),
     );
   }
 
-  Widget _infoCard({required IconData icon, required String title, required Widget content}) {
+  Widget _buildHeader(BuildContext context, bool isSmallScreen) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        vertical: isSmallScreen ? 24.0 : 40.0,
+        horizontal: isSmallScreen ? 16.0 : 24.0,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: Theme.of(context).brightness == Brightness.light
+              ? [Colors.blueAccent, Colors.lightBlue.shade100]
+              : [Colors.blueAccent, Colors.pinkAccent.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/logo.png',
+            width: isSmallScreen ? 80 : 120,
+            height: isSmallScreen ? 80 : 120,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            'Sen.Environment',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 28.0 : 36.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            'An open-source project created by Haruma.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 16.0 : 18.0,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _asWrappable({
+    required bool isSmallScreen,
+    required List<Widget> children,
+  }) {
+    return isSmallScreen
+        ? Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12.0,
+            children: children,
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 12.0,
+            children: children,
+          );
+  }
+
+  Widget _infoCard({
+    required IconData icon,
+    required String title,
+    required Widget content,
+    required bool isSmallScreen,
+  }) {
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.symmetric(vertical: 12.0),
@@ -133,13 +178,17 @@ class AboutPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            _asWrappable(
+              isSmallScreen: isSmallScreen,
               children: [
-                Icon(icon, size: 28.0, color: Colors.blueAccent),
-                const SizedBox(width: 12.0),
+                Icon(
+                  icon,
+                  size: 28.0,
+                  color: Colors.blueAccent,
+                ),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -154,6 +203,7 @@ class AboutPage extends StatelessWidget {
   Widget _bulletPoints(
     List<String> points,
     bool isDarkTheme,
+    bool isSmallScreen,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,14 +213,14 @@ class AboutPage extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '• ',
-                style: TextStyle(fontSize: 16.0, color: isDarkTheme ? Colors.white54 : Colors.black54),
-              ),
+              Text('• ', style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0)),
               Expanded(
                 child: Text(
                   point,
-                  style: TextStyle(fontSize: 16.0, color: isDarkTheme ? Colors.white : Colors.black87),
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 14.0 : 16.0,
+                    color: isDarkTheme ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
             ],
@@ -182,7 +232,7 @@ class AboutPage extends StatelessWidget {
 
   Widget _detailedBulletPoints(
     List<Map<String, String>> items,
-    bool isDarKTheme,
+    bool isDarkTheme,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +246,7 @@ class AboutPage extends StatelessWidget {
               const SizedBox(height: 4.0),
               Text(
                 item['description']!,
-                style: TextStyle(fontSize: 14.0, color: isDarKTheme ? Colors.white54 : Colors.black54),
+                style: TextStyle(fontSize: 14.0, color: isDarkTheme ? Colors.white54 : Colors.black54),
               ),
             ],
           ),

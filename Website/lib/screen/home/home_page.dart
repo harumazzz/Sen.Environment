@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:website/screen/footer/footer_widget.dart';
 import 'package:website/service/url_helper.dart';
 
@@ -18,6 +19,16 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+  }
+
+  Widget _displayLogo(bool isSmallScreen) {
+    return Center(
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: isSmallScreen ? 100 : 150,
+        height: isSmallScreen ? 100 : 150,
+      ),
+    );
   }
 
   @override
@@ -96,18 +107,33 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _downloadButton() {
-    return _responsiveButton('Download now', Colors.blue, () {
-      widget.onNavigate(1);
-    });
+    return _responsiveButton(
+      text: 'Download now',
+      color: Colors.blue,
+      icon: Symbols.download,
+      onPressed: () {
+        widget.onNavigate(1);
+      },
+    );
   }
 
   Widget _viewLogButton() {
-    return _responsiveButton('Join Discord', const Color(0xFF5865F2), () async {
-      await UrlHelper.launch(link: 'https://discord.gg/C2Xr2kaBYJ');
-    });
+    return _responsiveButton(
+      text: 'Discord server',
+      icon: Icons.discord,
+      color: const Color(0xFF5865F2),
+      onPressed: () async {
+        await UrlHelper.launch(link: 'https://discord.gg/C2Xr2kaBYJ');
+      },
+    );
   }
 
-  Widget _responsiveButton(String text, Color color, VoidCallback onPressed) {
+  Widget _responsiveButton({
+    required String text,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(backgroundColor: color),
       onPressed: onPressed,
@@ -116,13 +142,26 @@ class _HomePageState extends State<HomePage> {
           vertical: 12.0,
           horizontal: MediaQuery.of(context).size.width < 350 ? 8.0 : 16.0,
         ),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-          textAlign: TextAlign.center,
+        child: Row(
+          spacing: 10.0,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 24.0,
+              color: Colors.white,
+            ),
+            Text(
+              text,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -205,13 +244,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               if (!isSmallScreen) const SizedBox(width: 16.0),
-              SizedBox(
-                width: isSmallScreen ? constraints.maxWidth * 0.8 : constraints.maxWidth * 0.3,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: _descriptionImage(context),
+              if (!isSmallScreen)
+                SizedBox(
+                  width: isSmallScreen ? constraints.maxWidth * 0.8 : constraints.maxWidth * 0.3,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20.0),
+                    child: _descriptionImage(context),
+                  ),
                 ),
-              ),
             ],
           );
         },
@@ -263,6 +303,8 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                _displayLogo(MediaQuery.of(context).size.width < 600),
+                const SizedBox(height: 16.0),
                 _introduceText(context),
                 const SizedBox(height: 16.0),
                 _displayText(context),

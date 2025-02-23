@@ -39,7 +39,6 @@ class _RootPageState extends State<RootPage> {
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.of(context).pop();
   }
 
   @override
@@ -103,10 +102,10 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           _buildDrawerHeader(context, backgroundColor, textColor, subtitleColor),
-          _buildMenuItem('Home', 0),
-          _buildMenuItem('Download', 1),
-          _buildMenuItem('Changelog', 2),
-          _buildMenuItem('About', 3),
+          _buildMenuItem('Home', 0, context),
+          _buildMenuItem('Download', 1, context),
+          _buildMenuItem('Changelog', 2, context),
+          _buildMenuItem('About', 3, context),
         ],
       ),
     );
@@ -175,12 +174,14 @@ class AppDrawer extends StatelessWidget {
   Widget _buildMenuItem(
     String title,
     int index,
+    BuildContext context,
   ) {
     return ListTile(
       title: Text(title),
       selected: selectedIndex == index,
       onTap: () {
         onNavigate(index);
+        Navigator.of(context).pop();
       },
     );
   }

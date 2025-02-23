@@ -11,6 +11,12 @@ class Application extends StatelessWidget {
     return MaterialApp(
       title: 'Sen: Download page',
       theme: ThemeData(
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+            TargetPlatform.values,
+            value: (_) => const FadeForwardsPageTransitionsBuilder(),
+          ),
+        ),
         fontFamily: 'GoogleSans',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
@@ -20,6 +26,12 @@ class Application extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       darkTheme: ThemeData(
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
+            TargetPlatform.values,
+            value: (_) => const FadeForwardsPageTransitionsBuilder(),
+          ),
+        ),
         fontFamily: 'GoogleSans',
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(

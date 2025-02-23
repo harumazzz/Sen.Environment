@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/screen/home/home_screen.dart';
@@ -153,14 +152,10 @@ class _RootScreenState extends State<RootScreen> {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
           Navigator.of(context).push(
-            PageTransition(
-              child: ShellScreen(
+            MaterialPageRoute(
+              builder: (context) => ShellScreen(
                 arguments: AndroidHelper.arguments!,
                 launchImmediately: true,
-              ),
-              type: PageTransitionType.fade,
-              duration: const Duration(
-                milliseconds: 300,
               ),
             ),
           );

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
@@ -94,10 +93,8 @@ class JavaScriptCard extends StatelessWidget {
     BuildContext context,
   ) async {
     await Navigator.of(context).push(
-      PageTransition(
-        duration: const Duration(milliseconds: 300),
-        type: PageTransitionType.rightToLeft,
-        child: ShellScreen(
+      MaterialPageRoute(
+        builder: (context) => ShellScreen(
           arguments: _makeArguments(),
           launchImmediately: true,
         ),

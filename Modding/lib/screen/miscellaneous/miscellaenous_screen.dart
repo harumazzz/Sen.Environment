@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/build_distribution.dart';
 import 'package:sen/screen/miscellaneous/backup_setting.dart';
@@ -20,9 +19,8 @@ class MiscellaenousScreen extends StatelessWidget {
     BuildContext context,
   ) async {
     await Navigator.of(context).push(
-      PageTransition(
-        type: PageTransitionType.rightToLeft,
-        child: const BackupSetting(),
+      MaterialPageRoute(
+        builder: (context) => const BackupSetting(),
       ),
     );
   }

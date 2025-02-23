@@ -432,5 +432,6 @@
 	"decrease_scale_y": "Decrease Scale Y",
 	"increase_scale_y": "Increase Scale Y",
 	"flip": "Flip",
-	"cut": "Cut"
+	"cut": "Cut",
+	"loading_map_resources": "Loading map resources, please wait..."
 }
