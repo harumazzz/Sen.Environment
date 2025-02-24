@@ -53,10 +53,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSG {
 			batch_forward(argument) {
 				return basic_batch(this, argument, true);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.packet$/i],
-			option: 62n,
+			option: 57n,
 		});
 		inject<
 			Functions.PopCap.RSG.Unpack.Argument,
@@ -85,10 +85,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSG {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.rsg$/i],
-			option: 63n,
+			option: 58n,
 		});
 	}
 }

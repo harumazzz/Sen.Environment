@@ -32,7 +32,7 @@ namespace Sen.Script.Executor.Functions.JS {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.js$/i],
 			option: 1n,

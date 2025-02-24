@@ -138,8 +138,8 @@ namespace Sen::Kernel::Interface::API {
             Javascript::Value& result
         ) -> void {
             // TODO : Add loc
-            assert_conditional(arguments.size() >= 1, "Expected at least one argument", "callback");
-            const auto service = context.get_opaque<Client>()->service();
+            assert_conditional(!arguments.empty(), "Expected at least one argument", "callback");
+            auto service = context.get_opaque<Client>()->service();
             auto message = std::unique_ptr<Message, decltype(&free_message)>{nullptr, &free_message};
             auto destination = std::unique_ptr<Message, decltype(&free_message)>{new Message{}, &free_message};
             auto source = List<String>{arguments.size()};
@@ -148,11 +148,11 @@ namespace Sen::Kernel::Interface::API {
                 arguments[index].template get<String>(source[index]);
             }
             construct_message(source, message);
-            std::invoke(*service->callback, message.get(), destination.get());
+            std::invoke(*service->callback, service, message.get(), destination.get());
             auto make_message = [&destination]() -> List<String> {
-                auto m_result = List<String>{};
-                destruct_message(destination.get(), m_result);
-                return m_result;
+                auto result_value = List<String>{};
+                destruct_message(destination.get(), result_value);
+                return result_value;
             };
             result.template set<List<String>>(make_message());
         }

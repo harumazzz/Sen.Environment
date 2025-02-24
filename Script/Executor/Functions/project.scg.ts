@@ -110,10 +110,10 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.scg$/i],
-			option: 73n,
+			option: 70n,
 		});
 		inject<
 			Functions.Project.SCG.Encode.Argument,
@@ -170,10 +170,10 @@ namespace Sen.Script.Executor.Functions.Project.SCG {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.package$/i],
-			option: 74n,
+			option: 71n,
 		});
 	}
 }

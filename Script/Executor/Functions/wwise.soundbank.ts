@@ -50,10 +50,10 @@ namespace Sen.Script.Executor.Functions.WWise.SoundBank {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.bnk$/i],
-			option: 77n,
+			option: 74n,
 		});
 		inject<
 			Functions.WWise.SoundBank.Encode.Argument,
@@ -79,10 +79,10 @@ namespace Sen.Script.Executor.Functions.WWise.SoundBank {
 			batch_forward(argument) {
 				return basic_batch(this, argument, true);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.+)\.soundbank$/gi],
-			option: 78n,
+			option: 75n,
 		});
 	}
 }

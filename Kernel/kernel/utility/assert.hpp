@@ -1,55 +1,26 @@
 #pragma once
 
-#include <source_location>
-#include <string>
-#include <exception>
+#include "kernel/utility/exception/common.hpp"
 
 namespace Sen::Kernel {
 
 	#define assert_conditional(conditional, message, function_name)\
 	if (!(conditional)) { \
-		throw Exception{message, std::source_location::current(), function_name}; \
+		throw RuntimeException{message, std::source_location::current(), function_name}; \
 	}\
 	static_assert(true)
 
+	#define assert_index(conditional, message, function_name)\
+	if (!(conditional)) { \
+		throw OutOfBoundsException{message, std::source_location::current(), function_name}; \
+	}\
+	static_assert(true)
 
-	class Exception : public std::runtime_error {
-
-	public:
-		std::string msg;
-		std::string arg;
-		std::string function_name;
-		std::string source;
-		Exception() = default;
-		Exception(const Exception &that) = default;
-		Exception(Exception &&that) = default;
-
-		inline auto message(
-
-		) -> std::string
-		{
-			return this->arg;
-		}
-
-		Exception(const std::string &arg, const std::source_location &loc = std::source_location::current(), const std::string & function_name = "") : std::runtime_error{arg}, arg{arg}, function_name{function_name.empty() ? "lambda" : function_name},
-		source{std::string{loc.file_name()} + ":" + std::to_string(loc.line()) + ":" + std::to_string(loc.column())}
-		{
-			{
-
-					#if _WIN32 // Windows using seperator '\\'
-						std::ranges::replace(source, '\\', '/');
-					#endif
-					msg = source;
-				}
-				msg += '\n';
-				msg += arg;
-				msg += ' ';
-			}
-			~Exception () throw () {}
-			const char *what () const throw () {
-				return this->msg.data();
-			}
-	};
+	#define assert_has_directory(conditional, message, function_name)\
+	if (!(conditional)) { \
+		throw DirectoryNotFoundException{message, std::source_location::current(), function_name}; \
+	}\
+	static_assert(true)
 
 	inline static auto parse_exception(
 

@@ -51,10 +51,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RenderEffects {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.popfx$/i],
-			option: 44n,
+			option: 41n,
 		});
 		inject<
 			Functions.PopCap.RenderEffects.Encode.Argument,
@@ -85,10 +85,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RenderEffects {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.popfx\.json$/i],
-			option: 45n,
+			option: 42n,
 		});
 	}
 }

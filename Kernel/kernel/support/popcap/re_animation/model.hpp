@@ -110,7 +110,17 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation {
             std::ostream& os,
             const Track& other
         ) -> std::ostream& {
-            os << "Track(" << other.name << ", " << other.transform << ")";
+            os << "Track(" << other.name << ", ";
+            for (const auto& transform : other.transform) {
+                if (std::holds_alternative<TransformDesktop>(transform)) {
+                    os << std::get<TransformDesktop>(transform);
+                } else if (std::holds_alternative<TransformMobile>(transform)) {
+                    os << std::get<TransformMobile>(transform);
+                } else {
+                    os << std::get<TransformTelevision>(transform);
+                }
+            }
+            os << ")";
             return os;
         }
     };

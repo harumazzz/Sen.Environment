@@ -61,10 +61,10 @@ namespace Sen.Script.Executor.Functions.PopCap.ResInfo {
 				Kernel.Support.PopCap.ResInfo.convert_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
-			option: 46n,
+			option: 43n,
 		});
 		inject<
 			Functions.PopCap.ResInfo.Split.Argument,
@@ -83,10 +83,9 @@ namespace Sen.Script.Executor.Functions.PopCap.ResInfo {
 				Kernel.Support.PopCap.ResInfo.split_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
-			option: 47n,
+			option: 44n,
 		});
 		inject<
 			Functions.PopCap.ResInfo.Merge.Argument,
@@ -109,10 +108,9 @@ namespace Sen.Script.Executor.Functions.PopCap.ResInfo {
 				Kernel.Support.PopCap.ResInfo.merge_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /.*\.info$/i],
-			option: 48n,
+			option: 45n,
 		});
 	}
 }

@@ -154,10 +154,10 @@ namespace Sen.Script.Executor.Functions.Project.RSB {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 58n,
+			option: 68n,
 		});
 		inject<
 			Functions.Project.RSB.Build.Argument,
@@ -239,10 +239,10 @@ namespace Sen.Script.Executor.Functions.Project.RSB {
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.bundle$/i],
-			option: 55n,
+			option: 69n,
 		});
 	}
 }

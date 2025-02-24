@@ -172,4 +172,12 @@ namespace Sen::Kernel::Math {
 		return arr;
 	}
 
+	template <typename Container, std::ranges::range R>
+	requires std::constructible_from<Container, std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>>
+	auto to(
+		R&& range
+	) -> Container {
+		return Container{std::ranges::begin(range), std::ranges::end(range)};
+	}
+
 }

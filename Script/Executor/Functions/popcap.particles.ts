@@ -102,10 +102,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Particles {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.xml|\.xml\.compiled)$/i],
-			option: 27n,
+			option: 24n,
 		});
 		inject<
 			Functions.PopCap.Particles.Encode.Argument,
@@ -134,10 +134,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Particles {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.xml)\.json$/i],
-			option: 28n,
+			option: 25n,
 		});
 		inject<
 			Functions.PopCap.Particles.ToXML.Argument,
@@ -160,10 +160,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Particles {
 				Kernel.Support.PopCap.Particles.to_xml(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.xml)\.json$/i],
-			option: 29n,
+			option: 26n,
 		});
 		inject<
 			Functions.PopCap.Particles.FromXML.Argument,
@@ -188,10 +188,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Particles {
 				Kernel.Support.PopCap.Particles.from_xml(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.xml$/i],
-			option: 30n,
+			option: 27n,
 		});
 	}
 }

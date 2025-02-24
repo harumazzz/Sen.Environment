@@ -90,6 +90,58 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				[2n, 'array', Kernel.Language.get('popcap.atlas.split.style.array')],
 			];
 		}
+
+		export function prepare<
+			T extends Base,
+			U extends Configuration & { size: V },
+			V extends Support.PopCap.Atlas.Pack.Detail.SizeRange<number>,
+		>(argument: T, configuration: U): void {
+			input_range(
+				argument.size as any,
+				'width',
+				configuration.size,
+				[64n, 16384n],
+				Kernel.Language.get('popcap.atlas.pack.width'),
+			);
+			input_range(
+				argument.size as any,
+				'height',
+				configuration.size,
+				[64n, 16384n],
+				Kernel.Language.get('popcap.atlas.pack.height'),
+			);
+			input_range(
+				argument.size as any,
+				'padding',
+				configuration.size,
+				[1n, 10n],
+				Kernel.Language.get('popcap.atlas.pack.padding'),
+			);
+			load_boolean(
+				argument.detail as any,
+				'smart',
+				configuration.detail as any,
+				Kernel.Language.get('popcap.atlas.pack.smart'),
+			);
+			load_boolean(
+				argument.detail as any,
+				'pot',
+				configuration.detail as any,
+				Kernel.Language.get('popcap.atlas.pack.pot'),
+			);
+			load_boolean(
+				argument.detail as any,
+				'allowRotation',
+				configuration.detail as any,
+				Kernel.Language.get('popcap.atlas.pack.allow_rotation'),
+			);
+			load_boolean(
+				argument.detail as any,
+				'square',
+				configuration.detail as any,
+				Kernel.Language.get('popcap.atlas.pack.square'),
+			);
+		}
 	}
 
 	export function forward(): void {
@@ -115,51 +167,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				Console.output(argument.destination!);
 				argument.size = {} as any;
 				argument.detail = {} as any;
-				input_range(
-					argument.size as any,
-					'width',
-					this.configuration.size,
-					[64n, 16384n],
-					Kernel.Language.get('popcap.atlas.pack.width'),
-				);
-				input_range(
-					argument.size as any,
-					'height',
-					this.configuration.size,
-					[64n, 16384n],
-					Kernel.Language.get('popcap.atlas.pack.height'),
-				);
-				input_range(
-					argument.size as any,
-					'padding',
-					this.configuration.size,
-					[1n, 10n],
-					Kernel.Language.get('popcap.atlas.pack.padding'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'smart',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.smart'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'pot',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.pot'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'allowRotation',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.allow_rotation'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'square',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.square'),
-				);
+				Detail.prepare(argument, this.configuration);
 				argument.size.width = Number(argument.size.width);
 				argument.size.height = Number(argument.size.height);
 				argument.size.padding = Number(argument.size.padding);
@@ -173,9 +181,9 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			filter: ['directory', /(.+)\.sprite$/i],
-			option: 15n,
+			option: 12n,
 		});
 		inject<
 			Functions.PopCap.Atlas.PackByResourceGroup.Argument,
@@ -199,51 +207,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				Console.output(argument.destination!);
 				argument.size = {} as any;
 				argument.detail = {} as any;
-				input_range(
-					argument.size as any,
-					'width',
-					this.configuration.size,
-					[64n, 16384n],
-					Kernel.Language.get('popcap.atlas.pack.width'),
-				);
-				input_range(
-					argument.size as any,
-					'height',
-					this.configuration.size,
-					[64n, 16384n],
-					Kernel.Language.get('popcap.atlas.pack.height'),
-				);
-				input_range(
-					argument.size as any,
-					'padding',
-					this.configuration.size,
-					[1n, 10n],
-					Kernel.Language.get('popcap.atlas.pack.padding'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'smart',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.smart'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'pot',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.pot'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'allowRotation',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.allow_rotation'),
-				);
-				load_boolean(
-					argument.detail as any,
-					'square',
-					this.configuration.detail as any,
-					Kernel.Language.get('popcap.atlas.pack.square'),
-				);
+				Detail.prepare(argument, this.configuration);
 				argument.size.width = Number(argument.size.width);
 				argument.size.height = Number(argument.size.height);
 				argument.size.padding = Number(argument.size.padding);
@@ -257,9 +221,9 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			filter: ['directory', /(.+)\.sprite$/i],
-			option: 16n,
+			option: 13n,
 		});
 		inject<
 			Functions.PopCap.Atlas.SplitByResInfo.Argument,
@@ -304,7 +268,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				});
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			filter: ['files', /(.+)\.json$/i, /(.+)\.png$/i],
 			option: undefined!,
 		});
@@ -361,7 +325,6 @@ namespace Sen.Script.Executor.Functions.PopCap.Atlas {
 				});
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
 			filter: ['files', /(.+)\.json$/gi, /(.+)\.png$/gi],
 			option: undefined!,
 		});

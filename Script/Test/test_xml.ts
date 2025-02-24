@@ -13,7 +13,7 @@ namespace Sen.Script.Test.XML {
 					Console.finished(`Finished ${propertyKey}`);
 					return true;
 				} catch (e) {
-					Console.error(Exception.make_exception(e as any));
+					Console.error((e as Error).name, Exception.make_exception(e as any));
 					return false;
 				}
 			};

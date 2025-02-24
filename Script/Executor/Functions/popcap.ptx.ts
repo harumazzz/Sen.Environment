@@ -59,50 +59,30 @@ namespace Sen.Script.Executor.Functions.PopCap.PTX {
 			];
 		}
 
-		export function exchange_format(m_format: string): Support.Texture.Format {
-			switch (m_format) {
-				case 'argb_8888':
-					return Support.Texture.Format.ARGB_8888;
+		const m_formats = {
+			argb_8888: Support.Texture.Format.ARGB_8888,
+			rgba_8888: Support.Texture.Format.RGBA_8888,
+			rgba_4444: Support.Texture.Format.RGBA_4444,
+			rgb_565: Support.Texture.Format.RGB_565,
+			rgba_5551: Support.Texture.Format.RGBA_5551,
+			rgba_4444_tiled: Support.Texture.Format.RGBA_4444_TILED,
+			rgb_565_tiled: Support.Texture.Format.RGB_565_TILED,
+			rgba_5551_tiled: Support.Texture.Format.RGBA_5551_TILED,
+			rgba_pvrtc4: Support.Texture.Format.RGBA_PVRTC_4BPP,
+			rgb_etc1_a_8: Support.Texture.Format.RGB_ETC1_A_8,
+			rgb_etc1_a_palette: Support.Texture.Format.RGB_ETC1_A_PALETTE,
+			rgb_pvrtc4_a_8: Support.Texture.Format.RGB_PVRTC_4BPP_A_8,
+		};
 
-				case 'rgba_8888':
-					return Support.Texture.Format.RGBA_8888;
-
-				case 'rgba_4444':
-					return Support.Texture.Format.RGBA_4444;
-
-				case 'rgb_565':
-					return Support.Texture.Format.RGB_565;
-
-				case 'rgba_5551':
-					return Support.Texture.Format.RGBA_5551;
-
-				case 'rgba_4444_tiled':
-					return Support.Texture.Format.RGBA_4444_TILED;
-
-				case 'rgb_565_tiled':
-					return Support.Texture.Format.RGB_565_TILED;
-
-				case 'rgba_5551_tiled':
-					return Support.Texture.Format.RGBA_5551_TILED;
-
-				case 'rgba_pvrtc4':
-					return Support.Texture.Format.RGBA_PVRTC_4BPP;
-
-				case 'rgb_etc1_a_8':
-					return Support.Texture.Format.RGB_ETC1_A_8;
-
-				case 'rgb_etc1_a_palette':
-					return Support.Texture.Format.RGB_ETC1_A_PALETTE;
-
-				case 'rgb_pvrtc4_a_8':
-					return Support.Texture.Format.RGB_PVRTC_4BPP_A_8;
-
-				default:
-					assert(
-						false,
-						Script.format(Kernel.Language.get('popcap.ptx.unsupported_format'), format),
-					);
+		export function exchange_format(key: string): Support.Texture.Format {
+			const texture_format = m_formats[key];
+			if (texture_format === undefined) {
+				assert(
+					false,
+					Script.format(Kernel.Language.get('popcap.ptx.unsupported_format'), key),
+				);
 			}
+			return texture_format;
 		}
 	}
 
@@ -163,9 +143,9 @@ namespace Sen.Script.Executor.Functions.PopCap.PTX {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			filter: ['file', /(.+)\.ptx$/i],
-			option: 33n,
+			option: 30n,
 		});
 		inject<
 			Functions.PopCap.PTX.Encode.Argument,
@@ -210,9 +190,9 @@ namespace Sen.Script.Executor.Functions.PopCap.PTX {
 				);
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			filter: ['file', /(.+)\.png$/i],
-			option: 34n,
+			option: 31n,
 		});
 	}
 }

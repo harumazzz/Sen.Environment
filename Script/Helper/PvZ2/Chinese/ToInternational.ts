@@ -57,7 +57,7 @@ namespace Sen.Script.Helper.PvZ2.Chinese.ToInternational {
 		const list = _handle();
 		for (const e of list) {
 			if (international_data.packet.includes(e)) {
-				Console.error(format(Kernel.Language.get('already_exists'), e));
+				Console.warning(format(Kernel.Language.get('already_exists'), e));
 				continue;
 			}
 			// TODO

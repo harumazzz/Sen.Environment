@@ -128,10 +128,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 60n,
+			option: 51n,
 		});
 		inject<
 			Functions.PopCap.RSB.Pack.Argument,
@@ -158,10 +158,40 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.bundle$/i],
-			option: 57n,
+			option: 52n,
+		});
+		inject<
+			Functions.PopCap.RSB.UnpackResource.Argument,
+			Functions.PopCap.RSB.UnpackResource.BatchArgument,
+			Functions.PopCap.RSB.UnpackResource.Configuration
+		>({
+			id: 'popcap.rsb.unpack_resource',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.rsb.unpack_resource.json',
+			),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(argument, 'destination', `${argument.source}.bundle`);
+				check_overwrite(argument as { destination: string }, 'directory');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ResourceStreamBundle.unpack_resource(
+					argument.source,
+					argument.destination!,
+				);
+				clock.stop_safe();
+			},
+			batch_forward(argument) {
+				return basic_batch(this, argument, false);
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.*)\.(rsb|obb)$/i],
+			option: 53n,
 		});
 		inject<
 			Functions.PopCap.RSB.PackResource.Argument,
@@ -190,10 +220,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.bundle$/i],
-			option: 56n,
+			option: 54n,
 		});
 		inject<
 			Functions.PopCap.RSB.ConvertPlatform.Argument,
@@ -225,10 +255,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 80n,
+			option: 55n,
 		});
 		inject<
 			Functions.PopCap.RSB.ForceUnpack.Argument,
@@ -253,40 +283,10 @@ namespace Sen.Script.Executor.Functions.PopCap.RSB {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 57n,
-		});
-		inject<
-			Functions.PopCap.RSB.UnpackResource.Argument,
-			Functions.PopCap.RSB.UnpackResource.BatchArgument,
-			Functions.PopCap.RSB.UnpackResource.Configuration
-		>({
-			id: 'popcap.rsb.unpack_resource',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.rsb.unpack_resource.json',
-			),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(argument, 'destination', `${argument.source}.bundle`);
-				check_overwrite(argument as { destination: string }, 'directory');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ResourceStreamBundle.unpack_resource(
-					argument.source,
-					argument.destination!,
-				);
-				clock.stop_safe();
-			},
-			batch_forward(argument) {
-				return basic_batch(this, argument, false);
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.*)\.(rsb|obb)$/i],
-			option: 59n,
+			option: 56n,
 		});
 	}
 }

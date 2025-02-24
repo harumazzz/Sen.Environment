@@ -67,10 +67,10 @@ namespace Sen.Script.Executor.Functions.PopCap.CryptData {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.bin$/i],
-			option: 21n,
+			option: 18n,
 		});
 		inject<
 			Functions.PopCap.CryptData.Encrypt.Argument,
@@ -105,10 +105,10 @@ namespace Sen.Script.Executor.Functions.PopCap.CryptData {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.bin$/i],
-			option: 22n,
+			option: 19n,
 		});
 	}
 }

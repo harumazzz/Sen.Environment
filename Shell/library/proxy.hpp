@@ -45,15 +45,6 @@ namespace Sen::Shell {
         });
     }
 
-    inline constexpr auto new_message (
-        Pointer<Message> message,
-        const size_t& size
-    ) -> void
-    {
-        message->value = new uint8_t[size];
-        message->size = size;
-    }
-
     template <typename MessagePtr>
     inline auto construct (
         const std::vector<std::string>& strings,
@@ -76,10 +67,12 @@ namespace Sen::Shell {
     }
 
     inline auto construct_message (
+        Service* service,
         const std::vector<std::string>& strings,
         Pointer<Message> message
     ) -> void {
-        new_message(message, total_size(strings));
+        auto size = total_size(strings);
+        service->allocate(message, &size);
         construct(strings, message);
     }
 

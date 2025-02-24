@@ -43,25 +43,21 @@ namespace Sen.Script.Executor.Functions.PopCap.ResourceGroup {
 	}
 
 	export namespace Detail {
+		export const m_layout = {
+			string: Support.PopCap.ResourceGroup.PathStyle.WindowStyle,
+			array: Support.PopCap.ResourceGroup.PathStyle.ArrayStyle,
+		};
+
 		export function exchange_layout(layout: string): Support.PopCap.ResourceGroup.PathStyle {
-			switch (layout) {
-				case 'string':
-					return Support.PopCap.ResourceGroup.PathStyle.WindowStyle;
-
-				case 'array':
-					return Support.PopCap.ResourceGroup.PathStyle.ArrayStyle;
-
-				default:
-					assert(
-						false,
-						format(
-							Kernel.Language.get(
-								'popcap.resource_group.convert.cannot_exchange_layout',
-							),
-							layout,
-						),
-					);
-			}
+			const value = m_layout[layout];
+			if (value !== undefined) return value!;
+			assert(
+				false,
+				format(
+					Kernel.Language.get('popcap.resource_group.convert.cannot_exchange_layout'),
+					layout,
+				),
+			);
 		}
 
 		export function style(): Array<[bigint, string, string]> {
@@ -107,10 +103,37 @@ namespace Sen.Script.Executor.Functions.PopCap.ResourceGroup {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
-			option: 49n,
+			option: 46n,
+		});
+		inject<
+			Functions.PopCap.ResourceGroup.Split.Argument,
+			Functions.PopCap.ResourceGroup.Split.BatchArgument,
+			Functions.PopCap.ResourceGroup.Split.Configuration
+		>({
+			id: 'popcap.resource_group.split',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.resource_group.split.json',
+			),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(argument, 'destination', `${argument.source}.info`);
+				check_overwrite(argument as { destination: string }, 'directory');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ResourceGroup.split_fs(
+					argument.source,
+					argument.destination!,
+				);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)\.json$/i],
+			option: 47n,
 		});
 		inject<
 			Functions.PopCap.ResourceGroup.Merge.Argument,
@@ -138,37 +161,10 @@ namespace Sen.Script.Executor.Functions.PopCap.ResourceGroup {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /.*\.info$/i],
-			option: 50n,
-		});
-		inject<
-			Functions.PopCap.ResourceGroup.Split.Argument,
-			Functions.PopCap.ResourceGroup.Split.BatchArgument,
-			Functions.PopCap.ResourceGroup.Split.Configuration
-		>({
-			id: 'popcap.resource_group.split',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.resource_group.split.json',
-			),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(argument, 'destination', `${argument.source}.info`);
-				check_overwrite(argument as { destination: string }, 'directory');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ResourceGroup.split_fs(
-					argument.source,
-					argument.destination!,
-				);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)\.json$/i],
-			option: 51n,
+			option: 48n,
 		});
 	}
 }

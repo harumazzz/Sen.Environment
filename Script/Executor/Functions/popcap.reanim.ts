@@ -132,40 +132,6 @@ namespace Sen.Script.Executor.Functions.PopCap.ReAnimation {
 
 	export function forward(): void {
 		inject<
-			Functions.PopCap.ReAnimation.DecodeAndToFlash.Argument,
-			Functions.PopCap.ReAnimation.DecodeAndToFlash.BatchArgument,
-			Functions.PopCap.ReAnimation.DecodeAndToFlash.Configuration
-		>({
-			id: 'popcap.reanim.decode_and_to_flash',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.reanim.decode_and_to_flash.json',
-			),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}.xfl`,
-				);
-				check_overwrite(argument as { destination: string }, 'directory');
-				Console.output(argument.destination!);
-				Console.argument(Kernel.Language.get('popcap.reanim.decode.generic'));
-				configurate_or_input(argument, 'platform', Detail.platform());
-				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.decode_and_to_flash(
-					argument.source,
-					argument.destination!,
-					argument.platform!,
-				);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)(\.reanim|\.reanim\.compiled)$/i],
-			option: 38n,
-		});
-		inject<
 			Functions.PopCap.ReAnimation.Decode.Argument,
 			Functions.PopCap.ReAnimation.Decode.BatchArgument,
 			Functions.PopCap.ReAnimation.Decode.Configuration
@@ -192,10 +158,10 @@ namespace Sen.Script.Executor.Functions.PopCap.ReAnimation {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.reanim|\.reanim\.compiled)$/i],
-			option: 36n,
+			option: 33n,
 		});
 		inject<
 			Functions.PopCap.ReAnimation.Encode.Argument,
@@ -224,10 +190,153 @@ namespace Sen.Script.Executor.Functions.PopCap.ReAnimation {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)(\.reanim\.json)$/i],
+			option: 34n,
+		});
+		inject<
+			Functions.PopCap.ReAnimation.FromXML.Argument,
+			Functions.PopCap.ReAnimation.FromXML.BatchArgument,
+			Functions.PopCap.ReAnimation.FromXML.Configuration
+		>({
+			id: 'popcap.reanim.from_xml',
+			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.from_xml.json'),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(
+					argument,
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}.json`,
+				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ReAnimation.from_xml(argument.source, argument.destination!);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)(\.reanim\.xml)$/i],
+			option: 35n,
+		});
+		inject<
+			Functions.PopCap.ReAnimation.ToXML.Argument,
+			Functions.PopCap.ReAnimation.ToXML.BatchArgument,
+			Functions.PopCap.ReAnimation.ToXML.Configuration
+		>({
+			id: 'popcap.reanim.to_xml',
+			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.to_xml.json'),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(
+					argument,
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}.xml`,
+				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ReAnimation.to_xml(argument.source, argument.destination!);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)(\.reanim\.json)$/i],
+			option: 36n,
+		});
+		inject<
+			Functions.PopCap.ReAnimation.FromFlash.Argument,
+			Functions.PopCap.ReAnimation.FromFlash.BatchArgument,
+			Functions.PopCap.ReAnimation.FromFlash.Configuration
+		>({
+			id: 'popcap.reanim.from_flash',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.reanim.from_flash.json',
+			),
+			direct_forward(argument): void {
+				is_valid_source(argument, true);
+				Console.obtained(argument.source);
+				defined_or_default(
+					argument,
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}.json`,
+				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ReAnimation.from_flash(
+					argument.source,
+					argument.destination!,
+				);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['directory', /(.+)(\.reanim\.xfl)$/i],
 			option: 37n,
+		});
+		inject<
+			Functions.PopCap.ReAnimation.ToFlash.Argument,
+			Functions.PopCap.ReAnimation.ToFlash.BatchArgument,
+			Functions.PopCap.ReAnimation.ToFlash.Configuration
+		>({
+			id: 'popcap.reanim.to_flash',
+			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.to_flash.json'),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(
+					argument,
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}.xfl`,
+				);
+				check_overwrite(argument as { destination: string }, 'directory');
+				Console.output(argument.destination!);
+				clock.start_safe();
+				Kernel.Support.PopCap.ReAnimation.to_flash(argument.source, argument.destination!);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)(\.reanim\.json)$/i],
+			option: 38n,
+		});
+		inject<
+			Functions.PopCap.ReAnimation.DecodeAndToFlash.Argument,
+			Functions.PopCap.ReAnimation.DecodeAndToFlash.BatchArgument,
+			Functions.PopCap.ReAnimation.DecodeAndToFlash.Configuration
+		>({
+			id: 'popcap.reanim.decode_and_to_flash',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.reanim.decode_and_to_flash.json',
+			),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(
+					argument,
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}.xfl`,
+				);
+				check_overwrite(argument as { destination: string }, 'directory');
+				Console.output(argument.destination!);
+				Console.argument(Kernel.Language.get('popcap.reanim.decode.generic'));
+				configurate_or_input(argument, 'platform', Detail.platform());
+				clock.start_safe();
+				Kernel.Support.PopCap.ReAnimation.decode_and_to_flash(
+					argument.source,
+					argument.destination!,
+					argument.platform!,
+				);
+				clock.stop_safe();
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)(\.reanim|\.reanim\.compiled)$/i],
+			option: 39n,
 		});
 		inject<
 			Functions.PopCap.ReAnimation.FromFlashAndEncode.Argument,
@@ -258,119 +367,10 @@ namespace Sen.Script.Executor.Functions.PopCap.ReAnimation {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['directory', /(.+)(\.reanim\.xfl)$/i],
-			option: 39n,
-		});
-		inject<
-			Functions.PopCap.ReAnimation.FromFlash.Argument,
-			Functions.PopCap.ReAnimation.FromFlash.BatchArgument,
-			Functions.PopCap.ReAnimation.FromFlash.Configuration
-		>({
-			id: 'popcap.reanim.from_flash',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.reanim.from_flash.json',
-			),
-			direct_forward(argument): void {
-				is_valid_source(argument, true);
-				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}.json`,
-				);
-				check_overwrite(argument as { destination: string }, 'file');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.from_flash(
-					argument.source,
-					argument.destination!,
-				);
-				clock.stop_safe();
-			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.+)(\.reanim\.xfl)$/i],
 			option: 40n,
-		});
-		inject<
-			Functions.PopCap.ReAnimation.FromXML.Argument,
-			Functions.PopCap.ReAnimation.FromXML.BatchArgument,
-			Functions.PopCap.ReAnimation.FromXML.Configuration
-		>({
-			id: 'popcap.reanim.from_xml',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.from_xml.json'),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}.json`,
-				);
-				check_overwrite(argument as { destination: string }, 'file');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.from_xml(argument.source, argument.destination!);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)(\.reanim\.xml)$/i],
-			option: 41n,
-		});
-		inject<
-			Functions.PopCap.ReAnimation.ToFlash.Argument,
-			Functions.PopCap.ReAnimation.ToFlash.BatchArgument,
-			Functions.PopCap.ReAnimation.ToFlash.Configuration
-		>({
-			id: 'popcap.reanim.to_flash',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.to_flash.json'),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}.xfl`,
-				);
-				check_overwrite(argument as { destination: string }, 'directory');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.to_flash(argument.source, argument.destination!);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)(\.reanim\.json)$/i],
-			option: 42n,
-		});
-		inject<
-			Functions.PopCap.ReAnimation.ToXML.Argument,
-			Functions.PopCap.ReAnimation.ToXML.BatchArgument,
-			Functions.PopCap.ReAnimation.ToXML.Configuration
-		>({
-			id: 'popcap.reanim.to_xml',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.reanim.to_xml.json'),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}.xml`,
-				);
-				check_overwrite(argument as { destination: string }, 'file');
-				Console.output(argument.destination!);
-				clock.start_safe();
-				Kernel.Support.PopCap.ReAnimation.to_xml(argument.source, argument.destination!);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)(\.reanim\.json)$/i],
-			option: 43n,
 		});
 	}
 }

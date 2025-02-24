@@ -29,11 +29,10 @@ class ThankYouPage extends StatelessWidget {
               return Padding(
                 padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
                 child: Column(
+                  spacing: 32.0,
                   children: [
                     _buildTitle(context),
-                    const SizedBox(height: 32.0),
                     _buildDownloadCard(context, isDarkTheme, isSmallScreen),
-                    const SizedBox(height: 32.0),
                     FooterWidget(onNavigate: onNavigate),
                   ],
                 ),

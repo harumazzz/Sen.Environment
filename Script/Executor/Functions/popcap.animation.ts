@@ -173,55 +173,64 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /.*(\.xfl|\.pam\.xfl)$/i],
-			option: 7n,
+			option: 4n,
 		});
 		inject<
-			Functions.PopCap.Animation.DecodeAndToFlash.Argument,
-			Functions.PopCap.Animation.DecodeAndToFlash.BatchArgument,
-			Functions.PopCap.Animation.DecodeAndToFlash.Configuration
+			Functions.PopCap.Animation.Decode.Argument,
+			Functions.PopCap.Animation.Decode.BatchArgument,
+			Functions.PopCap.Animation.Decode.Configuration
 		>({
-			id: 'popcap.animation.decode_and_to_flash',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.animation.decode_and_to_flash.json',
-			),
+			id: 'popcap.animation.decode',
+			configuration_file: Home.query('~/Executor/Configuration/popcap.animation.decode.json'),
 			direct_forward(argument): void {
 				is_valid_source(argument, false);
 				Console.obtained(argument.source);
-				defined_or_default(argument, 'destination', `${argument.source}.xfl`);
-				check_overwrite(argument as { destination: string }, 'directory');
+				defined_or_default(argument, 'destination', `${argument.source}.json`);
+				check_overwrite(argument as { destination: string }, 'file');
 				Console.output(argument.destination!);
-				load_bigint(
+				Executor.clock.start_safe();
+				Kernel.Support.PopCap.Animation.decode_fs(argument.source, argument.destination!);
+				Executor.clock.stop_safe();
+			},
+			batch_forward(argument) {
+				return basic_batch(this, argument, false);
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)\.pam$/i],
+			option: 5n,
+		});
+		inject<
+			Functions.PopCap.Animation.Encode.Argument,
+			Functions.PopCap.Animation.Encode.BatchArgument,
+			Functions.PopCap.Animation.Encode.Configuration
+		>({
+			id: 'popcap.animation.encode',
+			configuration_file: Home.query('~/Executor/Configuration/popcap.animation.encode.json'),
+			direct_forward(argument): void {
+				is_valid_source(argument, false);
+				Console.obtained(argument.source);
+				defined_or_default(
 					argument,
-					'resolution',
-					this.configuration,
-					Detail.resolution(),
-					Kernel.Language.get('popcap.animation.to_flash.resolution'),
+					'destination',
+					`${Kernel.Path.except_extension(argument.source)}`,
 				);
-				load_boolean(
-					argument,
-					'has_label',
-					this.configuration,
-					Kernel.Language.get('popcap.animation.extract_label'),
-				);
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
 				clock.start_safe();
-				Kernel.Support.PopCap.Animation.decode_and_to_flash(
-					argument.source,
-					argument.destination!,
-					argument.resolution!,
-					argument.has_label!,
-				);
+				Kernel.Support.PopCap.Animation.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
-			filter: ['file', /(.+)\.pam$/i],
-			option: 10n,
+			filter: ['file', /.*\.pam\.json$/i],
+			option: 6n,
 		});
 		inject<
 			Functions.PopCap.Animation.AddLibrary.Argument,
@@ -297,104 +306,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /.*/g],
-			option: 79n,
-		});
-		inject<
-			Functions.PopCap.Animation.Decode.Argument,
-			Functions.PopCap.Animation.Decode.BatchArgument,
-			Functions.PopCap.Animation.Decode.Configuration
-		>({
-			id: 'popcap.animation.decode',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.animation.decode.json'),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				defined_or_default(argument, 'destination', `${argument.source}.json`);
-				check_overwrite(argument as { destination: string }, 'file');
-				Console.output(argument.destination!);
-				Executor.clock.start_safe();
-				Kernel.Support.PopCap.Animation.decode_fs(argument.source, argument.destination!);
-				Executor.clock.stop_safe();
-			},
-			batch_forward(argument) {
-				return basic_batch(this, argument, false);
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /(.+)\.pam$/i],
-			option: 8n,
-		});
-		inject<
-			Functions.PopCap.Animation.ToAPNG.Argument,
-			Functions.PopCap.Animation.ToAPNG.BatchArgument,
-			Functions.PopCap.Animation.ToAPNG.Configuration
-		>({
-			id: 'popcap.animation.to_apng',
-			configuration_file: Home.query(
-				'~/Executor/Configuration/popcap.animation.to_apng.json',
-			),
-			direct_forward(argument): void {
-				is_valid_source(argument, false);
-				Console.obtained(argument.source);
-				Console.output(argument.source!);
-				defined_or_default(argument, 'destination', `${argument.source}.animation`);
-				check_overwrite(argument as { destination: string }, 'directory');
-				if (argument.media === undefined) {
-					argument.media = Console.path(
-						Kernel.Language.get('popcap.animation.to_apng.input_media'),
-						'directory',
-					);
-				}
-				const setting: Support.PopCap.Animation.Miscellaenous.GenerateAnimation.Setting = {
-					image_id: false,
-					frame_name: 'frame',
-					sprite_disable: [],
-					background_color: [0n, 0n, 0n, 0n],
-					rendering_size: {
-						width: 0n,
-						height: 0n,
-						scale: 1,
-					},
-					position_additional: {
-						x: 0,
-						y: 0,
-					},
-					apng_setting: {
-						make_apng: true,
-						split_label: true,
-						frame_rate: 0n,
-						loop: 0n,
-					},
-				};
-				const animation: Support.PopCap.Animation.SexyAnimation =
-					Kernel.JSON.deserialize_fs<Support.PopCap.Animation.SexyAnimation>(
-						argument.source!,
-					);
-				Support.PopCap.Animation.Miscellaenous.GenerateAnimation.exchange_sprite_disable(
-					animation,
-					setting,
-				);
-				Console.output(
-					`${Kernel.Language.get('popcap.animation.to_apng.total_frame')}: ${
-						animation.main_sprite.frame.length
-					}`,
-				);
-				clock.start_safe();
-				Support.PopCap.Animation.Miscellaenous.GenerateAnimation.process(
-					animation,
-					argument.media!,
-					argument.destination!,
-					setting,
-				);
-				clock.stop_safe();
-			},
-			is_enabled: true,
-			configuration: undefined!,
-			filter: ['file', /.*(\.pam\.json)$/i],
-			option: 13n,
+			option: 7n,
 		});
 		inject<
 			Functions.PopCap.Animation.FromFlash.Argument,
@@ -436,39 +351,108 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			batch_forward(argument) {
 				return basic_batch(this, argument, true);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /.*/g],
-			option: 12n,
+			option: 8n,
 		});
 		inject<
-			Functions.PopCap.Animation.Encode.Argument,
-			Functions.PopCap.Animation.Encode.BatchArgument,
-			Functions.PopCap.Animation.Encode.Configuration
+			Functions.PopCap.Animation.ToFlash.Argument,
+			Functions.PopCap.Animation.ToFlash.BatchArgument,
+			Functions.PopCap.Animation.ToFlash.Configuration
 		>({
-			id: 'popcap.animation.encode',
-			configuration_file: Home.query('~/Executor/Configuration/popcap.animation.encode.json'),
+			id: 'popcap.animation.to_flash',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.animation.to_flash.json',
+			),
+			direct_forward(argument): void {
+				is_valid_source(argument, true);
+				Console.obtained(argument.source);
+				if (/(.+)\.xfl$/i.test(argument.source)) {
+					defined_or_default(
+						argument,
+						'destination',
+						`${Kernel.Path.except_extension(argument.source)}.json`,
+					);
+				} else {
+					defined_or_default(argument, 'destination', `${argument.source}.pam.json`);
+				}
+				check_overwrite(argument as { destination: string }, 'file');
+				Console.output(argument.destination!);
+				load_bigint(
+					argument,
+					'resolution',
+					this.configuration,
+					Detail.resolution(),
+					Kernel.Language.get('popcap.animation.to_flash.resolution'),
+				);
+				load_boolean(
+					argument,
+					'has_label',
+					this.configuration,
+					Kernel.Language.get('popcap.animation.extract_label'),
+				);
+				clock.start_safe();
+				Kernel.Support.PopCap.Animation.to_flash(
+					argument.source,
+					argument.destination!,
+					argument.resolution!,
+					argument.has_label!,
+				);
+				clock.stop_safe();
+			},
+			batch_forward(argument) {
+				return basic_batch(this, argument, true);
+			},
+
+			configuration: undefined!,
+			filter: ['file', /(.+)\.pam\.json$/i],
+			option: 9n,
+		});
+		inject<
+			Functions.PopCap.Animation.DecodeAndToFlash.Argument,
+			Functions.PopCap.Animation.DecodeAndToFlash.BatchArgument,
+			Functions.PopCap.Animation.DecodeAndToFlash.Configuration
+		>({
+			id: 'popcap.animation.decode_and_to_flash',
+			configuration_file: Home.query(
+				'~/Executor/Configuration/popcap.animation.decode_and_to_flash.json',
+			),
 			direct_forward(argument): void {
 				is_valid_source(argument, false);
 				Console.obtained(argument.source);
-				defined_or_default(
-					argument,
-					'destination',
-					`${Kernel.Path.except_extension(argument.source)}`,
-				);
-				check_overwrite(argument as { destination: string }, 'file');
+				defined_or_default(argument, 'destination', `${argument.source}.xfl`);
+				check_overwrite(argument as { destination: string }, 'directory');
 				Console.output(argument.destination!);
+				load_bigint(
+					argument,
+					'resolution',
+					this.configuration,
+					Detail.resolution(),
+					Kernel.Language.get('popcap.animation.to_flash.resolution'),
+				);
+				load_boolean(
+					argument,
+					'has_label',
+					this.configuration,
+					Kernel.Language.get('popcap.animation.extract_label'),
+				);
 				clock.start_safe();
-				Kernel.Support.PopCap.Animation.encode_fs(argument.source, argument.destination!);
+				Kernel.Support.PopCap.Animation.decode_and_to_flash(
+					argument.source,
+					argument.destination!,
+					argument.resolution!,
+					argument.has_label!,
+				);
 				clock.stop_safe();
 			},
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
-			filter: ['file', /.*\.pam\.json$/i],
-			option: 9n,
+			filter: ['file', /(.+)\.pam$/i],
+			option: 10n,
 		});
 		inject<
 			Functions.PopCap.Animation.FromFlashAndEncode.Argument,
@@ -506,7 +490,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			batch_forward(argument) {
 				return basic_batch(this, argument, true);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.+)\.xfl$/i],
 			option: 11n,

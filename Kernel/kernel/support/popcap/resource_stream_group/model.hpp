@@ -84,7 +84,15 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             std::ostream& os,
             const PacketInformation& other
         ) -> std::ostream& {
-            os << "PacketInformation(" << other.version << ", " << other.compression << ", " << other.resources << ")";
+            os << "PacketInformation(" << other.version << ", " << other.compression << ", ";
+            for (const auto& resource : other.resources) {
+                if (std::holds_alternative<GeneralResource>(resource)) {
+                    os << std::get<GeneralResource>(resource);
+                } else {
+                    os << std::get<TextureResource>(resource);
+                }
+            }
+            os << ")";
             return os;
         }
     };

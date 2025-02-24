@@ -193,7 +193,41 @@ namespace Sen::Kernel::Javascript {
             auto length = u32{};
             Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
             destination.allocate(length);
-            for (auto index : Range{static_cast<usize>(length)}) {
+            for (const auto index : Range{static_cast<usize>(length)}) {
+                auto value = T{};
+                auto current_value = source.get_property(index);
+                Trait<T>::from_value(current_value, value);
+                destination.append(value);
+            }
+        }
+
+        static auto to_value(
+            const List<T>& source,
+            Value& destination
+        ) -> void {
+            destination.set_array();
+            // TODO : Refactor code with quickjs api : 0.9.0 for fast array
+            for (auto index : Range{source.size()}) {
+                auto value = Value::new_value(destination._context());
+                Trait<T>::to_value(source[index], value);
+                destination.set_property(index, value.release());
+            }
+        }
+
+    };
+
+    template <typename T>
+    struct Trait<std::vector<T>> {
+
+        static auto from_value(
+            Value& source,
+            List<T>& destination
+        ) -> void {
+            assert_conditional(source.is_array(), "Expected the value to be Array, but the actual type is not", "from_value");
+            auto length = u32{};
+            Subprojects::quickjs::JS_ToUint32(source._context(), &length, source.get_property("length"_s).value());
+            destination.allocate(length);
+            for (const auto index : Range{static_cast<usize>(length)}) {
                 auto value = T{};
                 auto current_value = source.get_property(index);
                 Trait<T>::from_value(current_value, value);

@@ -72,10 +72,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Zlib {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.(rsb|obb|bin|xml)$/i],
-			option: 71n,
+			option: 66n,
 		});
 		inject<
 			Functions.PopCap.Zlib.Uncompress.Argument,
@@ -107,10 +107,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Zlib {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.(compiled|smf|bin)$/i],
-			option: 72n,
+			option: 67n,
 		});
 	}
 }

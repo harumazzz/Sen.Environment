@@ -66,8 +66,8 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function error(str: string): void {
-			return Console.display(`${Kernel.Language.get('runtime_error')}:`, str, 'red');
+		export function error(name: string, str: string): void {
+			return Console.display(`${Kernel.Language.get('runtime_error')}: ${name}`, str, 'red');
 		}
 
 		/**
@@ -157,43 +157,28 @@ namespace Sen.Script {
 		export function path(source: string, type: Path): string {
 			Console.argument(source);
 			let destination: string = undefined!;
-			loop: do {
+			while (true) {
 				destination = readline();
-				switch (destination) {
-					case ':p':
-						if (type === 'file') destination = Shell.callback('pick_file')[0];
-						else destination = Shell.callback('pick_directory')[0];
-
-						Console.obtained(destination);
-						break loop;
-
-					default:
-						if (
-							(destination.startsWith('"') && destination.endsWith('"')) ||
-							(destination.startsWith("'") && destination.endsWith("'"))
-						) {
-							destination = destination.slice(1, -1);
-						}
-						switch (type) {
-							case 'file':
-								if (Kernel.FileSystem.is_file(destination)) break loop;
-								Console.warning(
-									format(Kernel.Language.get('file_not_found'), destination),
-								);
-								break;
-							case 'directory':
-								if (Kernel.FileSystem.is_directory(destination)) break loop;
-
-								Console.warning(
-									format(Kernel.Language.get('directory_not_found'), destination),
-								);
-								break loop;
-							default:
-								break loop;
-						}
+				if (destination.length === 0) {
+					Console.finished(Kernel.Language.get('argument_got'), destination);
+					break;
 				}
-			} while (true);
-			if (destination !== '') {
+				if (destination === 'p') {
+					destination = Shell.callback(
+						type === 'file' ? 'pick_file' : 'pick_directory',
+					)[0];
+					Console.obtained(destination);
+					break;
+				} else {
+					if (/^["'].*["']$/.test(destination)) {
+						destination = destination.slice(1, -1);
+					}
+					if (type === 'any') break;
+					if (type === 'file' && Kernel.FileSystem.is_file(destination)) break;
+					if (type === 'directory' && Kernel.FileSystem.is_directory(destination)) break;
+				}
+			}
+			if (destination.length !== 0) {
 				Console.finished(Kernel.Language.get('argument_got'), destination);
 			}
 			return destination;
@@ -255,12 +240,11 @@ namespace Sen.Script {
 				.replaceAll('at', Kernel.Language.get('at'))
 				.replaceAll('\\', '/')
 				.split('\n')
-				.map((e) => e.replace(/(?<=\()(.*)(?=(Kernel|Script))/, ''))
-				.filter((e: string) => !/(\s)<eval>(\s)/m.test(e));
-			if (is_gui()) {
-				return base_stack.map((e) => e.trim().replaceAll('../', '')).join('\n');
-			}
-			return base_stack.join('\n');
+				.map((line) => line.replace(/\((.*)(?=(Kernel|Script))/g, '('))
+				.filter((line) => !/\s<eval>\s/.test(line));
+			return is_gui()
+				? base_stack.map((line) => line.trim().replaceAll('../', '')).join('\n')
+				: base_stack.join('\n');
 		}
 
 		/**
@@ -284,7 +268,7 @@ namespace Sen.Script {
 
 		export function make_exception(e: Error): string {
 			if (is_gui()) {
-				Console.error(e.message);
+				Console.error(e.name, e.message);
 				Console.display(
 					`${Kernel.Language.get('stack')}:`,
 					make_stack(e.stack!).replace(/\n$/, ''),
@@ -302,7 +286,7 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export const version = 14 as const;
+	export const version = 15 as const;
 
 	/**
 	 * --------------------------------------------------
@@ -311,15 +295,10 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export function main(data: {
-		arguments: Array<string>;
-		home: string;
-		error: string | undefined;
-	}): void {
-		const result: string | undefined = launch(data.arguments);
+	export function main(data: { arguments: Array<string>; home: string }): void {
+		const result: RuntimeException | undefined = launch(data.arguments);
 		if (result !== undefined) {
-			data.error = result;
-			Console.error(result);
+			Console.error(result.name, result.message);
 		}
 		if (is_gui()) {
 			Console.finished(
@@ -332,6 +311,8 @@ namespace Sen.Script {
 		}
 	}
 
+	export type RuntimeException = { name: string; message: string };
+
 	/**
 	 * --------------------------------------------------
 	 * Main thread
@@ -339,8 +320,8 @@ namespace Sen.Script {
 	 * --------------------------------------------------
 	 */
 
-	export function launch(args: Array<string>): string | undefined {
-		let result: string | undefined = undefined;
+	export function launch(args: Array<string>): RuntimeException | undefined {
+		let result: RuntimeException | undefined = undefined;
 		try {
 			Home.setup(args[2]);
 			Console.display(
@@ -349,7 +330,7 @@ namespace Sen.Script {
 				} & Kernel: ${Kernel.version()} & Script: ${version}`,
 				args[0],
 			);
-			Module.load();
+			Module.load(Module.modules);
 			args.splice(0, 3);
 			Setting.load();
 			Console.finished(
@@ -358,12 +339,16 @@ namespace Sen.Script {
 					Kernel.Language.get('js.environment_has_been_loaded'),
 					1n,
 					1n,
-					Module.script_list.length + 1,
+					Module.modules.length + Module.entries.length + 1,
 				),
 			);
+			Module.load(Module.entries);
 			Executor.forward({ source: args });
 		} catch (e: any) {
-			result = Exception.make_exception(e);
+			result = {
+				name: e.name,
+				message: Exception.make_exception(e),
+			};
 		}
 		return result;
 	}
@@ -380,8 +365,8 @@ namespace Sen.Script {
 		 * --------------------------------------------------
 		 */
 
-		export function load(): void {
-			for (const script of script_list) {
+		export function load(scripts: Array<string>): void {
+			for (const script of scripts) {
 				Kernel.JavaScript.evaluate_fs(Home.query(script));
 			}
 		}
@@ -390,7 +375,7 @@ namespace Sen.Script {
 		 * Modules in queue await to be execute
 		 */
 
-		export const script_list: Array<string> = [
+		export const modules: Array<string> = [
 			'~/Third/maxrects-packer/maxrects-packer.js',
 			'~/utility/Miscellaneous.js',
 			'~/Setting/Setting.js',
@@ -407,32 +392,35 @@ namespace Sen.Script {
 			'~/Support/Wwise/Media/Decode.js',
 			'~/Support/Wwise/Media/Encode.js',
 			'~/Executor/Executor.js',
+		];
+
+		export const entries: Array<string> = [
 			'~/Executor/Functions/js.js',
-			'~/Executor/Functions/popcap.rton.js',
-			'~/Executor/Functions/popcap.resource_group.js',
-			'~/Executor/Functions/popcap.res_info.js',
-			'~/Executor/Functions/popcap.newton.js',
-			'~/Executor/Functions/popcap.crypt_data.js',
+			'~/Executor/Functions/marmalade.dzip.js',
 			'~/Executor/Functions/popcap.animation.js',
+			'~/Executor/Functions/popcap.atlas.js',
 			'~/Executor/Functions/popcap.cfw2.js',
 			'~/Executor/Functions/popcap.compiled_text.js',
-			'~/Executor/Functions/popcap.ptx.js',
-			'~/Executor/Functions/popcap.zlib.js',
-			'~/Executor/Functions/popcap.particles.js',
-			'~/Executor/Functions/popcap.render_effects.js',
-			'~/Executor/Functions/wwise.soundbank.js',
-			'~/Executor/Functions/wwise.media.js',
-			'~/Executor/Functions/marmalade.dzip.js',
-			'~/Executor/Functions/popcap.rsg.js',
+			'~/Executor/Functions/popcap.crypt_data.js',
+			'~/Executor/Functions/popcap.newton.js',
 			'~/Executor/Functions/popcap.pak.js',
-			'~/Executor/Functions/popcap.rsb.js',
-			'~/Executor/Functions/popcap.rsb_patch.js',
-			'~/Executor/Functions/popcap.reanim.js',
-			'~/Executor/Functions/project.rsb.js',
-			'~/Executor/Functions/popcap.atlas.js',
-			'~/Executor/Functions/popcap.pvz2.lawnstrings.js',
+			'~/Executor/Functions/popcap.particles.js',
 			'~/Executor/Functions/popcap.player_info.js',
+			'~/Executor/Functions/popcap.ptx.js',
+			'~/Executor/Functions/popcap.pvz2.lawnstrings.js',
+			'~/Executor/Functions/popcap.reanim.js',
+			'~/Executor/Functions/popcap.render_effects.js',
+			'~/Executor/Functions/popcap.res_info.js',
+			'~/Executor/Functions/popcap.resource_group.js',
+			'~/Executor/Functions/popcap.rsb_patch.js',
+			'~/Executor/Functions/popcap.rsb.js',
+			'~/Executor/Functions/popcap.rsg.js',
+			'~/Executor/Functions/popcap.rton.js',
+			'~/Executor/Functions/popcap.zlib.js',
+			'~/Executor/Functions/project.rsb.js',
 			'~/Executor/Functions/project.scg.js',
+			'~/Executor/Functions/wwise.media.js',
+			'~/Executor/Functions/wwise.soundbank.js',
 		];
 	}
 }

@@ -49,10 +49,10 @@ namespace Sen.Script.Executor.Functions.PopCap.PlayerInfo {
 				Kernel.Support.PopCap.PlayerInfo.encode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.dat\.json$/i],
-			option: 32n,
+			option: 28n,
 		});
 		inject<
 			Functions.PopCap.PlayerInfo.Decode.Argument,
@@ -73,10 +73,10 @@ namespace Sen.Script.Executor.Functions.PopCap.PlayerInfo {
 				Kernel.Support.PopCap.PlayerInfo.decode_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.dat$/i],
-			option: 31n,
+			option: 29n,
 		});
 	}
 }

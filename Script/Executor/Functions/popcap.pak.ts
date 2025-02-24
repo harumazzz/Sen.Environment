@@ -50,10 +50,10 @@ namespace Sen.Script.Executor.Functions.PopCap.PAK {
 			batch_forward(argument) {
 				return basic_batch(this, argument, false);
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.pak$/i],
-			option: 25n,
+			option: 22n,
 		});
 		inject<
 			Functions.PopCap.PAK.Pack.Argument,
@@ -76,10 +76,9 @@ namespace Sen.Script.Executor.Functions.PopCap.PAK {
 				Kernel.Support.PopCap.Package.pack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.data_package$/i],
-			option: 26n,
+			option: 23n,
 		});
 	}
 }

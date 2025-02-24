@@ -26,7 +26,6 @@ namespace Sen.Script.Executor {
 		configuration_file: string;
 		direct_forward: (argument: Argument) => void;
 		batch_forward?: (argument: BatchArgument) => void;
-		is_enabled: boolean;
 		configuration: Configuration;
 		filter: [MethodType, RegExp] | [MethodType, ...Array<RegExp>];
 		option: bigint;
@@ -105,15 +104,39 @@ namespace Sen.Script.Executor {
 		}
 	}
 
-	/**
-	 * ----------------------------------------------------------
-	 * JavaScript Executor Implement
-	 * @param argument - Argument to query
-	 * @param key - Key
-	 * @param defined_value - If not, this val will assign to it
-	 * @returns
-	 * ----------------------------------------------------------
-	 */
+	export type IntegerRule = Array<[bigint, string, string]>;
+
+	export function delete_invalid_value<
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
+		Return,
+	>(
+		argument: Argument,
+		key: keyof Argument & keyof Configuration,
+		callback: () => Return,
+	): Return {
+		Console.warning(format(Kernel.Language.get('script.invalid_input_data'), argument[key]));
+		delete (argument as any & Argument)[key];
+		return callback();
+	}
+
+	export function invalid_argument_then<
+		Argument extends Executor.Base,
+		Configuration extends Executor.Configuration,
+		Return,
+	>(
+		configuration: Configuration,
+		key: keyof Argument & keyof Configuration,
+		callback: () => Return,
+	): Return {
+		Console.display(
+			format(Kernel.Language.get('invalid.argument'), configuration[key]),
+			'',
+			'red',
+		);
+		(configuration as any)[key] = '?';
+		return callback();
+	}
 
 	export function load_bigint<
 		Argument extends Executor.Base,
@@ -127,42 +150,28 @@ namespace Sen.Script.Executor {
 	): void {
 		Console.argument(title);
 		if ((argument as any & Argument)[key] !== undefined) {
-			if (
-				(rule as Array<[bigint, string, string]>)
-					.map((e) => e[1])
-					.includes((argument as any)[key])
-			) {
+			if ((rule as IntegerRule).some((e) => e[1] === (argument as any)[key])) {
 				print_argument(argument[key] as string);
 			} else {
-				Console.warning(
-					format(Kernel.Language.get('script.invalid_input_data'), argument[key]),
+				return delete_invalid_value(argument, key as any, () =>
+					load_bigint(argument, key, configuration, rule, title),
 				);
-				delete (argument as any & Argument)[key];
-				return load_bigint(argument, key, configuration, rule, title);
 			}
 		} else if ((configuration as any)[key] === '?') {
-			return configurate_or_input(
-				argument,
-				key as string,
-				rule as Array<[bigint, string, string]>,
-			);
+			return configurate_or_input(argument, key as string, rule as IntegerRule);
 		} else {
-			const setState = (value: string) => {
+			const rof = (value: string) => {
 				print_argument(value);
 				(argument as any & Argument)[key] = configuration[key];
 			};
 			if (rule.includes(configuration[key] as unknown as bigint & string)) {
-				setState(configuration[key] as string);
-			} else if (
-				(rule as Array<[bigint, string, string]>)
-					.map((e) => e[1])
-					.includes(configuration[key] as any)
-			) {
-				setState((rule as any)[Number((configuration[key] as bigint) - 1n)][2] as string);
+				rof(configuration[key] as string);
+			} else if ((rule as IntegerRule).map((e) => e[1]).includes(configuration[key] as any)) {
+				rof((rule as any)[Number((configuration[key] as bigint) - 1n)][2] as string);
 			} else {
-				Console.error(format(Kernel.Language.get('invalid.argument'), configuration[key]));
-				(configuration as any)[key] = '?';
-				return load_bigint(argument, key, configuration, rule, title);
+				invalid_argument_then(configuration, key as any, () =>
+					load_bigint(argument, key, configuration, rule, title),
+				);
 			}
 		}
 	}
@@ -195,11 +204,9 @@ namespace Sen.Script.Executor {
 			) {
 				print_argument(argument[key] as string);
 			} else {
-				Console.warning(
-					format(Kernel.Language.get('script.invalid_input_data'), argument[key]),
+				return delete_invalid_value(argument, key as any, () =>
+					input_range(argument, key, configuration, rule, title),
 				);
-				delete argument[key];
-				return input_range(argument, key, configuration, rule, title);
 			}
 		} else if ((configuration as any)[key] === '?') {
 			let input: string = undefined!;
@@ -208,21 +215,18 @@ namespace Sen.Script.Executor {
 				if (/\d+/.test(input) && rule[0] <= BigInt(input) && rule[1] >= BigInt(input)) {
 					break;
 				}
-				Console.error(format(Kernel.Language.get('invalid.argument'), input));
+				Console.display(format(Kernel.Language.get('invalid.argument'), input), '', 'red');
 			}
 			(argument as any)[key] = BigInt(input);
 		} else {
-			if (
-				/\d+/.test(configuration[key] as string) &&
-				rule[0] <= BigInt(configuration[key] as string) &&
-				rule[1] >= BigInt(configuration[key] as string)
-			) {
+			const value = BigInt(configuration[key] as string);
+			if (/\d+/.test(configuration[key] as string) && rule[0] <= value && rule[1] >= value) {
 				print_argument(configuration[key] as string);
-				(argument as any & Argument)[key] = BigInt(configuration[key] as string);
+				(argument as any & Argument)[key] = value;
 			} else {
-				Console.error(format(Kernel.Language.get('invalid.argument'), configuration[key]));
-				(configuration as any)[key] = '?';
-				return load_bigint(argument, key, configuration, rule, title);
+				invalid_argument_then(configuration, key as any, () =>
+					load_bigint(argument, key, configuration, rule, title),
+				);
 			}
 		}
 	}
@@ -250,11 +254,9 @@ namespace Sen.Script.Executor {
 		Console.argument(title);
 		if ((argument as any & Argument)[key] !== undefined) {
 			if (rule !== undefined && !rule.includes(argument[key] as string)) {
-				Console.warning(
-					format(Kernel.Language.get('script.invalid_input_data'), argument[key]),
+				return delete_invalid_value(argument, key as any, () =>
+					load_string(argument, key, configuration, title, rule),
 				);
-				delete argument[key];
-				return load_string(argument, key, configuration, title, rule);
 			}
 			return print_argument(argument[key] as string);
 		} else if ((configuration as any)[key] === '?') {
@@ -267,9 +269,9 @@ namespace Sen.Script.Executor {
 				print_argument(configuration[key] as string);
 				(argument as any & Argument)[key] = configuration[key];
 			} else {
-				Console.error(format(Kernel.Language.get('invalid.argument'), configuration[key]));
-				(configuration as any)[key] = '?';
-				return load_string(argument, key, configuration, title, rule);
+				return invalid_argument_then(configuration, key as any, () =>
+					load_string(argument, key, configuration, title, rule),
+				);
 			}
 		}
 	}
@@ -296,13 +298,11 @@ namespace Sen.Script.Executor {
 		Console.argument(title);
 		if ((argument as any & Argument)[key] !== undefined) {
 			if (!(typeof argument[key] === 'boolean')) {
-				Console.warning(
-					format(Kernel.Language.get('script.invalid_input_data'), argument[key]),
+				return delete_invalid_value(argument, key as any, () =>
+					load_boolean(argument, key, configuration, title),
 				);
-				delete argument[key];
-				return load_boolean(argument, key, configuration, title);
 			}
-			print_argument(argument[key] as any);
+			return print_argument(argument[key] as any);
 		}
 		if ((configuration as any)[key] === '?') {
 			(argument as any)[key] = input_boolean();
@@ -312,23 +312,23 @@ namespace Sen.Script.Executor {
 				(argument as any & Argument)[key] = Boolean(configuration[key]);
 				return;
 			}
-			Console.error(Kernel.Language.get('input.invalid_boolean_configuration'));
-			(configuration as any)[key] = '?';
-			return load_boolean(argument, key, configuration, title);
+			return invalid_argument_then(configuration, key as any, () =>
+				load_boolean(argument, key, configuration, title),
+			);
 		}
 	}
+
+	export const k_boolean: Array<[string, bigint]> = [
+		[Kernel.Language.get('input.set_argument_to_true'), 1n],
+		[Kernel.Language.get('input.set_argument_to_false'), 2n],
+	];
 
 	export function input_boolean(): boolean {
 		if (is_gui()) {
 			const result = Shell.callback('input_boolean')[0];
 			return result === '1';
 		} else {
-			(
-				[
-					[Kernel.Language.get('input.set_argument_to_true'), 1n],
-					[Kernel.Language.get('input.set_argument_to_false'), 2n],
-				] as Array<[string, bigint]>
-			).forEach((e) => print_statement(e[0], e[1]));
+			k_boolean.forEach((e) => print_statement(e[0], e[1]));
 			const result = input_integer([1n, 2n]);
 			return result === 1n;
 		}
@@ -369,7 +369,7 @@ namespace Sen.Script.Executor {
 	export function configurate_or_input<Argument extends Executor.Base>(
 		argument: Argument,
 		key: keyof Argument,
-		rule: Array<bigint> | Array<[bigint, string, string]>,
+		rule: Array<bigint> | IntegerRule,
 	): void {
 		if ((argument as any & Argument)[key] === undefined) {
 			switch (typeof rule[0]) {
@@ -379,7 +379,7 @@ namespace Sen.Script.Executor {
 						print_statement(e[2], e[0]);
 						new_rule.push(e[0]);
 					});
-					(argument as any)[key] = (rule as Array<[bigint, string, string]>)[
+					(argument as any)[key] = (rule as IntegerRule)[
 						Number(input_integer(new_rule) - 1n)
 					]![1];
 					break;
@@ -400,7 +400,7 @@ namespace Sen.Script.Executor {
 	 * @returns Filter
 	 */
 
-	export function test([type, pattern]: [MethodType, RegExp], source: string): boolean {
+	export function test_of([type, pattern]: [MethodType, RegExp], source: string): boolean {
 		let is_valid: boolean = undefined!;
 		switch (type) {
 			case 'file':
@@ -409,7 +409,6 @@ namespace Sen.Script.Executor {
 			case 'directory':
 				is_valid = Kernel.FileSystem.is_directory(source);
 				break;
-
 			case 'any':
 				is_valid = true;
 				break;
@@ -422,25 +421,7 @@ namespace Sen.Script.Executor {
 		[type, ...method]: [MethodType, ...Array<RegExp>],
 		source: Array<string>,
 	): boolean {
-		let is_valid: boolean = true;
-		switch (type) {
-			case 'file':
-				is_valid = source.every(function make_assert(e: string): boolean {
-					return Kernel.FileSystem.is_file(e);
-				});
-				break;
-
-			case 'directory':
-				is_valid = source.every(function make_assert(e: string): boolean {
-					return Kernel.FileSystem.is_directory(e);
-				});
-				break;
-
-			case 'any':
-				is_valid = true;
-				break;
-		}
-		return is_valid && method.every((e: RegExp) => source.some((i: string) => e.test(i)));
+		return source.every((e, i) => test_of([type, method[i]], e));
 	}
 
 	/**
@@ -478,11 +459,9 @@ namespace Sen.Script.Executor {
 				);
 				worker.batch_forward(argument);
 				break;
-
 			case Forward.DIRECT:
 				worker.direct_forward(argument);
 				break;
-
 			default:
 				assert(false, format(Kernel.Language.get('js.method_does_not_execute')));
 		}
@@ -519,8 +498,7 @@ namespace Sen.Script.Executor {
 		id: string,
 		forward: Forward,
 		load: ExecuteType,
-	): string {
-		let result: string = undefined!;
+	): void {
 		try {
 			switch (load) {
 				case 'simple':
@@ -536,10 +514,12 @@ namespace Sen.Script.Executor {
 					);
 			}
 		} catch (e: any) {
-			result = Exception.make_exception(e);
-			Console.error(result);
+			let result = Exception.make_exception(e);
+			if (result !== undefined) {
+				Console.error(e.name, result);
+			}
 		}
-		return result;
+		return;
 	}
 
 	export type ExecuteType = 'simple' | 'whole';
@@ -577,9 +557,8 @@ namespace Sen.Script.Executor {
 			}
 		};
 		methods.forEach((worker, method_name) => {
-			if (!worker.is_enabled) return;
 			if (typeof argument.source === 'string') {
-				query(test, worker.filter as [MethodType, RegExp], argument.source as string, [
+				query(test_of, worker.filter as [MethodType, RegExp], argument.source as string, [
 					method_name,
 					worker.option,
 				]);
@@ -596,12 +575,11 @@ namespace Sen.Script.Executor {
 		display_argument(argument.source as string | string[]);
 		Console.argument(Kernel.Language.get('js.input_an_method_to_start'));
 		print_statement(Kernel.Language.get('js.skip_argument_input'), 0n);
-		modules = new Map([...modules.entries()].sort((a, b) => Number(a[0] - b[0])));
 		modules.forEach(print_statement);
 		const view: Array<bigint> = Array.from(modules.keys());
 		switch (view.length) {
 			case 0:
-				Console.error(Kernel.Language.get('js.argument_ignored'));
+				Console.display(Kernel.Language.get('js.argument_ignored'), '', 'red');
 				break;
 			case 1:
 				execute<Argument>(argument, modules.get(view[0])!, Forward.DIRECT, load);
@@ -637,13 +615,12 @@ namespace Sen.Script.Executor {
 	}
 
 	export function exchange_argument_value<T>(value: string): T {
-		if (/^(((\d+)[f|n]))$/.test(value)) {
-			if (value.endsWith('f')) {
-				return Number(value.substring(0, value.length - 1)) as T;
-			}
-			return BigInt(value.substring(0, value.length - 1)) as T;
+		if (/^\d+[fn]$/.test(value)) {
+			return (
+				value.endsWith('f') ? Number(value.slice(0, -1)) : BigInt(value.slice(0, -1))
+			) as T;
 		}
-		if (/(((true|false)))/i.test(value)) {
+		if (/^(true|false)$/i.test(value)) {
 			return (value === 'true') as T;
 		}
 		return value as T;
@@ -653,10 +630,10 @@ namespace Sen.Script.Executor {
 		argument: Argument,
 		temporary: ModuleLoader,
 	): void {
-		let raw = argument.source;
-		for (let i = 0; i < raw.length; ++i) {
-			if (raw[i]!.startsWith('-')) {
-				temporary[raw[i++]!.slice(1)] = exchange_argument_value(raw[i]!);
+		const raw = argument.source;
+		for (let i = 0; i < raw.length; i++) {
+			if (raw[i].startsWith('-')) {
+				temporary[raw[i].slice(1)] = exchange_argument_value(raw[++i]);
 			}
 		}
 	}
@@ -665,15 +642,10 @@ namespace Sen.Script.Executor {
 		argument: Argument,
 		temporary: ModuleLoader,
 	): boolean {
-		for (let e of argument.source) {
-			if (
-				['popcap.atlas.split_by_resource_group', 'popcap.atlas.split_by_res_info'].includes(
-					e,
-				)
-			) {
-				temporary.source = [];
-				return true;
-			}
+		const pattern = /^popcap\.atlas\.split_by_(resource_group|res_info)$/;
+		if (argument.source.some((e) => pattern.test(e))) {
+			temporary.source = [];
+			return true;
 		}
 		return false;
 	}
@@ -682,17 +654,15 @@ namespace Sen.Script.Executor {
 		argument: Argument,
 		temporary: ModuleLoader & { source: Array<string> },
 	): void {
-		let raw = argument.source;
-		for (let i = 0; i < raw.length; ++i) {
-			if (raw[i]!.startsWith('-source')) {
-				++i;
-				for (; i < raw.length && !raw[i]!.startsWith('-'); ++i) {
-					temporary.source.push(exchange_argument_value(raw[i]!));
+		const raw = argument.source;
+		for (let i = 0; i < raw.length; i++) {
+			if (raw[i] === '-source') {
+				while (++i < raw.length && !raw[i].startsWith('-')) {
+					temporary.source.push(exchange_argument_value(raw[i]));
 				}
-				--i;
-			} else if (raw[i]!.startsWith('-')) {
-				temporary[raw[i]!.slice(1)] = exchange_argument_value(raw[i + 1]!);
-				++i;
+				i--;
+			} else if (raw[i].startsWith('-')) {
+				temporary[raw[i].slice(1)] = exchange_argument_value(raw[++i]);
 			}
 		}
 	}
@@ -700,66 +670,69 @@ namespace Sen.Script.Executor {
 	export function input_path<Argument extends Base & { source: Array<string> }>(
 		argument: Argument,
 	): void {
-		let input: string = undefined!;
 		Console.argument(
 			Kernel.Language.get(
 				'script.input_any_path_to_continue_or_provide_an_empty_string_to_exit',
 			),
 		);
-		loop: while (true) {
-			input = readline();
-			switch (input) {
-				case '':
-					break loop;
-				case ':p':
-					Console.argument(Kernel.Language.get('input_type'));
-					[Kernel.Language.get('file'), Kernel.Language.get('directory')].forEach(
-						(e, i) => print_statement(e, i + 1),
-					);
-					const result = input_integer([1n, 2n]);
-					if (result === 1n) {
-						input = Shell.callback('pick_file')[0];
-					} else {
-						input = Shell.callback('pick_directory')[0];
+		while (true) {
+			let value = readline();
+			if (value.length === 0) break;
+			if (value === ':p') {
+				Console.argument(Kernel.Language.get('input_type'));
+				[Kernel.Language.get('file'), Kernel.Language.get('directory')].forEach((e, i) =>
+					print_statement(e, i + 1),
+				);
+				const result = input_integer([1n, 2n]);
+				value = Shell.callback(result === 1n ? 'pick_file' : 'pick_directory')[0];
+				if (value.length === 0) continue;
+			}
+			if (value === ':b') {
+				Console.argument(Kernel.Language.get('input_number_to_process_batch_function'));
+				const modules: Map<bigint, string> = new Map<bigint, string>();
+				let counter: bigint = 0n;
+				print_statement(Kernel.Language.get('js.skip_argument_input'), counter);
+				methods.forEach((value, key) => {
+					if (value.batch_forward !== undefined) {
+						modules.set(++counter, key);
 					}
-					if (input.length === 0) continue;
-					break;
-				case ':b':
-					Console.argument(Kernel.Language.get('input_number_to_process_batch_function'));
-					const modules: Map<bigint, string> = new Map<bigint, string>();
-					let counter: bigint = 0n;
-					print_statement(Kernel.Language.get('js.skip_argument_input'), 0n);
-					methods.forEach((value, key) => {
-						if (value.batch_forward !== undefined && value.is_enabled) {
-							modules.set(++counter, key);
-						}
-					});
-					modules.forEach((v, k) => print_statement(Kernel.Language.get(v), k));
-					const option = input_integer([0n, ...modules.keys()]);
-					if (option === 0n) break loop;
-					(argument as any).directory = Console.path(
-						Kernel.Language.get('input_directory'),
-						'directory',
-					);
-					execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
-					continue;
+				});
+				modules.forEach((v, k) => print_statement(Kernel.Language.get(v), k));
+				const option = input_integer([0n, ...modules.keys()]);
+				if (option === 0n) break;
+				(argument as any).directory = Console.path(
+					Kernel.Language.get('input_directory'),
+					'directory',
+				);
+				execute(argument, modules.get(option)!, Forward.BATCH, 'simple');
+				break;
 			}
-			if (
-				(input.startsWith('"') && input.endsWith('"')) ||
-				(input.startsWith("'") && input.endsWith("'"))
-			) {
-				input = input.slice(1, -1);
+			if (/^["'].*["']$/.test(value)) {
+				value = value.slice(1, -1);
 			}
-			if (Kernel.FileSystem.is_file(input) || Kernel.FileSystem.is_directory(input)) {
-				Console.argument(input);
-				argument.source.push(input);
+			if (Kernel.FileSystem.is_file(value) || Kernel.FileSystem.is_directory(value)) {
+				Console.argument(value);
+				argument.source.push(value);
 				continue;
 			}
 			Console.warning(
-				format(Kernel.Language.get('js.input_is_not_a_file_or_directory'), input),
+				format(Kernel.Language.get('js.input_is_not_a_file_or_directory'), value),
 			);
 		}
-		Console.warning(Kernel.Language.get('script.input_phase_stopped'));
+	}
+
+	export const k_argument = [
+		[Kernel.Language.get('js.skip_argument_input'), 0n],
+		[Kernel.Language.get('js.process_whole'), 1n],
+		[Kernel.Language.get('js.process_in_queue'), 2n],
+		[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
+		[Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n],
+	] as Array<[string, bigint]>;
+
+	export function process_module<Argument extends Base>(argument: Argument): void {
+		return (argument.source as Array<string>).forEach((e) =>
+			load_module({ source: e }, 'simple'),
+		);
 	}
 
 	export function forward<Argument extends Base>(argument: Argument): void {
@@ -802,15 +775,7 @@ namespace Sen.Script.Executor {
 					(argument.source as string).length,
 				),
 			);
-			(
-				[
-					[Kernel.Language.get('js.skip_argument_input'), 0n],
-					[Kernel.Language.get('js.process_whole'), 1n],
-					[Kernel.Language.get('js.process_in_queue'), 2n],
-					[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
-					[Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n],
-				] as Array<[string, bigint]>
-			).forEach((e) => print_statement(e[0], e[1]));
+			k_argument.forEach((e) => print_statement(e[0], e[1]));
 			const input: bigint = input_integer([0n, 1n, 2n, 3n, 4n]);
 			switch (input) {
 				case 1n:
@@ -824,33 +789,22 @@ namespace Sen.Script.Executor {
 					break;
 
 				case 2n:
-					(argument.source as Array<string>).forEach((e) =>
-						load_module({ source: e }, 'simple'),
-					);
+					process_module(argument);
 					break;
-
 				case 3n:
-					execute<Argument>(
-						argument,
-						'popcap.atlas.split_by_resource_group',
-						Forward.DIRECT,
-						'simple',
-					);
-					break;
-
 				case 4n:
-					execute<Argument>(
+					execute(
 						argument,
-						'popcap.atlas.split_by_res_info',
+						input === 3n
+							? 'popcap.atlas.split_by_resource_group'
+							: 'popcap.atlas.split_by_res_info',
 						Forward.DIRECT,
 						'simple',
 					);
 					break;
 			}
 		} else {
-			(argument.source as Array<string>).forEach((e: string) =>
-				load_module({ source: e }, 'simple'),
-			);
+			process_module(argument);
 		}
 	}
 

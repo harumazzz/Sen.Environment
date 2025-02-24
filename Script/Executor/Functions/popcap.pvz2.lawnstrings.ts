@@ -91,9 +91,9 @@ namespace Sen.Script.Executor.Functions.PopCap.PvZ2.LawnStrings {
 				Executor.clock.stop_safe();
 			},
 			batch_forward: undefined!,
-			is_enabled: true,
+
 			filter: ['file', /(.+)(\.json|\.txt)$/i],
-			option: 35n,
+			option: 32n,
 		});
 	}
 }

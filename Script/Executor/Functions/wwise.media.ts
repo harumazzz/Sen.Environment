@@ -72,10 +72,10 @@ namespace Sen.Script.Executor.Functions.WWise.Media {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.wav$/i],
-			option: 76n,
+			option: 72n,
 		});
 		inject<
 			Functions.WWise.Media.Decode.Argument,
@@ -98,10 +98,10 @@ namespace Sen.Script.Executor.Functions.WWise.Media {
 				Support.Wwise.Media.Decode.process_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.wem$/i],
-			option: 75n,
+			option: 73n,
 		});
 	}
 }

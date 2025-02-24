@@ -83,7 +83,7 @@ namespace Sen::Kernel {
 		}
 
 
-		constexpr auto allocate(
+		auto allocate (
 			Size const& size
 		) -> void
 		{
@@ -91,7 +91,7 @@ namespace Sen::Kernel {
 			thiz._size = size;
 		}
 
-    	constexpr auto allocate_full (
+    	auto allocate_full (
 			Size const& size
 		) -> void
 		{
@@ -102,7 +102,7 @@ namespace Sen::Kernel {
 			thiz._size = 0;
 		}
 
-    	auto reallocate(
+    	auto reallocate (
 			Size const& size
 		) -> void
 		{
@@ -578,7 +578,7 @@ namespace Sen::Kernel {
 			return replace(first - thiz.value, last - first, cstr, std::strlen(cstr));
 		}
 
-		constexpr virtual auto replace(
+		virtual auto replace(
 			const Size& pos,
 			const Size& count,
 			const Size& count2,
@@ -589,7 +589,7 @@ namespace Sen::Kernel {
 			return replace(pos, count, new_str);
 		}
 
-		constexpr virtual auto replace(
+		virtual auto replace(
 			const Pointer<Character>& first,
 			const Pointer<Character>& last,
 			const Size& count2,
@@ -599,7 +599,7 @@ namespace Sen::Kernel {
 		}
 
 		template <typename It>
-		constexpr auto replace(
+		auto replace(
 			const Pointer<Character>& first,
 			const Pointer<Character>& last,
 			It first2,
@@ -608,7 +608,7 @@ namespace Sen::Kernel {
 			return replace(first - value, last - first, &(*first2), last2 - first2);
 		}
 
-		constexpr virtual auto replace(
+		virtual auto replace(
 			const Pointer<Character>& first,
 			const Pointer<Character>& last,
 			const std::initializer_list<Character>& list

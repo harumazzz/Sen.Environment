@@ -305,6 +305,7 @@ add_library(
         utility/trait/utility.hpp
         utility/trait/numeric.hpp
         utility/container/variant/common.hpp
+        utility/exception/common.hpp
 
 )
 
@@ -322,6 +323,7 @@ if (MSVC)
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif ()
+
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     target_compile_definitions(${PROJECT_NAME} PRIVATE MSVC_COMPILER)

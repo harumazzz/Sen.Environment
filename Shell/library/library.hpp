@@ -37,6 +37,7 @@ namespace Sen::Shell {
     private:
 
         inline static auto callback (
+            Service* service,
             Pointer<Message> source,
             Pointer<Message> destination
         ) -> int {
@@ -48,30 +49,30 @@ namespace Sen::Shell {
                 case hash_string("input"): {
                     print(color_of(std::string{"● "}, std::string{"cyan"}));
                     const auto value = readline();
-                    construct_message(make_list(value), destination);
+                    construct_message(service, make_list(value), destination);
                     break;
                 }
                 case hash_string("is_gui"): {
-                    construct_message(make_list(std::to_string(is_gui)), destination);
+                    construct_message(service, make_list(std::to_string(is_gui)), destination);
                     break;
                 }
                 case hash_string("version"): {
-                    construct_message(make_list(std::to_string(Shell::version)), destination);
+                    construct_message(service, make_list(std::to_string(Shell::version)), destination);
                     break;
                 }
                 case hash_string("pick_file"): {
                     const auto value = open_pick_dialog<StorageType::pick_file>();
-                    construct_message(make_list(value.value()), destination);
+                    construct_message(service, make_list(value.value()), destination);
                     break;
                 }
                 case hash_string("pick_directory"): {
                     const auto value = open_pick_dialog<StorageType::pick_directory>();
-                    construct_message(make_list(value.value()), destination);
+                    construct_message(service, make_list(value.value()), destination);
                     break;
                 }
                 case hash_string("save_file"): {
                     const auto value = open_pick_dialog<StorageType::save_file>();
-                    construct_message(make_list(value.value()), destination);
+                    construct_message(service, make_list(value.value()), destination);
                     break;
                 }
                 default: {
@@ -88,9 +89,10 @@ namespace Sen::Shell {
         ) const -> void {
             auto message = std::unique_ptr<Message, decltype(&free_message)>{nullptr, free_message};
             const auto service = std::unique_ptr<Service, decltype(&free_service)>(new Service {
-                .callback = [](Message* source, Message* destination) -> int {
-                    return callback(source, destination);
+                .callback = [](Service* service, Message* source, Message* destination) -> int {
+                    return callback(service, source, destination);
                 },
+                .allocate = nullptr,
             }, free_service);
             construct_message(arguments, message);
             std::invoke(*thiz.m_execute, message.get(), service.get());

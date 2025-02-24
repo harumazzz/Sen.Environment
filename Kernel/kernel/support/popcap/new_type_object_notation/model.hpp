@@ -150,7 +150,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             const SimpleResource& other
         ) -> std::ostream& {
             os << "SimpleResource(" << other.type << ", " << other.res << ", " <<
-                other.parent << ", " << other.resources <<")";
+                other.parent << ", ";
+            for (const auto& resource : other.resources) {
+                if (std::holds_alternative<AtlasInfo>(resource)) {
+                    os << std::get<AtlasInfo>(resource);
+                } else {
+                    os << std::get<TypeInfo>(resource);
+                }
+            }
+            os <<")";
             return os;
         }
     };
@@ -206,7 +214,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             std::ostream& os,
             const ResourcesModel& other
         ) -> std::ostream& {
-	        os << "ResourcesModel(" << other.version << ", " << other.content_version << ", " << other.slot_count << ", " << other.groups <<")";
+	        os << "ResourcesModel(" << other.version << ", " << other.content_version << ", " << other.slot_count << ", ";
+            for (const auto& group : other.groups) {
+                if (std::holds_alternative<CompositeGroup>(group)) {
+                    os << std::get<CompositeGroup>(group);
+                } else {
+                    os << std::get<SimpleResource>(group);
+                }
+            }
+	        os <<")";
 	        return os;
 	    }
      };

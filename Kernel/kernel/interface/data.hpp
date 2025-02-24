@@ -93,15 +93,15 @@ namespace Sen::Kernel::Interface {
     inline constexpr auto destruct_proxy(
         Pointer<uint8_t> ptr,
         const uint32_t& count,
-        List<String>& result,
-        const Pointer<Message> message
+        List<String>& result
     ) -> void
     {
         for (auto i = u32{0}; i < count; ++i) {
             auto size = u32{};
             std::memcpy(&size, ptr, sizeof(u32));
             ptr += sizeof(u32);
-            result.append(String{reinterpret_cast<const char*>(ptr), size});
+            auto temporary = String{reinterpret_cast<const char*>(ptr), size};
+            result[i].take_ownership(temporary);
             ptr += size;
         }
     }
@@ -118,7 +118,8 @@ namespace Sen::Kernel::Interface {
         std::memcpy(&count, ptr, sizeof(u32));
         ptr += sizeof(u32);
 	    destination.allocate(count);
-        destruct_proxy(ptr, count, destination, message);
+	    destination.resize(count);
+        destruct_proxy(ptr, count, destination);
     }
 
     inline constexpr auto free_message (

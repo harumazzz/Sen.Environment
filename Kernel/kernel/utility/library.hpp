@@ -1,7 +1,6 @@
 #pragma once 
 
 #include <iostream>
-#include <string>
 #include <vector>
 #include <cstdio>
 #include <exception>
@@ -16,10 +15,8 @@
 #include <cmath>
 #include <cmath>
 #include <span>
-#include <ranges>
 #include <cstring>
 #include <cstdlib>
-#include <source_location>
 #include <functional>
 #include <thread>
 #include <mutex>
@@ -37,7 +34,6 @@
 #include "kernel/utility/miscellaneous/language/language.hpp"
 #include "kernel/utility/literal.hpp"
 #include "kernel/subprojects/zlib.hpp"
-#include "kernel/subprojects/fmt.hpp"
 #include "kernel/subprojects/Rijndael.hpp"
 #include "kernel/subprojects/libpng.hpp"
 #include "kernel/subprojects/etc1.hpp"

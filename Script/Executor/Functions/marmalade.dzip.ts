@@ -47,7 +47,7 @@ namespace Sen.Script.Executor.Functions.Marmalade.DZip {
 				Kernel.Support.Marmalade.DZip.unpack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.*)\.dz$/i],
 			option: 2n,
@@ -73,7 +73,7 @@ namespace Sen.Script.Executor.Functions.Marmalade.DZip {
 				Kernel.Support.Marmalade.DZip.pack_fs(argument.source, argument.destination!);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['directory', /(.*)\.data_package$/i],
 			option: 3n,

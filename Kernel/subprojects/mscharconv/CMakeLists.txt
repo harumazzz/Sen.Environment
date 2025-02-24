@@ -21,7 +21,7 @@ add_library(
 	./include/msstl/util.hpp
 )
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 

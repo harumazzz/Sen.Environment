@@ -35,7 +35,9 @@ namespace Sen.Script {
 
 	export function assert(condition: boolean, message?: string): asserts condition {
 		if (!condition) {
-			throw new Error(message);
+			let error = new Error(message);
+			error.name = 'AssertionError';
+			throw error;
 		}
 	}
 }

@@ -50,10 +50,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Newton {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.newton$/i],
-			option: 23n,
+			option: 20n,
 		});
 		inject<
 			Functions.PopCap.Newton.Encode.Argument,
@@ -79,10 +79,10 @@ namespace Sen.Script.Executor.Functions.PopCap.Newton {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.json$/i],
-			option: 24n,
+			option: 21n,
 		});
 	}
 }

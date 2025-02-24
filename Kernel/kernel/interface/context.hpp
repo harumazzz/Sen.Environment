@@ -75,14 +75,8 @@ namespace Sen::Kernel::Interface {
                     argument.template set<List<String>>(as_move(arguments));
                     data.define_property("arguments"_s, argument.release());
                 };
-                auto set_error = [&]() -> void {
-                    auto error = data.new_value();
-                    error.set_undefined();
-                    data.define_property("error"_s, error.release());
-                };
                 set_home();
                 set_argument();
-                set_error();
                 return data;
             };
             auto result = List<Javascript::Value>{1_size};

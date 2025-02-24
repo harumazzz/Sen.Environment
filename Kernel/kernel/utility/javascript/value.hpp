@@ -547,14 +547,14 @@ namespace Sen::Kernel::Javascript {
             }
 
             inline auto call (
-                List<Value>& value
+                const List<Value>& value
             ) const -> Value {
                 assert_conditional(thiz.is_function(), "Expected the value to be function, but the actual type is not", "call");
                 auto args = std::views::transform(value, [](auto&& arg) -> Subprojects::quickjs::JSValue {
-                    return arg.release();
+                    return arg.value();
                 });
                 auto arguments = Array<Subprojects::quickjs::JSValue>{args.begin(), args.end()};
-                const auto result = Subprojects::quickjs::JS_Call(thiz.m_context, thiz.m_value, JS_UNDEFINED, static_cast<int>(arguments.size()), arguments.data());
+                const auto result = Subprojects::quickjs::JS_Call(thiz.m_context, thiz.m_value, Subprojects::quickjs::$JS_UNDEFINED, static_cast<int>(arguments.size()), arguments.data());
                 return new_owner(thiz.m_context, result);
             }
 

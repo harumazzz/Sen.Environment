@@ -225,4 +225,14 @@ namespace Sen::Kernel::Interface::Runtime {
         );
     };
 
+    inline auto prepare_service (
+        Service* service
+    ) -> void {
+        service->allocate = [](Message* message, size_t* size) -> int {
+            message->value = new uint8_t[*size];
+            message->size = *size;
+            return 0;
+        };
+    }
+
 }		

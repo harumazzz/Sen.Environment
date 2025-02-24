@@ -50,10 +50,10 @@ namespace Sen.Script.Executor.Functions.PopCap.CFW2 {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /.*\.txt\.json$/i],
-			option: 18n,
+			option: 14n,
 		});
 		inject<
 			Functions.PopCap.CFW2.Decode.Argument,
@@ -79,10 +79,10 @@ namespace Sen.Script.Executor.Functions.PopCap.CFW2 {
 				);
 				clock.stop_safe();
 			},
-			is_enabled: true,
+
 			configuration: undefined!,
 			filter: ['file', /(.+)\.cfw2$/i],
-			option: 17n,
+			option: 15n,
 		});
 	}
 }

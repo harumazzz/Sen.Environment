@@ -1,5 +1,5 @@
-﻿#include "kernel/interface/runtime.hpp"
-#include "kernel/interface/context.hpp"
+﻿#include "kernel/interface/context.hpp"
+#include "kernel/interface/runtime.hpp"
 using namespace Sen::Kernel;
 using namespace Sen::Kernel::Interface;
 
@@ -11,6 +11,7 @@ auto execute (
 {
     try {
         std::setlocale(LC_ALL, "C");
+        Runtime::prepare_service(service);
         auto context = Context{service};
         Runtime::make_environment(context);
         auto arguments = List<String>{};
@@ -26,7 +27,7 @@ auto execute (
         auto exception_message = Runtime::make_exception();
         auto error = std::unique_ptr<Message, decltype(&free_message)>{nullptr, &free_message};
         construct_message(exception_message, error);
-        std::invoke(*service->callback, error.get(), nullptr);
+        std::invoke(*service->callback, service, error.get(), nullptr);
     }
     return 0;
 }
