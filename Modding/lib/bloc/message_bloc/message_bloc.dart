@@ -12,17 +12,23 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<ClearMessage>(_clearMessage);
   }
 
-  void _addMessage(
+  Future<void> _addMessage(
     AddMessage event,
     Emitter<MessageState> emit,
-  ) {
-    emit(MessageAddState(messages: [...state.messages, event.message]));
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    final updatedMessages = [...state.messages, event.message];
+    emit(MessageAddState(messages: updatedMessages));
+    await Future.delayed(const Duration(milliseconds: 50));
+    emit(MessageScrollState(messages: updatedMessages));
   }
 
-  void _clearMessage(
+  Future<void> _clearMessage(
     ClearMessage event,
     Emitter<MessageState> emit,
-  ) {
+  ) async {
     emit(const MessageClearState(messages: []));
+    await Future.delayed(const Duration(milliseconds: 50));
+    emit(const MessageScrollState(messages: []));
   }
 }

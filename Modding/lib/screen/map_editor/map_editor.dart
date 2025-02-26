@@ -3,56 +3,15 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/extension/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
 import 'package:sen/screen/map_editor/view/main_page.dart';
-import 'package:sen/service/file_helper.dart';
+import 'package:sen/service/ui_helper.dart';
 
 class MapEditor extends StatelessWidget {
   const MapEditor({super.key});
-
-  Future<void> _showDialog(Uint8List image, BuildContext context) async {
-    final los = context.los;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(los.screenshot_taken),
-          content: Image.memory(
-            image,
-          ),
-          actions: [
-            TextButton(
-              child: Text(los.save),
-              onPressed: () async {
-                void closeDialog() => Navigator.of(context).pop();
-                var file = await FileHelper.saveFile(
-                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
-                  suggestedName: 'screenshot.png',
-                );
-                if (file != null) {
-                  if (RegExp(r'\.png$', caseSensitive: false).hasMatch(file)) {
-                    file += '.png';
-                  }
-                  FileHelper.writeBuffer(source: file, data: image);
-                  closeDialog();
-                }
-              },
-            ),
-            TextButton(
-              child: Text(los.okay),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Future<bool?> _confirmExit(BuildContext context) async {
     final los = context.los;
@@ -113,7 +72,7 @@ class MapEditor extends StatelessWidget {
                   if (takeShoot != null) {
                     final imageBytes = await takeShoot!();
                     if (imageBytes != null && context.mounted) {
-                      await _showDialog(imageBytes, context);
+                      await UIHelper.showScreenshotDialog(context, imageBytes);
                     }
                   }
                 },

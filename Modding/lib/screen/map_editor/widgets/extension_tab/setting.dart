@@ -91,7 +91,7 @@ class EditorSettingState extends StatelessWidget {
           child: Column(children: [
         if (!isDesktopPlatform)
           CheckBoxField(
-            label: "Show Screen Shortcut", //TODO
+            label: context.los.screenshot_taken,
             value: state.showTopScreenShortcut,
             margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: 8),
             underline: false,

@@ -16,6 +16,8 @@ sealed class MessageState extends Equatable {
   }
 
   int get size => messages.length;
+
+  bool get isEmpty => messages.isEmpty;
 }
 
 final class MessageInitialState extends MessageState {
@@ -49,6 +51,18 @@ final class MessageAddState extends MessageState {
     List<Message>? messages,
   }) {
     return MessageAddState(
+      messages: messages ?? this.messages,
+    );
+  }
+}
+
+final class MessageScrollState extends MessageState {
+  const MessageScrollState({required super.messages});
+
+  MessageScrollState copyWith({
+    List<Message>? messages,
+  }) {
+    return MessageScrollState(
       messages: messages ?? this.messages,
     );
   }

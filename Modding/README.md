@@ -4,7 +4,7 @@ Additional modules to Sen.
 
 ## Project development
 
--   [Flutter 3.27](https://docs.flutter.dev/get-started/install)
+-   [Flutter 3.29](https://docs.flutter.dev/get-started/install)
 
 -   Exploration:
 
@@ -21,11 +21,12 @@ Additional modules to Sen.
 
 -   Build command lines:
 
-    -   Android: `flutter build apk --target-platform android-arm64`
-    -   Windows: `flutter build windows`
-    -   Linux: `flutter build linux`
-    -   MacOS: `flutter build macos`
-    -   iOS: `flutter build ios`
+    -   Android:
+        `flutter build apk --target-platform=android-arm64 --release --obfuscate --split-debug-info=build/symbols`
+    -   Windows: `flutter build windows --release`
+    -   Linux: `flutter build linux --release`
+    -   MacOS: `flutter build macos --release`
+    -   iOS: `flutter build ios --release`
 
 -   Android Development Special:
 

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
@@ -16,6 +15,7 @@ import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/service/ui_helper.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({
@@ -427,54 +427,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _showDialog(
-    Uint8List image,
-  ) async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(los.screenshot_taken),
-          content: Image.memory(
-            image,
-          ),
-          actions: [
-            TextButton(
-              child: Text(los.save),
-              onPressed: () async {
-                void closeDialog() => Navigator.of(context).pop();
-                var file = await FileHelper.saveFile(
-                  initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
-                  suggestedName: 'screenshot.png',
-                );
-                if (file != null) {
-                  if (RegExp(r'\.png$', caseSensitive: false).hasMatch(file)) {
-                    file += '.png';
-                  }
-                  FileHelper.writeBuffer(source: file, data: image);
-                  closeDialog();
-                }
-              },
-            ),
-            TextButton(
-              child: Text(los.okay),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _takeScreenshot() async {
-    final imageBytes = await _screenshotController.capture();
-
-    if (imageBytes != null) {
-      await _showDialog(imageBytes);
+    showScreenShot(Uint8List? value) async {
+      if (value != null) {
+        await UIHelper.showScreenshotDialog(context, value);
+      }
     }
+
+    final result = await _screenshotController.capture();
+    await showScreenShot(result);
   }
 
   @override

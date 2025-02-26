@@ -58,7 +58,7 @@ class MiscellaenousScreen extends StatelessWidget {
       await BlocProvider.of<SettingsCubit>(context).setIsValid(true);
     }
 
-    final destination = '${await FileHelper.getWorkingDirectory()}/CDN ${BuildDistribution.version}';
+    final destination = '${await FileHelper.getWorkingDirectory()}/CDN ${BuildDistribution.kVersion}';
     if (!FileHelper.isDirectory(destination)) {
       FileHelper.createDirectory(destination);
     }

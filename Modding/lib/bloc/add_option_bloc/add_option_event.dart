@@ -18,3 +18,7 @@ final class ExportLogEvent extends AddOptionEvent {
 final class ClearOptionEvent extends AddOptionEvent {
   const ClearOptionEvent();
 }
+
+final class CaptureMessageEvent extends AddOptionEvent {
+  const CaptureMessageEvent();
+}

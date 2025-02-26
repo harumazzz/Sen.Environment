@@ -467,21 +467,21 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
 
   HashMap<NavigationType, Item> _initailizeNavigation(AppLocalizations los) {
     final navigationItem = HashMap<NavigationType, Item>.from({
-      NavigationType.tool: Item( 
-        title: "Tool", //TODO:
-        description: "description",
+      NavigationType.tool: Item(
+        title: los.tool,
+        description: los.tool_description,
         icon: const Icon(Symbols.handyman),
         isEnabled: true,
       ),
       NavigationType.item: Item(
-        title: "Item", //TODO:
-        description: "description",
+        title: los.item,
+        description: los.item_description,
         icon: const Icon(Symbols.package_sharp),
         isEnabled: true,
       ),
       NavigationType.option: Item(
-        title: "Option", //TODO:
-        description: "description", 
+        title: los.option,
+        description: los.option_description,
         icon: const Icon(Symbols.settings),
         isEnabled: true,
       ),

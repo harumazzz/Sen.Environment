@@ -227,7 +227,7 @@
 	"clear_description": "Remove all current prcoess",
 	"config": "Config",
 	"config_description": "Config Map Editor with your own Settings",
-	"play_single_animation_frame": "Play Single Animation Frame",
+	"play_single_animation_frame": "Play Single Frame",
 	"mute_audio": "Mute Audio",
 	"filter_quality": "Filter Quality",
 	"world_name_cannot_be_none": "World name cannot be none",
@@ -437,5 +437,11 @@
 	"input_value": "Write some value",
 	"select_an_option": "Select an option...",
 	"attach": "Attach",
-	"export_log": "Export log"
+	"export_log": "Export log",
+	"tool": "Tool",
+	"item": "Item",
+	"option": "Option",
+	"tool_description": "Main container of the Worldmap",
+	"item_description": "Item list that support make your map simpler",
+	"option_description": "Configure your Worldmap"
 }

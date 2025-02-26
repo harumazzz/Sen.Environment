@@ -8,6 +8,7 @@ import 'package:sen/bloc/message_bloc/message_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/extension/l10n.dart';
 import 'package:sen/service/file_helper.dart';
+import 'package:sen/service/ui_helper.dart';
 
 class InputBar extends StatefulWidget {
   const InputBar({super.key});
@@ -122,62 +123,76 @@ class _InputBarState extends State<InputBar> {
       case 'export_log':
         context.read<AddOptionBloc>().add(ExportLogEvent(messageBloc: context.read<MessageBloc>()));
         break;
+      case 'screen_shot':
+        context.read<AddOptionBloc>().add(const CaptureMessageEvent());
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return DropTarget(
-      enable: true,
-      onDragDone: (details) {
-        if (details.files.isNotEmpty) {
-          if (details.files.isNotEmpty) {
-            var file = details.files.first;
-            _controller.text = file.path;
-          }
+    return BlocListener<AddOptionBloc, AddOptionState>(
+      listener: (context, state) async {
+        if (state is CaptureState) {
+          await UIHelper.showScreenshotDialog(context, state.data);
         }
       },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        spacing: 10.0,
-        children: [
-          Container(
-            height: 46.0,
-            width: 46.0,
-            margin: const EdgeInsets.only(left: 8.0),
-            child: PopupMenuButton<String>(
-              key: _popupMenuKey,
-              tooltip: context.los.add,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'export_log',
-                  child: Text(context.los.export_log),
+      child: DropTarget(
+        enable: true,
+        onDragDone: (details) {
+          if (details.files.isNotEmpty) {
+            if (details.files.isNotEmpty) {
+              var file = details.files.first;
+              _controller.text = file.path;
+            }
+          }
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          spacing: 10.0,
+          children: [
+            Container(
+              height: 46.0,
+              width: 46.0,
+              margin: const EdgeInsets.only(left: 8.0),
+              child: PopupMenuButton<String>(
+                key: _popupMenuKey,
+                tooltip: context.los.add,
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'export_log',
+                    child: Text(context.los.export_log),
+                  ),
+                  PopupMenuItem(
+                    value: 'screen_shot',
+                    child: Text(context.los.take_screenshot),
+                  ),
+                ],
+                onSelected: _onAdd,
+                child: FloatingActionButton(
+                  heroTag: 'display-btn',
+                  onPressed: _onDisplayOption,
+                  child: const Icon(Symbols.add),
                 ),
-              ],
-              onSelected: _onAdd,
-              child: FloatingActionButton(
-                heroTag: 'display-btn',
-                onPressed: _onDisplayOption,
-                child: const Icon(Symbols.add),
               ),
             ),
-          ),
-          _buildTextField(),
-          Container(
-            height: 46.0,
-            width: 46.0,
-            margin: const EdgeInsets.only(right: 8.0),
-            child: Tooltip(
-              message: context.los.submit,
-              child: FloatingActionButton(
-                heroTag: 'send-btn',
-                elevation: 4.0,
-                onPressed: _onSend,
-                child: const Icon(Symbols.send),
+            _buildTextField(),
+            Container(
+              height: 46.0,
+              width: 46.0,
+              margin: const EdgeInsets.only(right: 8.0),
+              child: Tooltip(
+                message: context.los.submit,
+                child: FloatingActionButton(
+                  heroTag: 'send-btn',
+                  elevation: 4.0,
+                  onPressed: _onSend,
+                  child: const Icon(Symbols.send),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

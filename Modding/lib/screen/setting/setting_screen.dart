@@ -425,7 +425,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     ),
                     applicationName: 'Sen',
                     aboutBoxChildren: [
-                      Text('${los.version}: ${BuildDistribution.version}'),
+                      Text('${los.version}: ${BuildDistribution.kVersion}'),
                       const SizedBox(height: 10),
                       Text(
                         'Copyright © ${DateTime.now().year} ${BuildDistribution.kApplicationName}. All Rights Reserved.',

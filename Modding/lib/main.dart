@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sen/application.dart';
+import 'package:sen/constant/system_overlay.dart';
 import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/notification_helper.dart';
 import 'package:sen/service/windows_helper.dart';
@@ -10,6 +12,8 @@ Future<void> main(
   List<String> arguments,
 ) async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(SystemOverlay.kDefaultOverlay);
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await WindowManager.instance.ensureInitialized();
     await windowManager.setTitleBarStyle(TitleBarStyle.normal);

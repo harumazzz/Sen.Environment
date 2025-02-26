@@ -1,7 +1,7 @@
 abstract class Client {
-  void start();
+  Future<void> start();
 
-  void finish();
+  Future<void> finish();
 
   Future<List<String>> callback(
     List<String> arguments,

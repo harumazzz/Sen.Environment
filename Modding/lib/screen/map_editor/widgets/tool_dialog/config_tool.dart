@@ -34,7 +34,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
             child: Column(
               children: [
                 CheckBoxField(
-                  label: "Play Single Frame", // TODO: add locale, old text too long, bug on android.
+                  label: context.los.play_single_animation_frame,
                   value: bloc.state.playSingleFrame,
                   margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
                   underline: false,

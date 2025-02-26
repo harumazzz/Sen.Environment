@@ -22,7 +22,7 @@ class _ClearToolState extends State<ClearToolWidget> {
           onPressed: () => Navigator.of(context).pop(false),
         ),
         TextButton(
-          child: Text(los.yes), //TODO: chang locale "yes" -> "Yes"
+          child: Text(los.yes),
           onPressed: () => Navigator.of(context).pop(true),
         ),
       ],

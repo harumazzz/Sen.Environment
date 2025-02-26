@@ -106,9 +106,9 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     );
   }
 
-  void _onDisplay(
+  Future<void> _onDisplay(
     List<String> arguments,
-  ) {
+  ) async {
     final title = arguments[1];
     var color = null as String?;
     var subtitle = null as String?;
@@ -118,15 +118,19 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     if (arguments.length > 3) {
       subtitle = arguments[3];
     }
-    BlocProvider.of<MessageBloc>(context).add(
-      AddMessage(
-        message: Message(
-          title: title,
-          color: color,
-          subtitle: subtitle,
+    addMessage() {
+      BlocProvider.of<MessageBloc>(context).add(
+        AddMessage(
+          message: Message(
+            title: title,
+            color: color,
+            subtitle: subtitle,
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    await Future.delayed(const Duration(milliseconds: 10), addMessage);
   }
 
   Future<void> _onInputString(
@@ -198,7 +202,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     final result = <String>[];
     switch (arguments[0]) {
       case 'display':
-        _onDisplay(arguments);
+        await _onDisplay(arguments);
         break;
       case 'input_string':
         await _onInputString(result);
@@ -213,22 +217,26 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
         _onDisplayStack(arguments[1], arguments[2]);
         break;
       case 'is_gui':
-        result.add(BuildDistribution.isGui.toString());
+        result.add(BuildDistribution.kIsGui);
         break;
       case 'version':
-        result.add(BuildDistribution.version.toString());
+        result.add(BuildDistribution.kVersion);
         break;
     }
     return result;
   }
 
   @override
-  void finish() {
-    BlocProvider.of<LaunchStatusBloc>(context).add(const LaunchStatusComplete());
+  Future<void> finish() async {
+    onComplete() {
+      BlocProvider.of<LaunchStatusBloc>(context).add(const LaunchStatusComplete());
+    }
+
+    await Future.delayed(const Duration(milliseconds: 100), onComplete);
   }
 
   @override
-  void start() {
+  Future<void> start() async {
     BlocProvider.of<MessageBloc>(context).add(const ClearMessage());
     BlocProvider.of<ErrorTracebackBloc>(context).add(const ErrorTracebackClearEvent());
   }

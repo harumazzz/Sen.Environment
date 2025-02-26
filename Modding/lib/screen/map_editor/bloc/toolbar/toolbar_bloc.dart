@@ -134,9 +134,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
       if (!settingBloc.state.muteAudio) {
         cubit.state.editorResource.switchResourceSound.resume();
       }
-      initBloc.add(ShowSnackBarEvent(
-          text: los
-              .worldmap_saved)); //TODO: fix "World map saved" -> "Worldmap saved"
+      initBloc.add(
+        ShowSnackBarEvent(text: los.worldmap_saved),
+      );
       //event.autosaveBloc.add(const CleanAutosaveEvent());
     }
   }

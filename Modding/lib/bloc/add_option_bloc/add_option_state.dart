@@ -25,3 +25,13 @@ final class ExportLogState extends AddOptionState {
 final class NoneOptionState extends AddOptionState {
   const NoneOptionState();
 }
+
+final class CaptureState extends AddOptionState {
+  final Uint8List data;
+  const CaptureState({
+    required this.data,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, data];
+}

@@ -2,7 +2,11 @@ import 'package:drop_down_list/drop_down_list.dart';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:sen/model/select_option.dart';
+import 'dart:typed_data';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/extension/l10n.dart';
+import 'package:sen/service/file_helper.dart';
 
 class UIHelper {
   static void showDropDownModal<T>({
@@ -79,6 +83,7 @@ class UIHelper {
         context: context,
         title: title,
         content: content,
+        actions: buildSimpleAction(context: context),
       ),
     );
   }
@@ -100,11 +105,12 @@ class UIHelper {
     required BuildContext context,
     required Widget title,
     required Widget content,
+    required List<Widget> actions,
   }) {
     return AlertDialog(
       title: title,
       content: content,
-      actions: buildSimpleAction(context: context),
+      actions: actions,
     );
   }
 
@@ -117,6 +123,41 @@ class UIHelper {
       context: context,
       title: Text(title),
       content: Text(content),
+    );
+  }
+
+  static Future<void> showScreenshotDialog(
+    BuildContext context,
+    Uint8List image,
+  ) async {
+    final los = context.los;
+    return await showDialog(
+      context: context,
+      builder: (context) => buildDialog(
+        context: context,
+        title: Text(los.save),
+        content: Image.memory(image),
+        actions: [
+          TextButton(
+            child: Text(los.save),
+            onPressed: () async {
+              void closeDialog() => Navigator.of(context).pop();
+              var file = await FileHelper.saveFile(
+                initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
+                suggestedName: 'screenshot.png',
+              );
+              if (file != null) {
+                if (RegExp(r'\.png$', caseSensitive: false).hasMatch(file)) {
+                  file += '.png';
+                }
+                FileHelper.writeBuffer(source: file, data: image);
+                closeDialog();
+              }
+            },
+          ),
+          ...buildSimpleAction(context: context),
+        ],
+      ),
     );
   }
 }

@@ -18,7 +18,7 @@ class Launcher {
   ) async {
     final mainReceivePort = ReceivePort();
     final mainStreamQueue = StreamQueue<dynamic>(mainReceivePort);
-    client.start();
+    await client.start();
     await Isolate.spawn(_run, [mainReceivePort.sendPort, argument]);
     final subSendPort = await mainStreamQueue.next as SendPort;
     final service = ffi.calloc<Service>();
@@ -40,7 +40,7 @@ class Launcher {
         state.value = true;
       }
     }
-    client.finish();
+    await client.finish();
     await mainStreamQueue.cancel();
   }
 
