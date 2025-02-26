@@ -16,6 +16,16 @@ class SetSection extends SectionEvent {
   List<Object> get props => [section];
 }
 
+class SetNavigator extends SectionEvent {
+  const SetNavigator({required this.navigator});
+
+  final NavigationType navigator;
+
+  @override
+  List<Object> get props => [navigator];
+}
+
+
 class ExtensionEnabled extends SectionEvent {
 
   const ExtensionEnabled({required this.type});

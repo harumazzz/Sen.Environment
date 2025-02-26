@@ -11,10 +11,10 @@ auto execute (
 {
     try {
         std::setlocale(LC_ALL, "C");
-        Runtime::prepare_service(service);
+        Runtime::bind_service(service);
         auto context = Context{service};
         Runtime::make_environment(context);
-        auto arguments = List<String>{};
+        auto arguments = CArray<String>{};
         destruct_message(message, arguments);
         const auto main = context.evaluate_fs(arguments[2]);
         const auto result = main.call(as_lvalue(context.make_argument(as_move(arguments))));

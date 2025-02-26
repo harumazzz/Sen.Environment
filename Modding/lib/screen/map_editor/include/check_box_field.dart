@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 
 class CheckBoxField extends StatelessWidget {
   const CheckBoxField(
@@ -27,6 +29,8 @@ class CheckBoxField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final acitveColor = !isDesktopPlatform && Theme.of(context).brightness == Brightness.light ? Theme.of(context).colorScheme.inversePrimary: Theme.of(context).colorScheme.primaryFixedDim;
     return Container(
       width: width ?? double.infinity,
       height: height,
@@ -49,7 +53,7 @@ class CheckBoxField extends StatelessWidget {
           const Spacer(),
           Checkbox(
               value: value,
-              activeColor: Theme.of(context).colorScheme.primaryFixedDim,
+              activeColor: acitveColor,
               onChanged: onChanged)
         ],
       ),

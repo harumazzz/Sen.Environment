@@ -39,7 +39,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     return ConfigModel.fromJson(FileHelper.readJson(source: path));
   }
 
-  bool get _isAvailable {
+  bool get isDesktopPlatform {
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   }
 
@@ -48,44 +48,50 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     String path,
   ) async {
     final eraseCursor =
-        _isAvailable ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white) : null;
+        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white) : null;
     final panCursor =
-        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white) : null;
+        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white) : null;
     final multiSelectCursor =
-        _isAvailable ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white) : null;
+        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white) : null;
     final pickItemSound = AudioPlayer();
     try {
       pickItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
+      pickItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final removeItemSound = AudioPlayer();
     try {
       removeItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'));
+      removeItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final setItemSound = AudioPlayer();
     try {
       setItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'));
+      setItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final mapLoadedSound = AudioPlayer();
     try {
       mapLoadedSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/level_select.mp3'));
+      mapLoadedSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final clearMapSound = AudioPlayer();
     try {
       clearMapSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/smash.mp3'));
+      clearMapSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final switchResourceSound = AudioPlayer();
     try {
       switchResourceSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/has_item.mp3'));
+      switchResourceSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
@@ -459,6 +465,30 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     return extensionItem;
   }
 
+  HashMap<NavigationType, Item> _initailizeNavigation(AppLocalizations los) {
+    final navigationItem = HashMap<NavigationType, Item>.from({
+      NavigationType.tool: Item( 
+        title: "Tool", //TODO:
+        description: "description",
+        icon: const Icon(Symbols.handyman),
+        isEnabled: true,
+      ),
+      NavigationType.item: Item(
+        title: "Item", //TODO:
+        description: "description",
+        icon: const Icon(Symbols.package_sharp),
+        isEnabled: true,
+      ),
+      NavigationType.option: Item(
+        title: "Option", //TODO:
+        description: "description", 
+        icon: const Icon(Symbols.settings),
+        isEnabled: true,
+      ),
+    });
+    return navigationItem;
+  }
+
   HashMap<ActionType, String> _initlActionTypeString(AppLocalizations los) {
     final actionTypeLocalization = HashMap<ActionType, String>.from({
       ActionType.islandChangeID: los.island_change_id,
@@ -517,6 +547,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       newState.toolItem = _initailizeTool(los);
       newState.sectionItem = _initailizeSection(los);
       newState.extensionItem = _initailizeExtension(los);
+      newState.navigationItem = _initailizeNavigation(los);
       newState.actionTypeLocalization = _initlActionTypeString(los);
       newState.configModel = _loadConfig(los, '$resourceLocation/config.json');
       newState.editorResource = await _loadEditorResource(los, resourceLocation);

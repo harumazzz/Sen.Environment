@@ -1,12 +1,45 @@
 namespace Sen.Script {
 	/**
-	 *
-	 * @returns Test is the current Shell is a GUI interface
+	 * --------------------------------------------------
+	 * JavaScript custom formatter
+	 * @param str - string to format
+	 * @param args - arguments
+	 * @returns formatted string
+	 * --------------------------------------------------
 	 */
 
-	export function is_gui(): boolean {
-		return Shell.callback('is_gui')[0] === '1';
+	export function format(str: string, ...args: Array<any>): string {
+		for (const arg of args) {
+			str = str.replace('{}', arg.toString());
+		}
+		return str;
 	}
+
+	/**
+	 *
+	 * @param value - Any JS Value
+	 * @returns
+	 */
+
+	export function debug(value: unknown): void {
+		if (typeof value === 'object') return Console.display(Kernel.JSON.serialize(value));
+		Console.display(value as string);
+	}
+
+	/**
+	 *
+	 * @param condition - Conditional to assert
+	 * @param message - Message if assert failed
+	 * @returns
+	 */
+
+	export function assert(condition: boolean, message?: string): asserts condition {
+		if (!condition) {
+			throw new Error(message);
+		}
+	}
+
+	export const is_gui: boolean = Shell.callback('is_gui')[0] === '1';
 
 	/**
 	 *
@@ -23,7 +56,8 @@ namespace Sen.Script {
 	 */
 
 	export function readline(): string {
-		return Shell.callback('input')[0];
+		if (is_gui) return Shell.callback('input_string')[0];
+		else return Shell.callback('input')[0];
 	}
 
 	/**
@@ -43,19 +77,14 @@ namespace Sen.Script {
 
 		export function display(
 			title: string,
-			message?: string,
 			color: Kernel.Color = 'default',
+			message?: string,
 		): void {
-			const is = is_gui();
-			const prefix = is ? '' : '● ';
+			const prefix = is_gui ? '' : '● ';
 			const new_tille = `${prefix}${title}`;
 			let msg = message ? message : '';
-			if (!is && msg !== '') msg = `    ${msg}`;
-			return print(new_tille, msg, color);
-		}
-
-		export function send(message: any, color: Kernel.Color = 'default'): void {
-			return display(message, '', color);
+			if (!is_gui && msg !== '') msg = `    ${msg}`;
+			return print(new_tille, color, msg);
 		}
 
 		/**
@@ -67,7 +96,7 @@ namespace Sen.Script {
 		 */
 
 		export function error(name: string, str: string): void {
-			return Console.display(`${Kernel.Language.get('runtime_error')}: ${name}`, str, 'red');
+			return Console.display(`${Kernel.Language.get('runtime_error')}: ${name}`, 'red', str);
 		}
 
 		/**
@@ -79,11 +108,11 @@ namespace Sen.Script {
 		 */
 
 		export function argument(str: any): void {
-			const title = is_gui()
+			const title = is_gui
 				? `${Kernel.Language.get('execution_argument')}:`
 				: `${Kernel.Language.get('execution_argument')}: ${str}`;
-			const message = is_gui() ? str : '';
-			return display(title, message, 'cyan');
+			const message = is_gui ? str : '';
+			return display(title, 'cyan', message);
 		}
 
 		/**
@@ -98,8 +127,9 @@ namespace Sen.Script {
 		export function finished(subtitle: string, message?: string): void {
 			return display(
 				`${Kernel.Language.get('execution_finished')}: ${subtitle}`,
-				message,
+
 				'green',
+				message,
 			);
 		}
 
@@ -112,7 +142,7 @@ namespace Sen.Script {
 		 */
 
 		export function obtained(source: string): void {
-			return display(`${Kernel.Language.get('input_argument')}:`, source, 'cyan');
+			return display(`${Kernel.Language.get('input_argument')}:`, 'cyan', source);
 		}
 
 		/**
@@ -124,7 +154,7 @@ namespace Sen.Script {
 		 */
 
 		export function output(source: string): void {
-			return display(`${Kernel.Language.get('output_argument')}:`, source, 'green');
+			return display(`${Kernel.Language.get('output_argument')}:`, 'green', source);
 		}
 
 		/**
@@ -138,8 +168,9 @@ namespace Sen.Script {
 		export function warning(source: string): void {
 			return Console.display(
 				`${Kernel.Language.get('execution_warning')}:`,
-				source,
+
 				'yellow',
+				source,
 			);
 		}
 
@@ -237,12 +268,12 @@ namespace Sen.Script {
 
 		export function make_stack(stack: string): string {
 			let base_stack = stack
-				.replaceAll('at', Kernel.Language.get('at'))
+				.replace(/^\s*at/gm, `    ${Kernel.Language.get('at')}`)
 				.replaceAll('\\', '/')
 				.split('\n')
 				.map((line) => line.replace(/\((.*)(?=(Kernel|Script))/g, '('))
 				.filter((line) => !/\s<eval>\s/.test(line));
-			return is_gui()
+			return is_gui
 				? base_stack.map((line) => line.trim().replaceAll('../', '')).join('\n')
 				: base_stack.join('\n');
 		}
@@ -267,12 +298,12 @@ namespace Sen.Script {
 		 */
 
 		export function make_exception(e: Error): string {
-			if (is_gui()) {
+			if (is_gui) {
 				Console.error(e.name, e.message);
-				Console.display(
+				Shell.callback(
+					'display_stack',
 					`${Kernel.Language.get('stack')}:`,
 					make_stack(e.stack!).replace(/\n$/, ''),
-					'red',
 				);
 				return undefined!;
 			}
@@ -300,7 +331,7 @@ namespace Sen.Script {
 		if (result !== undefined) {
 			Console.error(result.name, result.message);
 		}
-		if (is_gui()) {
+		if (is_gui) {
 			Console.finished(
 				Kernel.Language.get('method_are_succeeded'),
 				Kernel.Language.get('js.relaunch_tool'),
@@ -328,9 +359,10 @@ namespace Sen.Script {
 				`Sen ~ Shell: ${
 					Shell.callback('version')[0]
 				} & Kernel: ${Kernel.version()} & Script: ${version}`,
+				'default',
 				args[0],
 			);
-			Module.load(Module.modules);
+			Module.load_module();
 			args.splice(0, 3);
 			Setting.load();
 			Console.finished(
@@ -342,7 +374,7 @@ namespace Sen.Script {
 					Module.modules.length + Module.entries.length + 1,
 				),
 			);
-			Module.load(Module.entries);
+			Module.load_entries();
 			Executor.forward({ source: args });
 		} catch (e: any) {
 			result = {
@@ -371,13 +403,16 @@ namespace Sen.Script {
 			}
 		}
 
+		export const load_module = () => load(modules);
+
+		export const load_entries = () => load(entries);
+
 		/**
 		 * Modules in queue await to be execute
 		 */
 
 		export const modules: Array<string> = [
 			'~/Third/maxrects-packer/maxrects-packer.js',
-			'~/utility/Miscellaneous.js',
 			'~/Setting/Setting.js',
 			'~/Support/Texture/Format.js',
 			'~/Support/PopCap/ResourceGroup/Convert.js',

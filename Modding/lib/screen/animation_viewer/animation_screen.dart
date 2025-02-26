@@ -153,8 +153,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
       matrix[12] = -widget.visualHelper.animation.size.width * 4;
       matrix[13] = -widget.visualHelper.animation.size.height * 4;
       _matrix = matrix.clone();
+      _transformationController.value = matrix;
     }
-    _transformationController.value = _matrix!.clone();
+    
   }
 
   Widget _buildMainAnimationScreen() {
@@ -207,9 +208,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
-              spacing: 8.0,
               children: [
                 Text('$label: ', style: textStyle),
+                const SizedBox(width: 8.0),
                 Expanded(
                   child: Tooltip(
                     message: (value * _maxFrame).toStringAsFixed(0),

@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
@@ -15,15 +16,21 @@ class ToolBarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedColor = Theme.of(context).colorScheme.secondaryContainer;
-    final buttonColor = Theme.of(context).colorScheme.surfaceContainerLow;
     final stageBloc = context.read<StageBloc>();
     final toolbarBloc = context.read<ToolBarBloc>();
+    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    
+    final selectedColor = Theme.of(context).colorScheme.secondaryContainer;
+    final buttonColor = Theme.of(context).colorScheme.surfaceContainerLow;
     return BlocBuilder<ToolBarBloc, ToolBarState>(
         buildWhen: (prev, state) => prev.toolStatus != state.toolStatus,
         builder: (context1, state) {
           final toolStatus = state.toolStatus;
+          if (!isDesktopPlatform) {
+            toolStatus.remove(ToolType.shortcutMenu);
+          }
           return ListView.builder(
+              scrollDirection: isDesktopPlatform ? Axis.vertical : Axis.horizontal,
               itemCount: toolStatus.length,
               itemBuilder: (context, index) {
                 final toolType = ToolType.values[index];
@@ -71,11 +78,13 @@ class ToolItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final toolWidth = isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9; // or media height / 15
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),
       child: Container(
-          width: 45,
+          width: toolWidth,
           height: 45,
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: IconButton(

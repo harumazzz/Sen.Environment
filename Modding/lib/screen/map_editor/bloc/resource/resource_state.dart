@@ -6,6 +6,8 @@ enum ResourceImageType { pinataSpine, pinataSpineOpen, dangerLevel }
 
 enum ResourceStateStatus { loading, finished }
 
+enum NotifyType {none, loadWorld, loadResource}
+
 final class ResourceState extends Equatable {
   ResourceState({this.status = ResourceStateStatus.finished})
       : islandImage = HashMap(),

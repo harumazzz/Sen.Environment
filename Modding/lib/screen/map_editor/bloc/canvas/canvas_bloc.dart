@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +24,11 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   void _initCameraViewOffset(
       InitCameraViewOffset event, Emitter<CanvasState> emit) {
     //final newState = CanvasState.initialize();
-    const startPositionX = -(MapConst.safeAdditionalWidth / 2) + 2;
-    const startPositionY = -(MapConst.safeAdditionalHeight / 2) + 2;
+    final isDesktopPlatform = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final safeAdditionalWidth = isDesktopPlatform ? MapConst.safeDesktopAdditionalWidth : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform ? MapConst.safeDesktopAdditionalHeight : MapConst.safeMobileAdditionalHeight;
+    final startPositionX = -(safeAdditionalWidth / 2) + 2;
+    final startPositionY = -(safeAdditionalHeight / 2) + 2;
     state.canvasController.transformationController.value = Matrix4.identity()
       ..translate(startPositionX, startPositionY);
     emit(state);

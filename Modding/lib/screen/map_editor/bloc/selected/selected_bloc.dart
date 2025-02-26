@@ -39,7 +39,7 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
   }
 
   void _clearSelectedList(ClearSelectedList event, Emitter<SelectedState> emit) {
-    emit(SelectedState(selectedList: const [], copyList: state.copyList, hoverSelect: state.hoverSelect));
+    emit(SelectedState(selectedList: const [], copyList: state.copyList, hoverSelect: false));
   }
 
   void _selectedListUpdate(SelectedListUpdated event, Emitter<SelectedState> emit) {
@@ -63,7 +63,7 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
   }
 
   void _setNull(SetOnSelectedNull event, Emitter<SelectedState> emit) {
-    emit(SelectedState(selectedList: state.selectedList, copyList: state.copyList, hoverSelect: true));
+    emit(SelectedState(selectedList: state.selectedList, copyList: state.copyList, hoverSelect: state.hoverSelect));
   }
 
   void _setHoverSelected(SetHoverSelected event, Emitter<SelectedState> emit) {

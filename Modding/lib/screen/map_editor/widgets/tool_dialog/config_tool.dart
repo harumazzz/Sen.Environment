@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
 import 'package:sen/screen/map_editor/include/check_box_field.dart';
 
@@ -17,21 +19,24 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
   Widget build(BuildContext context) {
     final los = context.los;
     final bloc = widget.bloc;
+    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final topSpacing = isDesktopPlatform ? 16.0 : 4.0;
+    final bottomSpacing = isDesktopPlatform ? 8.0 : 2.0;
     return AlertDialog(
       title: Text(los.map_editor_config),
+      backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
       content: Card(
         shadowColor: Colors.transparent,
         child: SizedBox(
           width: 300,
-          height: 240,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
               children: [
                 CheckBoxField(
-                  label: los.play_single_animation_frame,
+                  label: "Play Single Frame", // TODO: add locale, old text too long, bug on android.
                   value: bloc.state.playSingleFrame,
-                  margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
                   underline: false,
                   onChanged: (value) {
                     bloc.add(SetPlaySingleFrame(playSingleFrame: value ?? false));
@@ -41,7 +46,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                 CheckBoxField(
                   label: los.mute_audio,
                   value: bloc.state.muteAudio,
-                  margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
                   underline: false,
                   onChanged: (value) {
                     bloc.add(SetMuteAudio(muteAudio: value ?? false));
@@ -51,7 +56,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                 CheckBoxField(
                   label: los.plant_costume,
                   value: bloc.state.plantCostume,
-                  margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
                   underline: false,
                   onChanged: (value) {
                     bloc.add(SetPlantCostume(enabled: value ?? false));
@@ -59,7 +64,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+                  padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
                   child: Row(
                     children: [
                       Text(los.filter_quality,
@@ -67,7 +72,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                               fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const Spacer(),
                       SizedBox(
-                        width: 130,
+                        width: 100,
                         child: DropdownButton<FilterQuality>(
                           value: bloc.state.filterQuality,
                           isExpanded: true,
@@ -105,9 +110,7 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
         ),
       ),
       actions: [
-        ElevatedButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+        TextButton(
           child: Text(los.submit),
           onPressed: () {
             // returnValue = true;

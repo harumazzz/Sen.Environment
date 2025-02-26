@@ -5,8 +5,10 @@ enum SectionType { select, image, animation, event }
 //extension selection
 enum ExtensionType { layer, history, setting, palette }
 
+enum NavigationType {tool, item, option}
+
 final class SectionState extends Equatable {
-  SectionState({this.section = SectionType.select})
+  SectionState({this.section = SectionType.select, this.navigator = NavigationType.tool})
       : sectionMinize = HashMap.from({
           SectionType.select: false,
           SectionType.image: false,
@@ -20,6 +22,8 @@ final class SectionState extends Equatable {
           ExtensionType.palette: false,
         });
 
+  final NavigationType navigator;
+
   final SectionType section;
 
   final HashMap<SectionType, bool> sectionMinize;
@@ -28,9 +32,10 @@ final class SectionState extends Equatable {
 
   SectionState copyWith(
       {SectionType? section,
+      NavigationType? navigator,
       HashMap<SectionType, bool>? sectionMinize,
       HashMap<ExtensionType, bool>? extension}) {
-    final newState = SectionState(section: section ?? this.section);
+    final newState = SectionState(section: section ?? this.section, navigator: navigator ?? this.navigator);
     final dataExtension = extension ?? this.extension;
     for (final e in dataExtension.entries) {
       newState.extension[e.key] = e.value;
@@ -43,5 +48,5 @@ final class SectionState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [section, sectionMinize, extension];
+  List<Object?> get props => [section, navigator, sectionMinize, extension];
 }

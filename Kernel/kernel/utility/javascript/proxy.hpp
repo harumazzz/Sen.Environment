@@ -26,18 +26,18 @@ namespace Sen::Kernel::Javascript {
         try {
             std::invoke(Callable, context, value, arguments, result);
         } catch (...) {
-            auto exception = parse_exception();
+            const auto exception = parse_exception();
             context.throw_exception(
                 context.evaluate(make_string_view(
                 fmt::format(
                     R"((() => {{
 				        let e = new Error(`{0}`);
                         e.name = `{1}`;
-                        e.stack = `    at {2} ({3})` + e.stack.substring(e.stack.indexOf('\n') + 1);
+                        e.stack = `    at {2} ({3})\n` + e.stack.substring(e.stack.indexOf('\n') + 1);
 				        return e;
-			        }})())",
-                    exception.message(), exception.name(), exception.function_name, exception.source
-                )), "proxy_native_function")
+			        }}))",
+                    exception->message(), exception->name(), exception->function_name, exception->source
+                )), "proxy_native_function").call(make_list<Value>())
             );
             result.set_value(Subprojects::quickjs::$JS_EXCEPTION);
         }

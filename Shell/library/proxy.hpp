@@ -17,6 +17,18 @@ namespace Sen::Shell {
         return result;
     }
 
+    template <typename Deleter>
+    inline constexpr auto new_message (
+        std::unique_ptr<Message, Deleter> &message,
+        const size_t& size
+    ) -> void
+    {
+        message.reset(new Message{
+            .value = new uint8_t[size],
+            .size = size,
+        });
+    }
+
     inline constexpr auto construct_proxy(
         Pointer<uint8_t> ptr,
         const std::vector<std::string>& strings
@@ -31,18 +43,6 @@ namespace Sen::Shell {
                 ptr += size;
             }
         }
-    }
-
-    template <typename Deleter>
-    inline constexpr auto new_message (
-        std::unique_ptr<Message, Deleter> &message,
-        const size_t& size
-    ) -> void
-    {
-        message.reset(new Message{
-            .value = new uint8_t[size],
-            .size = size,
-        });
     }
 
     template <typename MessagePtr>

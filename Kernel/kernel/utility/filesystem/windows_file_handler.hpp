@@ -30,7 +30,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "WindowsFileWriter");
+                assert_not_null(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "WindowsFileWriter");
             }
 
             ~WindowsFileWriter(
@@ -85,8 +85,8 @@ namespace Sen::Kernel::FileSystem {
                     &byte_written,
                     nullptr
                 );
-                assert_conditional(SUCCEEDED(result), "Write file operation has not been completed", "write");
-                assert_conditional(byte_written == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "write");
+                assert_eof(SUCCEEDED(result), "Write file operation has not been completed", "write");
+                assert_eof(byte_written == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when write file, expected: {} but got: {}", sizeof(u8) * data.size(), byte_written), "write");
             }
 
 
@@ -126,7 +126,7 @@ namespace Sen::Kernel::FileSystem {
                     FILE_ATTRIBUTE_NORMAL,
                     nullptr
                 );
-                assert_conditional(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "WindowsFileReader");
+                assert_eof(thiz.handle != INVALID_HANDLE_VALUE, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "WindowsFileReader");
             }
 
             ~WindowsFileReader(
@@ -178,8 +178,8 @@ namespace Sen::Kernel::FileSystem {
                     &bytes_read,
                     nullptr
                 );
-                assert_conditional(SUCCEEDED(result), "Read file operation has not been completed", "read");
-                assert_conditional(bytes_read == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_read), "read");
+                assert_eof(SUCCEEDED(result), "Read file operation has not been completed", "read");
+                assert_eof(bytes_read == sizeof(extract_container_t<T>) * data.size(), fmt::format("Missing bytes when read file, expected: {} but got: {}", sizeof(u8) * data.size(), bytes_read), "read");
             }
 
             auto data (

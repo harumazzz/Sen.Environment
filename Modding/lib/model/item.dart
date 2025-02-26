@@ -5,7 +5,7 @@ class Item {
   final String description;
   final Widget icon;
   final bool isEnabled;
-  bool selected;
+  final bool selected;
   final Function()? onSetting;
   final Function()? onWidget;
 

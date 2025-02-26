@@ -138,7 +138,7 @@ namespace Sen::Kernel {
             Size const& index
         ) -> T&
         {
-            assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
+            assert_index(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("operator[]({})", index));
             return thiz.value[index];
         }
 

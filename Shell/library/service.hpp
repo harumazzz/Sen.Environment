@@ -104,12 +104,11 @@ namespace Sen::Shell {
 	    		println(arguments[1]);
 	    		break;
 	    	case 3:
-	    		println(arguments[1]);
-	    		print_if_not_empty(arguments[2]);
+	    		println(color_of(arguments[1], arguments[2]));
 	    		break;
 	    	case 4:
-	    		println(color_of(arguments[1], arguments[3]));
-	    		print_if_not_empty(arguments[2]);
+	    		println(color_of(arguments[1], arguments[2]));
+	    		print_if_not_empty(arguments[3]);
 	    		break;
 		    default: {
 			    break;

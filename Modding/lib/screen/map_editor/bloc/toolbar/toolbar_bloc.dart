@@ -105,7 +105,6 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
       itemUpdate: event.itemUpdate,
       layerBloc: event.layerBloc,
     ));
-    initBloc.add(ShowSnackBarEvent(text: los.worldmap_has_been_cleared));
   }
 
   Future<void> _saveTool(
@@ -132,7 +131,12 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
             creationTime: DateTime.now().millisecondsSinceEpoch ~/ 1000)
       ]);
       FileHelper.writeJson(source: path, data: WorldMap.toJson(worldMap));
-      initBloc.add(ShowSnackBarEvent(text: los.worldmap_loaded));
+      if (!settingBloc.state.muteAudio) {
+        cubit.state.editorResource.switchResourceSound.resume();
+      }
+      initBloc.add(ShowSnackBarEvent(
+          text: los
+              .worldmap_saved)); //TODO: fix "World map saved" -> "Worldmap saved"
       //event.autosaveBloc.add(const CleanAutosaveEvent());
     }
   }
@@ -154,7 +158,6 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
           itemBloc: event.itemBloc,
           layerBloc: event.layerBloc,
           stageBloc: event.stageBloc));
-      initBloc.add(ShowSnackBarEvent(text: los.worldmap_loaded));
     } catch (ex) {
       initBloc.add(
         ShowSnackBarEvent(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
+import 'package:pie_menu/pie_menu.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
@@ -17,11 +18,15 @@ class BoxStage extends StatelessWidget {
   const BoxStage(
       {super.key,
       required this.mapGrid,
+      required this.useEraseTool,
       required this.usePanTool,
       required this.useResizeTool,
       this.boundBackground = BorderBackground.color,
       this.boxStageColor = Colors.black,
+      required this.pieMenuAction,
       required this.children});
+
+  final bool useEraseTool;
 
   final bool usePanTool;
 
@@ -33,11 +38,21 @@ class BoxStage extends StatelessWidget {
 
   final Color boxStageColor;
 
+  final List<PieAction> pieMenuAction;
+
   final List<Widget> children;
 
   Widget _resizeBox(BuildContext context) {
-    const startPositionX = MapConst.safeAdditionalWidth / 2;
-    const startPositionY = MapConst.safeAdditionalHeight / 2;
+    final isDesktopPlatform =
+        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final safeAdditionalWidth = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalWidth
+        : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalHeight
+        : MapConst.safeMobileAdditionalHeight;
+    final startPositionX = safeAdditionalWidth / 2;
+    final startPositionY = safeAdditionalHeight / 2;
     final boundingRect = context.read<StageBloc>().state.boundingRect;
     return RectangleBox(
         minWidth: MapConst.minBoundingWidth.toDouble(),
@@ -65,12 +80,18 @@ class BoxStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktopPlatform =
+        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final colorScheme = Theme.of(context).colorScheme;
+    final backgroundColor = Theme.of(context).brightness == Brightness.dark
+        ? colorScheme.onPrimaryFixedVariant
+        : colorScheme.primaryFixedDim;
     final transformationController = context
         .read<CanvasBloc>()
         .state
         .canvasController
         .transformationController;
-    final stage =  mapGrid
+    var stage = mapGrid
         ? GridPaper(
             interval: 200,
             divisions: 1,
@@ -125,6 +146,38 @@ class BoxStage extends StatelessWidget {
                 return child;
               }
             });
+    if (!useEraseTool && !usePanTool) {
+      stage = PieMenu(
+          theme: PieTheme(
+            buttonTheme: PieButtonTheme(
+                backgroundColor: colorScheme.secondaryContainer,
+                iconColor: colorScheme.inverseSurface),
+            buttonThemeHovered: PieButtonTheme(
+                backgroundColor: backgroundColor,
+                iconColor: colorScheme.inverseSurface),
+            delayDuration: isDesktopPlatform
+                ? Duration.zero
+                : const Duration(milliseconds: 300),
+            spacing: 4,
+            radius: 60,
+            angleOffset: 45,
+            buttonSize: 45,
+            pointerSize: 0,
+            tooltipTextStyle: const TextStyle(
+              inherit: false,
+            ),
+            childBounceEnabled: false,
+            overlayStyle: PieOverlayStyle.around,
+            childOpacityOnButtonHover: 1,
+            // tooltipCanvasAlignment: Alignment.bottomCenter,
+            overlayColor: Colors.transparent,
+            leftClickShowsMenu: !isDesktopPlatform,
+            rightClickShowsMenu: isDesktopPlatform,
+          ),
+          actions: pieMenuAction,
+          child: stage);
+    }
+
     switch (boundBackground) {
       case BorderBackground.timeSpace:
         {
@@ -220,11 +273,20 @@ class OverlayWithRectangleClipping extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final boundingRect = BlocProvider.of<StageBloc>(context).state.boundingRect;
-    final maxBoundWidth = MapConst.safeAdditionalWidth + boundingRect.width;
-    final maxBoundHeight = MapConst.safeAdditionalHeight + boundingRect.height;
+
+    final isDesktopPlatform =
+        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final safeAdditionalWidth = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalWidth
+        : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalHeight
+        : MapConst.safeMobileAdditionalHeight;
+    final maxBoundWidth = safeAdditionalWidth + boundingRect.width;
+    final maxBoundHeight = safeAdditionalHeight + boundingRect.height;
     final innerRect = Rect.fromLTWH(
-        MapConst.safeAdditionalWidth / 2,
-        MapConst.safeAdditionalHeight / 2,
+        safeAdditionalWidth / 2,
+        safeAdditionalHeight / 2,
         boundingRect.width.toDouble(),
         boundingRect.height.toDouble());
     final outlineRect =

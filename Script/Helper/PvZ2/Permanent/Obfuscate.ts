@@ -97,7 +97,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.Obfuscate {
 	export function disturb_header(stream: Kernel.DataStreamView): void {
 		stream.write_position = 4n;
 		const version: bigint = make_random();
-		Console.send(
+		Console.display(
 			`${Kernel.Language.get('popcap.rsb.obfuscate.version_number')}: 0x${version.toString(
 				16,
 			)}`,
@@ -119,7 +119,7 @@ namespace Sen.Script.Helper.PvZ2.Permanent.Obfuscate {
 		Kernel.ArrayBuffer.random(packet_section);
 		const rsg_section = new ArrayBuffer(64);
 		Kernel.ArrayBuffer.random(rsg_section);
-		Console.send(
+		Console.display(
 			`${Kernel.Language.get('popcap.rsb.obfuscate.modify_count')}: ${
 				rsb_head_info.rsg_number
 			}`,

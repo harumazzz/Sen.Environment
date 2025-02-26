@@ -189,14 +189,14 @@ namespace Sen::Kernel {
     	constexpr auto operator [](
 			Size const& index
 		) const -> Character {
-    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
+    		assert_index(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("operator[]({})", index));
     		return thiz.value[index];
     	}
 
     	constexpr auto operator [](
 			Size const& index
 		) -> Character& override {
-    		assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("access_index_{}", index));
+    		assert_index(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("operator[]({})", index));
     		return thiz.value[index];
     	}
 
@@ -696,8 +696,8 @@ namespace Sen::Kernel {
     		const Size& from,
 			const Size& to
 		) const -> String {
-			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
-			assert_conditional(from <= to, fmt::format("From index must be smaller than to index, from: {}, to: {}", from, to), "substring");
+			assert_index(to <= thiz._size, "To index must be smaller than string size", "sub");
+			assert_index(from <= to, fmt::format("From index must be smaller than to index, from: {}, to: {}", from, to), "sub");
 			auto result = String{to - from};
 			std::memcpy(result.value, thiz.value + from, to - from);
 			return result;

@@ -94,10 +94,7 @@ class JavaScriptCard extends StatelessWidget {
   ) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ShellScreen(
-          arguments: _makeArguments(),
-          launchImmediately: true,
-        ),
+        builder: (context) => const ShellScreen(),
       ),
     );
   }

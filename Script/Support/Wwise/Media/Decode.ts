@@ -162,8 +162,8 @@ namespace Sen.Script.Support.Wwise.Media.Decode {
 		);
 		Console.display(
 			`${Kernel.Language.get('wwise.media.audio_format')}:`,
-			`${encoding} (${format})`,
 			'green',
+			`${encoding} (${format})`,
 		);
 	}
 

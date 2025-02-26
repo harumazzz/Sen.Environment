@@ -15,6 +15,7 @@ final class MapEditorConfigurationState extends Equatable {
   late final ConfigModel configModel;
   late final HashMap<ToolType, Item> toolItem;
   late final HashMap<SectionType, Item> sectionItem;
+  late final HashMap<NavigationType, Item> navigationItem;
   late final HashMap<ExtensionType, Item> extensionItem;
   late final HashMap<ActionType, String> actionTypeLocalization;
   //late final HashMap<RootLayerType, Item> rootLayerItem;

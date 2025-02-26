@@ -25,7 +25,7 @@ namespace Sen.Script.Support.PopCap.ResourceStreamBundle.Miscellaneous.PlatformC
 		let streaming_wave_processed = false;
 		for (const i in packet_list) {
 			const e = packet_list[i];
-			Console.send(e);
+			Console.display(e);
 			const is_composite = Kernel.Support.Project.StreamCompressedGroup.test_scg(
 				`${destination}/packet/${e}.scg`,
 			);

@@ -1,3 +1,4 @@
+
 class Range<T> {
   final T begin;
   final T end;
@@ -6,15 +7,21 @@ class Range<T> {
 }
 
 final class MapConst {
+ // static Offset debugOffset = Offset.zero;
+
   static const int topAdditionalPos = 60;
 
   static const int leftAdditonalPos = 65;
 
   static const double pi = 3.1415926535897932;
 
-  static const double safeAdditionalWidth = 2000;
+  static const double safeDesktopAdditionalWidth = 2000;
 
-  static const double safeAdditionalHeight = 1000;
+  static const double safeDesktopAdditionalHeight = 1000;
+
+  static const double safeMobileAdditionalWidth = 500;
+
+  static const double safeMobileAdditionalHeight = 2000;
 
   static const int minBoundingWidth = 800;
 

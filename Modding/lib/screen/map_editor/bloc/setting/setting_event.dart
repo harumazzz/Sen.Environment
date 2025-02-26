@@ -43,6 +43,15 @@ final class SetBoundBackground extends SettingEvent {
   List<Object> get props => [background];
 }
 
+final class SetShowScreenShortcut extends SettingEvent {
+  const SetShowScreenShortcut({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  List<Object> get props => [enabled];
+}
+
 final class SetIslandImageBorder extends SettingEvent {
   const SetIslandImageBorder({required this.enabled});
 

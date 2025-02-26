@@ -5,8 +5,8 @@ import 'package:sen/i18n/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/model/build_distribution.dart';
-import 'package:sen/model/theme.dart';
+import 'package:sen/constant/build_distribution.dart';
+import 'package:sen/constant/theme.dart';
 import 'package:sen/screen/animation_viewer/animation_viewer.dart';
 import 'package:sen/screen/javascript_category/javascript_category.dart';
 import 'package:sen/screen/level_maker/level_maker.dart';
@@ -64,10 +64,7 @@ class _WindowsApplicationState extends State<_WindowsApplication> {
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/terminal.ico'),
           'Shell',
-          () => _pushScreen(const ShellScreen(
-            arguments: [],
-            launchImmediately: false,
-          )),
+          () => _pushScreen(const ShellScreen()),
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('assets/icon/js.ico'),

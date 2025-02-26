@@ -22,7 +22,7 @@ declare namespace Sen {
 		 *
 		 * @returns A string representing the output or result of the command execution.
 		 */
-		export function callback(argument: string, ...string): Array<string>;
+		export function callback(argument: string, ...other: Array<string>): Array<string>;
 	}
 
 	/**

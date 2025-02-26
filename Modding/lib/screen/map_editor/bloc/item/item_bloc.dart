@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
@@ -746,30 +747,30 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
               itemProfile.matrix = matrix;
               itemProfile.itemRect = itemRect;
               itemProfile.selectRect = rect;
-              itemProfile.widget = Stack(
-                fit: StackFit.passthrough,
-                children: [
-                  ImageWidget(
-                    image: gameResource.commonImage[ImageCommonType.sprout]!,
-                    matrix: matrix.multiplied(Matrix4Transform()
-                        .scaleBy(x: 0.4, y: 0.5)
-                        .translate(x: 150, y: 215)
-                        .m),
-                    borderColor: Colors.white,
-                    borderWidth: 0,
-                    filterQuality: filterQuality,
-                  ), Transform(
-                  alignment: Alignment.topLeft,
-                  transform: matrix,
-                  child: AnimationWidget(
-                    labelPlay: getIdlePlay(plantType, visual.labelInfo.keys),
-                    borderRect: itemRect,
-                    visual: visual,
-                    borderColor: Colors.blue,
-                    borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
-                    filterQuality: filterQuality,
-                    playSingleFrame: playSingleFrame,
-                  )) ]);
+              itemProfile.widget = Stack(fit: StackFit.passthrough, children: [
+                ImageWidget(
+                  image: gameResource.commonImage[ImageCommonType.sprout]!,
+                  matrix: matrix.multiplied(Matrix4Transform()
+                      .scaleBy(x: 0.4, y: 0.5)
+                      .translate(x: 150, y: 215)
+                      .m),
+                  borderColor: Colors.white,
+                  borderWidth: 0,
+                  filterQuality: filterQuality,
+                ),
+                Transform(
+                    alignment: Alignment.topLeft,
+                    transform: matrix,
+                    child: AnimationWidget(
+                      labelPlay: getIdlePlay(plantType, visual.labelInfo.keys),
+                      borderRect: itemRect,
+                      visual: visual,
+                      borderColor: Colors.blue,
+                      borderWidth: editorSettingState.eventBorder ? 2.0 : 0,
+                      filterQuality: filterQuality,
+                      playSingleFrame: playSingleFrame,
+                    ))
+              ]);
 
               eventList[entry.key] = itemProfile;
             } else {
@@ -1398,8 +1399,16 @@ class ItemBloc extends Bloc<ItemEvent, ItemState> {
   void _storeUpdate(ItemStoreUpdated event, Emitter<ItemState> emit) {
     final stageState = stageBloc.state;
     final canvasState = canvasBloc.state;
-    const startPositionX = MapConst.safeAdditionalWidth / 2;
-    const startPositionY = MapConst.safeAdditionalHeight / 2;
+    final isDesktopPlatform =
+        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final safeAdditionalWidth = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalWidth
+        : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalHeight
+        : MapConst.safeMobileAdditionalHeight;
+    final startPositionX = safeAdditionalWidth / 2;
+    final startPositionY = safeAdditionalHeight / 2;
     final itemStartPositionX =
         (-stageState.boundingRect.x + startPositionX).toDouble();
     final itemStartPositionY =

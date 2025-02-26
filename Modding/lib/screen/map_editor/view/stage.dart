@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -23,14 +21,8 @@ import 'package:sen/screen/map_editor/widgets/box_stage.dart';
 class MapStageView extends StatelessWidget {
   const MapStageView({super.key});
 
-  bool get _isAvailable => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final backgroundColor = Theme.of(context).brightness == Brightness.dark
-        ? colorScheme.onPrimaryFixedVariant
-        : colorScheme.primaryFixedDim;
     return Builder(builder: (context) {
       final settingState = context.watch<SettingBloc>().state;
       final itemState = context.watch<ItemBloc>().state;
@@ -41,6 +33,7 @@ class MapStageView extends StatelessWidget {
       }
       final editorResource = context.read<MapEditorConfigurationCubit>().state.editorResource;
       final controller = context.read<CanvasBloc>().state.canvasController;
+      final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
       return BlocBuilder<SelectedBloc, SelectedState>(
           buildWhen: (prev, state) => prev.copyList != state.copyList,
           builder: (context, selectedState) {
@@ -66,17 +59,17 @@ class MapStageView extends StatelessWidget {
                                   final onSelectedId = state.onSelect;
                                   final selectedList = state.selectedList;
                                   final hoverSelected = state.hoverSelect;
-                                  if (panTool && _isAvailable) {
+                                  if (panTool && isDesktopPlatform) {
                                     context.read<MouseCursorBloc>().add(
                                           ChangeCursorEvent(
                                             cursor: editorResource.panCursor!,
                                           ),
                                         );
-                                  } else if (eraseTool && _isAvailable) {
+                                  } else if (eraseTool && isDesktopPlatform) {
                                     context
                                         .read<MouseCursorBloc>()
                                         .add(ChangeCursorEvent(cursor: editorResource.eraseCursor!));
-                                  } else if (multiSelect && _isAvailable) {
+                                  } else if (multiSelect && isDesktopPlatform) {
                                     context
                                         .read<MouseCursorBloc>()
                                         .add(ChangeCursorEvent(cursor: editorResource.multiSelectCursor!));
@@ -88,37 +81,8 @@ class MapStageView extends StatelessWidget {
                                     }
                                   }
                                   final shortcutBloc = context.read<ShortcutBloc>();
-                                  final pieceMenuAction = <PieAction>[
-                                    if (selectedList.isNotEmpty && hoverSelected)
-                                      PieAction(
-                                          tooltip: nil,
-                                          onSelect: () {
-                                            shortcutBloc.cut(controller);
-                                          },
-                                          child: const Icon(Symbols.content_cut)),
-                                    if (selectedList.isNotEmpty && hoverSelected)
-                                      PieAction(
-                                          tooltip: nil,
-                                          onSelect: () {
-                                            shortcutBloc.copy(controller);
-                                          },
-                                          child: const Icon(Symbols.content_copy)),
-                                    if (selectedList.isNotEmpty && hoverSelected)
-                                      PieAction(
-                                          tooltip: nil,
-                                          onSelect: () {
-                                            shortcutBloc.delete();
-                                          },
-                                          child: const Icon(Symbols.delete)),
-                                    if (state.copyList.isNotEmpty)
-                                      PieAction(
-                                          tooltip: nil,
-                                          onSelect: () {
-                                            shortcutBloc.paste(controller);
-                                          },
-                                          child: const Icon(Symbols.content_paste))
-                                  ];
-                                  final child = MouseRegion(
+
+                                  return MouseRegion(
                                       cursor: mouseState.cursor,
                                       onHover: (details) {
                                         controller.listenerPointerHover(details);
@@ -126,11 +90,48 @@ class MapStageView extends StatelessWidget {
                                       child: BoxStage(
                                           mapGrid: settingState.mapGrid,
                                           usePanTool: panTool,
+                                          useEraseTool: eraseTool,
                                           useResizeTool: resize,
                                           boundBackground: settingState.boundBackground,
                                           boxStageColor: settingState.boundingColor,
+                                          pieMenuAction: <PieAction>[
+                                            if (selectedList.isNotEmpty && hoverSelected)
+                                              PieAction(
+                                                  tooltip: nil,
+                                                  onSelect: () {
+                                                    shortcutBloc.cut(controller);
+                                                  },
+                                                  child: const Icon(Icons.content_cut)),
+                                            if (selectedList.isNotEmpty && hoverSelected)
+                                              PieAction(
+                                                  tooltip: nil,
+                                                  onSelect: () {
+                                                    shortcutBloc.copy(controller);
+                                                  },
+                                                  child: const Icon(Symbols.content_copy)),
+                                            if (selectedList.isNotEmpty && hoverSelected)
+                                              PieAction(
+                                                  tooltip: nil,
+                                                  onSelect: () {
+                                                    shortcutBloc.delete();
+                                                  },
+                                                  child: const Icon(Symbols.delete)),
+                                            if (state.copyList.isNotEmpty)
+                                              PieAction(
+                                                  tooltip: nil,
+                                                  onSelect: () {
+                                                    shortcutBloc.paste(controller);
+                                                  },
+                                                  child: const Icon(Symbols.content_paste))
+                                          ],
                                           children: [
                                             ...stackList,
+                                            /*
+                                            Positioned(
+                                              top: MapConst.debugOffset.dy,
+                                              left: MapConst.debugOffset.dx,
+                                              child: const ColoredBox(color: Colors.white, child: SizedBox(width: 30, height: 30,))),
+                                              */
                                             if (!panTool &&
                                                 !resize &&
                                                 onSelectedId != null &&
@@ -155,36 +156,6 @@ class MapStageView extends StatelessWidget {
                                                 ),
                                               ),
                                           ]));
-                                  if (!eraseTool && !panTool) {
-                                    return PieMenu(
-                                        theme: PieTheme(
-                                          buttonTheme: PieButtonTheme(
-                                              backgroundColor: colorScheme.secondaryContainer,
-                                              iconColor: colorScheme.inverseSurface),
-                                          buttonThemeHovered: PieButtonTheme(
-                                              backgroundColor: backgroundColor, iconColor: colorScheme.inverseSurface),
-                                          delayDuration: Duration.zero,
-                                          spacing: 4,
-                                          radius: 60,
-                                          angleOffset: 45,
-                                          buttonSize: 45,
-                                          pointerSize: 0,
-                                          tooltipTextStyle: const TextStyle(
-                                            inherit: false,
-                                          ),
-                                          childBounceEnabled: false,
-                                          overlayStyle: PieOverlayStyle.around,
-                                          childOpacityOnButtonHover: 1,
-                                          // tooltipCanvasAlignment: Alignment.bottomCenter,
-                                          overlayColor: Colors.transparent,
-                                          leftClickShowsMenu: false,
-                                          rightClickShowsMenu: true,
-                                        ),
-                                        actions: pieceMenuAction,
-                                        child: child);
-                                  } else {
-                                    return child;
-                                  }
                                 });
                           }));
                 });

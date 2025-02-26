@@ -26,7 +26,7 @@ namespace Sen.Script.Executor.Functions.JS {
 				const result: string | undefined = Kernel.JavaScript.evaluate_fs(
 					argument.source,
 				) as unknown & string;
-				Console.display(Kernel.Language.get('js.process.done'), result, 'green');
+				Console.display(Kernel.Language.get('js.process.done'), 'green', result);
 				clock.stop_safe();
 			},
 			batch_forward(argument) {

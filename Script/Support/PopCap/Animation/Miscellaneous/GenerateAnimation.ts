@@ -109,15 +109,6 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 		}
 	}
 
-	export function load_bigint(rule: any): bigint {
-		const new_rule: Array<bigint> = [];
-		rule.forEach((e: [bigint, string] & any) => {
-			Executor.print_statement(`${e[1]}`, e[0]);
-			new_rule.push(e[0]);
-		});
-		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
-	}
-
 	export function exchange_sprite_disable(animation: SexyAnimation, setting: Setting) {
 		const sprite_information_map: Record<string, boolean> = {};
 		animation.sprite.map((e) => {
@@ -130,7 +121,8 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 			Console.argument(
 				Kernel.Language.get('popcap.animation.miscellaneous.to_apng.disable_sprite'),
 			);
-			const input_generic = load_bigint(Detail.sprite_generic());
+			const generic = Detail.sprite_generic();
+			const input_generic = generic[Executor.is_valid_rule(generic)][1];
 			switch (input_generic) {
 				case 0n:
 					break;
@@ -212,7 +204,7 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateAnimation {
 							);
 							break;
 						}
-						Console.send(
+						Console.display(
 							`${Kernel.Language.get(
 								'popcap.animation.miscellaneous.to_apng.disable_sprite',
 							)}: ${sprite_to_disable}`,

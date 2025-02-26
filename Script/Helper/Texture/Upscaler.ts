@@ -17,15 +17,6 @@ namespace Sen.Script.Support.Texture.Upscaler {
 		}
 	}
 
-	export function load_string_by_int(rule: any): string {
-		const new_rule: Array<bigint> = [];
-		rule.forEach((e: [bigint, string] & any) => {
-			Executor.print_statement(e[1], e[0]);
-			new_rule.push(e[0]);
-		});
-		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
-	}
-
 	export function process(source: string, destination: string) {
 		const operating_system = Kernel.OperatingSystem.current();
 		assert(
@@ -50,12 +41,13 @@ namespace Sen.Script.Support.Texture.Upscaler {
 			`${real_esrgan_program_third_path}/models`,
 		).filter((e) => /(\.param)?$/i.test(e));
 		assert(model_list.length > 0, 'real_esrgan_model_folder_is_empty');
-		const model_rule: Array<[bigint, string]> = model_list.map((e, i) => [
+		const model_rule: Array<[bigint, string, string]> = model_list.map((e, i) => [
 			BigInt(i + 1),
+			e,
 			Kernel.Path.base_without_extension(e).toLowerCase(),
 		]);
 		Console.argument(Kernel.Language.get('image.upscaler.enter_model'));
-		const model_selected: string = load_string_by_int(model_rule);
+		const model_selected: string = model_rule[Executor.is_valid_rule(model_rule)][2];
 		const command = `${real_esrgan_program_file_path} -i "${source}" -o "${destination}" -n "${model_selected}" > nul 2>&1`;
 		Kernel.FileSystem.remove(destination);
 		Kernel.Process.execute(command);

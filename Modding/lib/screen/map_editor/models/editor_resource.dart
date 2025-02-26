@@ -23,7 +23,7 @@ class EditorResource {
   final CustomMouseCursor? panCursor;
 
   final CustomMouseCursor? multiSelectCursor;
-
+  
   final AudioPlayer pickItemSound;
 
   final AudioPlayer removeItemSound;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/extension/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
@@ -16,50 +16,43 @@ class ImageShopView extends StatelessWidget {
   Widget build(BuildContext context) {
     final item = context.read<MapEditorConfigurationCubit>().state.sectionItem[SectionType.image]!;
     final los = context.los;
-    return Positioned(
-      bottom: 20,
-      left: 20,
-      child: SizedBox(
-        width: 800,
-        height: 400,
-        child: Card(
-          color: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: Row(
-                    children: [
-                      Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
-                      Text(
-                        los.island_image_shop,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          context
-                              .read<SectionBloc>()
-                              .add(const SectionMinizeToggled(type: SectionType.image, minize: true));
-                        },
-                        icon: const Icon(Symbols.close),
-                      )
-                    ],
+
+    return Card(
+      color: Theme.of(context).colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 40,
+              child: Row(
+                children: [
+                  Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                  Text(
+                    los.island_image_shop,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-                Expanded(
-                    child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                  ),
-                  child: const ImageShopGrid(),
-                )),
-              ],
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      context
+                          .read<SectionBloc>()
+                          .add(const SectionMinizeToggled(type: SectionType.image, minize: true));
+                    },
+                    icon: const Icon(Symbols.close),
+                  )
+                ],
+              ),
             ),
-          ),
+            Expanded(
+                child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(context).colorScheme.secondaryContainer,
+              ),
+              child: const ImageShopGrid(),
+            )),
+          ],
         ),
       ),
     );
@@ -79,7 +72,7 @@ class ImageShopGrid extends StatelessWidget {
         return GridView.builder(
           itemCount: keysList.length,
           padding: const EdgeInsets.all(6),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 6),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 140),
           itemBuilder: (context, index) {
             final imageId = keysList[index];
             return Card(

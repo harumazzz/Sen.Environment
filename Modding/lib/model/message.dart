@@ -8,8 +8,8 @@ class Message extends Equatable {
 
   const Message({
     required this.title,
-    this.subtitle,
     this.color,
+    this.subtitle,
   });
 
   Color exchangeColor(BuildContext context) {
@@ -41,8 +41,8 @@ class Message extends Equatable {
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       title: json['title'] as String,
-      subtitle: json['subtitle'] as String?,
       color: json['color'] as String?,
+      subtitle: json['subtitle'] as String?,
     );
   }
 }

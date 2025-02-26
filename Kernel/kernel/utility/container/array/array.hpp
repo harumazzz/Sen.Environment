@@ -76,6 +76,14 @@ namespace Sen::Kernel {
 	            thiz._size = size;
 	        }
 
+			constexpr auto operator [](
+				Size const& index
+			) const -> T&
+    		{
+    			assert_index(index < thiz._size, fmt::format("Accessed index is larger than the size of the array"), fmt::format("operator[]({})", index));
+    			return thiz.value[index];
+    		}
+
 			explicit CArray(
 				const CArray& other
 			) = delete;

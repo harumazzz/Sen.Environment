@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/extension/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
@@ -41,7 +40,7 @@ class EditorSettingWidget extends StatelessWidget {
                                 .read<SectionBloc>()
                                 .add(const ExtensionToggled(type: ExtensionType.setting, enabled: false));
                           },
-                          icon: const Icon(Symbols.close))
+                          icon: const Icon(Icons.close))
                     ],
                   ),
                 ),
@@ -85,13 +84,25 @@ class EditorSettingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = context.los;
+    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final spacing = isDesktopPlatform ? 8.0 : 2.0;
     return BlocBuilder<SettingBloc, SettingState>(builder: (context, state) {
       return SingleChildScrollView(
           child: Column(children: [
+        if (!isDesktopPlatform)
+          CheckBoxField(
+            label: "Show Screen Shortcut", //TODO
+            value: state.showTopScreenShortcut,
+            margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: 8),
+            underline: false,
+            onChanged: (value) {
+              context.read<SettingBloc>().add(SetShowScreenShortcut(enabled: value ?? true));
+            },
+          ),
         CheckBoxField(
           label: los.island_image_border,
           value: state.islandImageBorder,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 16),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetIslandImageBorder(enabled: value ?? true));
@@ -101,7 +112,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.animated_island_border,
           value: state.islandAnimationBorder,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetIslandAnimationBorder(enabled: value ?? true));
@@ -111,7 +122,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.event_border,
           value: state.eventBorder,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetEventBorder(enabled: value ?? true));
@@ -121,7 +132,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.hide_missing_art,
           value: state.hideMissingArt,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetHideMissingArt(enabled: value ?? true));
@@ -131,7 +142,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.hide_old_events,
           value: state.hideOldEvent,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetHideOldEvent(enabled: value ?? true));
@@ -141,7 +152,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.use_map_path,
           value: state.mapPath,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetMapPath(enabled: value ?? true));
@@ -151,7 +162,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.map_completed,
           value: state.mapCompleted,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetMapCompleted(enabled: value ?? true));
@@ -161,7 +172,7 @@ class EditorSettingState extends StatelessWidget {
         CheckBoxField(
           label: los.map_grid,
           value: state.mapGrid,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+          margin: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: spacing),
           underline: false,
           onChanged: (value) {
             context.read<SettingBloc>().add(SetMapGrid(enabled: value ?? true));
@@ -169,7 +180,7 @@ class EditorSettingState extends StatelessWidget {
           },
         ),
         Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 2),
+            padding: EdgeInsets.only(left: 16, right: 16, bottom: spacing, top: 2),
             child: Row(
               children: [
                 Text(

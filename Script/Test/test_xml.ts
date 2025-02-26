@@ -5,8 +5,8 @@ namespace Sen.Script.Test.XML {
 			descriptor.value = function (...args: any[]) {
 				Console.display(
 					`Execution argument: Running ${propertyKey}`,
-					`arguments: [${args}]`,
 					'cyan',
+					`arguments: [${args}]`,
 				);
 				try {
 					originalMethod.apply(this, args);

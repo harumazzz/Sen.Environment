@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/model/build_distribution.dart';
+import 'package:sen/constant/build_distribution.dart';
 import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
@@ -153,10 +153,7 @@ class _RootScreenState extends State<RootScreen> {
         (_) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ShellScreen(
-                arguments: AndroidHelper.arguments!,
-                launchImmediately: true,
-              ),
+              builder: (context) => const ShellScreen(),
             ),
           );
         },

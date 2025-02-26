@@ -17,7 +17,7 @@ namespace Sen::Kernel::Image::Transformation {
             ImagePosition& destination
         ) -> void {
             if (destination.x + destination.width > source.width || destination.y + destination.height > source.height) {
-                throw Exception{"Crop area exceeds image bounds", std::source_location::current(), "process"};
+                throw RuntimeException{"Crop area exceeds image bounds", std::source_location::current(), "process"};
             }
             auto x = destination.x;
             auto y = destination.y;

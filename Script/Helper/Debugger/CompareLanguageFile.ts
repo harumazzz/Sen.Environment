@@ -43,7 +43,7 @@ namespace Sen.Script.Helper.Debugger.CompareLanguageFile {
 			Kernel.JSON.deserialize_fs<LanguageFile>(destination),
 		);
 		Object.keys(missing_key).forEach((key: string) =>
-			Console.send(`${Kernel.Language.get('missing_key')}: ${key}`),
+			Console.display(`${Kernel.Language.get('missing_key')}: ${key}`),
 		);
 	}
 }

@@ -133,7 +133,7 @@ namespace Sen::Kernel {
             const usize& from,
             const usize& to
         ) -> String {
-            throw Exception{"Not implemented", std::source_location::current(), "string"};
+            throw UnsupportedOperationException{"Not implemented", std::source_location::current(), "string"};
         }
 
         virtual auto string(const usize& size) -> String {
@@ -187,7 +187,7 @@ namespace Sen::Kernel {
         }
 
         virtual auto read(const usize& from, const usize& to) -> Uint8Array {
-            throw Exception{"Not implemented", std::source_location::current(), "read"};
+            throw UnsupportedOperationException{"Not implemented", std::source_location::current(), "read"};
         }
 
         constexpr auto current_position() const -> usize {

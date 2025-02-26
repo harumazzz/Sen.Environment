@@ -26,9 +26,34 @@ namespace Sen::Kernel::FileSystem {
 
     }
 
+    inline auto exist (
+        const StringView& path
+    ) -> bool {
+        const auto type = get_path_type(path);
+        return type == PathType::File || type == PathType::Directory;
+    }
+
+    inline auto is_directory (
+        const StringView& path
+    ) -> bool {
+        return get_path_type(path) == PathType::Directory;
+    }
+    inline auto is_file (
+        const StringView& path
+    ) -> bool {
+        return get_path_type(path) == PathType::File;
+    }
+
+    inline auto is_anything (
+        const StringView& path
+    ) -> bool {
+        return get_path_type(path) == PathType::None;
+    }
+
     inline auto size_file (
         const StringView& path
     ) -> usize {
+        assert_not_null(is_file(path), fmt::format("File {} does not exist", path.view()), "size_file");
         #if WINDOWS
         auto size = std::filesystem::file_size(path.wstring());
         #else
@@ -134,30 +159,6 @@ namespace Sen::Kernel::FileSystem {
         auto buffer = String{};
         FileSystem::read_file(source, buffer);
         value = jsoncons::decode_json<T>(buffer.view());
-    }
-
-    inline auto exist (
-        const StringView& path
-    ) -> bool {
-        const auto type = get_path_type(path);
-        return type == PathType::File || type == PathType::Directory;
-    }
-
-    inline auto is_directory (
-        const StringView& path
-    ) -> bool {
-        return get_path_type(path) == PathType::Directory;
-    }
-    inline auto is_file (
-        const StringView& path
-    ) -> bool {
-        return get_path_type(path) == PathType::File;
-    }
-
-    inline auto is_anything (
-        const StringView& path
-    ) -> bool {
-        return get_path_type(path) == PathType::None;
     }
 
     inline auto create_directory (

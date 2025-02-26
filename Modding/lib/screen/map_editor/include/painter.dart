@@ -217,7 +217,7 @@ class RectanglePainter extends CustomPainter {
             ..addRect(innerRect)
             ..close(),
         ),
-        Paint()..color = boundingColor ?? Colors.grey.withValues(alpha: 70));
+        Paint()..color = boundingColor ?? Colors.grey.withValues(alpha: 0.7));
     final borderPaint = Paint()
       ..filterQuality = filterQuality
       ..color = Colors.red

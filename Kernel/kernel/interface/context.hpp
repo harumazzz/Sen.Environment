@@ -60,7 +60,7 @@ namespace Sen::Kernel::Interface {
         }
 
         auto make_argument (
-            List<String>&& arguments
+            CArray<String>&& arguments
         ) -> List<Javascript::Value> {
             auto make_data = [&]() -> Javascript::Value {
                 auto data = Javascript::Value::new_value(thiz.context().context());
@@ -72,7 +72,7 @@ namespace Sen::Kernel::Interface {
                 };
                 auto set_argument = [&]() -> void {
                     auto argument = data.new_value();
-                    argument.template set<List<String>>(as_move(arguments));
+                    argument.template set<CArray<String>>(as_move(arguments));
                     data.define_property("arguments"_s, argument.release());
                 };
                 set_home();

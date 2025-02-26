@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/screen/animation_viewer/animation_viewer.dart';
 import 'package:sen/screen/home/configuration/javascript_category_configuration.dart';
@@ -95,10 +93,7 @@ class HomeScreen extends StatelessWidget {
           color: Colors.blueGrey.shade600,
         ),
         isEnabled: true,
-        onWidget: () => ShellScreen(
-          arguments: const [],
-          launchImmediately: BlocProvider.of<SettingsCubit>(context).state.shellLaunchImmediately,
-        ),
+        onWidget: () => const ShellScreen(),
         onSetting: () => _onLoadShellConfiguration(context),
       ),
       Item(

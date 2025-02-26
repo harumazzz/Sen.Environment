@@ -22,25 +22,48 @@ namespace Sen::Kernel {
 	}\
 	static_assert(true)
 
-	inline static auto parse_exception(
+	#define assert_not_null(conditional, message, function_name)\
+	if (!(conditional)) { \
+		throw NullPointerException{message, std::source_location::current(), function_name}; \
+	}\
 
-	) -> Exception
-	{
+	#define assert_eof(conditional, message, function_name)\
+	if (!(conditional)) { \
+		throw EOFException{message, std::source_location::current(), function_name}; \
+	}\
+
+	inline auto parse_exception(
+	) -> std::unique_ptr<Exception> {
 		try {
 			std::rethrow_exception(std::current_exception());
 		}
-		catch(Exception &ex){
-			return Exception{ ex };
+		catch (OutOfBoundsException& e) {
+			return std::make_unique<OutOfBoundsException>(e);
 		}
-		catch (std::system_error& ex) {
-			return static_cast<Exception>(ex.what());
+		catch (DirectoryNotFoundException& e) {
+			return std::make_unique<DirectoryNotFoundException>(e);
 		}
-		catch(const std::exception &ex){
-			return static_cast<Exception>(ex.what());
+		catch (NullPointerException& e) {
+			return std::make_unique<NullPointerException>(e);
 		}
-		catch(...){
-			return static_cast<Exception>("Undefined exception caught");
+		catch (SystemException& e) {
+			return std::make_unique<SystemException>(e);
 		}
-		return Exception{"Undefined exception"};
+		catch (RuntimeException& e) {
+			return std::make_unique<RuntimeException>(e);
+		}
+		catch (std::system_error& e) {
+			return std::make_unique<SystemException>(e.what());
+		}
+		catch (Exception& e) {
+			return std::make_unique<Exception>(e);
+		}
+		catch (const std::exception& e) {
+			return std::make_unique<Exception>(e.what());
+		}
+		catch (...) {
+			return std::make_unique<Exception>("Undefined exception caught");
+		}
 	}
+
 }

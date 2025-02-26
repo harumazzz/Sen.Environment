@@ -10,10 +10,6 @@ namespace Sen::Kernel {
 
     class Exception : public std::runtime_error {
 
-    protected:
-
-        inline static auto constexpr k_lambda = std::string_view{"lambda"};
-
     private:
 
         std::string msg;
@@ -38,18 +34,31 @@ namespace Sen::Kernel {
         Exception& operator=(Exception&&) noexcept = default;
 
         explicit Exception(std::string_view arg,
-                           const std::source_location &loc = std::source_location::current(),
-                           const std::string_view &function_name = k_lambda
+                        const std::source_location &loc = std::source_location::current()
             )
             : std::runtime_error{std::string{arg}},
               arg{arg},
-              function_name{function_name},
+              function_name{loc.function_name()},
               source{fmt::format("{}:{}:{}", loc.file_name(), loc.line(), loc.column())} {
             #ifdef _WIN32
             std::ranges::replace(source, '\\', '/');
             #endif
             msg = fmt::format("{}\n{}", source, arg);
         }
+
+        explicit Exception(std::string_view arg,
+                    const std::source_location &loc,
+                    const std::string_view& function_name
+        )
+        : std::runtime_error{std::string{arg}},
+            arg{arg},
+            function_name{function_name},
+            source{fmt::format("{}:{}:{}", loc.file_name(), loc.line(), loc.column())} {
+        #ifdef _WIN32
+        std::ranges::replace(source, '\\', '/');
+        #endif
+        msg = fmt::format("{}\n{}", source, arg);
+    }
 
         [[nodiscard]] constexpr auto message(
         ) const noexcept -> std::string_view {
@@ -61,7 +70,7 @@ namespace Sen::Kernel {
             return msg.data();
         }
 
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] virtual constexpr auto name(
         ) noexcept -> std::string_view {
             return "Exception";
         }
@@ -75,8 +84,8 @@ namespace Sen::Kernel {
     public:
         using Exception::Exception;
 
-        [[nodiscard]] static constexpr auto name(
-        ) noexcept -> std::string_view {
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view  override{
             return "RuntimeException";
         }
     };
@@ -87,8 +96,8 @@ namespace Sen::Kernel {
 
         using RuntimeException::RuntimeException;
 
-        [[nodiscard]] static constexpr auto name(
-        ) noexcept -> std::string_view {
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view  override{
             return "OutOfBoundsException";
         }
     };
@@ -99,8 +108,8 @@ namespace Sen::Kernel {
 
         using RuntimeException::RuntimeException;
 
-        [[nodiscard]] static constexpr auto name(
-        ) noexcept -> std::string_view {
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view  override{
             return "IllegalArgumentException";
         }
     };
@@ -111,8 +120,8 @@ namespace Sen::Kernel {
 
         using RuntimeException::RuntimeException;
 
-        [[nodiscard]] static constexpr auto name(
-        ) noexcept -> std::string_view {
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view  override{
             return "NullPointerException";
         }
     };
@@ -123,8 +132,8 @@ namespace Sen::Kernel {
 
         using RuntimeException::RuntimeException;
 
-        [[nodiscard]] static constexpr auto name(
-        ) noexcept -> std::string_view {
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view  override{
             return "ArithmeticException";
         }
     };
@@ -135,16 +144,18 @@ namespace Sen::Kernel {
 
         using RuntimeException::RuntimeException;
 
-        [[nodiscard]] static constexpr auto name() noexcept -> std::string_view {
-            return "IllegalStateException";
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view override {
+             return "IllegalStateException";
         }
     };
 
     class UnsupportedOperationException final : public RuntimeException {
     public:
         using RuntimeException::RuntimeException;
-        [[nodiscard]] static constexpr auto name() noexcept -> std::string_view {
-            return "UnsupportedOperationException";
+        [[nodiscard]] constexpr auto name(
+        ) noexcept -> std::string_view override {
+             return "UnsupportedOperationException";
         }
     };
 
@@ -154,9 +165,9 @@ namespace Sen::Kernel {
 
         using Exception::Exception;
 
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "IOException";
         }
     };
@@ -166,9 +177,9 @@ namespace Sen::Kernel {
     public:
 
         using IOException::IOException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "FileNotFoundException";
         }
     };
@@ -178,9 +189,9 @@ namespace Sen::Kernel {
     public:
 
         using IOException::IOException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "DirectoryNotFoundException";
         }
     };
@@ -190,9 +201,9 @@ namespace Sen::Kernel {
     public:
 
         using IOException::IOException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "EOFException";
         }
     };
@@ -203,9 +214,9 @@ namespace Sen::Kernel {
 
         using IOException::IOException;
 
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "PermissionDeniedException"; }
     };
 
@@ -215,9 +226,9 @@ namespace Sen::Kernel {
 
         using Exception::Exception;
 
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "AlgorithmException";
         }
     };
@@ -227,9 +238,9 @@ namespace Sen::Kernel {
     public:
 
         using AlgorithmException::AlgorithmException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "NoSuchElementException";
         }
     };
@@ -239,9 +250,9 @@ namespace Sen::Kernel {
     public:
 
         using AlgorithmException::AlgorithmException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "ConcurrentModificationException";
         }
     };
@@ -251,9 +262,9 @@ namespace Sen::Kernel {
     public:
 
         using AlgorithmException::AlgorithmException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "TimeoutException";
         }
     };
@@ -264,9 +275,9 @@ namespace Sen::Kernel {
 
         using Exception::Exception;
 
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "SystemException";
         }
     };
@@ -276,9 +287,9 @@ namespace Sen::Kernel {
     public:
 
         using SystemException::SystemException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "MemoryAccessException";
         }
     };
@@ -288,9 +299,9 @@ namespace Sen::Kernel {
     public:
 
         using SystemException::SystemException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "StackOverflowException"; }
     };
 
@@ -299,9 +310,9 @@ namespace Sen::Kernel {
     public:
 
         using SystemException::SystemException;
-        [[nodiscard]] static constexpr auto name(
+        [[nodiscard]] constexpr auto name(
 
-        ) noexcept -> std::string_view {
+        ) noexcept -> std::string_view override {
             return "SegmentationFaultException"; }
     };
 }

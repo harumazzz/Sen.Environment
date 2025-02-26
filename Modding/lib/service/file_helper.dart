@@ -6,6 +6,7 @@ import 'package:sen/service/android_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:archive/archive.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FileHelper {
   static List<String> readDirectory({
@@ -228,5 +229,23 @@ class FileHelper {
     required String source,
   }) async {
     await File(source).delete();
+  }
+
+  static Future<void> revealFile(
+    String path,
+  ) async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await launchUrl(Uri.file(path), mode: LaunchMode.externalApplication);
+    }
+    if (Platform.isAndroid) {
+      final fileUri = Uri.file(path);
+      if (await canLaunchUrl(fileUri)) {
+        await launchUrl(fileUri, mode: LaunchMode.externalApplication);
+      }
+    }
+    if (Platform.isIOS) {
+      await launchUrl(Uri.file(path).replace(scheme: 'shareddocuments'), mode: LaunchMode.externalApplication);
+    }
+    return;
   }
 }

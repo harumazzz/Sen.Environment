@@ -151,7 +151,7 @@ namespace Sen::Kernel::Javascript {
 
             ) const -> Pointer<T> {
                 auto opaque = Subprojects::quickjs::JS_GetContextOpaque(thiz.m_context);
-                assert_conditional(opaque != nullptr, "Expected the value to be opaque, but the actual type is not", "get_opaque");
+                assert_not_null(opaque != nullptr, "Expected the value to be opaque, but the actual type is not", "get_opaque");
                 return static_cast<T*>(opaque);
             }
 

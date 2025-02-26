@@ -9,22 +9,25 @@ sealed class ResourceEvent extends Equatable {
 
 final class LoadResourceByWorldName extends ResourceEvent {
   const LoadResourceByWorldName({
+    required this.events,
     required this.worldName,
     required this.animationDetails,
     required this.itemUpdate,
-    this.notify = false,
+    this.notifyType = NotifyType.none,
   });
+
+  final HashMap<String, MapEventItem> events;
 
   final String worldName;
 
   final Map<String, AnimationDetails> animationDetails;
 
-  final bool notify;
+  final NotifyType notifyType;
 
   final void Function() itemUpdate;
 
   @override
-  List<Object> get props => [worldName, animationDetails, notify];
+  List<Object> get props => [events, worldName, animationDetails, notifyType];
 }
 
 final class ResourceLoading extends ResourceEvent {

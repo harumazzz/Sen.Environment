@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 import 'package:sen/screen/map_editor/widgets/shop_tab/animation_shop.dart';
 import 'package:sen/screen/map_editor/widgets/shop_tab/event_shop.dart';
@@ -10,41 +11,57 @@ class ShopWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLowScreenWidth = MediaQuery.of(context).size.width < 1540;
+    final isDesktopPlatform =
+        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
     return BlocBuilder<SectionBloc, SectionState>(
         buildWhen: (prev, state) =>
             prev.section != state.section ||
             prev.sectionMinize != state.sectionMinize,
         builder: (context, state) {
           final sectionType = state.section;
-          switch (sectionType) {
-            case SectionType.select:
-              {
-                return const SizedBox.expand();
-              }
-            case SectionType.image:
-              {
-                if (!state.sectionMinize[SectionType.image]!) {
-                  return const ImageShopView();
-                } else {
-                  return const SizedBox.expand();
-                }
-              }
-            case SectionType.animation:
-              {
-                if (!state.sectionMinize[SectionType.animation]!) {
-                  return const AnimationShopView();
-                } else {
-                  return const SizedBox.expand();
-                }
-              }
-            case SectionType.event:
-              {
-                if (!state.sectionMinize[SectionType.event]!) {
-                  return const EventShopView();
-                } else {
-                  return const SizedBox.expand();
-                }
-              }
+          const emptyWidget = SizedBox.expand();
+          if (isDesktopPlatform) {
+            return Positioned(
+                bottom: 20,
+                left: 20,
+                child: SizedBox(
+                    width: isLowScreenWidth ? 500 : 800,
+                    height: 400,
+                    child: switch (sectionType) {
+                      SectionType.select => emptyWidget,
+                      SectionType.image =>
+                        !state.sectionMinize[SectionType.image]!
+                            ? const ImageShopView()
+                            : emptyWidget,
+                      SectionType.animation =>
+                        !state.sectionMinize[SectionType.animation]!
+                            ? const AnimationShopView()
+                            : emptyWidget,
+                      SectionType.event =>
+                        !state.sectionMinize[SectionType.event]!
+                            ? const EventShopView()
+                            : emptyWidget,
+                    }));
+          } else {
+            return Center(
+              child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (sectionType == SectionType.image &&
+                          !state.sectionMinize[SectionType.image]!)
+                        const SizedBox(height: 400, child: ImageShopView()),
+                      if (sectionType == SectionType.animation &&
+                          !state.sectionMinize[SectionType.animation]!)
+                        const SizedBox(height: 400, child: AnimationShopView()),
+                      if (sectionType == SectionType.event &&
+                          !state.sectionMinize[SectionType.event]!)
+                        const SizedBox(height: 400, child: EventShopView())
+                    ],
+                  )),
+            );
           }
         });
   }

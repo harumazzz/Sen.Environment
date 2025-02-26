@@ -216,16 +216,15 @@ namespace Sen::Kernel::Interface::Runtime {
     }
 
     inline auto make_exception(
-    ) -> List<String> {
-        return make_list<String>(
+    ) -> CArray<String> {
+        return make_array<String>(
             "display"_s,
-            StringHelper::make_string(parse_exception().what()),
-            ""_s,
+            StringHelper::make_string(parse_exception()->what()),
             "red"_s
         );
     };
 
-    inline auto prepare_service (
+    inline auto bind_service (
         Service* service
     ) -> void {
         service->allocate = [](Message* message, size_t* size) -> int {
@@ -233,6 +232,12 @@ namespace Sen::Kernel::Interface::Runtime {
             message->size = *size;
             return 0;
         };
+    }
+
+    inline auto unbind_service (
+        Service* service
+    ) -> void {
+        service->allocate = nullptr;
     }
 
 }		

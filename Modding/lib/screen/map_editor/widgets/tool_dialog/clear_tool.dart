@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/extension/l10n.dart';
 
 class ClearToolWidget extends StatefulWidget {
   const ClearToolWidget({super.key});
@@ -15,19 +15,14 @@ class _ClearToolState extends State<ClearToolWidget> {
     return AlertDialog(
       title: Text(los.confirm_delete),
       content: Text(los.confirm_delete_description),
+      backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
       actions: [
-        ElevatedButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)))),
+        TextButton(
           child: Text(los.cancel),
           onPressed: () => Navigator.of(context).pop(false),
         ),
-        ElevatedButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)))),
-          child: Text(los.yes),
+        TextButton(
+          child: Text(los.yes), //TODO: chang locale "yes" -> "Yes"
           onPressed: () => Navigator.of(context).pop(true),
         ),
       ],

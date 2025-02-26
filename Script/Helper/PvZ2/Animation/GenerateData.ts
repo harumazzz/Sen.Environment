@@ -72,7 +72,10 @@ namespace Sen.Script.Support.PopCap.Animation.Miscellaenous.GenerateData {
 			[4n, 1536n],
 		]);
 		resolution_map.forEach((v, k) => Executor.print_statement(`${v}`, k));
-		const resolution = Executor.input_integer([...resolution_map.keys()]);
+		const resolution = Executor.input_integer(
+			[...resolution_map.keys()],
+			[...resolution_map.values().map((e) => e.toString())],
+		);
 		const source = Console.path(Kernel.Language.get('input_directory'), 'directory');
 		Console.argument(Kernel.Language.get('popcap.animation.add_library.image_posix_for_id'));
 		const image_posix = readline();

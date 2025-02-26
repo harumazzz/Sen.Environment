@@ -6,7 +6,6 @@ final class SelectedState extends Equatable {
     required this.copyList,
     this.hoverSelect = false,
     this.onSelect,
-   
   });
 
   final String? onSelect;
@@ -34,5 +33,5 @@ final class SelectedState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [onSelect, selectedList, copyList];
+  List<Object?> get props => [onSelect, hoverSelect, selectedList, copyList];
 }

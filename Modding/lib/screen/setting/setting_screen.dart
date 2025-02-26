@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/model/build_distribution.dart';
+import 'package:sen/constant/build_distribution.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/screen/setting/locale_option.dart';
 import 'package:sen/screen/setting/notification_option.dart';

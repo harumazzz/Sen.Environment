@@ -70,12 +70,12 @@ namespace Sen::Kernel {
 				auto hStdOutWrite = static_cast<HANDLE>(nullptr);
 			    auto sa = SECURITY_ATTRIBUTES{sizeof(SECURITY_ATTRIBUTES),nullptr, TRUE};
 			    if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0)) {
-			        throw Exception{"Failed to create pipe for stdout.", std::source_location::current(), "execute"};
+			        throw RuntimeException{"Failed to create pipe for stdout.", std::source_location::current(), "execute"};
 			    }
 			    if (!SetHandleInformation(hStdOutRead, HANDLE_FLAG_INHERIT, 0)) {
 			        CloseHandle(hStdOutRead);
 			        CloseHandle(hStdOutWrite);
-			        throw Exception{"Failed to set handle information", std::source_location::current(), "execute"};
+			        throw RuntimeException{"Failed to set handle information", std::source_location::current(), "execute"};
 			    }
 			    auto pi = PROCESS_INFORMATION{};
 			    auto si = STARTUPINFOW{
@@ -98,7 +98,7 @@ namespace Sen::Kernel {
 			        )) {
 			        CloseHandle(hStdOutRead);
 			        CloseHandle(hStdOutWrite);
-			    	throw Exception{"Failed to create a single process", std::source_location::current(), "execute"};
+			    	throw RuntimeException{"Failed to create a single process", std::source_location::current(), "execute"};
 			    }
 			    CloseHandle(hStdOutWrite);
 			    auto result = String{};
@@ -117,7 +117,7 @@ namespace Sen::Kernel {
 				auto result = String{};
 				auto pipe = std::unique_ptr<FILE, decltype(&pclose)>(popen(command.data(), "r"), pclose);
 				if (pipe == nullptr) {
-					throw Exception("open process failed", std::source_location::current(), "execute");
+					throw RuntimeException("open process failed", std::source_location::current(), "execute");
 				}
 				while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
 					result += buffer.data();

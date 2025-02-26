@@ -3,6 +3,7 @@ part of 'setting_bloc.dart';
 final class SettingState extends Equatable {
   const SettingState(
       {required this.boundBackground,
+      required this.showTopScreenShortcut,
       required this.islandImageBorder,
       required this.islandAnimationBorder,
       required this.eventBorder,
@@ -18,6 +19,8 @@ final class SettingState extends Equatable {
       required this.filterQuality});
 
   final BorderBackground boundBackground;
+
+  final bool showTopScreenShortcut;
 
   final bool islandImageBorder;
 
@@ -48,6 +51,7 @@ final class SettingState extends Equatable {
   factory SettingState.initailize() {
     return const SettingState(
       boundBackground: BorderBackground.color,
+      showTopScreenShortcut: true,
       islandImageBorder: true,
       islandAnimationBorder: true,
       eventBorder: true,
@@ -66,6 +70,7 @@ final class SettingState extends Equatable {
 
   SettingState copyWith(
       {BorderBackground? boundBackground,
+      bool? showTopScreenShortcut,
       bool? islandImageBorder,
       bool? islandAnimationBorder,
       bool? eventBorder,
@@ -80,6 +85,7 @@ final class SettingState extends Equatable {
       bool? muteAudio,
       FilterQuality? filterQuality}) {
     return SettingState(
+      showTopScreenShortcut: showTopScreenShortcut ?? this.showTopScreenShortcut,
         boundBackground: boundBackground ?? this.boundBackground,
         islandImageBorder: islandImageBorder ?? this.islandImageBorder,
         islandAnimationBorder:
@@ -100,6 +106,7 @@ final class SettingState extends Equatable {
   @override
   List<Object?> get props => [
         boundBackground,
+        showTopScreenShortcut,
         islandImageBorder,
         islandAnimationBorder,
         muteAudio,

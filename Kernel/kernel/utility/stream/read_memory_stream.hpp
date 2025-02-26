@@ -49,9 +49,9 @@ namespace Sen::Kernel {
             const usize& from,
             const usize &to
          ) -> String override {
-            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "string");
-            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "string");
-            assert_conditional(from <= to, "From index must be smaller than to index", "string");
+            assert_index(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "string");
+            assert_index(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "string");
+            assert_index(from <= to, "From index must be smaller than to index", "string");
             auto destination = String{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
             thiz.m_position = to;
@@ -90,9 +90,9 @@ namespace Sen::Kernel {
             const usize &from,
             const usize &to
         ) -> Uint8Array override {
-            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
-            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
-            assert_conditional(from <= to, "From index must be smaller than to index", "read");
+            assert_index(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read");
+            assert_index(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read");
+            assert_index(from <= to, "From index must be smaller than to index", "read");
             auto destination = Uint8Array{to - from};
             std::memcpy(destination.data(), thiz.m_data.begin() + from, to - from);
             thiz.m_position = to;
@@ -170,9 +170,9 @@ namespace Sen::Kernel {
             const usize& from, 
             const usize& to
         ) -> Uint8ArrayView {
-            assert_conditional(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read_view");
-            assert_conditional(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read_view");
-            assert_conditional(from <= to, "From index must be smaller than to index", "read_view");
+            assert_index(from <= thiz.m_data.size(), "From index must be smaller than Stream size", "read_view");
+            assert_index(to <= thiz.m_data.size(), "To index must be smaller than Stream size", "read_view");
+            assert_index(from <= to, "From index must be smaller than to index", "read_view");
             auto destination = Uint8ArrayView{thiz.m_data.begin() + from, to - from};
             thiz.m_position = to;
             return destination;

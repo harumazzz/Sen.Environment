@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
@@ -13,7 +14,6 @@ import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
 import 'package:sen/screen/map_editor/models/action_model.dart';
 import 'package:sen/screen/map_editor/models/action_service.dart';
 import 'package:sen/screen/map_editor/models/item_profile.dart';
-import 'package:sen/screen/map_editor/models/map_const.dart';
 
 class MouseListener extends StatelessWidget {
   const MouseListener(
@@ -37,6 +37,55 @@ class MouseListener extends StatelessWidget {
 
   final BlocWidgetBuilder<SelectedState> builder;
 
+  void _hoverListener(
+      BuildContext context, Offset details, Iterable<String> selectedList) {
+    final idList = itemStore.keys.toList();
+    final controller = context.read<CanvasBloc>().state.canvasController;
+    final controllerTransform = controller.transformationController.value;
+    final viewportScale = controllerTransform.getMaxScaleOnAxis();
+    final sectionRect = Rect.fromLTWH(
+        (details.dx - controllerTransform[12]) / viewportScale,
+        (details.dy - controllerTransform[13]) / viewportScale,
+        3,
+        3);
+    //MapConst.debugOffset = sectionRect.topLeft;
+    for (var i = idList.length - 1; i >= 0; --i) {
+      final id = idList[i];
+      final itemProfile = itemStore[id]!;
+      final itemRect = Rect.fromLTWH(
+          itemProfile.selectRect!.left,
+          itemProfile.selectRect!.top,
+          itemProfile.selectRect!.width / viewportScale,
+          itemProfile.selectRect!.height / viewportScale);
+      final selected = sectionRect.overlaps(itemRect);
+      if (selected) {
+        if (!panTool && !eraseTool && !multiSelect) {
+          if (selectedList.contains(id)) {
+            context.read<MouseCursorBloc>().add(
+                const ChangeCursorEvent(cursor: SystemMouseCursors.allScroll));
+          } else {
+            context
+                .read<MouseCursorBloc>()
+                .add(const ChangeCursorEvent(cursor: SystemMouseCursors.click));
+          }
+          context
+              .read<SelectedBloc>()
+              .add(const SetHoverSelected(selected: true));
+        }
+        context.read<SelectedBloc>().add(OnSelectUpdated(onSelect: id));
+        return;
+      } else {
+        if (!panTool && !eraseTool && !multiSelect) {
+          context
+              .read<MouseCursorBloc>()
+              .add(const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
+        }
+      }
+    }
+    context.read<SelectedBloc>().add(const SetOnSelectedNull());
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     final idList = itemStore.keys.toList();
@@ -45,79 +94,66 @@ class MouseListener extends StatelessWidget {
     final itemBloc = context.read<ItemBloc>();
     final historyBloc = context.read<HistoryBloc>();
     final layerBloc = context.read<LayerBloc>();
+    final isDesktopPlatform =
+        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
     return BlocBuilder<SelectedBloc, SelectedState>(
         builder: (context, selectedState) {
-      final onSelectedId = selectedState.onSelect;
+      var onSelectedId = selectedState.onSelect;
       final selectedList = selectedState.selectedList;
       final controller = context.read<CanvasBloc>().state.canvasController;
       return Listener(
           onPointerHover: (details) {
             controller.requestFocus();
-            if (enable) {
-              final controllerTransform =
-                  controller.transformationController.value;
-              final viewportScale = controllerTransform.getMaxScaleOnAxis();
-              final sectionRect = Rect.fromLTWH(
-                  (details.position.dx - MapConst.leftAdditonalPos) /
-                      viewportScale,
-                  (details.position.dy - MapConst.topAdditionalPos) /
-                      viewportScale,
-                  3,
-                  3);
-              for (var i = idList.length - 1; i >= 0; --i) {
-                final id = idList[i];
-                final itemProfile = itemStore[id]!;
-                final itemRect = Rect.fromLTWH(
-                    itemProfile.selectRect!.left +
-                        controllerTransform[12] / viewportScale,
-                    itemProfile.selectRect!.top +
-                        controllerTransform[13] / viewportScale,
-                    itemProfile.selectRect!.width / viewportScale,
-                    itemProfile.selectRect!.height / viewportScale);
-                final selected = sectionRect.overlaps(itemRect);
-                
-                if (selected) {
-                  if (!panTool && !eraseTool && !multiSelect) {
-                    if (selectedList.contains(id)) {
-                      context.read<MouseCursorBloc>().add(
-                          const ChangeCursorEvent(
-                              cursor: SystemMouseCursors.allScroll));
-                    } else {
-                      context.read<MouseCursorBloc>().add(
-                          const ChangeCursorEvent(
-                              cursor: SystemMouseCursors.click));
-                    }
-                    context.read<SelectedBloc>().add(const SetHoverSelected(selected: true));
-                  }
-                  context
-                      .read<SelectedBloc>()
-                      .add(OnSelectUpdated(onSelect: id));
-                  return;
-                } else {
-                  if (!panTool && !eraseTool && !multiSelect) {
-                    context.read<MouseCursorBloc>().add(
-                        const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
-                  }
-                  context.read<SelectedBloc>().add(const SetHoverSelected(selected: false));
-                }
-              }
-              context.read<SelectedBloc>().add(const SetOnSelectedNull());
+            if (enable && isDesktopPlatform) {
+              _hoverListener(context, details.localPosition, selectedList);
             }
           },
           onPointerDown: (details) {
             if (enable) {
+              if (!isDesktopPlatform) {
+                final controllerTransform =
+                    controller.transformationController.value;
+                final viewportScale = controllerTransform.getMaxScaleOnAxis();
+                final sectionRect = Rect.fromLTWH(
+                    (details.localPosition.dx - controllerTransform[12]) /
+                        viewportScale,
+                    (details.localPosition.dy - controllerTransform[13]) /
+                        viewportScale,
+                    3,
+                    3);
+                //MapConst.debugOffset = sectionRect.topLeft;
+                for (var i = idList.length - 1; i >= 0; --i) {
+                  final id = idList[i];
+                  final itemProfile = itemStore[id]!;
+                  final itemRect = Rect.fromLTWH(
+                      itemProfile.selectRect!.left,
+                      itemProfile.selectRect!.top,
+                      itemProfile.selectRect!.width / viewportScale,
+                      itemProfile.selectRect!.height / viewportScale);
+                  final selected = sectionRect.overlaps(itemRect);
+                  if (selected) {
+                    if (!panTool && !eraseTool && !multiSelect) {
+                      context
+                          .read<SelectedBloc>()
+                          .add(const SetHoverSelected(selected: true));
+                    }
+                    onSelectedId = id;
+                    break;
+                  }
+                }
+              }
               if (onSelectedId != null) {
                 if (eraseTool) {
                   controller.selection.erased = true;
                   context.read<StageBloc>().add(RemoveItemEvent(
-                        idList: [onSelectedId],
+                        idList: [onSelectedId!],
                         itemBloc: itemBloc,
                         layerBloc: context.read<LayerBloc>(),
                       ));
                 } else {
                   if (!selectedList.contains(onSelectedId) || multiSelect) {
                     context.read<StageBloc>().add(PickItemEvent(
-                          idList: [onSelectedId],
+                          idList: [onSelectedId!],
                           itemBloc: itemBloc,
                           multiSelect: multiSelect,
                           skipParallax: false,

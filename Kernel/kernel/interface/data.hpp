@@ -14,7 +14,7 @@ namespace Sen::Kernel::Interface {
 	};
 
 	inline constexpr auto total_size(
-        CList<String>& strings
+        CArray<String>& strings
     ) -> usize
     {
         auto result = sizeof(u32);
@@ -26,7 +26,7 @@ namespace Sen::Kernel::Interface {
 
     inline auto construct_proxy(
         Pointer<uint8_t> ptr,
-        CList<String>& strings
+        CArray<String>& strings
     ) -> void
     {
         for (auto& str : strings) {
@@ -63,7 +63,7 @@ namespace Sen::Kernel::Interface {
 
     template <typename MessagePtr>
     inline auto construct (
-        CList<String>& strings,
+        CArray<String>& strings,
         MessagePtr& message
     ) -> void {
         auto ptr = message->value;
@@ -75,7 +75,7 @@ namespace Sen::Kernel::Interface {
 
     template <typename Deleter>
     inline auto construct_message (
-        CList<String>& strings,
+        CArray<String>& strings,
         std::unique_ptr<Message, Deleter> &message
     ) -> void {
         new_message(message, total_size(strings));
@@ -83,7 +83,7 @@ namespace Sen::Kernel::Interface {
     }
 
     inline auto construct_message (
-        CList<String>& strings,
+        CArray<String>& strings,
         Pointer<Message> message
     ) -> void {
         new_message(message, total_size(strings));
@@ -93,7 +93,7 @@ namespace Sen::Kernel::Interface {
     inline constexpr auto destruct_proxy(
         Pointer<uint8_t> ptr,
         const uint32_t& count,
-        List<String>& result
+        CArray<String>& result
     ) -> void
     {
         for (auto i = u32{0}; i < count; ++i) {
@@ -108,7 +108,7 @@ namespace Sen::Kernel::Interface {
 
     inline auto destruct_message (
         const Pointer<Message> & message,
-        CList<String>& destination
+        CArray<String>& destination
     ) -> void {
 	    if (message->size == 0) {
 	        return;
@@ -118,7 +118,6 @@ namespace Sen::Kernel::Interface {
         std::memcpy(&count, ptr, sizeof(u32));
         ptr += sizeof(u32);
 	    destination.allocate(count);
-	    destination.resize(count);
         destruct_proxy(ptr, count, destination);
     }
 
@@ -130,26 +129,6 @@ namespace Sen::Kernel::Interface {
             message->value = nullptr;
             message->size = 0;
             delete message;
-        }
-    }
-
-    inline constexpr auto total_size(
-        const String& str
-    ) -> usize {
-        return sizeof(u32) + str.size();
-    }
-
-    template <typename Message>
-    inline auto construct(
-        const String& str,
-        Message& message
-    ) -> void {
-        auto ptr = message->value;
-        const auto size = static_cast<u32>(str.size());
-        std::memcpy(ptr, &size, sizeof(u32));
-        ptr += sizeof(u32);
-        if (size > 0) {
-            std::memcpy(ptr, str.begin(), size);
         }
     }
 	

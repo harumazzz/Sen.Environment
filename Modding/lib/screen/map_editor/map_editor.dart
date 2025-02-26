@@ -6,7 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/extension/l10n.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
 import 'package:sen/screen/map_editor/view/main_page.dart';
 import 'package:sen/service/file_helper.dart';
@@ -106,7 +106,7 @@ class MapEditor extends StatelessWidget {
                         Navigator.of(context).pop();
                       }
                     },
-                    icon: const Icon(Symbols.arrow_back))),
+                    icon: const Icon(Icons.arrow_back))),
             actions: [
               IconButton(
                 onPressed: () async {

@@ -22,6 +22,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     on<SetMapCompleted>(_setLevelFinished);
     on<SetMapGrid>(_setMapGrid);
     on<SetBoundingColor>(_setBoundingColor);
+    on<SetShowScreenShortcut>(_setShowScreenShortcut);
   }
 
   void _setPlaySingleFrame(
@@ -29,6 +30,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     emit(state.copyWith(playSingleFrame: event.playSingleFrame));
   }
 
+  
   void _setMuteAudio(SetMuteAudio event, Emitter<SettingState> emit) {
     emit(state.copyWith(muteAudio: event.muteAudio));
   }
@@ -41,6 +43,12 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       SetBoundBackground event, Emitter<SettingState> emit) {
     emit(state.copyWith(boundBackground: event.background));
   }
+
+  void _setShowScreenShortcut(
+      SetShowScreenShortcut event, Emitter<SettingState> emit) {
+    emit(state.copyWith(showTopScreenShortcut: event.enabled));
+  }
+
 
   void _setIslandImageBorder(
       SetIslandImageBorder event, Emitter<SettingState> emit) {

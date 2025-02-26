@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/model/worldmap.dart';
 import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
 import 'package:sen/screen/map_editor/include/visual_animation.dart';
@@ -49,9 +50,9 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
     emit(ResourceState(status: ResourceStateStatus.loading));
   }
 
-  void _finished(bool notify, Function itemUpdate) {
+  void _finished(NotifyType notifyType, Function itemUpdate) {
     itemUpdate();
-    if (notify) {
+    if (notifyType == NotifyType.loadResource) {
       if (!settingBloc.state.muteAudio) {
         cubit.state.editorResource.switchResourceSound.resume();
       }
@@ -60,6 +61,12 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
           text: los.world_resources_changed,
         ),
       );
+    }
+    else if (notifyType == NotifyType.loadWorld) {
+    if (!settingBloc.state.muteAudio) {
+      cubit.state.editorResource.mapLoadedSound.resume();
+    }
+      initBloc.add(ShowSnackBarEvent(text: los.worldmap_loaded));
     }
   }
 
@@ -191,6 +198,20 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
     });
   }
 
+  
+
+  Future<void> loadPlantAnimation(Iterable<String> plantList, bool enableCostume, {bool clear = false}) async {
+    if (clear) {
+      cubit.state.gameResource.plant.clear();
+    }
+    final settingPath = cubit.state.settingPath;
+    for (final plantType in plantList) {
+      cubit.state.gameResource.plant[plantType] =
+          await cubit.loadPlantVisualAnimation('$settingPath/plant/$plantType', plantType, enableCostume);
+    }
+  }
+
+
   Future<void> _loadResourceByWorld(LoadResourceByWorldName event, Emitter<ResourceState> emit) async {
     final newState = ResourceState(status: ResourceStateStatus.finished);
     final loadPath = '${cubit.state.settingPath}/worldmap/${event.worldName}';
@@ -200,7 +221,7 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
     */
     final filterQuality = settingBloc.state.filterQuality;
     if (event.worldName == 'none') {
-      _finished(event.notify, event.itemUpdate);
+      _finished(event.notifyType, event.itemUpdate);
       emit(newState);
       return;
     }
@@ -210,6 +231,16 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       return;
     }
     _loadEventNodeName(newState);
+    final plantList = <String>[];
+    for (final event in event.events.values) {
+      if (event.eventType == EventType.plant || event.eventType == EventType.plantbox) {
+        final plantType = event.dataString;
+        if (plantType != null && !plantList.contains(plantType)) {
+          plantList.add(plantType);
+        }
+      }
+    }
+    loadPlantAnimation(plantList, clear: true, settingBloc.state.plantCostume);
     for (final e in FileHelper.readDirectory(source: loadPath, recursive: false)) {
       final baseName = path.basenameWithoutExtension(e).toLowerCase();
       if (baseName.startsWith('island')) {
@@ -246,6 +277,6 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
         await cubit.loadVisualImage('$pinataPath/pinatas_dust_spine_${event.worldName}.png');
     await _loadEventResource(newState, cubit, filterQuality);
     emit(newState);
-    _finished(event.notify, event.itemUpdate);
+    _finished(event.notifyType, event.itemUpdate);
   }
 }

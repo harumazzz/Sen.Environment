@@ -30,7 +30,7 @@ namespace Sen.Script.Helper.PvZ2.Animation.GenerateAtlasFromData {
 			),
 			'file',
 		);
-		Console.send(
+		Console.display(
 			Kernel.Language.get(
 				'script.helper.pvz2.animation.generate_atlas_from_data.input_subgroup_name',
 			),

@@ -433,5 +433,9 @@
 	"increase_scale_y": "Increase Scale Y",
 	"flip": "Flip",
 	"cut": "Cut",
-	"loading_map_resources": "Loading map resources, please wait..."
+	"loading_map_resources": "Loading map resources, please wait...",
+	"input_value": "Write some value",
+	"select_an_option": "Select an option...",
+	"attach": "Attach",
+	"export_log": "Export log"
 }

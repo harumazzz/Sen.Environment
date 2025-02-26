@@ -33,7 +33,7 @@ namespace Sen::Kernel {
                     return pair.second;
                 }
             }
-            assert_conditional(false, "Key not found", "operator");
+            assert_conditional(false, "Key not found", "operator[]");
         }
 
         auto insert(

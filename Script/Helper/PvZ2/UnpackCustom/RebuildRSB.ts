@@ -1,15 +1,6 @@
 namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 	export type Generic = Support.Project.ResourceStreamBundle.Configuration.Generic;
 
-	export function load_bigint(rule: any): bigint {
-		const new_rule: Array<bigint> = [];
-		rule.forEach((e: [bigint, string] & any) => {
-			Executor.print_statement(e[1], e[0]);
-			new_rule.push(e[0]);
-		});
-		return rule[Number(Executor.input_integer(new_rule) - 1n)][1];
-	}
-
 	export function process(
 		setting: any,
 		texture_format_category: bigint,
@@ -56,7 +47,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		for (const element of Kernel.FileSystem.read_directory_only_file(
 			`${source}.bundle/packet`,
 		)) {
-			Console.send(`${Kernel.Language.get('unpack')}: ${Kernel.Path.basename(element)}`);
+			Console.display(`${Kernel.Language.get('unpack')}: ${Kernel.Path.basename(element)}`);
 			try {
 				const composite = Kernel.Support.Project.StreamCompressedGroup.test_scg(element);
 				const scg_dest = `${source}.bundle/packet/${Kernel.Path.base_without_extension(
@@ -91,7 +82,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			`${source}.bundle/packet`,
 		)) {
 			try {
-				Console.send(`${Kernel.Language.get('pack')}: ${Kernel.Path.basename(element)}`);
+				Console.display(`${Kernel.Language.get('pack')}: ${Kernel.Path.basename(element)}`);
 				Kernel.Support.Project.StreamCompressedGroup.encode_fs(
 					element,
 					`${source}.bundle/packet/${Kernel.Path.base_without_extension(element)}.scg`,
@@ -137,7 +128,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 		);
 		const generic = Executor.Functions.Project.RSB.Detail.generic();
 		Console.argument(Kernel.Language.get('popcap.rsb.custom.generic'));
-		const input_generic = load_bigint(generic);
+		const input_generic = generic[Executor.is_valid_rule(generic)][1];
 		const resolution_list: Array<bigint> = [];
 		if (input_generic != 2n) {
 			const resolution = [
@@ -147,7 +138,7 @@ namespace Sen.Script.Helper.PVZ2.UnpackCustom.RebuildRSB {
 			] as any;
 			while (resolution.length > 1) {
 				Console.argument(Kernel.Language.get('script.rsb.unpack_custom.resolution'));
-				const input_resolution = load_bigint(resolution);
+				const input_resolution = resolution[Executor.is_valid_rule(resolution)][1];
 				if (input_resolution === 0n) {
 					break;
 				}

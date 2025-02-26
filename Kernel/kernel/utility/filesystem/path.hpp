@@ -46,6 +46,7 @@ namespace Sen::Kernel::Path {
     inline auto count_recursive(
         const StringView& source
     ) -> usize {
+        assert_has_directory(Path::get_path_type(source) == PathType::Directory, fmt::format("Directory {} doesn't exists", source.view()), "count_recursive");
         auto result = 0_size;
         #if WINDOWS
         auto directory = std::filesystem::directory_iterator{source.wstring()};
@@ -93,6 +94,7 @@ namespace Sen::Kernel::Path {
     inline auto count(
         const StringView& source
     ) -> usize {
+        assert_has_directory(Path::get_path_type(source) == PathType::Directory, fmt::format("Directory {} doesn't exists", source.view()), "count");
         auto result = 0_size;
         #if WINDOWS
         auto directory = std::filesystem::directory_iterator{source.wstring()};

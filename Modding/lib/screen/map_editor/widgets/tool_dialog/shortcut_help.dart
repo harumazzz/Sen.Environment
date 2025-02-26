@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/app/l10n/l10n.dart';
+import 'package:sen/extension/l10n.dart';
 
 class ShortCutMenuWidget extends StatelessWidget {
   const ShortCutMenuWidget({super.key});
