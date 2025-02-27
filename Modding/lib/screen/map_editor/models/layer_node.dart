@@ -8,9 +8,10 @@ class ItemProperty {
   //final bool isEvent;
   LockProperties status;
 
-  ItemProperty(
-      { //required this.isEvent,
-      this.status = LockProperties.visible});
+  ItemProperty({
+    //required this.isEvent,
+    this.status = LockProperties.visible,
+  });
 
   ItemProperty clone() {
     return ItemProperty(status: status);
@@ -64,7 +65,6 @@ class LayerNode {
         iconExpanded: iconExpanded ?? this.iconExpanded,
         children: newChildren,
         actionList: (actionList ?? this.actionList).map((e) => e).toList(),
-        onActionAccepted:
-            (onActionAccepted ?? this.onActionAccepted).map((e) => e).toList());
+        onActionAccepted: (onActionAccepted ?? this.onActionAccepted).map((e) => e).toList());
   }
 }

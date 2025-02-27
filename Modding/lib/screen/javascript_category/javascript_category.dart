@@ -4,6 +4,7 @@ import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/javascript_category/javascript_card.dart';
 import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/service/ui_helper.dart';
 import 'package:sen/widget/hotkey.dart';
 
 class JavaScriptCategory extends StatelessWidget {
@@ -16,20 +17,10 @@ class JavaScriptCategory extends StatelessWidget {
     String message,
   ) async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showSimpleDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.error),
-        content: Text(message),
-        actions: [
-          TextButton(
-            child: Text(los.ok),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          )
-        ],
-      ),
+      title: los.error,
+      content: message,
     );
   }
 

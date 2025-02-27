@@ -1,13 +1,18 @@
 import 'dart:ui';
 
-enum BorderBackground { color, timeSpace, senLogo }
+import 'package:equatable/equatable.dart';
+
+enum BorderBackground {
+  color,
+  timeSpace,
+  senLogo,
+}
 
 class ConfigSetting {
   bool playSingleFrame;
   bool muteAudio;
   bool plantCostume;
   FilterQuality filterQuality;
-//  final dimension.Dimension renderingSize;
 
   ConfigSetting({
     required this.playSingleFrame,
@@ -22,11 +27,6 @@ class ConfigSetting {
       muteAudio: (json['m_muteAudio']),
       plantCostume: (json['m_plantCostume']),
       filterQuality: FilterQuality.values[(json['m_filterQuality'])],
-      /*
-        renderingSize: dimension.Dimension(
-            width: (json['m_renderingSize']['width']),
-            height: (json['m_renderingSize']['height']))
-            */
     );
   }
 
@@ -41,14 +41,15 @@ class ConfigSetting {
 }
 
 class AnimationDetails {
-  final double animReplayDelayTimeMin;
-  final double animReplayDelayTimeMax;
-  final bool usesRasterizedImagesInAnim;
+  double? animReplayDelayTimeMin;
+  double? animReplayDelayTimeMax;
+  bool? usesRasterizedImagesInAnim;
 
-  const AnimationDetails(
-      {required this.animReplayDelayTimeMin,
-      required this.animReplayDelayTimeMax,
-      required this.usesRasterizedImagesInAnim});
+  AnimationDetails({
+    required this.animReplayDelayTimeMin,
+    required this.animReplayDelayTimeMax,
+    required this.usesRasterizedImagesInAnim,
+  });
 
   factory AnimationDetails.fromJson(Map<String, dynamic> json) {
     return AnimationDetails(
@@ -59,7 +60,7 @@ class AnimationDetails {
   }
 }
 
-class ConfigResource {
+class ConfigResource extends Equatable {
   final Map<String, dynamic> plant;
   final Map<String, dynamic> upgrade;
   final Map<String, Map<String, AnimationDetails>> worldmap;
@@ -67,13 +68,14 @@ class ConfigResource {
   final List<String> narration;
   final List<String> tutorial;
 
-  const ConfigResource(
-      {required this.plant,
-      required this.upgrade,
-      required this.worldmap,
-      required this.gameFeature,
-      required this.narration,
-      required this.tutorial});
+  const ConfigResource({
+    required this.plant,
+    required this.upgrade,
+    required this.worldmap,
+    required this.gameFeature,
+    required this.narration,
+    required this.tutorial,
+  });
 
   factory ConfigResource.fromJson(Map<String, dynamic> json) {
     final worldMap = <String, Map<String, AnimationDetails>>{"none": {}};
@@ -91,33 +93,25 @@ class ConfigResource {
         plant: (json['m_plant'] as Map<String, dynamic>),
         upgrade: (json['m_upgrade'] as Map<String, dynamic>),
         worldmap: worldMap,
-        gameFeature: (json['m_gameFeature'] as List<dynamic>)
-            .map((e) => e.toString())
-            .toList(),
-        narration: (json['m_narration'] as List<dynamic>)
-            .map((e) => e.toString())
-            .toList(),
-        tutorial: (json['m_tutorial'] as List<dynamic>)
-            .map((e) => e.toString())
-            .toList());
+        gameFeature: (json['m_gameFeature'] as List<dynamic>).map((e) => e.toString()).toList(),
+        narration: (json['m_narration'] as List<dynamic>).map((e) => e.toString()).toList(),
+        tutorial: (json['m_tutorial'] as List<dynamic>).map((e) => e.toString()).toList());
   }
 
-  /*
-  static Map<String, dynamic> toJson(ConfigResource data) {
-    data.worldmap.remove('none');
-    return {
-      'm_plant': data.plant,
-      'm_upgrade': data.upgrade,
-      'm_worldMap': data.worldmap,
-      'm_gameFeature': data.gameFeature,
-      'm_narration': data.narration,
-      'm_tutorial': data.tutorial,
-    };
+  @override
+  List<Object> get props {
+    return [
+      plant,
+      upgrade,
+      worldmap,
+      gameFeature,
+      narration,
+      tutorial,
+    ];
   }
-  */
 }
 
-class ConfigModel {
+class ConfigModel extends Equatable {
   final ConfigSetting setting;
   final ConfigResource resource;
 
@@ -125,16 +119,9 @@ class ConfigModel {
 
   factory ConfigModel.fromJson(Map<String, dynamic> json) {
     return ConfigModel(
-        setting: ConfigSetting.fromJson(json['setting']),
-        resource: ConfigResource.fromJson(json['resource']));
+        setting: ConfigSetting.fromJson(json['setting']), resource: ConfigResource.fromJson(json['resource']));
   }
 
-  /*
-  static Map<String, dynamic> toJson(ConfigModel data) {
-    return {
-      'setting': ConfigSetting.toJson(data.setting),
-      'resource': ConfigResource.toJson(data.resource),
-    };
-  }
-  */
+  @override
+  List<Object> get props => [setting, resource];
 }

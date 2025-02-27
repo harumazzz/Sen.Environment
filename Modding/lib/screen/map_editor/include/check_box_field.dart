@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/platform.dart';
 
 class CheckBoxField extends StatelessWidget {
   const CheckBoxField(
@@ -29,32 +28,26 @@ class CheckBoxField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
-    final acitveColor = !isDesktopPlatform && Theme.of(context).brightness == Brightness.light ? Theme.of(context).colorScheme.inversePrimary: Theme.of(context).colorScheme.primaryFixedDim;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
+    final acitveColor = !isDesktopPlatform && Theme.of(context).brightness == Brightness.light
+        ? Theme.of(context).colorScheme.inversePrimary
+        : Theme.of(context).colorScheme.primaryFixedDim;
     return Container(
       width: width ?? double.infinity,
       height: height,
       margin: margin ?? const EdgeInsets.fromLTRB(12, 16, 20, 16),
       decoration: underline
           ? BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      width: 0.8)))
+              border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.onSurfaceVariant, width: 0.8)))
           : null,
       child: Row(
         children: [
           Text(
             label,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const Spacer(),
-          Checkbox(
-              value: value,
-              activeColor: acitveColor,
-              onChanged: onChanged)
+          Checkbox(value: value, activeColor: acitveColor, onChanged: onChanged)
         ],
       ),
     );

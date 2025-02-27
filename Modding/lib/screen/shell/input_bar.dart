@@ -6,7 +6,7 @@ import 'package:sen/bloc/add_option_bloc/add_option_bloc.dart';
 import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
 import 'package:sen/bloc/message_bloc/message_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:sen/service/ui_helper.dart';
 
@@ -29,6 +29,7 @@ class _InputBarState extends State<InputBar> {
     _popupMenuKey = GlobalKey<PopupMenuButtonState<String>>();
     _controller = TextEditingController();
     _focusNode = FocusNode();
+    _focusNode.requestFocus();
     super.initState();
   }
 
@@ -44,6 +45,7 @@ class _InputBarState extends State<InputBar> {
   }
 
   void _onSend() {
+    _focusNode.unfocus();
     context.read<InteractionBloc>().add(StringInputCompleteEvent(value: _controller.text));
   }
 

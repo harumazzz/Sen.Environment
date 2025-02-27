@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:custom_mouse_cursor/custom_mouse_cursor.dart';
@@ -8,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/model/animation.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
@@ -39,20 +39,19 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     return ConfigModel.fromJson(FileHelper.readJson(source: path));
   }
 
-  bool get isDesktopPlatform {
-    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-  }
-
   Future<EditorResource> _loadEditorResource(
     AppLocalizations los,
     String path,
   ) async {
-    final eraseCursor =
-        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white) : null;
-    final panCursor =
-        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white) : null;
-    final multiSelectCursor =
-        isDesktopPlatform ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white) : null;
+    final eraseCursor = CurrentPlatform.isDesktop
+        ? await CustomMouseCursor.icon(Symbols.ink_eraser, size: 28, color: Colors.white)
+        : null;
+    final panCursor = CurrentPlatform.isDesktop
+        ? await CustomMouseCursor.icon(Symbols.pan_tool, size: 28, color: Colors.white)
+        : null;
+    final multiSelectCursor = CurrentPlatform.isDesktop
+        ? await CustomMouseCursor.icon(Symbols.pan_tool_alt, size: 28, color: Colors.white)
+        : null;
     final pickItemSound = AudioPlayer();
     try {
       pickItemSound.setSourceBytes(FileHelper.readBuffer(source: '$path/sound/grab2.mp3'));
@@ -351,55 +350,46 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         title: '${los.open} (Ctrl + O)',
         description: los.open_description,
         icon: const Icon(Symbols.file_open),
-        isEnabled: true,
       ),
       ToolType.saveFile: Item(
         title: '${los.save} (Ctrl + S)',
         description: los.save_description,
         icon: const Icon(Symbols.save),
-        isEnabled: true,
       ),
       ToolType.rectangleTool: Item(
         title: '${los.rectangle_tool} (Ctrl Left)',
         description: los.select_multiple_items_by_rectangle,
         icon: const Icon(Symbols.gesture_select),
-        isEnabled: true,
       ),
       ToolType.eraseTool: Item(
         title: '${los.eraser} (E)',
         description: los.eraser_description,
         icon: const Icon(Symbols.ink_eraser),
-        isEnabled: true,
       ),
       ToolType.panTool: Item(
         title: '${los.pan_tool} (Space)',
         description: los.pan_tool_description,
         icon: const Icon(Symbols.pan_tool),
-        isEnabled: true,
       ),
       ToolType.resizeTool: Item(
         title: '${los.resizer} (Ctrl + R)',
         description: los.resizer_description,
         icon: const Icon(Symbols.resize),
-        isEnabled: true,
       ),
       ToolType.clearEditor: Item(
         title: '${los.clear} (F8)',
         description: los.clear_description,
         icon: const Icon(Symbols.clear_all),
-        isEnabled: true,
       ),
       ToolType.configEditor: Item(
         title: '${los.config} (F9)',
         description: los.config_description,
         icon: const Icon(Symbols.settings),
-        isEnabled: true,
       ),
       ToolType.shortcutMenu: Item(
         title: '${los.shortcut_help} (F2)',
         description: los.shortcut_help_description,
         icon: const Icon(Symbols.help),
-        isEnabled: true,
       ),
     });
     return toolItem;
@@ -411,25 +401,21 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         title: los.select,
         description: los.section_description,
         icon: const Icon(Symbols.pan_tool_alt),
-        isEnabled: true,
       ),
       SectionType.image: Item(
         title: los.island_image,
         description: los.island_image_description,
         icon: const Icon(Symbols.filter_hdr),
-        isEnabled: true,
       ),
       SectionType.animation: Item(
         title: los.island_animation,
         description: los.island_animation_description,
         icon: const Icon(Symbols.filter_drama),
-        isEnabled: true,
       ),
       SectionType.event: Item(
         title: los.events,
         description: los.events_description,
         icon: const Icon(Symbols.kid_star),
-        isEnabled: true,
       )
     });
     return sectionItem;
@@ -441,25 +427,21 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         title: los.layer,
         description: los.layer_description,
         icon: const Icon(Symbols.layers),
-        isEnabled: true,
       ),
       ExtensionType.history: Item(
         title: los.history,
         description: los.history_description,
         icon: const Icon(Symbols.history),
-        isEnabled: true,
       ),
       ExtensionType.setting: Item(
         title: los.map_editor_setting,
         description: los.map_editor_setting_description,
         icon: const Icon(Symbols.widgets),
-        isEnabled: true,
       ),
       ExtensionType.palette: Item(
         title: los.palette,
         description: los.palette_description,
         icon: const Icon(Symbols.palette),
-        isEnabled: true,
       )
     });
     return extensionItem;
@@ -471,19 +453,16 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
         title: los.tool,
         description: los.tool_description,
         icon: const Icon(Symbols.handyman),
-        isEnabled: true,
       ),
       NavigationType.item: Item(
         title: los.item,
         description: los.item_description,
         icon: const Icon(Symbols.package_sharp),
-        isEnabled: true,
       ),
       NavigationType.option: Item(
         title: los.option,
         description: los.option_description,
         icon: const Icon(Symbols.settings),
-        isEnabled: true,
       ),
     });
     return navigationItem;

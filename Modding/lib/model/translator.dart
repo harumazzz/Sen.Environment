@@ -1,4 +1,6 @@
-class Translator {
+import 'package:equatable/equatable.dart';
+
+class Translator extends Equatable {
   final String name;
   final String? discord;
   final String imageCover;
@@ -10,4 +12,7 @@ class Translator {
     required this.imageCover,
     required this.contacts,
   });
+
+  @override
+  List<Object?> get props => [name, discord, imageCover, contacts];
 }

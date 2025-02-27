@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart' as file_selector;
+import 'package:sen/extension/platform.dart';
 import 'package:sen/service/android_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -39,7 +40,7 @@ class FileHelper {
     String? initialDirectory,
   }) async {
     var outputFile = null as String?;
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS || Platform.isIOS) {
+    if (CurrentPlatform.isDesktop || Platform.isIOS) {
       outputFile = (await file_selector.getSaveLocation(
         suggestedName: suggestedName,
         initialDirectory: initialDirectory,

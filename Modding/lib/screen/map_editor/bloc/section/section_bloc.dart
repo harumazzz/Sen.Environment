@@ -1,9 +1,9 @@
 import 'dart:collection';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:sen/extension/platform.dart';
 
 part 'section_event.dart';
 part 'section_state.dart';
@@ -18,8 +18,7 @@ class SectionBloc extends Bloc<SectionEvent, SectionState> {
 
   void _onSetSection(SetSection event, Emitter<SectionState> emit) {
     final newState = state.copyWith(section: event.section);
-    final isDesktopPlatform =
-        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     if (!isDesktopPlatform) {
       newState.extension[ExtensionType.palette] = false;
       newState.extension[ExtensionType.setting] = false;
@@ -38,8 +37,7 @@ class SectionBloc extends Bloc<SectionEvent, SectionState> {
     Emitter<SectionState> emit,
   ) {
     final sectionStatus = state.sectionMinize[event.type];
-    assert(sectionStatus != null,
-        'failed get tool stats by tool type ${event.type}');
+    assert(sectionStatus != null, 'failed get tool stats by tool type ${event.type}');
     final newState = state.copyWith();
     final type = event.type;
     newState.sectionMinize[type] = event.minize ?? !sectionStatus!;
@@ -51,16 +49,13 @@ class SectionBloc extends Bloc<SectionEvent, SectionState> {
     Emitter<SectionState> emit,
   ) {
     final extensionStatus = state.extension[event.type];
-    assert(extensionStatus != null,
-        'failed get tool stats by tool type ${event.type}');
+    assert(extensionStatus != null, 'failed get tool stats by tool type ${event.type}');
 
     final type = event.type;
     final view = WidgetsBinding.instance.platformDispatcher.views.first;
     final isLowScreenHeight = view.physicalSize.height < 965;
-    final isDesktopPlatform =
-        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-    final newState =
-        state.copyWith(section: !isDesktopPlatform ? SectionType.select : null);
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
+    final newState = state.copyWith(section: !isDesktopPlatform ? SectionType.select : null);
     if (!isLowScreenHeight && isDesktopPlatform) {
       switch (type) {
         case ExtensionType.history:

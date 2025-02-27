@@ -1,4 +1,6 @@
 import 'dart:collection';
+
+import 'package:equatable/equatable.dart';
 import 'package:sen/screen/map_editor/include/visual_animation.dart';
 import 'package:sen/screen/map_editor/include/visual_image.dart';
 
@@ -34,15 +36,16 @@ enum AnimationCommonType {
   readyPlant
 }
 
-class GameResource {
-  const GameResource(
-      {required this.commonImage,
-      required this.commonAnimation,
-      required this.uiUniverse,
-      required this.seedBank,
-      required this.packet,
-      required this.plant,
-      required this.upgrade});
+class GameResource extends Equatable {
+  const GameResource({
+    required this.commonImage,
+    required this.commonAnimation,
+    required this.uiUniverse,
+    required this.seedBank,
+    required this.packet,
+    required this.plant,
+    required this.upgrade,
+  });
 
   final HashMap<ImageCommonType, VisualImage> commonImage;
 
@@ -56,7 +59,18 @@ class GameResource {
 
   final HashMap<String, VisualAnimation?> plant;
 
-  // final HashMap<String, VisualImage> pinata;
-
   final HashMap<String, VisualImage?> upgrade;
+
+  @override
+  List<Object> get props {
+    return [
+      commonImage,
+      commonAnimation,
+      uiUniverse,
+      seedBank,
+      packet,
+      plant,
+      upgrade,
+    ];
+  }
 }

@@ -8,7 +8,6 @@ import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/screen/animation_viewer/control_panel.dart';
-import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:sen/i18n/app_localizations.dart';
@@ -20,7 +19,6 @@ class AnimationScreen extends StatefulWidget {
     required this.onUploadFile,
     required this.onDragFile,
     required this.mediaScreen,
-    required this.labelScreen,
     required this.animationController,
     required this.visualHelper,
     required this.selectedLabelBloc,
@@ -29,13 +27,11 @@ class AnimationScreen extends StatefulWidget {
 
   final bool hasFile;
 
-  final void Function() onUploadFile;
+  final Future<void> Function() onUploadFile;
 
   final void Function(String value) onDragFile;
 
   final MediaScreen mediaScreen;
-
-  final LabelScreen labelScreen;
 
   final AnimationController animationController;
 
@@ -50,8 +46,6 @@ class AnimationScreen extends StatefulWidget {
 }
 
 class _AnimationScreenState extends State<AnimationScreen> {
-  // late ValueNotifier<double> _xOffsetNotifier;
-  // late ValueNotifier<double> _yOffsetNotifier;
   bool _dragging = false;
   late ValueNotifier<double> _scaleNotifier;
   late ValueNotifier<double> _frameNotifier;
@@ -67,8 +61,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
   @override
   void initState() {
     _scaleNotifier = ValueNotifier(1.0);
-    // _xOffsetNotifier = ValueNotifier(0.0);
-    // _yOffsetNotifier = ValueNotifier(0.0);
     _frameNotifier = ValueNotifier(0.0);
     super.initState();
     _animationVisual = null;
@@ -155,7 +147,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
       _matrix = matrix.clone();
       _transformationController.value = matrix;
     }
-    
   }
 
   Widget _buildMainAnimationScreen() {
@@ -164,20 +155,21 @@ class _AnimationScreenState extends State<AnimationScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: InteractiveViewer.builder(
-              panEnabled: true,
-              scaleEnabled: true,
-              scaleFactor: 1000,
-              maxScale: 10,
-              transformationController: _transformationController,
-              builder: (context, quad) {
-                return Transform.scale(
-                  scale: 0.5,
-                  child: SizedBox(
-                      width: widget.visualHelper.animation.size.width * 5,
-                      height: widget.visualHelper.animation.size.height * 5,
-                      child: _animationVisual),
-                );
-              }),
+            panEnabled: true,
+            scaleEnabled: true,
+            scaleFactor: 1000,
+            maxScale: 10,
+            transformationController: _transformationController,
+            builder: (context, quad) {
+              return Transform.scale(
+                scale: 0.5,
+                child: SizedBox(
+                    width: widget.visualHelper.animation.size.width * 5,
+                    height: widget.visualHelper.animation.size.height * 5,
+                    child: _animationVisual),
+              );
+            },
+          ),
         ));
   }
 
@@ -203,10 +195,15 @@ class _AnimationScreenState extends State<AnimationScreen> {
       valueListenable: notifier,
       builder: (context, value, child) {
         final textStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
-
         return Card(
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 4.0,
+            ),
             child: Row(
               children: [
                 Text('$label: ', style: textStyle),
@@ -254,7 +251,14 @@ class _AnimationScreenState extends State<AnimationScreen> {
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 16.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
           border: Border.all(
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white.withValues(alpha: 0.3)

@@ -115,10 +115,9 @@ class _MainApplication extends StatelessWidget {
         BlocProvider<InitialDirectoryCubit>(
           create: (context) => InitialDirectoryCubit(),
         ),
-        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
-          BlocProvider<MapEditorConfigurationCubit>(
-            create: (context) => MapEditorConfigurationCubit(),
-          ),
+        BlocProvider<MapEditorConfigurationCubit>(
+          create: (context) => MapEditorConfigurationCubit(),
+        ),
       ],
       child: Builder(
         builder: (context) {

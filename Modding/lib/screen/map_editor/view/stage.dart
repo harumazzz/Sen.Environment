@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:nil/nil.dart';
 import 'package:pie_menu/pie_menu.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/mouse_cursor/mouse_cursor_bloc.dart';
@@ -33,7 +34,7 @@ class MapStageView extends StatelessWidget {
       }
       final editorResource = context.read<MapEditorConfigurationCubit>().state.editorResource;
       final controller = context.read<CanvasBloc>().state.canvasController;
-      final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+      final isDesktopPlatform = CurrentPlatform.isDesktop;
       return BlocBuilder<SelectedBloc, SelectedState>(
           buildWhen: (prev, state) => prev.copyList != state.copyList,
           builder: (context, selectedState) {

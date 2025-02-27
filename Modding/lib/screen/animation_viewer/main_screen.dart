@@ -7,6 +7,7 @@ import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
 import 'package:sen/screen/animation_viewer/control_button.dart';
 import 'package:sen/screen/animation_viewer/label_info.dart';
@@ -52,6 +53,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   late VisualHelper _visualHelper;
   late ScreenshotController _screenshotController;
+
+  late List<Widget> _screen;
 
   @override
   void initState() {
@@ -212,7 +215,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _onUploadFile() async {
+  Future<void> _onUploadFile() async {
     void resetImageEvent() => widget.selectedImageBloc.add(const SelectedImageResetEvent());
     void resetSpriteEvent() => widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
     void resetLabelEvent() => widget.selectedLabelBloc.add(const ResetLabelEvent());
@@ -345,15 +348,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         onDragFile: _onDragFile,
         hasFile: false,
         mediaScreen: mediaScreen,
-        labelScreen: labelScreen,
         animationController: _animationController,
       ),
       labelScreen,
       mediaScreen,
     ];
   }
-
-  late List<Widget> _screen;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -363,26 +363,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget? _navigationBar() {
     final los = AppLocalizations.of(context)!;
-    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    if (CurrentPlatform.isDesktop) {
       return null;
     }
-    return BottomNavigationBar(
-      items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
+    return NavigationBar(
+      destinations: <Widget>[
+        NavigationDestination(
           icon: const Icon(Symbols.home),
           label: los.home,
         ),
-        BottomNavigationBarItem(
+        NavigationDestination(
           icon: const Icon(Symbols.label),
           label: los.label,
         ),
-        BottomNavigationBarItem(
+        NavigationDestination(
           icon: const Icon(Symbols.image),
           label: los.media,
         ),
       ],
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
+      selectedIndex: _selectedIndex,
+      onDestinationSelected: _onItemTapped,
     );
   }
 
@@ -399,13 +399,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               child: Container(
                 margin: const EdgeInsets.only(left: 8.0, bottom: 8.0),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(16.0),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -443,7 +438,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        forceMaterialTransparency: Platform.isWindows || Platform.isLinux || Platform.isMacOS,
+        forceMaterialTransparency: CurrentPlatform.isDesktop,
         title: Text(los.animation_viewer),
         actions: [
           IconButton(

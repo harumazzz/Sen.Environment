@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/image_page.dart';
@@ -24,69 +22,71 @@ class MediaScreen extends StatelessWidget {
     required this.staticController,
   });
 
+  Widget _buildTab({required IconData icon, required String label}) {
+    return Tab(
+      icon: Icon(icon, size: 22),
+      text: label,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return DefaultTabController(
       initialIndex: 0,
       length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          forceMaterialTransparency: Platform.isWindows || Platform.isLinux || Platform.isMacOS,
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48.0),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                    width: 2.0,
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.shadowColor.withValues(alpha: 0.1),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TabBar(
+              labelColor: theme.colorScheme.onPrimaryContainer,
+              dividerColor: Colors.transparent,
+              unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+              tabs: <Widget>[
+                _buildTab(icon: Symbols.folder, label: los.media),
+                _buildTab(icon: Symbols.image, label: los.image),
+                _buildTab(icon: Symbols.animation, label: los.sprite),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Card(
+                elevation: 4.0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: TabBarView(
+                    children: <Widget>[
+                      MediaPage(visualHelper: visualHelper, media: media),
+                      ImagePage(visualHelper: visualHelper, image: image),
+                      SpritePage(
+                        staticController: staticController,
+                        visualHelper: visualHelper,
+                        sprite: sprite,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              child: TabBar(
-                indicatorColor: Theme.of(context).colorScheme.secondary,
-                tabs: <Widget>[
-                  Tab(
-                    icon: const Icon(Symbols.folder),
-                    text: los.media,
-                  ),
-                  Tab(
-                    icon: const Icon(Symbols.folder),
-                    text: los.image,
-                  ),
-                  Tab(
-                    icon: const Icon(Symbols.folder),
-                    text: los.sprite,
-                  ),
-                ],
-              ),
             ),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TabBarView(
-            children: <Widget>[
-              MediaPage(
-                visualHelper: visualHelper,
-                media: media,
-              ),
-              ImagePage(
-                visualHelper: visualHelper,
-                image: image,
-              ),
-              SpritePage(
-                staticController: staticController,
-                visualHelper: visualHelper,
-                sprite: sprite,
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

@@ -39,11 +39,14 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     super.dispose();
   }
 
-  Widget _buildPadding({
+  Widget _buildWrapper({
     required Widget child,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        vertical: 6.0,
+        horizontal: 8.0,
+      ),
       child: child,
     );
   }
@@ -84,13 +87,13 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     return BlocBuilder<LaunchStatusBloc, LaunchStatusState>(
       builder: (context, state) {
         if (state is LaunchStatusInitial || state is LaunchStatusEnd) {
-          return _buildPadding(
+          return _buildWrapper(
             child: IdleBar(
               onLaunch: () => _onLaunch(context),
             ),
           );
         }
-        return _buildPadding(
+        return _buildWrapper(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -130,7 +133,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
       );
     }
 
-    await Future.delayed(const Duration(milliseconds: 10), addMessage);
+    await Future.delayed(const Duration(milliseconds: 150), addMessage);
   }
 
   Future<void> _onInputString(

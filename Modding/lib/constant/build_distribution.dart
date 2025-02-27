@@ -1,5 +1,5 @@
 class BuildDistribution {
-  static const String kApplicationName = 'SUI';
+  static const String kApplicationName = 'Sen: Environment';
 
   static const String kVersion = '6';
 

@@ -8,7 +8,7 @@ import 'package:sen/bloc/launch_status_bloc/launch_status_bloc.dart';
 import 'package:sen/bloc/message_bloc/message_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/screen/shell/interaction_bar.dart';
 import 'package:sen/screen/shell/message_box.dart';
 import 'package:sen/service/file_helper.dart';

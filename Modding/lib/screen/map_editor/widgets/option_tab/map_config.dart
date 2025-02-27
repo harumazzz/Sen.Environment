@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
@@ -25,7 +26,7 @@ class MapConfigTab extends StatelessWidget {
     final itemBloc = context.read<ItemBloc>();
     final historyBloc = context.read<HistoryBloc>();
     final controller = context.read<CanvasBloc>().state.canvasController;
-    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     final spacing = isDesktopPlatform ? 0.0 : 30.0;
     const edgeSpacing = EdgeInsets.fromLTRB(12, 12, 20, 12);
     return Padding(

@@ -1,23 +1,32 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-class Item {
+class Item extends Equatable {
   final String title;
   final String description;
   final Widget icon;
-  final bool isEnabled;
   final bool selected;
   final Function()? onSetting;
   final Function()? onWidget;
 
-  Item({
+  const Item({
     required this.title,
     required this.description,
     required this.icon,
-    required this.isEnabled,
     this.onSetting,
     this.onWidget,
     this.selected = false,
   });
 
-  bool get isDisabled => !isEnabled;
+  @override
+  List<Object?> get props {
+    return [
+      title,
+      description,
+      icon,
+      selected,
+      onSetting,
+      onWidget,
+    ];
+  }
 }

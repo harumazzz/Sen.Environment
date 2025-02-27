@@ -5,7 +5,7 @@ import 'package:sen/model/select_option.dart';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/service/file_helper.dart';
 
 class UIHelper {
@@ -80,7 +80,6 @@ class UIHelper {
     await showDialog(
       context: context,
       builder: (context) => buildDialog(
-        context: context,
         title: title,
         content: content,
         actions: buildSimpleAction(context: context),
@@ -102,7 +101,6 @@ class UIHelper {
   }
 
   static Widget buildDialog({
-    required BuildContext context,
     required Widget title,
     required Widget content,
     required List<Widget> actions,
@@ -126,6 +124,16 @@ class UIHelper {
     );
   }
 
+  static Future<void> showFlutterDialog({
+    required BuildContext context,
+    required Widget child,
+  }) async {
+    return await showDialog(
+      context: context,
+      builder: (context) => child,
+    );
+  }
+
   static Future<void> showScreenshotDialog(
     BuildContext context,
     Uint8List image,
@@ -134,7 +142,6 @@ class UIHelper {
     return await showDialog(
       context: context,
       builder: (context) => buildDialog(
-        context: context,
         title: Text(los.save),
         content: Image.memory(image),
         actions: [
@@ -157,6 +164,30 @@ class UIHelper {
           ),
           ...buildSimpleAction(context: context),
         ],
+      ),
+    );
+  }
+
+  static Future<void> showFullImage(
+    BuildContext context,
+    ImageProvider image,
+  ) async {
+    await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: InteractiveViewer(
+            panEnabled: true,
+            minScale: 1.0,
+            maxScale: 5.0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image(image: image),
+            ),
+          ),
+        ),
       ),
     );
   }

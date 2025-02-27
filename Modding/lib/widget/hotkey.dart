@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:window_manager/window_manager.dart';
 
 class HotkeyBuilder extends StatefulWidget {
@@ -55,7 +54,7 @@ class _HotkeyBuilderState extends State<HotkeyBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    if (CurrentPlatform.isDesktop) {
       return KeyboardListener(
         focusNode: _focusNode,
         includeSemantics: false,

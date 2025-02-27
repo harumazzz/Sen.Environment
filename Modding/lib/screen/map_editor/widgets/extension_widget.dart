@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 import 'package:sen/screen/map_editor/widgets/extension_tab/history.dart';
 import 'package:sen/screen/map_editor/widgets/extension_tab/layer.dart';
@@ -12,8 +12,7 @@ class ExtensionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
         buildWhen: (prev, state) => prev.extension != state.extension,
         builder: (context, state) {
@@ -35,38 +34,32 @@ class ExtensionWidget extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        if (extension[ExtensionType.history]!)
-                          const HistoryWidget(),
-                        if (extension[ExtensionType.layer]!)
-                          const LayerWidget(),
+                        if (extension[ExtensionType.history]!) const HistoryWidget(),
+                        if (extension[ExtensionType.layer]!) const LayerWidget(),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        if (extension[ExtensionType.palette]!)
-                          const PaletteWidget(),
-                        if (extension[ExtensionType.setting]!)
-                          const EditorSettingWidget(),
+                        if (extension[ExtensionType.palette]!) const PaletteWidget(),
+                        if (extension[ExtensionType.setting]!) const EditorSettingWidget(),
                       ],
                     ),
                   ],
                 ));
           } else {
             return Center(
-                child: Padding(padding: const EdgeInsets.only(bottom: 20), child:  Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (extension[ExtensionType.history]!)
-                          const HistoryWidget(),
-                if (extension[ExtensionType.layer]!)
-                          const LayerWidget(),
-                if (extension[ExtensionType.palette]!)
-                          const PaletteWidget(),
-                if (extension[ExtensionType.setting]!)
-                  const EditorSettingWidget(),
-              ],
-            )));
+                child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (extension[ExtensionType.history]!) const HistoryWidget(),
+                        if (extension[ExtensionType.layer]!) const LayerWidget(),
+                        if (extension[ExtensionType.palette]!) const PaletteWidget(),
+                        if (extension[ExtensionType.setting]!) const EditorSettingWidget(),
+                      ],
+                    )));
           }
         });
   }

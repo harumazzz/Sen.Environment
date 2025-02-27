@@ -1,4 +1,6 @@
-class LabelInfo {
+import 'package:equatable/equatable.dart';
+
+class LabelInfo extends Equatable {
   final int startIndex;
   final int endIndex;
 
@@ -16,4 +18,7 @@ class LabelInfo {
       endIndex: endIndex ?? this.endIndex,
     );
   }
+
+  @override
+  List<Object> get props => [startIndex, endIndex];
 }

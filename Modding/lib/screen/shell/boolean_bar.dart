@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 
 class BooleanBar extends StatelessWidget {
   const BooleanBar({super.key});

@@ -1,198 +1,236 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/extension/context.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import 'package:sen/cubit/navigation_cubit/navigation_cubit.dart';
 import 'package:sen/constant/build_distribution.dart';
 import 'package:sen/screen/home/home_screen.dart';
 import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/android_helper.dart';
+import 'package:sen/service/ui_helper.dart';
 import 'package:sen/widget/hotkey.dart';
 
-class RootScreen extends StatefulWidget {
+class RootScreen extends StatelessWidget {
   const RootScreen({super.key});
 
-  @override
-  State<RootScreen> createState() => _RootScreenState();
-}
-
-class _RootScreenState extends State<RootScreen> {
-  int _currentPageIndex = 0;
-
-  final _labelBehavior = NavigationDestinationLabelBehavior.alwaysShow;
-
-  bool _hasNavigated = false;
-
-  final List<Widget> _destinations = const [
+  static const List<Widget> _destinations = [
     HomeScreen(),
     MiscellaenousScreen(),
     SettingScreen(),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  void _handleAndroidPermissions(BuildContext context) {
+    if (!CurrentPlatform.isAndroid) return;
+    final settingsCubit = context.read<SettingsCubit>();
+    Future<void> showAndroidPermission() async {
+      await _showPermissionDialog(context);
+    }
 
-  void _changeScreen(int index) {
-    setState(() {
-      _currentPageIndex = index;
+    Future.microtask(() async {
+      if (!settingsCubit.state.requestedPermission) {
+        if (!(await AndroidHelper.checkStoragePermission())) {
+          await showAndroidPermission();
+          await AndroidHelper.requestStoragePermission();
+        }
+        settingsCubit.setRequestedPermission(true);
+      }
     });
   }
 
-  Widget? _makeNavigationBar() {
+  Future<void> _showPermissionDialog(
+    BuildContext context,
+  ) async {
     final los = AppLocalizations.of(context)!;
-    if (Platform.isAndroid || Platform.isIOS) {
-      return NavigationBar(
-        labelBehavior: _labelBehavior,
-        selectedIndex: _currentPageIndex,
-        onDestinationSelected: _changeScreen,
-        destinations: <Widget>[
-          NavigationDestination(
-            icon: const Icon(Symbols.home),
-            selectedIcon: const Icon(Symbols.home_filled),
-            label: los.home,
-          ),
-          NavigationDestination(
-            icon: const Icon(Symbols.package),
-            selectedIcon: const Icon(Symbols.package_sharp),
-            label: los.miscellaneous,
-          ),
-          NavigationDestination(
-            icon: const Icon(Symbols.settings),
-            selectedIcon: const Icon(Symbols.settings_sharp),
-            label: los.settings,
-          ),
-        ],
-      );
-    }
-    return null;
-  }
-
-  Widget _makeNavigationRail() {
-    final los = AppLocalizations.of(context)!;
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      return NavigationRail(
-        selectedIndex: _currentPageIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentPageIndex = index;
-          });
-        },
-        labelType: NavigationRailLabelType.all,
-        destinations: [
-          NavigationRailDestination(
-            icon: const Icon(Symbols.home),
-            selectedIcon: const Icon(Symbols.home_filled),
-            label: Text(los.home),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(Symbols.package),
-            selectedIcon: const Icon(Symbols.package_sharp),
-            label: Text(los.miscellaneous),
-          ),
-          NavigationRailDestination(
-            icon: const Icon(Symbols.settings),
-            selectedIcon: const Icon(Symbols.settings_sharp),
-            label: Text(los.settings),
-          ),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Future<void> _displayAllowDialog() async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showFlutterDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      child: UIHelper.buildDialog(
         title: Text(los.android_request),
         content: Text(los.android_storage_access_permission_required),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            onPressed: () => Navigator.of(context).pop(),
             child: Text(los.go_to_settings),
           ),
+          ...UIHelper.buildSimpleAction(context: context),
         ],
       ),
     );
   }
 
-  void _requestAndroidPermissionFirstTime() {
-    if (!Platform.isAndroid) return;
-    Future.sync(
-      () async {
-        void setPermission() {
-          BlocProvider.of<SettingsCubit>(context).setRequestedPermission(true);
-        }
+  void _processAndroidArguments(BuildContext context) {
+    if (!CurrentPlatform.isAndroid || AndroidHelper.arguments == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const ShellScreen()),
+      );
+    });
+  }
 
-        final provider = BlocProvider.of<SettingsCubit>(context).state;
-        if (!provider.requestedPermission) {
-          if (!(await AndroidHelper.checkStoragePermission())) {
-            await _displayAllowDialog();
-            await AndroidHelper.requestStoragePermission();
-          }
-        }
-        setPermission();
-      },
+  List<Widget> _buildNavigationRail(
+    BuildContext context,
+    NavigationState state,
+  ) {
+    final los = context.los;
+    final theme = Theme.of(context);
+    return [
+      Container(
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.1),
+              blurRadius: 12,
+              spreadRadius: 3,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: NavigationRailTheme(
+            data: NavigationRailThemeData(
+              backgroundColor: Colors.transparent,
+              indicatorColor: theme.colorScheme.primaryContainer,
+              indicatorShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              selectedIconTheme: IconThemeData(
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+              selectedLabelTextStyle: TextStyle(
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+              unselectedIconTheme: IconThemeData(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              unselectedLabelTextStyle: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            child: NavigationRail(
+              selectedIndex: state.selectedIndex,
+              onDestinationSelected: context.read<NavigationCubit>().changeIndex,
+              labelType: NavigationRailLabelType.all,
+              useIndicator: true,
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Image.asset('assets/images/logo.png', height: 48),
+              ),
+              destinations: [
+                _buildDestination(
+                  context,
+                  icon: Symbols.home,
+                  selectedIcon: Symbols.home_filled,
+                  label: los.home,
+                ),
+                _buildDestination(
+                  context,
+                  icon: Symbols.package,
+                  selectedIcon: Symbols.package_sharp,
+                  label: los.miscellaneous,
+                ),
+                _buildDestination(
+                  context,
+                  icon: Symbols.settings,
+                  selectedIcon: Symbols.settings_sharp,
+                  label: los.settings,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  NavigationRailDestination _buildDestination(
+    BuildContext context, {
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+  }) {
+    return NavigationRailDestination(
+      icon: Icon(icon, size: 26),
+      selectedIcon: Icon(selectedIcon, size: 26),
+      label: Text(label),
     );
   }
 
-  void _loadArgumentOnAndroid() {
-    if (!Platform.isAndroid) return;
-    if (AndroidHelper.arguments != null) {
-      _hasNavigated = true;
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const ShellScreen(),
-            ),
-          );
-        },
-      );
-      _hasNavigated = false;
-    }
+  Widget _buildNavigationBar(
+    BuildContext context,
+    NavigationState state,
+  ) {
+    final los = context.los;
+    return NavigationBar(
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      selectedIndex: state.selectedIndex,
+      onDestinationSelected: context.read<NavigationCubit>().changeIndex,
+      destinations: [
+        NavigationDestination(
+          icon: const Icon(Symbols.home),
+          selectedIcon: const Icon(Symbols.home_filled),
+          label: los.home,
+        ),
+        NavigationDestination(
+          icon: const Icon(Symbols.package),
+          selectedIcon: const Icon(Symbols.package_sharp),
+          label: los.miscellaneous,
+        ),
+        NavigationDestination(
+          icon: const Icon(Symbols.settings),
+          selectedIcon: const Icon(Symbols.settings_sharp),
+          label: los.settings,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransition(
+    NavigationState state,
+  ) {
+    return Expanded(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 100),
+        child: _destinations[state.selectedIndex],
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    _requestAndroidPermissionFirstTime();
-    if (!_hasNavigated) {
-      _loadArgumentOnAndroid();
-    }
-    return HotkeyBuilder(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(BuildDistribution.kApplicationName),
-        ),
-        body: Row(
-          children: [
-            _makeNavigationRail(),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(
-                  milliseconds: 100,
-                ),
-                child: _destinations[_currentPageIndex],
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
+    _handleAndroidPermissions(context);
+    _processAndroidArguments(context);
+
+    return BlocProvider(
+      create: (_) => NavigationCubit(),
+      child: HotkeyBuilder(
+        child: BlocBuilder<NavigationCubit, NavigationState>(
+          builder: (context, state) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text(BuildDistribution.kApplicationName),
+                centerTitle: false,
               ),
-            ),
-          ],
+              body: Row(
+                children: [
+                  if (CurrentPlatform.isDesktop) ..._buildNavigationRail(context, state),
+                  _buildTransition(state),
+                ],
+              ),
+              bottomNavigationBar: CurrentPlatform.isMobile ? _buildNavigationBar(context, state) : null,
+            );
+          },
         ),
-        bottomNavigationBar: _makeNavigationBar(),
       ),
     );
   }

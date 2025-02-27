@@ -7,6 +7,7 @@ import 'package:sen/service/android_helper.dart';
 import 'package:sen/service/notification_helper.dart';
 import 'package:sen/service/windows_helper.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:sen/extension/platform.dart';
 
 Future<void> main(
   List<String> arguments,
@@ -14,7 +15,7 @@ Future<void> main(
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(SystemOverlay.kDefaultOverlay);
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (CurrentPlatform.isDesktop) {
     await WindowManager.instance.ensureInitialized();
     await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await windowManager.setMinimumSize(const Size(1280, 720));

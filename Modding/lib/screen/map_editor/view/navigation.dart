@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/model/item.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 
@@ -17,12 +17,9 @@ class SectionView extends StatelessWidget {
     final buttonColor = Theme.of(context).colorScheme.surfaceBright;
     final minizeColor = Theme.of(context).colorScheme.surfaceContainerHighest;
     final isLowScreenWidth = MediaQuery.of(context).size.width < 1340;
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
-        buildWhen: (prev, state) =>
-            prev.section != state.section ||
-            prev.sectionMinize != state.sectionMinize,
+        buildWhen: (prev, state) => prev.section != state.section || prev.sectionMinize != state.sectionMinize,
         builder: (context, state) {
           final sectionType = state.section;
           if (isDesktopPlatform) {
@@ -33,19 +30,16 @@ class SectionView extends StatelessWidget {
                   final type = SectionType.values[index];
                   final isMinize = state.sectionMinize[type]!;
                   return SectionItem(
-                    selected: !isLowScreenWidth || sectionType == type,
-                    item: sectionItem[type]!,
-                    buttonColor: sectionType == type
-                        ? isMinize
-                            ? minizeColor
-                            : selectedColor
-                        : buttonColor,
-                    onSetting: () => type == sectionType
-                        ? context.read<SectionBloc>().add(
-                            SectionMinizeToggled(type: type, minize: !isMinize))
-                        : context.read<SectionBloc>()
-                            .add(SetSection(section: type))
-                  );
+                      selected: !isLowScreenWidth || sectionType == type,
+                      item: sectionItem[type]!,
+                      buttonColor: sectionType == type
+                          ? isMinize
+                              ? minizeColor
+                              : selectedColor
+                          : buttonColor,
+                      onSetting: () => type == sectionType
+                          ? context.read<SectionBloc>().add(SectionMinizeToggled(type: type, minize: !isMinize))
+                          : context.read<SectionBloc>().add(SetSection(section: type)));
                 });
           } else {
             return Row(
@@ -62,11 +56,8 @@ class SectionView extends StatelessWidget {
                               : selectedColor
                           : buttonColor,
                       onSetting: () => isMinize && type == sectionType
-                          ? context.read<SectionBloc>().add(
-                              SectionMinizeToggled(type: type, minize: false))
-                          : context
-                              .read<SectionBloc>()
-                              .add(SetSection(section: type)),
+                          ? context.read<SectionBloc>().add(SectionMinizeToggled(type: type, minize: false))
+                          : context.read<SectionBloc>().add(SetSection(section: type)),
                     ));
               }).toList(),
             );
@@ -77,11 +68,7 @@ class SectionView extends StatelessWidget {
 
 class SectionItem extends StatelessWidget {
   const SectionItem(
-      {super.key,
-      required this.selected,
-      required this.item,
-      required this.buttonColor,
-      required this.onSetting});
+      {super.key, required this.selected, required this.item, required this.buttonColor, required this.onSetting});
 
   final bool selected;
 
@@ -93,8 +80,7 @@ class SectionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     return Tooltip(
       message: '${item.description}.',
       waitDuration: const Duration(seconds: 1),
@@ -113,18 +99,14 @@ class SectionItem extends StatelessWidget {
               child: selected
                   ? Row(
                       children: [
-                        Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
-                            child: item.icon),
+                        Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
                         Text(
                           item.title,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         )
                       ],
                     )
-                  : Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: item.icon),
+                  : Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
             ),
           )),
     );
@@ -140,54 +122,42 @@ class ExtensionView extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedColor = Theme.of(context).colorScheme.secondaryContainer;
     final buttonColor = Theme.of(context).colorScheme.surfaceBright;
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
         buildWhen: (prev, state) => prev.extension != state.extension,
         builder: (context, state) {
           if (isDesktopPlatform) {
             return ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: extensionItem.length,
-              itemBuilder: (context, index) {
-                final type = ExtensionType.values[index];
-                final enabled =
-                    context.read<SectionBloc>().onExtensionEnabled(type);
-                return ExtensionItem(
-                  item: extensionItem[type]!,
-                  buttonColor: enabled ? selectedColor : buttonColor,
-                  onSetting: () => context
-                      .read<SectionBloc>()
-                      .add(ExtensionToggled(type: type)),
-                );
-              });
-          }
-          else {
-            return Row(children: ExtensionType.values.map((type) {
-              final enabled =
-                    context.read<SectionBloc>().onExtensionEnabled(type);
-                return SizedBox(
-                    height: 60,
-                    child: ExtensionItem(
-                  item: extensionItem[type]!,
-                  buttonColor: enabled ? selectedColor : buttonColor,
-                  onSetting: () => context
-                      .read<SectionBloc>()
-                      .add(ExtensionToggled(type: type)),
-                ));
+                scrollDirection: Axis.horizontal,
+                itemCount: extensionItem.length,
+                itemBuilder: (context, index) {
+                  final type = ExtensionType.values[index];
+                  final enabled = context.read<SectionBloc>().onExtensionEnabled(type);
+                  return ExtensionItem(
+                    item: extensionItem[type]!,
+                    buttonColor: enabled ? selectedColor : buttonColor,
+                    onSetting: () => context.read<SectionBloc>().add(ExtensionToggled(type: type)),
+                  );
+                });
+          } else {
+            return Row(
+                children: ExtensionType.values.map((type) {
+              final enabled = context.read<SectionBloc>().onExtensionEnabled(type);
+              return SizedBox(
+                  height: 60,
+                  child: ExtensionItem(
+                    item: extensionItem[type]!,
+                    buttonColor: enabled ? selectedColor : buttonColor,
+                    onSetting: () => context.read<SectionBloc>().add(ExtensionToggled(type: type)),
+                  ));
             }).toList());
           }
-          
         });
   }
 }
 
 class ExtensionItem extends StatelessWidget {
-  const ExtensionItem(
-      {super.key,
-      required this.item,
-      required this.buttonColor,
-      required this.onSetting});
+  const ExtensionItem({super.key, required this.item, required this.buttonColor, required this.onSetting});
 
   final Item item;
 
@@ -197,14 +167,13 @@ class ExtensionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),
       child: Card(
-        elevation: isDesktopPlatform ? null : 0,
-        margin: isDesktopPlatform ? const EdgeInsets.only(top: 5, bottom: 8, left: 10) : null,
+          elevation: isDesktopPlatform ? null : 0,
+          margin: isDesktopPlatform ? const EdgeInsets.only(top: 5, bottom: 8, left: 10) : null,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -220,4 +189,3 @@ class ExtensionItem extends StatelessWidget {
     );
   }
 }
-

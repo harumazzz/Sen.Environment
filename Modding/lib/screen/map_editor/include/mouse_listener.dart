@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/model/worldmap.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
@@ -37,48 +37,34 @@ class MouseListener extends StatelessWidget {
 
   final BlocWidgetBuilder<SelectedState> builder;
 
-  void _hoverListener(
-      BuildContext context, Offset details, Iterable<String> selectedList) {
+  void _hoverListener(BuildContext context, Offset details, Iterable<String> selectedList) {
     final idList = itemStore.keys.toList();
     final controller = context.read<CanvasBloc>().state.canvasController;
     final controllerTransform = controller.transformationController.value;
     final viewportScale = controllerTransform.getMaxScaleOnAxis();
-    final sectionRect = Rect.fromLTWH(
-        (details.dx - controllerTransform[12]) / viewportScale,
-        (details.dy - controllerTransform[13]) / viewportScale,
-        3,
-        3);
+    final sectionRect = Rect.fromLTWH((details.dx - controllerTransform[12]) / viewportScale,
+        (details.dy - controllerTransform[13]) / viewportScale, 3, 3);
     //MapConst.debugOffset = sectionRect.topLeft;
     for (var i = idList.length - 1; i >= 0; --i) {
       final id = idList[i];
       final itemProfile = itemStore[id]!;
-      final itemRect = Rect.fromLTWH(
-          itemProfile.selectRect!.left,
-          itemProfile.selectRect!.top,
-          itemProfile.selectRect!.width / viewportScale,
-          itemProfile.selectRect!.height / viewportScale);
+      final itemRect = Rect.fromLTWH(itemProfile.selectRect!.left, itemProfile.selectRect!.top,
+          itemProfile.selectRect!.width / viewportScale, itemProfile.selectRect!.height / viewportScale);
       final selected = sectionRect.overlaps(itemRect);
       if (selected) {
         if (!panTool && !eraseTool && !multiSelect) {
           if (selectedList.contains(id)) {
-            context.read<MouseCursorBloc>().add(
-                const ChangeCursorEvent(cursor: SystemMouseCursors.allScroll));
+            context.read<MouseCursorBloc>().add(const ChangeCursorEvent(cursor: SystemMouseCursors.allScroll));
           } else {
-            context
-                .read<MouseCursorBloc>()
-                .add(const ChangeCursorEvent(cursor: SystemMouseCursors.click));
+            context.read<MouseCursorBloc>().add(const ChangeCursorEvent(cursor: SystemMouseCursors.click));
           }
-          context
-              .read<SelectedBloc>()
-              .add(const SetHoverSelected(selected: true));
+          context.read<SelectedBloc>().add(const SetHoverSelected(selected: true));
         }
         context.read<SelectedBloc>().add(OnSelectUpdated(onSelect: id));
         return;
       } else {
         if (!panTool && !eraseTool && !multiSelect) {
-          context
-              .read<MouseCursorBloc>()
-              .add(const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
+          context.read<MouseCursorBloc>().add(const ChangeCursorEvent(cursor: SystemMouseCursors.basic));
         }
       }
     }
@@ -94,10 +80,8 @@ class MouseListener extends StatelessWidget {
     final itemBloc = context.read<ItemBloc>();
     final historyBloc = context.read<HistoryBloc>();
     final layerBloc = context.read<LayerBloc>();
-    final isDesktopPlatform =
-        context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
-    return BlocBuilder<SelectedBloc, SelectedState>(
-        builder: (context, selectedState) {
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
+    return BlocBuilder<SelectedBloc, SelectedState>(builder: (context, selectedState) {
       var onSelectedId = selectedState.onSelect;
       final selectedList = selectedState.selectedList;
       final controller = context.read<CanvasBloc>().state.canvasController;
@@ -111,31 +95,20 @@ class MouseListener extends StatelessWidget {
           onPointerDown: (details) {
             if (enable) {
               if (!isDesktopPlatform) {
-                final controllerTransform =
-                    controller.transformationController.value;
+                final controllerTransform = controller.transformationController.value;
                 final viewportScale = controllerTransform.getMaxScaleOnAxis();
-                final sectionRect = Rect.fromLTWH(
-                    (details.localPosition.dx - controllerTransform[12]) /
-                        viewportScale,
-                    (details.localPosition.dy - controllerTransform[13]) /
-                        viewportScale,
-                    3,
-                    3);
+                final sectionRect = Rect.fromLTWH((details.localPosition.dx - controllerTransform[12]) / viewportScale,
+                    (details.localPosition.dy - controllerTransform[13]) / viewportScale, 3, 3);
                 //MapConst.debugOffset = sectionRect.topLeft;
                 for (var i = idList.length - 1; i >= 0; --i) {
                   final id = idList[i];
                   final itemProfile = itemStore[id]!;
-                  final itemRect = Rect.fromLTWH(
-                      itemProfile.selectRect!.left,
-                      itemProfile.selectRect!.top,
-                      itemProfile.selectRect!.width / viewportScale,
-                      itemProfile.selectRect!.height / viewportScale);
+                  final itemRect = Rect.fromLTWH(itemProfile.selectRect!.left, itemProfile.selectRect!.top,
+                      itemProfile.selectRect!.width / viewportScale, itemProfile.selectRect!.height / viewportScale);
                   final selected = sectionRect.overlaps(itemRect);
                   if (selected) {
                     if (!panTool && !eraseTool && !multiSelect) {
-                      context
-                          .read<SelectedBloc>()
-                          .add(const SetHoverSelected(selected: true));
+                      context.read<SelectedBloc>().add(const SetHoverSelected(selected: true));
                     }
                     onSelectedId = id;
                     break;
@@ -178,8 +151,7 @@ class MouseListener extends StatelessWidget {
                 final selectedList = <String>[];
                 for (final id in idList) {
                   final itemProfile = itemStore[id]!;
-                  if (controller.marqueeRect!
-                      .overlaps(itemProfile.selectRect!)) {
+                  if (controller.marqueeRect!.overlaps(itemProfile.selectRect!)) {
                     selectedList.add(id);
                   }
                 }
@@ -213,13 +185,10 @@ class MouseListener extends StatelessWidget {
                     ActionModelType.mapEvents: stageBloc.cloneEvents(),
                   },
                   change: (data) {
-                    final pieces = data![ActionModelType.mapPieces]
-                        as HashMap<String, MapPieceItem>;
-                    final events = data[ActionModelType.mapEvents]
-                        as HashMap<String, MapEventItem>;
-                    stageBloc.add(UpdateStageState(
-                        stageState: stageBloc.state
-                            .copyWith(events: events, pieces: pieces)));
+                    final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+                    final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+                    stageBloc
+                        .add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
                     itemBloc.add(const ItemStoreUpdated());
                     historyBloc.add(const UpdateIndexEvent());
                   });
@@ -234,13 +203,10 @@ class MouseListener extends StatelessWidget {
                     ActionModelType.mapEvents: stageBloc.cloneEvents(),
                   },
                   change: (data) {
-                    final pieces = data![ActionModelType.mapPieces]
-                        as HashMap<String, MapPieceItem>;
-                    final events = data[ActionModelType.mapEvents]
-                        as HashMap<String, MapEventItem>;
-                    stageBloc.add(UpdateStageState(
-                        stageState: stageBloc.state
-                            .copyWith(events: events, pieces: pieces)));
+                    final pieces = data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+                    final events = data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+                    stageBloc
+                        .add(UpdateStageState(stageState: stageBloc.state.copyWith(events: events, pieces: pieces)));
                     final layerKeys = <int>[];
                     for (final e in pieces.values) {
                       if (!layerKeys.contains(e.layer)) {
@@ -265,8 +231,7 @@ class MouseListener extends StatelessWidget {
             }
           },
           onPointerMove: (details) {
-            final viewportScale =
-                controller.transformationController.value.getMaxScaleOnAxis();
+            final viewportScale = controller.transformationController.value.getMaxScaleOnAxis();
             void onPanUpdate() {
               context.read<StageBloc>().add(UpdateItemPosition(
                     x: details.delta.dx / viewportScale,
@@ -277,8 +242,7 @@ class MouseListener extends StatelessWidget {
 
             if (enable) {
               if (multiSelect) {
-                if (controller.marqueeStart != null &&
-                    controller.marqueeEnd != null) {
+                if (controller.marqueeStart != null && controller.marqueeEnd != null) {
                   controller.marqueeEnd = details.localPosition;
                   controller.setMarqueeSelection();
                   controller.selection.rectangleSelected = true;

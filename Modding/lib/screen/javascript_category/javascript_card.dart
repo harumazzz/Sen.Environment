@@ -7,6 +7,7 @@ import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/service/ui_helper.dart';
 import 'package:sen/service/windows_helper.dart';
 
 @immutable
@@ -18,13 +19,12 @@ class JavaScriptCard extends StatelessWidget {
   });
 
   final Script item;
-
   final String toolChain;
 
-  Color? _color(
-    BuildContext context,
-  ) {
-    return Theme.of(context).brightness == Brightness.dark ? Colors.yellowAccent.withValues(alpha: 0.8) : null;
+  Color? _iconColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.yellowAccent.withValues(alpha: 0.8)
+        : Theme.of(context).colorScheme.primary;
   }
 
   List<String> _makeArguments() {
@@ -44,21 +44,10 @@ class JavaScriptCard extends StatelessWidget {
     String title,
     String message,
   ) async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showSimpleDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          ),
-        ],
-      ),
+      title: title,
+      content: message,
     );
   }
 
@@ -119,9 +108,9 @@ class JavaScriptCard extends StatelessWidget {
   ) async {
     final los = AppLocalizations.of(context)!;
     if (BlocProvider.of<SettingsCubit>(context).state.jsShowConfirmDialog) {
-      await showDialog(
+      await UIHelper.showFlutterDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        child: UIHelper.buildDialog(
           title: Text(los.confirmation),
           content: Text(los.do_you_wish_to_run(item.name)),
           actions: [
@@ -147,21 +136,53 @@ class JavaScriptCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final cardColor = theme.colorScheme.surfaceContainerHighest;
+    final textColor = theme.colorScheme.onSurface;
     return Card(
-      child: ListTile(
-        leading: Icon(Symbols.javascript, size: 28, color: _color(context)),
-        title: Text(
-          item.name,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          item.description,
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+      elevation: 4.0,
+      color: cardColor,
+      surfaceTintColor: cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16.0),
         onTap: () => _onTap(context),
-        trailing: Tooltip(
-          message: los.js_execute,
-          child: const Icon(Symbols.arrow_forward),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+          child: Row(
+            children: [
+              Icon(Symbols.javascript, size: 32.0, color: _iconColor(context)),
+              const SizedBox(width: 16.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4.0,
+                  children: [
+                    Text(
+                      item.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    Text(
+                      item.description,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Tooltip(
+                message: los.js_execute,
+                child: Icon(Icons.play_arrow_rounded, size: 28, color: theme.colorScheme.primary),
+              ),
+              const SizedBox(width: 16.0),
+            ],
+          ),
         ),
       ),
     );

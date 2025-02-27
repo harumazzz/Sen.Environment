@@ -38,7 +38,7 @@ class _MessageBoxState extends State<MessageBox> {
           if (shouldScroll) {
             await _scrollController.position.animateTo(
               _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 50),
+              duration: const Duration(milliseconds: 100),
               curve: Curves.easeOut,
             );
           }

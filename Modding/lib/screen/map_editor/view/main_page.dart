@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';

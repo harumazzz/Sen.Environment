@@ -38,15 +38,21 @@ class ControlPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return Card(
-      margin: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+      margin: const EdgeInsets.symmetric(
+        vertical: 4.0,
+        horizontal: 16.0,
       ),
-      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      elevation: 4.0,
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          spacing: 10.0,
           children: [
             ControlButton(
               icon: Symbols.reset_focus,

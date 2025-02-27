@@ -1,13 +1,17 @@
+import 'package:equatable/equatable.dart';
 
-class Range<T> {
+class Range<T extends Object> extends Equatable {
   final T begin;
   final T end;
 
   const Range({required this.begin, required this.end});
+
+  @override
+  List<Object> get props => [begin, end];
 }
 
-final class MapConst {
- // static Offset debugOffset = Offset.zero;
+final class MapConst extends Equatable {
+  // static Offset debugOffset = Offset.zero;
 
   static const int topAdditionalPos = 60;
 
@@ -64,4 +68,7 @@ final class MapConst {
     9: 0.9,
     10: 1.0
   };
+
+  @override
+  List<Object?> get props => throw UnimplementedError();
 }

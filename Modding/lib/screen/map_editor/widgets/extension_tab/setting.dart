@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
@@ -84,7 +85,7 @@ class EditorSettingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = context.los;
-    final isDesktopPlatform = context.read<MapEditorConfigurationCubit>().isDesktopPlatform;
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
     final spacing = isDesktopPlatform ? 8.0 : 2.0;
     return BlocBuilder<SettingBloc, SettingState>(builder: (context, state) {
       return SingleChildScrollView(

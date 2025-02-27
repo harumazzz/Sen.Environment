@@ -28,7 +28,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     Emitter<MessageState> emit,
   ) async {
     emit(const MessageClearState(messages: []));
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future.delayed(const Duration(milliseconds: 40));
     emit(const MessageScrollState(messages: []));
   }
 }

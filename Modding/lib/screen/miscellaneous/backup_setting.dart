@@ -8,6 +8,7 @@ import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/service/ui_helper.dart';
 import 'package:sen/widget/hotkey.dart';
 
 class BackupSetting extends StatefulWidget {
@@ -99,39 +100,24 @@ class _BackupSettingState extends State<BackupSetting> {
     StackTrace stack,
   ) async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showFlutterDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      child: UIHelper.buildDialog(
         title: Text(los.invalid_request),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await showDialog(
+              await UIHelper.showSimpleDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(message),
-                  content: Text(stack.toString()),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(los.okay),
-                    ),
-                  ],
-                ),
+                title: message,
+                content: stack.toString(),
               );
             },
             child: Text(los.detail),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          ),
+          ...UIHelper.buildSimpleAction(context: context),
         ],
       ),
     );
@@ -141,20 +127,10 @@ class _BackupSettingState extends State<BackupSetting> {
     required String message,
   }) async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showSimpleDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.done),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          ),
-        ],
-      ),
+      title: los.done,
+      content: message,
     );
   }
 
@@ -163,20 +139,10 @@ class _BackupSettingState extends State<BackupSetting> {
     required String message,
   }) async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showSimpleDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(file),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          ),
-        ],
-      ),
+      title: los.error,
+      content: message,
     );
   }
 

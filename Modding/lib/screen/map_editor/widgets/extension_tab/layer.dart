@@ -4,7 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:nil/nil.dart';
 import 'package:pie_menu/pie_menu.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/l10n.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
 import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';

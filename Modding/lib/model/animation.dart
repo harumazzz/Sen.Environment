@@ -1,10 +1,12 @@
+import 'package:equatable/equatable.dart';
+
 typedef Transform = List<double>;
 
 typedef Color = List<double>;
 
 typedef Matrix = List<double>;
 
-class FrameNode {
+class FrameNode extends Equatable {
   final int index;
   final int duration;
   final int resource;
@@ -66,6 +68,19 @@ class FrameNode {
       color: color ?? this.color,
     );
   }
+
+  @override
+  List<Object?> get props {
+    return [
+      index,
+      duration,
+      resource,
+      sprite,
+      firstFrame,
+      transform,
+      color,
+    ];
+  }
 }
 
 typedef FrameNodeList = List<FrameNode>;
@@ -78,7 +93,7 @@ enum State {
   stateTrue,
 }
 
-class Model {
+class Model extends Equatable {
   final State state;
   final int resource;
   final bool sprite;
@@ -146,9 +161,23 @@ class Model {
       'index': index,
     };
   }
+
+  @override
+  List<Object?> get props {
+    return [
+      state,
+      resource,
+      sprite,
+      transform,
+      color,
+      frameStart,
+      frameDuration,
+      index,
+    ];
+  }
 }
 
-class SexyAnimation {
+class SexyAnimation extends Equatable {
   final int version;
   final int frameRate;
   final AnimationPosition position;
@@ -210,9 +239,22 @@ class SexyAnimation {
       'mainSprite': mainSprite.toJson(),
     };
   }
+
+  @override
+  List<Object> get props {
+    return [
+      version,
+      frameRate,
+      position,
+      size,
+      image,
+      sprite,
+      mainSprite,
+    ];
+  }
 }
 
-class AnimationPosition {
+class AnimationPosition extends Equatable {
   final double x;
   final double y;
 
@@ -244,9 +286,12 @@ class AnimationPosition {
       y: y ?? this.y,
     );
   }
+
+  @override
+  List<Object> get props => [x, y];
 }
 
-class AnimationSize {
+class AnimationSize extends Equatable {
   final double width;
   final double height;
 
@@ -285,9 +330,12 @@ class AnimationSize {
       height: map['height']?.toDouble() ?? 0.0,
     );
   }
+
+  @override
+  List<Object> get props => [width, height];
 }
 
-class AnimationImage {
+class AnimationImage extends Equatable {
   final String path;
   final String id;
   final AnimationDimension dimension;
@@ -331,9 +379,12 @@ class AnimationImage {
       'transform': transform,
     };
   }
+
+  @override
+  List<Object> get props => [path, id, dimension, transform];
 }
 
-class AnimationDimension {
+class AnimationDimension extends Equatable {
   final int width;
   final int height;
 
@@ -365,9 +416,12 @@ class AnimationDimension {
       'height': height,
     };
   }
+
+  @override
+  List<Object> get props => [width, height];
 }
 
-class AnimationSprite {
+class AnimationSprite extends Equatable {
   final String name;
   final AnimationWorkArea workArea;
   final List<AnimationFrame> frame;
@@ -405,9 +459,12 @@ class AnimationSprite {
       'frame': frame.map((x) => x.toJson()).toList(),
     };
   }
+
+  @override
+  List<Object> get props => [name, workArea, frame];
 }
 
-class AnimationWorkArea {
+class AnimationWorkArea extends Equatable {
   final int start;
   final int duration;
 
@@ -439,9 +496,12 @@ class AnimationWorkArea {
       'duration': duration,
     };
   }
+
+  @override
+  List<Object> get props => [start, duration];
 }
 
-class AnimationFrame {
+class AnimationFrame extends Equatable {
   final String label;
   final bool stop;
   final List<AnimationCommand> command;
@@ -497,9 +557,21 @@ class AnimationFrame {
       'change': change.map((x) => x.toJson()).toList(),
     };
   }
+
+  @override
+  List<Object> get props {
+    return [
+      label,
+      stop,
+      command,
+      remove,
+      append,
+      change,
+    ];
+  }
 }
 
-class AnimationCommand {
+class AnimationCommand extends Equatable {
   final String command;
   final String argument;
 
@@ -531,9 +603,12 @@ class AnimationCommand {
       'argument': argument,
     };
   }
+
+  @override
+  List<Object> get props => [command, argument];
 }
 
-class AnimationAppend {
+class AnimationAppend extends Equatable {
   final int index;
   final String name;
   final int resource;
@@ -595,9 +670,22 @@ class AnimationAppend {
       timeScale: timeScale ?? this.timeScale,
     );
   }
+
+  @override
+  List<Object> get props {
+    return [
+      index,
+      name,
+      resource,
+      sprite,
+      additive,
+      preloadFrame,
+      timeScale,
+    ];
+  }
 }
 
-class AnimationMove {
+class AnimationMove extends Equatable {
   final int index;
   final List<double> transform;
   final Color? color;
@@ -646,5 +734,16 @@ class AnimationMove {
       'sourceRectangle': sourceRectangle,
       'spriteFrameNumber': spriteFrameNumber,
     };
+  }
+
+  @override
+  List<Object?> get props {
+    return [
+      index,
+      transform,
+      color,
+      sourceRectangle,
+      spriteFrameNumber,
+    ];
   }
 }
