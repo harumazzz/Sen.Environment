@@ -33,7 +33,11 @@ class ImagePage extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
           onTap: visualHelper.imageSource[index] == null
               ? null
-              : () async => await UIHelper.showFullImage(context, visualHelper.imageSource[index]!),
+              : () async => await UIHelper.showFullImage(
+                    context: context,
+                    name: image[index],
+                    image: visualHelper.imageSource[index]!,
+                  ),
           leading: visualHelper.imageSource[index] == null
               ? Icon(
                   Symbols.broken_image,

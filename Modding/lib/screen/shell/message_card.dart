@@ -10,64 +10,53 @@ class MessageCard extends StatelessWidget {
     required this.message,
   });
 
-  Widget _buildMessage({required BuildContext context, required bool hasMessage}) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text(
-            message.title,
-            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-            softWrap: true,
-          ),
-          if (hasMessage && message.subtitle != null) ...[
-            const SizedBox(height: 4.0),
-            Text(
-              message.subtitle!,
-              style: Theme.of(context).textTheme.labelSmall,
-              softWrap: true,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final hasMessage = message.subtitle != null && message.subtitle!.isNotEmpty;
+    final theme = Theme.of(context);
+    final color = _color(message, context);
+    final textColor = theme.colorScheme.onSurface;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
-        elevation: 2.0,
+        elevation: 3,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(16.0),
         ),
-        color: _color(message, context),
+        color: color,
+        clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0,
-            vertical: 12.0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  const SizedBox(width: 4.0),
-                  const Icon(
-                    Symbols.terminal,
-                    size: 24.0,
-                  ),
-                  const SizedBox(width: 12.0),
-                  _buildMessage(context: context, hasMessage: hasMessage),
-                ],
+              const Icon(Symbols.terminal, size: 28.0),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      message.title,
+                      style: theme.textTheme.titleSmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    if (hasMessage)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          message.subtitle!,
+                          style: theme.textTheme.bodySmall!.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8.0),
             ],
           ),
         ),
@@ -76,12 +65,9 @@ class MessageCard extends StatelessWidget {
   }
 
   Color? _color(Message message, BuildContext context) {
-    if (message.color == null) return null;
-    final alpha = Theme.of(context).brightness == Brightness.dark ? 0.36 : 0.62;
-    final color = message.exchangeColor(context);
-    if (Theme.of(context).brightness == Brightness.dark || color != Theme.of(context).colorScheme.secondaryContainer) {
-      return color.withValues(alpha: alpha);
-    }
-    return color;
+    final theme = Theme.of(context);
+    final baseColor = message.exchangeColor(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return isDark ? baseColor.withValues(alpha: 0.36) : baseColor.withValues(alpha: 0.82);
   }
 }

@@ -70,6 +70,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
 
   double _maxFrame = 0;
 
+  bool get _isPlaying => !_isPause;
+
   @override
   void initState() {
     _scaleNotifier = ValueNotifier(1.0);
@@ -162,42 +164,45 @@ class _AnimationScreenState extends State<AnimationScreen> {
     }
   }
 
+  Future<void> _onReveal({
+    required IconData icon,
+    required String text,
+  }) async {
+    var destination = null as String?;
+    if (icon == Symbols.folder) {
+      destination = (text);
+    } else {
+      destination = (p.dirname(text));
+    }
+    await FileHelper.revealFile(destination);
+  }
+
   Widget _buildPathField({
     required IconData icon,
     required String text,
   }) {
     return InkWell(
-      onTap: CurrentPlatform.isAndroid
-          ? null
-          : () async {
-              var destination = null as String?;
-              if (icon == Symbols.folder) {
-                destination = (text);
-              } else {
-                destination = (p.dirname(text));
-              }
-              await FileHelper.revealFile(destination);
-            },
+      onTap: CurrentPlatform.isAndroid ? null : () async => await _onReveal(icon: icon, text: text),
       child: Tooltip(
         message: context.los.open,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.2,
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          width: MediaQuery.of(context).size.width * 0.18,
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
           child: Row(
+            spacing: 8.0,
             children: [
               Icon(
                 icon,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 20.0,
               ),
-              const SizedBox(width: 8.0),
               Expanded(
                 child: Text(
                   text,
@@ -214,51 +219,156 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   Widget _buildMainAnimationScreen() {
-    return SizedBox(
-      width: double.infinity,
-      child: Stack(
-        children: [
-          Screenshot(
-            controller: widget.controller,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: InteractiveViewer.builder(
-                panEnabled: true,
-                scaleEnabled: true,
-                scaleFactor: 1000,
-                maxScale: 10,
-                transformationController: _transformationController,
-                builder: (context, quad) {
-                  return Transform.scale(
-                    scale: 0.5,
-                    child: SizedBox(
-                      width: widget.visualHelper.animation.size.width * 5,
-                      height: widget.visualHelper.animation.size.height * 5,
-                      child: _animationVisual,
-                    ),
-                  );
-                },
+    final mainScreen = Screenshot(
+      controller: widget.controller,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: InteractiveViewer.builder(
+          panEnabled: true,
+          scaleEnabled: true,
+          scaleFactor: 1000,
+          maxScale: 10,
+          transformationController: _transformationController,
+          builder: (context, quad) {
+            return Transform.scale(
+              scale: 0.5,
+              child: SizedBox(
+                width: widget.visualHelper.animation.size.width * 5,
+                height: widget.visualHelper.animation.size.height * 5,
+                child: _animationVisual,
               ),
+            );
+          },
+        ),
+      ),
+    );
+    if (CurrentPlatform.isDesktop) {
+      return Stack(
+        children: [
+          mainScreen,
+          _buildRegularPath(),
+          _buildBasicInformation(),
+          _buildControlInformation(),
+        ],
+      );
+    }
+    return mainScreen;
+  }
+
+  Widget _buildControlInformation() {
+    return Positioned(
+      bottom: 4.0,
+      right: 4.0,
+      child: SizedBox(
+        width: 200,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 2.0,
+          children: [
+            _informationOf(
+              icon: Symbols.frame_inspect,
+              key: context.los.frame,
+              value: widget.visualHelper.workingFrameRate.toStringAsFixed(0),
             ),
+            _informationOf(
+              icon: Symbols.center_focus_strong,
+              key: context.los.playing,
+              value: _isPlaying ? context.los.yes : context.los.no,
+            ),
+            ValueListenableBuilder<double>(
+              valueListenable: _frameNotifier,
+              builder: (context, value, child) {
+                return _informationOf(
+                  icon: Symbols.playing_cards,
+                  key: context.los.current,
+                  value: (value * _maxFrame).toStringAsFixed(0),
+                );
+              },
+            ),
+            _informationOf(
+              icon: Symbols.label,
+              key: context.los.label,
+              value: context.read<SelectedLabelBloc>().state.label,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegularPath() {
+    return Positioned(
+      top: 12.0,
+      right: 8.0,
+      child: Column(
+        spacing: 5.0,
+        children: [
+          _buildPathField(
+            icon: Symbols.insert_drive_file,
+            text: widget.sourceFile ?? context.los.not_specified,
           ),
-          Positioned(
-            top: 12.0,
-            right: 8.0,
-            child: Column(
-              spacing: 5.0,
-              children: [
-                _buildPathField(
-                  icon: Symbols.insert_drive_file,
-                  text: widget.sourceFile ?? context.los.not_specified,
-                ),
-                _buildPathField(
-                  icon: Symbols.folder,
-                  text: widget.mediaDirectory ?? context.los.not_specified,
-                ),
-              ],
-            ),
+          _buildPathField(
+            icon: Symbols.folder,
+            text: widget.mediaDirectory ?? context.los.not_specified,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _informationOf({
+    required IconData icon,
+    required String key,
+    required String value,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        child: Row(
+          spacing: 8.0,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon),
+            Text('$key:'),
+            Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 4,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBasicInformation() {
+    return Positioned(
+      bottom: 4.0,
+      left: 4.0,
+      child: SizedBox(
+        width: 150,
+        child: Column(
+          spacing: 2.0,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _informationOf(
+              icon: Symbols.image,
+              key: context.los.width,
+              value: widget.visualHelper.animation.size.width.toStringAsFixed(0),
+            ),
+            _informationOf(
+              icon: Symbols.image,
+              key: context.los.height,
+              value: widget.visualHelper.animation.size.height.toStringAsFixed(0),
+            ),
+            _informationOf(
+              icon: Symbols.scale,
+              key: context.los.scale,
+              value: _scaleNotifier.value.toStringAsFixed(0),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -287,7 +397,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
         final textStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
         return Card(
           color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          elevation: 3,
+          elevation: 4.0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -380,7 +490,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
                 notifier: _frameNotifier,
                 min: widget.animationController.lowerBound,
                 max: widget.animationController.upperBound,
-              )
+              ),
             ],
           ),
         ),

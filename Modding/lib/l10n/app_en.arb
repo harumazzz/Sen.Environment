@@ -444,5 +444,9 @@
 	"tool_description": "Main container of the Worldmap",
 	"item_description": "Item list that support make your map simpler",
 	"option_description": "Configure your Worldmap",
-	"task": "Task"
+	"task": "Task",
+	"scale": "Scale",
+	"playing": "Playing",
+	"current": "Current",
+	"translator": "Translator"
 }

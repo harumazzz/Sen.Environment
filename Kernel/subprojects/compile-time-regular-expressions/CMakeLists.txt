@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 project(
 	compile-time-regular-expressions
 	VERSION 3.9.0
-	HOMEPAGE_URL https://github.com/a-e-k/canvas_ity/tree/main
+	HOMEPAGE_URL https://github.com/hanickadot/compile-time-regular-expressions
 	LANGUAGES CXX
 )
 

@@ -69,7 +69,7 @@ class ControlPanel extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      color: Theme.of(context).colorScheme.surfaceContainer,
       elevation: 4.0,
       child: Padding(
         padding: const EdgeInsets.all(8.0),

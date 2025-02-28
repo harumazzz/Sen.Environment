@@ -31,8 +31,12 @@ class LabelScreen extends StatelessWidget {
           ),
           title: Text(
             label[index],
-            style: theme.textTheme.titleMedium,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
             overflow: TextOverflow.ellipsis,
+            maxLines: 4,
           ),
           trailing: Tooltip(
             message: label[index],

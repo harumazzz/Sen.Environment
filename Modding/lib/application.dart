@@ -1,7 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
@@ -14,6 +11,7 @@ import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/root_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
+import 'package:sen/constant/localization.dart' as loc;
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +21,7 @@ class Application extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isWindows) {
+    if (CurrentPlatform.isWindows) {
       return const _WindowsApplication();
     } else {
       return const _MainApplication();
@@ -45,7 +43,7 @@ class _WindowsApplicationState extends State<_WindowsApplication> {
   void initState() {
     _navigatorKey = GlobalKey<NavigatorState>();
     super.initState();
-    if (Platform.isWindows) {
+    if (CurrentPlatform.isWindows) {
       _setupWindowTaskbar();
     }
   }
@@ -131,18 +129,8 @@ class _MainApplication extends StatelessWidget {
               darkTheme: MaterialDesign.darkTheme.copyWith(colorScheme: darkDynamic),
               themeMode: settings.themeData,
               home: const RootScreen(),
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('en'),
-                Locale('vi'),
-                Locale('es'),
-                Locale('ru'),
-              ],
+              localizationsDelegates: loc.Localization.localizationDelegates,
+              supportedLocales: loc.Localization.supportedLocales,
               locale: Locale(settings.state.locale),
             ),
           );

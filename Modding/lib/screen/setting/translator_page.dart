@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/model/translator.dart';
 import 'package:sen/widget/hyperlink.dart';
 
 class TranslatorPage extends StatelessWidget {
-  const TranslatorPage({
-    super.key,
-    required this.translator,
-  });
+  const TranslatorPage({super.key, required this.translator});
 
   final Translator translator;
 
@@ -17,85 +15,99 @@ class TranslatorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Stack(
       children: [
-        CircleAvatar(
-          radius: 40.0,
-          backgroundImage: AssetImage(translator.imageCover),
-        ),
-        const SizedBox(height: 16.0),
-        Text(
-          translator.name,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
+        Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
               ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8.0),
-        Divider(
-          color: Colors.grey.withValues(alpha: 0.3),
-          thickness: 1.0,
-          height: 24.0,
-        ),
-        const SizedBox(height: 8.0),
-        if (translator.discord != null)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 8.0,
-            children: [
-              const Icon(
-                Icons.discord_outlined,
-                color: Colors.grey,
-                size: 20.0,
-              ),
-              Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.primary, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage: AssetImage(translator.imageCover),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    "Discord: ",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
+                    translator.name,
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  SelectableText(
-                    translator.discord!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.los.translator,
+                    style: textTheme.bodyMedium?.copyWith(color: colorScheme.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  Divider(thickness: 1, height: 24, color: colorScheme.outlineVariant),
+                  if (translator.discord != null) ...[
+                    ListTile(
+                      leading: const Icon(
+                        Icons.discord_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      title: SelectableText(
+                        translator.discord!,
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.secondary),
+                      ),
+                    ),
+                    Divider(thickness: 1, height: 24, color: colorScheme.outlineVariant),
+                  ],
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...translator.contacts.map(
+                        (e) {
+                          final isLink = _isLink(e[1]);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ListTile(
+                              leading: isLink
+                                  ? const Icon(Symbols.link, color: Colors.grey)
+                                  : const Icon(Symbols.person, color: Colors.grey),
+                              title: Text(e[0], style: textTheme.bodyMedium),
+                              subtitle: isLink
+                                  ? Hyperlink(title: e[0], link: e[1])
+                                  : SelectableText(e[1], style: textTheme.bodyMedium),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        if (translator.discord != null) const SizedBox(height: 16.0),
-        Divider(
-          color: Colors.grey.withValues(alpha: 0.3),
-          thickness: 1.0,
-          height: 24.0,
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: translator.contacts.map((e) {
-            final isLink = _isLink(e[1]);
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: Row(
-                spacing: 8.0,
-                children: [
-                  isLink
-                      ? const Icon(
-                          Symbols.link,
-                          color: Colors.grey,
-                          size: 20.0,
-                        )
-                      : Text(e[0]),
-                  isLink ? Hyperlink(title: e[0], link: e[1]) : Text(e[1]),
-                ],
-              ),
-            );
-          }).toList(),
+        Positioned(
+          top: 16,
+          right: 16,
+          child: IconButton(
+            icon: const Icon(Symbols.close),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
         ),
       ],
     );

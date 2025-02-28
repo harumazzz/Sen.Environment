@@ -1,6 +1,7 @@
 import 'package:drop_down_list/drop_down_list.dart';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/model/select_option.dart';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -186,27 +187,73 @@ class UIHelper {
     );
   }
 
-  static Future<void> showFullImage(
-    BuildContext context,
-    ImageProvider image,
-  ) async {
+  static Future<void> showWidget({
+    required BuildContext context,
+    required String name,
+    required Widget child,
+  }) async {
     await showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: InteractiveViewer(
-            panEnabled: true,
-            minScale: 1.0,
-            maxScale: 5.0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image(image: image),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 1.0,
+                maxScale: 5.0,
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: child,
+                  ),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              top: 12.0,
+              right: 12.0,
+              child: SafeArea(
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(
+                    Symbols.close,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16.0,
+              left: 16.0,
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  static Future<void> showFullImage({
+    required BuildContext context,
+    required String name,
+    required ImageProvider image,
+  }) async {
+    return await showWidget(
+      context: context,
+      name: name,
+      child: Image(image: image),
     );
   }
 }

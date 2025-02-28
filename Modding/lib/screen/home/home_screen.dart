@@ -143,7 +143,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 8.0),
               if (item.onSetting != null)
                 IconButton(
-                  icon: const Icon(Icons.settings, size: 20),
+                  icon: const Icon(Symbols.settings, size: 20),
                   onPressed: item.onSetting,
                   tooltip: los.settings,
                 ),

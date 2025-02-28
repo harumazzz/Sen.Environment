@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 project(
 	fmt
-	VERSION 11.1.3
+	VERSION 11.1.4
 	HOMEPAGE_URL https://github.com/fmtlib/fmt
 	LANGUAGES CXX
 )
