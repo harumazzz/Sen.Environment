@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import 'package:sen/extension/context.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/screen/animation_viewer/control_button.dart';
@@ -16,6 +20,7 @@ class ControlPanel extends StatelessWidget {
     required this.forcePlay,
     required this.resetFocus,
     required this.visualHelper,
+    required this.popupMenuKey,
   });
 
   final bool Function() toggleEvent;
@@ -33,6 +38,25 @@ class ControlPanel extends StatelessWidget {
   final void Function() forcePlay;
 
   final void Function() resetFocus;
+
+  final GlobalKey<PopupMenuButtonState<String>> popupMenuKey;
+
+  void _onAdd(BuildContext context, String value) {
+    switch (value) {
+      case 'enable_sprites':
+        context.read<SelectedSpriteBloc>().add(const SelectedSpriteEnableAllEvent());
+        break;
+      case 'disable_sprites':
+        context.read<SelectedSpriteBloc>().add(const SelectedSpriteDisableAllEvent());
+        break;
+      case 'enable_images':
+        context.read<SelectedImageBloc>().add(const SelectedImageEnableAllEvent());
+        break;
+      case 'disable_images':
+        context.read<SelectedImageBloc>().add(const SelectedImageDisableAllEvent());
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +130,36 @@ class ControlPanel extends StatelessWidget {
                 }
                 forcePlay();
               },
+            ),
+            PopupMenuButton<String>(
+              key: popupMenuKey,
+              tooltip: context.los.add,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'disable_sprites',
+                  child: Text(context.los.disable_all_sprite),
+                ),
+                PopupMenuItem(
+                  value: 'enable_sprites',
+                  child: Text(context.los.enable_all_sprite),
+                ),
+                PopupMenuItem(
+                  value: 'disable_images',
+                  child: Text(context.los.disable_all_image),
+                ),
+                PopupMenuItem(
+                  value: 'enable_images',
+                  child: Text(context.los.enable_all_image),
+                ),
+              ],
+              onSelected: (value) => _onAdd(context, value),
+              child: ControlButton(
+                icon: Symbols.add,
+                tooltip: los.add,
+                onPressed: () {
+                  popupMenuKey.currentState?.showButtonMenu();
+                },
+              ),
             ),
           ],
         ),

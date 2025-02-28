@@ -8,7 +8,7 @@ import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/cubit/navigation_cubit/navigation_cubit.dart';
 import 'package:sen/constant/build_distribution.dart';
 import 'package:sen/screen/home/home_screen.dart';
-import 'package:sen/screen/miscellaneous/miscellaenous_screen.dart';
+import 'package:sen/screen/miscellaneous/miscellaneous_screen.dart';
 import 'package:sen/screen/setting/setting_screen.dart';
 import 'package:sen/screen/shell/shell_screen.dart';
 import 'package:sen/service/android_helper.dart';
@@ -20,7 +20,7 @@ class RootScreen extends StatelessWidget {
 
   static const List<Widget> _destinations = [
     HomeScreen(),
-    MiscellaenousScreen(),
+    MiscellaneousScreen(),
     SettingScreen(),
   ];
 
@@ -92,7 +92,7 @@ class RootScreen extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(32.0),
           child: NavigationRailTheme(
             data: NavigationRailThemeData(
               backgroundColor: Colors.transparent,
@@ -133,7 +133,7 @@ class RootScreen extends StatelessWidget {
                   context,
                   icon: Symbols.package,
                   selectedIcon: Symbols.package_sharp,
-                  label: los.miscellaneous,
+                  label: los.task,
                 ),
                 _buildDestination(
                   context,
@@ -156,9 +156,16 @@ class RootScreen extends StatelessWidget {
     required String label,
   }) {
     return NavigationRailDestination(
-      icon: Icon(icon, size: 26),
-      selectedIcon: Icon(selectedIcon, size: 26),
-      label: Text(label),
+      padding: const EdgeInsets.symmetric(
+        vertical: 8.0,
+        horizontal: 6.0,
+      ),
+      icon: Icon(icon, size: 24.0),
+      selectedIcon: Icon(selectedIcon, size: 24.0),
+      label: Text(
+        label,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
@@ -180,7 +187,7 @@ class RootScreen extends StatelessWidget {
         NavigationDestination(
           icon: const Icon(Symbols.package),
           selectedIcon: const Icon(Symbols.package_sharp),
-          label: los.miscellaneous,
+          label: los.task,
         ),
         NavigationDestination(
           icon: const Icon(Symbols.settings),
@@ -218,6 +225,7 @@ class RootScreen extends StatelessWidget {
           builder: (context, state) {
             return Scaffold(
               appBar: AppBar(
+                forceMaterialTransparency: CurrentPlatform.isDesktop,
                 title: const Text(BuildDistribution.kApplicationName),
                 centerTitle: false,
               ),

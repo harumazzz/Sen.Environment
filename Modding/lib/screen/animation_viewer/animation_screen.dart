@@ -3,14 +3,19 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
 import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import 'package:sen/extension/context.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/animation_viewer/control_panel.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:sen/i18n/app_localizations.dart';
+import 'package:sen/service/file_helper.dart';
+import 'package:path/path.dart' as p;
 
 class AnimationScreen extends StatefulWidget {
   const AnimationScreen({
@@ -23,9 +28,15 @@ class AnimationScreen extends StatefulWidget {
     required this.visualHelper,
     required this.selectedLabelBloc,
     required this.controller,
+    required this.mediaDirectory,
+    required this.sourceFile,
   });
 
   final bool hasFile;
+
+  final String? mediaDirectory;
+
+  final String? sourceFile;
 
   final Future<void> Function() onUploadFile;
 
@@ -52,6 +63,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
   late TransformationController _transformationController;
 
   late Widget? _animationVisual;
+  late GlobalKey<PopupMenuButtonState<String>> _popupMenuKey;
   bool _isPause = false;
 
   Matrix4? _matrix;
@@ -62,6 +74,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void initState() {
     _scaleNotifier = ValueNotifier(1.0);
     _frameNotifier = ValueNotifier(0.0);
+    _popupMenuKey = GlobalKey<PopupMenuButtonState<String>>();
     super.initState();
     _animationVisual = null;
     _transformationController = TransformationController();
@@ -149,28 +162,105 @@ class _AnimationScreenState extends State<AnimationScreen> {
     }
   }
 
-  Widget _buildMainAnimationScreen() {
-    return Screenshot(
-        controller: widget.controller,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: InteractiveViewer.builder(
-            panEnabled: true,
-            scaleEnabled: true,
-            scaleFactor: 1000,
-            maxScale: 10,
-            transformationController: _transformationController,
-            builder: (context, quad) {
-              return Transform.scale(
-                scale: 0.5,
-                child: SizedBox(
-                    width: widget.visualHelper.animation.size.width * 5,
-                    height: widget.visualHelper.animation.size.height * 5,
-                    child: _animationVisual),
-              );
+  Widget _buildPathField({
+    required IconData icon,
+    required String text,
+  }) {
+    return InkWell(
+      onTap: CurrentPlatform.isAndroid
+          ? null
+          : () async {
+              var destination = null as String?;
+              if (icon == Symbols.folder) {
+                destination = (text);
+              } else {
+                destination = (p.dirname(text));
+              }
+              await FileHelper.revealFile(destination);
             },
+      child: Tooltip(
+        message: context.los.open,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.2,
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
-        ));
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 20.0,
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Text(
+                  text,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 5,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainAnimationScreen() {
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        children: [
+          Screenshot(
+            controller: widget.controller,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: InteractiveViewer.builder(
+                panEnabled: true,
+                scaleEnabled: true,
+                scaleFactor: 1000,
+                maxScale: 10,
+                transformationController: _transformationController,
+                builder: (context, quad) {
+                  return Transform.scale(
+                    scale: 0.5,
+                    child: SizedBox(
+                      width: widget.visualHelper.animation.size.width * 5,
+                      height: widget.visualHelper.animation.size.height * 5,
+                      child: _animationVisual,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12.0,
+            right: 8.0,
+            child: Column(
+              spacing: 5.0,
+              children: [
+                _buildPathField(
+                  icon: Symbols.insert_drive_file,
+                  text: widget.sourceFile ?? context.los.not_specified,
+                ),
+                _buildPathField(
+                  icon: Symbols.folder,
+                  text: widget.mediaDirectory ?? context.los.not_specified,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _painterOrUpload() {
@@ -295,6 +385,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
           ),
         ),
         ControlPanel(
+          popupMenuKey: _popupMenuKey,
           visualHelper: widget.visualHelper,
           animationController: widget.animationController,
           isPause: _isPause,

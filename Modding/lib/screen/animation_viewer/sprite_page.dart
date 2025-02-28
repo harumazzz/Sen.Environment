@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 
 class SpritePage extends StatelessWidget {
@@ -52,6 +53,7 @@ class SpritePage extends StatelessWidget {
               color: theme.colorScheme.onSurface,
             ),
             overflow: TextOverflow.ellipsis,
+            maxLines: CurrentPlatform.isMobile ? 4 : null,
           ),
           trailing: Checkbox.adaptive(
             value: context.watch<SelectedSpriteBloc>().state.value[index],

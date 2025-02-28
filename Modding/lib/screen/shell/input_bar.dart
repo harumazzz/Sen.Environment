@@ -143,10 +143,8 @@ class _InputBarState extends State<InputBar> {
         enable: true,
         onDragDone: (details) {
           if (details.files.isNotEmpty) {
-            if (details.files.isNotEmpty) {
-              var file = details.files.first;
-              _controller.text = file.path;
-            }
+            var file = details.files.first;
+            _controller.text = file.path;
           }
         },
         child: Row(

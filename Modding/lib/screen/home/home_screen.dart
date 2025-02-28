@@ -121,7 +121,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedFloating(child: item.icon),
+              CurrentPlatform.isDesktop ? AnimatedFloating(child: item.icon) : item.icon,
               const SizedBox(height: 8.0),
               Text(
                 item.title,
@@ -168,18 +168,22 @@ class HomeScreen extends StatelessWidget {
   Future<void> _onLoadLevelMakerConfiguration(
     BuildContext context,
   ) async {
-    await showModalBottomSheet<void>(
+    final los = AppLocalizations.of(context)!;
+    await UIHelper.showDetailDialog(
       context: context,
-      builder: (BuildContext context) => const LevelMakerConfiguration(),
+      title: Text(los.level_maker),
+      content: const LevelMakerConfiguration(),
     );
   }
 
   Future<void> _onLoadMapEditorConfiguration(
     BuildContext context,
   ) async {
-    await showModalBottomSheet<void>(
+    final los = AppLocalizations.of(context)!;
+    await UIHelper.showDetailDialog(
       context: context,
-      builder: (BuildContext context) => const MapEditorConfiguration(),
+      title: Text(los.map_editor),
+      content: const MapEditorConfiguration(),
     );
   }
 

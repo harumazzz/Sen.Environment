@@ -7,6 +7,7 @@ import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
 import 'package:sen/bloc/launch_status_bloc/launch_status_bloc.dart';
 import 'package:sen/bloc/message_bloc/message_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/extension/context.dart';
 import 'package:sen/screen/shell/interaction_bar.dart';
@@ -181,6 +182,7 @@ class ShellScreen extends StatelessWidget {
                   },
                   child: Scaffold(
                     appBar: AppBar(
+                      forceMaterialTransparency: CurrentPlatform.isDesktop,
                       title: Text(context.los.shell),
                     ),
                     body: BlocListener<AddOptionBloc, AddOptionState>(

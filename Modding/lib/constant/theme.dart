@@ -51,9 +51,7 @@ class MaterialDesign {
       iconTheme: material.IconThemeData(color: material.Colors.white),
     ),
     cardTheme: material.CardTheme(
-     // color: material.Colors.grey.shade900,
       elevation: 3,
-     // surfaceTintColor: material.Colors.pinkAccent,
       shape: material.RoundedRectangleBorder(
         borderRadius: material.BorderRadius.circular(12),
       ),
@@ -111,9 +109,7 @@ class MaterialDesign {
       iconTheme: material.IconThemeData(color: material.Colors.black),
     ),
     cardTheme: material.CardTheme(
-     // color: material.Colors.white,
       elevation: 3,
-     // surfaceTintColor: material.Colors.deepPurpleAccent,
       shape: material.RoundedRectangleBorder(
         borderRadius: material.BorderRadius.circular(12),
       ),

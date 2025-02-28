@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/javascript_category/javascript_card.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/ui_helper.dart';
@@ -40,6 +41,7 @@ class JavaScriptCategory extends StatelessWidget {
       child: HotkeyBuilder(
         child: Scaffold(
           appBar: AppBar(
+            forceMaterialTransparency: CurrentPlatform.isDesktop,
             title: Text(los.js_page),
           ),
           body: Padding(

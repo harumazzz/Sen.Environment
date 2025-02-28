@@ -6,9 +6,7 @@ import 'package:sen/service/file_helper.dart';
 import 'package:sen/i18n/app_localizations.dart';
 
 class LevelMakerConfiguration extends StatefulWidget {
-  const LevelMakerConfiguration({
-    super.key,
-  });
+  const LevelMakerConfiguration({super.key});
 
   @override
   State<LevelMakerConfiguration> createState() => _LevelMakerConfigurationState();
@@ -23,11 +21,6 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
     _resourceLocationController = TextEditingController(
       text: BlocProvider.of<SettingsCubit>(context).state.levelMakerResource,
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override
@@ -58,43 +51,29 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12.0,
-        vertical: 8.0,
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 12.0,
-          children: <Widget>[
-            Text(
-              los.settings,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SizedBox(height: 10.0),
+        TextField(
+          controller: _resourceLocationController,
+          decoration: InputDecoration(
+            labelText: los.resource_location,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
             ),
-            Row(
-              spacing: 8.0,
-              children: [
-                Text('${los.resource_location}: '),
-                Expanded(
-                  child: TextField(
-                    controller: _resourceLocationController,
-                    onChanged: _onChangeSetting,
-                  ),
-                ),
-                IconButton(
-                  onPressed: _onUploadDirectory,
-                  icon: Tooltip(
-                    message: los.upload_directory,
-                    child: const Icon(Symbols.folder),
-                  ),
-                ),
-              ],
+            suffixIcon: IconButton(
+              onPressed: _onUploadDirectory,
+              icon: Tooltip(
+                message: los.upload_directory,
+                child: const Icon(Symbols.folder),
+              ),
             ),
-          ],
+          ),
+          onChanged: _onChangeSetting,
         ),
-      ),
+      ],
     );
   }
 }

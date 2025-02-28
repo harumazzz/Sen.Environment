@@ -1,73 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 
 class JavaScriptCategoryConfiguration extends StatelessWidget {
-  const JavaScriptCategoryConfiguration({
-    super.key,
-  });
+  const JavaScriptCategoryConfiguration({super.key});
 
-  void _onChangeDialog(
-    bool? value,
-    BuildContext context,
-  ) async {
-    if (value == null) return;
-    await BlocProvider.of<SettingsCubit>(context).setShowConfirmDialog(value);
+  void _onChangeDialog(bool value, BuildContext context) {
+    BlocProvider.of<SettingsCubit>(context).setShowConfirmDialog(value);
   }
 
-  void _onChangeLauncher(
-    bool? value,
-    BuildContext context,
-  ) async {
-    if (value == null) return;
-    await BlocProvider.of<SettingsCubit>(context).setRunAsLauncher(value);
+  void _onChangeLauncher(bool value, BuildContext context) {
+    BlocProvider.of<SettingsCubit>(context).setRunAsLauncher(value);
   }
 
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Symbols.warning),
-            title: Text(
-              los.show_confirm_dialog,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            subtitle: Text(
-              los.show_confirm_dialog_description,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-            trailing: Checkbox(
-              value: context.watch<SettingsCubit>().state.jsShowConfirmDialog,
-              onChanged: (value) => _onChangeDialog(value, context),
-            ),
+    final settingsState = context.watch<SettingsCubit>().state;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8.0,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            los.show_confirm_dialog,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
           ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Symbols.terminal),
-            title: Text(
-              los.run_as_launcher,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            subtitle: Text(
-              los.run_as_launcher_description,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-            trailing: Checkbox(
-              value: context.watch<SettingsCubit>().state.jsRunAsLauncher,
-              onChanged: (value) => _onChangeLauncher(value, context),
-            ),
+          subtitle: Text(
+            los.show_confirm_dialog_description,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+          value: settingsState.jsShowConfirmDialog,
+          onChanged: (value) => _onChangeDialog(value, context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            los.run_as_launcher,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            los.run_as_launcher_description,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
+          value: settingsState.jsRunAsLauncher,
+          onChanged: (value) => _onChangeLauncher(value, context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -2,320 +2,231 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:sen/bloc/backup_setting_bloc/backup_setting_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:path/path.dart' as p;
+import 'package:sen/extension/context.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/ui_helper.dart';
-import 'package:sen/widget/hotkey.dart';
+import 'package:sen/widget/json_viewer.dart';
 
-class BackupSetting extends StatefulWidget {
-  const BackupSetting({
-    super.key,
-  });
-
-  @override
-  State<BackupSetting> createState() => _BackupSettingState();
-}
-
-class _BackupSettingState extends State<BackupSetting> {
-  Map<String, dynamic>? _configuration;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  void _loadConfig({
-    required String source,
-  }) {
-    final sourceFiles = FileHelper.readDirectory(source: source, recursive: false)
-        .where((e) => RegExp(r'(.+)\.json$', caseSensitive: false).hasMatch(e))
-        .toList();
-    _configuration = {};
-    for (final e in sourceFiles) {
-      _configuration![p.basenameWithoutExtension(e)] = jsonDecode(FileHelper.readFile(source: e));
-    }
-  }
-
-  void _loadDumpedConfiguration({
-    required String source,
-  }) {
-    _configuration = jsonDecode(FileHelper.readFile(source: source));
-    for (var e in _configuration!.entries) {
-      _configuration![e.key] = e.value;
-    }
-  }
-
-  void _onLoadConfiguration({
-    required String toolChain,
-  }) {
-    final los = AppLocalizations.of(context)!;
-    try {
-      final source = '$toolChain/Script/Executor/Configuration';
-      _loadConfig(source: source);
-      setState(() {});
-      _onSuccess(message: los.configuration_has_been_loaded);
-    } catch (e, s) {
-      _onErrorDialog(e.toString(), s);
-    }
-  }
-
-  void _setWorkingDirectory(String source) {
-    BlocProvider.of<InitialDirectoryCubit>(context).setDirectoryOfFile(source: source);
-  }
-
-  void _onUploadConfiguration() async {
-    final los = AppLocalizations.of(context)!;
-    final source = await FileHelper.uploadFile(
-      initialDirectory: BlocProvider.of<InitialDirectoryCubit>(context).state.initialDirectory,
-    );
-    if (source == null) {
-      return;
-    }
-    try {
-      _setWorkingDirectory(source);
-      _loadDumpedConfiguration(source: source);
-      setState(() {});
-      _onSuccess(message: los.configuration_has_been_loaded);
-    } catch (e, s) {
-      _onErrorDialog(e.toString(), s);
-    }
-  }
-
-  void _onErrorDialog(
-    String message,
-    StackTrace stack,
-  ) async {
-    final los = AppLocalizations.of(context)!;
-    await UIHelper.showFlutterDialog(
-      context: context,
-      child: UIHelper.buildDialog(
-        title: Text(los.invalid_request),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await UIHelper.showSimpleDialog(
-                context: context,
-                title: message,
-                content: stack.toString(),
-              );
-            },
-            child: Text(los.detail),
-          ),
-          ...UIHelper.buildSimpleAction(context: context),
-        ],
-      ),
-    );
-  }
-
-  void _onSuccess({
-    required String message,
-  }) async {
-    final los = AppLocalizations.of(context)!;
-    await UIHelper.showSimpleDialog(
-      context: context,
-      title: los.done,
-      content: message,
-    );
-  }
-
-  void _onPreviewJson({
-    required String file,
-    required String message,
-  }) async {
-    final los = AppLocalizations.of(context)!;
-    await UIHelper.showSimpleDialog(
-      context: context,
-      title: los.error,
-      content: message,
-    );
-  }
-
-  void _applyChange(
-    Map<String, dynamic> current,
-    Map<String, dynamic> config,
-  ) {
-    for (var key in config.keys) {
-      if (current.containsKey(key)) {
-        current[key] = config[key];
-      }
-    }
-  }
-
-  void _onApplyChange({
-    required String toolChain,
-  }) {
-    final configuration = '$toolChain/Script/Executor/Configuration';
-    for (var e in _configuration!.entries) {
-      if (e.value is Map<String, dynamic> && (e.value as Map<String, dynamic>).isNotEmpty) {
-        final destination = '$configuration/${e.key}.json';
-        final current = FileHelper.readJson(source: destination);
-        _applyChange(current, e.value);
-        FileHelper.writeJson(source: destination, data: current);
-      }
-    }
-  }
-
-  void _onConfirm({
-    required String toolChain,
-  }) async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.confirmation),
-        content: Text(los.confirm_apply_configuration),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _onApplyChange(toolChain: toolChain);
-              _onSuccess(message: los.successfully_applied_your_configuration);
-            },
-            child: Text(los.yes),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.no),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _onApplyConfiguration({
-    required String toolChain,
-  }) {
-    if (_configuration == null) return;
-    try {
-      _onConfirm(toolChain: toolChain);
-    } catch (e, s) {
-      _onErrorDialog(e.toString(), s);
-    }
-  }
-
-  void _saveConfiguration() async {
-    if (_configuration == null) {}
-    final destination = await FileHelper.saveFile(
-      suggestedName: 'configuration.json',
-    );
-    if (destination == null) return;
-    FileHelper.writeJson(source: destination, data: _configuration);
-  }
-
-  Widget _buildExpandableList() {
-    final los = AppLocalizations.of(context)!;
-    return Column(
-      children: _configuration!.entries
-          .map(
-            (e) => Card(
-              child: ListTile(
-                leading: const Icon(Symbols.data_object),
-                title: Text(e.key),
-                trailing: Tooltip(
-                  message: los.info,
-                  child: IconButton(
-                    icon: const Icon(Symbols.info),
-                    onPressed: () => _onPreviewJson(
-                      file: e.key,
-                      message: const JsonEncoder.withIndent('\t').convert(e.value),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
+class BackupSetting extends StatelessWidget {
+  const BackupSetting({super.key});
 
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return HotkeyBuilder(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(los.backup_configuration),
-          actions: [
-            Tooltip(
-              message: los.upload_configuration,
-              child: IconButton(
-                onPressed: _onUploadConfiguration,
-                icon: const Icon(Symbols.upload),
+
+    return BlocProvider(
+      create: (context) => BackupSettingBloc(),
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: AppBar(
+              forceMaterialTransparency: CurrentPlatform.isDesktop,
+              title: Text(los.backup_configuration),
+              actions: [
+                IconButton(
+                  icon: const Icon(Symbols.upload),
+                  tooltip: los.upload_configuration,
+                  onPressed: () {
+                    BlocProvider.of<BackupSettingBloc>(context).add(
+                      UploadConfiguration(
+                        toolChain: context.read<SettingsCubit>().state.toolChain,
+                        initialDirectoryCubit: context.read<InitialDirectoryCubit>(),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Symbols.save),
+                  tooltip: los.save_configuration,
+                  onPressed: () {
+                    context.read<BackupSettingBloc>().add(const SaveConfiguration());
+                  },
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  BlocConsumer<BackupSettingBloc, BackupSettingState>(
+                    listener: (context, state) async {
+                      if (state is BackupError) {
+                        await UIHelper.showSimpleDialog(
+                          context: context,
+                          title: los.error,
+                          content: state.message,
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is ConfigurationLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (state is ConfigurationLoaded || state is ConfigurationUploaded) {
+                        return _buildConfigList(context, state.configuration!);
+                      }
+                      return _buildLoadingBar(context: context);
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      spacing: 12.0,
+                      children: [
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              context.read<BackupSettingBloc>().add(
+                                    LoadConfiguration(
+                                      toolChain: context.read<SettingsCubit>().state.toolChain,
+                                    ),
+                                  );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Text(los.load_configuration),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: FilledButton.tonal(
+                            onPressed: () {
+                              context.read<BackupSettingBloc>().add(
+                                    ApplyConfiguration(
+                                      toolChain: context.read<SettingsCubit>().state.toolChain,
+                                    ),
+                                  );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Text(los.apply_configuration),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            Tooltip(
-              message: los.save_configuration,
-              child: IconButton(
-                onPressed: _saveConfiguration,
-                icon: const Icon(Symbols.save),
+          );
+        },
+      ),
+    );
+  }
+
+  void _onPreviewJson({
+    required BuildContext context,
+    required String name,
+    required String message,
+  }) async {
+    await UIHelper.showCustomDialog(
+      context: context,
+      child: JsonViewer(name: name, message: message),
+    );
+  }
+
+  Widget _buildLoadingBar({
+    required BuildContext context,
+  }) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        height: 50.0,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.1),
+              blurRadius: 8,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          spacing: 12.0,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            LoadingAnimationWidget.flickr(
+              leftDotColor: theme.colorScheme.primary,
+              rightDotColor: theme.colorScheme.secondary,
+              size: 36,
+            ),
+            Text(
+              '${context.los.waiting_for_user}...',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              spacing: 15.0,
-              children: [
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Symbols.package_2),
-                    title: Text(los.toolchain),
-                    subtitle: Text(
-                      BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _onLoadConfiguration(
-                          toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text(los.load_configuration),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _onApplyConfiguration(
-                          toolChain: BlocProvider.of<SettingsCubit>(context).state.toolChain,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text(los.apply_configuration),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                _configuration == null ? const SizedBox.shrink() : _buildExpandableList(),
-              ],
-            ),
+      ),
+    );
+  }
+
+  Widget _buildConfigList(
+    BuildContext context,
+    Map<String, dynamic> config,
+  ) {
+    return Expanded(
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        itemCount: config.length,
+        itemBuilder: (context, index) {
+          final entry = config.entries.elementAt(index);
+          return _buildConfigTile(context, entry);
+        },
+      ),
+    );
+  }
+
+  Widget _buildConfigTile(BuildContext context, MapEntry<String, dynamic> entry) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 4.0,
+        ),
+        leading: Icon(
+          Symbols.data_object,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        title: Text(
+          entry.key,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        trailing: IconButton(
+          icon: Icon(
+            Symbols.info,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          tooltip: context.los.info,
+          onPressed: () => _onPreviewJson(
+            context: context,
+            name: entry.key,
+            message: const JsonEncoder.withIndent('\t').convert(entry.value),
           ),
         ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        tileColor: Theme.of(context).colorScheme.surfaceContainerLow,
       ),
     );
   }

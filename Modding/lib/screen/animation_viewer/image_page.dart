@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/animation_viewer/visual_helper.dart';
 import 'package:sen/service/ui_helper.dart';
 
@@ -54,6 +55,7 @@ class ImagePage extends StatelessWidget {
               color: theme.colorScheme.onSurface,
             ),
             overflow: TextOverflow.ellipsis,
+            maxLines: CurrentPlatform.isMobile ? 4 : null,
           ),
           trailing: Checkbox.adaptive(
             value: context.watch<SelectedImageBloc>().state.value[index],

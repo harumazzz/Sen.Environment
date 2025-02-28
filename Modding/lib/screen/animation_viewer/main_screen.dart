@@ -9,7 +9,6 @@ import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import 'package:sen/extension/platform.dart';
 import 'package:sen/screen/animation_viewer/animation_screen.dart';
-import 'package:sen/screen/animation_viewer/control_button.dart';
 import 'package:sen/screen/animation_viewer/label_info.dart';
 import 'package:sen/screen/animation_viewer/label_screen.dart';
 import 'package:sen/screen/animation_viewer/media_screen.dart';
@@ -85,19 +84,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _onUploadMedia() async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    final theme = Theme.of(context);
+    await UIHelper.showFlutterDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.upload_media),
-        content: Row(
-          children: [
-            const Icon(Symbols.abc),
-            Expanded(
-              child: TextField(
-                controller: _controller,
+      child: UIHelper.buildDialog(
+        title: Text(
+          los.upload_media,
+          style: theme.textTheme.bodyLarge,
+        ),
+        content: TextField(
+          controller: _controller,
+          decoration: InputDecoration(
+            hintText: los.upload_directory,
+            suffixIcon: IconButton(
+              icon: Icon(
+                Symbols.drive_folder_upload,
+                color: theme.colorScheme.primary,
               ),
-            ),
-            IconButton(
               onPressed: () async {
                 final directory = await FileHelper.uploadDirectory(
                   initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
@@ -108,9 +111,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   widget.initialDirectoryCubit.setDirectoryOfDirectory(source: directory);
                 }
               },
-              icon: const Icon(Symbols.drive_folder_upload),
             ),
-          ],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              borderSide: BorderSide(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: theme.colorScheme.primary,
+                width: 2.0,
+              ),
+            ),
+          ),
         ),
         actions: [
           TextButton(
@@ -256,79 +271,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _showInfo() async {
-    final los = AppLocalizations.of(context)!;
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.info),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 10.0,
-            children: [
-              Text(los.animation_file(_animationFile ?? los.unselected)),
-              Text(los.media_directory(_mediaDirectory ?? los.unselected)),
-              Row(
-                spacing: 10.0,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text('${los.image}: '),
-                  ControlButton(
-                    tooltip: los.enable_all_image,
-                    icon: Symbols.select_all,
-                    onPressed: () {
-                      widget.selectedImageBloc.add(const SelectedImageEnableAllEvent());
-                    },
-                  ),
-                  ControlButton(
-                    tooltip: los.disable_all_image,
-                    icon: Symbols.deselect,
-                    onPressed: () {
-                      widget.selectedImageBloc.add(const SelectedImageDisableAllEvent());
-                    },
-                  )
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                spacing: 10.0,
-                children: [
-                  Text('${los.sprite}: '),
-                  ControlButton(
-                    tooltip: los.enable_all_sprite,
-                    icon: Symbols.select_all,
-                    onPressed: () {
-                      widget.selectedSpriteBloc.add(const SelectedSpriteEnableAllEvent());
-                    },
-                  ),
-                  ControlButton(
-                    tooltip: los.disable_all_sprite,
-                    icon: Symbols.deselect,
-                    onPressed: () {
-                      widget.selectedSpriteBloc.add(const SelectedSpriteDisableAllEvent());
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(los.close),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _updateScreens() {
     final mediaScreen = MediaScreen(
       staticController: _staticController,
@@ -349,6 +291,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         hasFile: false,
         mediaScreen: mediaScreen,
         animationController: _animationController,
+        mediaDirectory: _mediaDirectory,
+        sourceFile: _animationFile,
       ),
       labelScreen,
       mediaScreen,
@@ -448,10 +392,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           IconButton(
             onPressed: _onUploadFile,
             icon: const Icon(Symbols.file_upload),
-          ),
-          IconButton(
-            onPressed: _showInfo,
-            icon: const Icon(Symbols.info),
           ),
         ],
       ),
