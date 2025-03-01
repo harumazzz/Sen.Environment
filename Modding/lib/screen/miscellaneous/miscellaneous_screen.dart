@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/bloc/miscellaneous_task_bloc/miscellaneous_task_bloc.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/extension/context.dart';
 import 'package:sen/extension/platform.dart';
 import 'package:sen/i18n/app_localizations.dart';
@@ -50,7 +51,11 @@ class MiscellaneousScreen extends StatelessWidget {
             title: Text(los.download_script, style: Theme.of(context).textTheme.titleMedium),
             subtitle: Text(los.download_script_description, style: Theme.of(context).textTheme.bodyMedium),
             onTap: CurrentPlatform.isAndroid
-                ? () => context.read<MiscellaneousTaskBloc>().add(const DownloadScriptRequested())
+                ? () => BlocProvider.of<MiscellaneousTaskBloc>(context).add(
+                      DownloadScriptRequested(
+                        settingsCubit: context.read<SettingsCubit>(),
+                      ),
+                    )
                 : null,
             enabled: CurrentPlatform.isAndroid,
             trailing: state is DownloadingScript

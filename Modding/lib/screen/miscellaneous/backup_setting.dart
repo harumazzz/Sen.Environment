@@ -77,7 +77,7 @@ class BackupSetting extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
-                      spacing: 12.0,
+                      spacing: 6.0,
                       children: [
                         Expanded(
                           child: FilledButton(
@@ -89,7 +89,7 @@ class BackupSetting extends StatelessWidget {
                                   );
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
                               child: Text(los.load_configuration),
                             ),
                           ),
@@ -104,7 +104,7 @@ class BackupSetting extends StatelessWidget {
                                   );
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
                               child: Text(los.apply_configuration),
                             ),
                           ),

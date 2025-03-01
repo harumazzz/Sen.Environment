@@ -17,7 +17,6 @@ class MediaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
       itemCount: media.length,
@@ -56,7 +55,7 @@ class MediaPage extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             maxLines: CurrentPlatform.isMobile ? 4 : null,
           ),
-          tileColor: theme.colorScheme.surfaceContainerHighest,
+          tileColor: UIHelper.colorOf(context),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

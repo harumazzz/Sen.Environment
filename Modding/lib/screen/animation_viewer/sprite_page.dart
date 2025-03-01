@@ -77,7 +77,7 @@ class SpritePage extends StatelessWidget {
               activeColor: theme.colorScheme.primary,
               checkColor: theme.colorScheme.onPrimary,
             ),
-            tileColor: theme.colorScheme.surfaceContainerHighest,
+            tileColor: UIHelper.colorOf(context),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),

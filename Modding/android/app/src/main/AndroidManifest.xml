@@ -8,6 +8,7 @@
         android:label="Sen: Environment"
         android:name="${applicationName}"
         android:largeHeap="true"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"

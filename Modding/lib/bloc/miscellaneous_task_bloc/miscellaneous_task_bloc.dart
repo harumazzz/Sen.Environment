@@ -3,6 +3,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:sen/constant/build_distribution.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:sen/service/file_helper.dart';
 
 part 'miscellaneous_task_event.dart';
@@ -41,6 +42,8 @@ class MiscellaneousTaskBloc extends Bloc<MiscellaneousTaskEvent, MiscellaneousTa
       );
       await FileHelper.unzipFile(source, '$destination/Script');
       FileHelper.removeFile(source);
+      await event.settingsCubit.setToolChain(destination);
+      await event.settingsCubit.setIsValid(true);
       emit(const ScriptDownloaded());
     } catch (e) {
       emit(ScriptDownloadFailed(error: e.toString()));

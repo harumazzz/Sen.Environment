@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 
@@ -41,24 +42,25 @@ class JavaScriptCategoryConfiguration extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0),
           ),
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            los.run_as_launcher,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
+        if (CurrentPlatform.isWindows)
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              los.run_as_launcher,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              los.run_as_launcher_description,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+            value: settingsState.jsRunAsLauncher,
+            onChanged: (value) => _onChangeLauncher(value, context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
           ),
-          subtitle: Text(
-            los.run_as_launcher_description,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-          ),
-          value: settingsState.jsRunAsLauncher,
-          onChanged: (value) => _onChangeLauncher(value, context),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-        ),
       ],
     );
   }

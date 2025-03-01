@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/screen/shell/shell_screen.dart';
+import 'package:sen/screen/shell_screen/shell_screen.dart';
 import 'package:sen/i18n/app_localizations.dart';
 import 'package:sen/service/ui_helper.dart';
 import 'package:sen/service/windows_helper.dart';

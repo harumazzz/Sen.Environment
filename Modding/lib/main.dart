@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sen/application.dart';
@@ -25,10 +24,10 @@ Future<void> main(
     await windowManager.focus();
   }
   await NotificationHelper.initialize();
-  if (Platform.isAndroid) {
+  if (CurrentPlatform.isAndroid) {
     AndroidHelper.initialize();
   }
-  if (Platform.isWindows) {
+  if (CurrentPlatform.isWindows) {
     WindowsHelper.initialize();
   }
   runApp(

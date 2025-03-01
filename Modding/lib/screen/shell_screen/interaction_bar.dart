@@ -10,12 +10,12 @@ import 'package:sen/bridge/client.dart';
 import 'package:sen/constant/build_distribution.dart';
 import 'package:sen/model/message.dart';
 import 'package:sen/model/select_option.dart';
-import 'package:sen/screen/shell/boolean_bar.dart';
-import 'package:sen/screen/shell/empty_bar.dart';
-import 'package:sen/screen/shell/enumeration_bar.dart';
-import 'package:sen/screen/shell/idle_bar.dart';
-import 'package:sen/screen/shell/input_bar.dart';
-import 'package:sen/screen/shell/loading_bar.dart';
+import 'package:sen/screen/shell_screen/boolean_bar.dart';
+import 'package:sen/screen/shell_screen/empty_bar.dart';
+import 'package:sen/screen/shell_screen/enumeration_bar.dart';
+import 'package:sen/screen/shell_screen/idle_bar.dart';
+import 'package:sen/screen/shell_screen/input_bar.dart';
+import 'package:sen/screen/shell_screen/loading_bar.dart';
 import 'package:sen/service/ui_helper.dart';
 
 class InteractionBar extends StatefulWidget {
@@ -42,12 +42,14 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
   Widget _buildWrapper({
     required Widget child,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 6.0,
-        horizontal: 8.0,
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          vertical: 6.0,
+          horizontal: 8.0,
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 

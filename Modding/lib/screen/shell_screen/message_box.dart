@@ -4,8 +4,8 @@ import 'package:screenshot/screenshot.dart';
 import 'package:sen/bloc/add_option_bloc/add_option_bloc.dart';
 import 'package:sen/bloc/launch_status_bloc/launch_status_bloc.dart';
 import 'package:sen/bloc/message_bloc/message_bloc.dart';
-import 'package:sen/screen/shell/message_card.dart';
-import 'package:sen/screen/shell/shimmer_card.dart';
+import 'package:sen/screen/shell_screen/message_card.dart';
+import 'package:sen/screen/shell_screen/shimmer_card.dart';
 
 class MessageBox extends StatefulWidget {
   const MessageBox({super.key});

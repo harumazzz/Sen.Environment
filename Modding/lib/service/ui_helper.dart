@@ -256,4 +256,10 @@ class UIHelper {
       child: Image(image: image),
     );
   }
+
+  static Color colorOf(BuildContext context) {
+    return context.isDynamicColor
+        ? Theme.of(context).colorScheme.surfaceContainer
+        : (context.isDarkMode ? Colors.grey[850]! : Colors.white);
+  }
 }

@@ -10,7 +10,7 @@ import 'package:sen/screen/level_maker/level_maker.dart';
 import 'package:sen/screen/map_editor/map_editor.dart';
 import 'package:sen/screen/root_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/screen/shell/shell_screen.dart';
+import 'package:sen/screen/shell_screen/shell_screen.dart';
 import 'package:sen/constant/localization.dart' as loc;
 import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';

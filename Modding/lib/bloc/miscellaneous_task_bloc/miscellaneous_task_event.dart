@@ -13,5 +13,12 @@ class BackupConfigurationRequested extends MiscellaneousTaskEvent {
 }
 
 class DownloadScriptRequested extends MiscellaneousTaskEvent {
-  const DownloadScriptRequested();
+  final SettingsCubit settingsCubit;
+
+  const DownloadScriptRequested({
+    required this.settingsCubit,
+  });
+
+  @override
+  List<Object?> get props => [settingsCubit];
 }
