@@ -3,11 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sen/i18n/app_localizations.dart';
 
 class Localization {
-  static const supportedLocales = [
-    Locale('en'),
-    Locale('vi'),
-    Locale('es'),
-    Locale('ru'),
+  static final supportedLocales = locales.map((lang) => Locale(lang));
+
+  static const locales = [
+    'en',
+    'vi',
+    'es',
+    'ru',
   ];
 
   static const localizationDelegates = [

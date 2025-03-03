@@ -306,6 +306,8 @@ add_library(
         utility/trait/numeric.hpp
         utility/container/variant/common.hpp
         utility/exception/common.hpp
+        utility/stream/output/output_stream.hpp
+        utility/stream/output/buffered_output_stream.hpp
 
 )
 

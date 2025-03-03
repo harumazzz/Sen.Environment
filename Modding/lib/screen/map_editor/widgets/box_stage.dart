@@ -45,17 +45,22 @@ class BoxStage extends StatelessWidget {
 
   Widget _resizeBox(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final safeAdditionalWidth =
-        isDesktopPlatform ? MapConst.safeDesktopAdditionalWidth : MapConst.safeMobileAdditionalWidth;
-    final safeAdditionalHeight =
-        isDesktopPlatform ? MapConst.safeDesktopAdditionalHeight : MapConst.safeMobileAdditionalHeight;
+    final safeAdditionalWidth = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalWidth
+        : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalHeight
+        : MapConst.safeMobileAdditionalHeight;
     final startPositionX = safeAdditionalWidth / 2;
     final startPositionY = safeAdditionalHeight / 2;
     final boundingRect = context.read<StageBloc>().state.boundingRect;
     return RectangleBox(
         minWidth: MapConst.minBoundingWidth.toDouble(),
         minHeight: MapConst.minBoundingHeight.toDouble(),
-        boundingRect: Rect.fromLTWH(startPositionX - 4, startPositionY - 4, boundingRect.width.toDouble() + 8,
+        boundingRect: Rect.fromLTWH(
+            startPositionX - 4,
+            startPositionY - 4,
+            boundingRect.width.toDouble() + 8,
             boundingRect.height.toDouble() + 8),
         onScalingEnd: (updateRect) {
           final newX = boundingRect.x + (updateRect.left - startPositionX);
@@ -66,7 +71,9 @@ class BoxStage extends StatelessWidget {
             width: updateRect.width.round() - 8,
             height: updateRect.height.round() - 8,
           );
-          context.read<StageBloc>().add(UpdateBoundingRect(boundingRect: bound));
+          context
+              .read<StageBloc>()
+              .add(UpdateBoundingRect(boundingRect: bound));
           context.read<ItemBloc>().add(const ItemStoreUpdated());
         });
   }
@@ -78,7 +85,12 @@ class BoxStage extends StatelessWidget {
     final backgroundColor = Theme.of(context).brightness == Brightness.dark
         ? colorScheme.onPrimaryFixedVariant
         : colorScheme.primaryFixedDim;
-    final transformationController = context.read<CanvasBloc>().state.canvasController.transformationController;
+    final transformationController = context
+        .read<CanvasBloc>()
+        .state
+        .canvasController
+        .transformationController;
+    final double kDrag = isDesktopPlatform ? 0.0000135 : 0.005;
     var stage = mapGrid
         ? GridPaper(
             interval: 200,
@@ -91,6 +103,7 @@ class BoxStage extends StatelessWidget {
                 maxScale: 3,
                 scaleFactor: 800,
                 transformationController: transformationController,
+                interactionEndFrictionCoefficient: kDrag,
                 builder: (context, quad) {
                   final child = OverlayWithRectangleClipping(
                     child: Stack(
@@ -116,6 +129,7 @@ class BoxStage extends StatelessWidget {
             maxScale: 3,
             scaleFactor: 800,
             transformationController: transformationController,
+            interactionEndFrictionCoefficient: kDrag,
             builder: (context, quad) {
               final child = OverlayWithRectangleClipping(
                 child: Stack(
@@ -137,10 +151,15 @@ class BoxStage extends StatelessWidget {
     if (!useEraseTool && !usePanTool) {
       stage = PieMenu(
           theme: PieTheme(
-            buttonTheme:
-                PieButtonTheme(backgroundColor: colorScheme.secondaryContainer, iconColor: colorScheme.inverseSurface),
-            buttonThemeHovered: PieButtonTheme(backgroundColor: backgroundColor, iconColor: colorScheme.inverseSurface),
-            delayDuration: isDesktopPlatform ? Duration.zero : const Duration(milliseconds: 300),
+            buttonTheme: PieButtonTheme(
+                backgroundColor: colorScheme.secondaryContainer,
+                iconColor: colorScheme.inverseSurface),
+            buttonThemeHovered: PieButtonTheme(
+                backgroundColor: backgroundColor,
+                iconColor: colorScheme.inverseSurface),
+            delayDuration: isDesktopPlatform
+                ? Duration.zero
+                : const Duration(milliseconds: 300),
             spacing: 4,
             radius: 60,
             angleOffset: 45,
@@ -165,8 +184,10 @@ class BoxStage extends StatelessWidget {
       case BorderBackground.timeSpace:
         {
           final mainState = context.read<MapEditorConfigurationCubit>().state;
-          final spaceSpiral = mainState.gameResource.commonImage[ImageCommonType.spaceSpiral]!;
-          final spaceDust = mainState.gameResource.commonImage[ImageCommonType.spaceDust]!;
+          final spaceSpiral =
+              mainState.gameResource.commonImage[ImageCommonType.spaceSpiral]!;
+          final spaceDust =
+              mainState.gameResource.commonImage[ImageCommonType.spaceDust]!;
           return ColoredBox(
               color: boxStageColor,
               child: Stack(
@@ -191,7 +212,11 @@ class BoxStage extends StatelessWidget {
                           gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [Colors.black, Colors.black54, Colors.transparent],
+                              colors: [
+                                Colors.black,
+                                Colors.black54,
+                                Colors.transparent
+                              ],
                               stops: [0.4, 0.7, 0.9],
                               tileMode: TileMode.decal),
                         ),
@@ -205,7 +230,11 @@ class BoxStage extends StatelessWidget {
                           gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: [Colors.black, Colors.black54, Colors.transparent],
+                              colors: [
+                                Colors.black,
+                                Colors.black54,
+                                Colors.transparent
+                              ],
                               stops: [0.4, 0.7, 0.8],
                               tileMode: TileMode.decal),
                         ),
@@ -218,7 +247,11 @@ class BoxStage extends StatelessWidget {
         }
       case BorderBackground.senLogo:
         {
-          final senLogo = context.read<MapEditorConfigurationCubit>().state.editorResource.senLogo;
+          final senLogo = context
+              .read<MapEditorConfigurationCubit>()
+              .state
+              .editorResource
+              .senLogo;
           return ColoredBox(
               color: boxStageColor,
               child: Stack(
@@ -244,27 +277,38 @@ class OverlayWithRectangleClipping extends StatelessWidget {
     final boundingRect = BlocProvider.of<StageBloc>(context).state.boundingRect;
 
     final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final safeAdditionalWidth =
-        isDesktopPlatform ? MapConst.safeDesktopAdditionalWidth : MapConst.safeMobileAdditionalWidth;
-    final safeAdditionalHeight =
-        isDesktopPlatform ? MapConst.safeDesktopAdditionalHeight : MapConst.safeMobileAdditionalHeight;
+    final safeAdditionalWidth = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalWidth
+        : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight = isDesktopPlatform
+        ? MapConst.safeDesktopAdditionalHeight
+        : MapConst.safeMobileAdditionalHeight;
     final maxBoundWidth = safeAdditionalWidth + boundingRect.width;
     final maxBoundHeight = safeAdditionalHeight + boundingRect.height;
-    final innerRect = Rect.fromLTWH(safeAdditionalWidth / 2, safeAdditionalHeight / 2, boundingRect.width.toDouble(),
+    final innerRect = Rect.fromLTWH(
+        safeAdditionalWidth / 2,
+        safeAdditionalHeight / 2,
+        boundingRect.width.toDouble(),
         boundingRect.height.toDouble());
-    final outlineRect = Rect.fromLTWH(0, 0, maxBoundWidth * 2, maxBoundHeight * 2);
+    final outlineRect =
+        Rect.fromLTWH(0, 0, maxBoundWidth * 2, maxBoundHeight * 2);
     return SizedBox(
       width: maxBoundWidth.toDouble(),
       height: maxBoundHeight.toDouble(),
       child: CustomPaint(
-          foregroundPainter: RectanglePainter(innerRect: innerRect, outlineRect: outlineRect),
+          foregroundPainter:
+              RectanglePainter(innerRect: innerRect, outlineRect: outlineRect),
           child: Stack(fit: StackFit.passthrough, children: [child])),
     );
   }
 }
 
 class RotaionWidget extends StatelessWidget {
-  const RotaionWidget({super.key, required this.scale, required this.rotationRate, required this.child});
+  const RotaionWidget(
+      {super.key,
+      required this.scale,
+      required this.rotationRate,
+      required this.child});
 
   final Widget child;
 

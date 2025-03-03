@@ -26,37 +26,38 @@ class LoadScriptFailed extends LoadScriptState {
 class LoadScriptLoaded extends LoadScriptState {
   final int kernel;
   final int script;
-  final List<Script> data;
+  final List<Script> allData;
+  final List<Script> filteredData;
 
   const LoadScriptLoaded({
     required this.kernel,
     required this.script,
-    required this.data,
+    required this.allData,
+    required this.filteredData,
   });
 
   @override
-  List<Object> get props => [kernel, script, data];
+  List<Object> get props => [kernel, script, allData, filteredData];
 
   LoadScriptLoaded copyWith({
     int? kernel,
     int? script,
-    List<Script>? data,
+    List<Script>? allData,
+    List<Script>? filteredData,
   }) {
     return LoadScriptLoaded(
       kernel: kernel ?? this.kernel,
       script: script ?? this.script,
-      data: data ?? this.data,
+      allData: allData ?? this.allData,
+      filteredData: filteredData ?? this.filteredData,
     );
   }
-
-  @override
-  String toString() => 'LoadScriptLoaded(kernel: $kernel, script: $script, data: $data)';
 
   Map<String, dynamic> toJson() {
     return {
       'kernel': kernel,
       'script': script,
-      'data': data.map((x) => x.toJson()).toList(),
+      'data': allData.map((x) => x.toJson()).toList(),
     };
   }
 
@@ -64,7 +65,8 @@ class LoadScriptLoaded extends LoadScriptState {
     return LoadScriptLoaded(
       kernel: map['kernel']?.toInt() ?? 0,
       script: map['script']?.toInt() ?? 0,
-      data: List<Script>.from(map['data']?.map((x) => Script.fromJson(x))),
+      allData: List<Script>.from(map['data']?.map((x) => Script.fromJson(x))),
+      filteredData: List<Script>.from(map['data']?.map((x) => Script.fromJson(x))),
     );
   }
 }

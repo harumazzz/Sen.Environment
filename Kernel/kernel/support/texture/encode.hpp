@@ -292,9 +292,9 @@ namespace Sen::Kernel::Support::Texture
             auto position = k_begin_index;
             exchange_image_etc_v1(image, value, position);
             value[position++] = 0x10;
-            Math::generate_each([&](const usize& i) -> void {
-                value[position++] = i;
-            }, std::make_index_sequence<0x10_size>{});
+            Math::iterate_each<0x10_size>([&]<auto index>() -> void {
+                value[position++] = index;
+            });
             for (const auto y : Range{image.height / 2_size}) {
                 for (const auto x : Range{image.width / 2_size}) {
                     auto &rows_a = image[y << 1][x << 1];

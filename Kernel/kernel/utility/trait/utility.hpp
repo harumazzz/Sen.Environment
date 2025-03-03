@@ -98,6 +98,17 @@ namespace Sen::Kernel {
     using Tuple = std::tuple<Args...>;
 
     template <typename T>
-    constexpr auto is_scoped_enum_v = std::is_enum_v<T> && !std::is_convertible_v<T, int>;
+    struct is_enum_class : std::bool_constant<std::is_enum_v<T> && !std::is_convertible_v<T, int>> {};
+
+    template <typename T>
+    constexpr auto is_enum_class_v = is_enum_class<T>::type;
+
+    template <typename T>
+    concept is_implemented_stream = requires(std::ostream& os, const T& value) {
+            { os << value } -> std::same_as<std::ostream&>;
+    };
+
+    template <auto T>
+    constexpr auto is_implemented_stream_v = is_implemented_stream<decltype(T)>;
 
 }

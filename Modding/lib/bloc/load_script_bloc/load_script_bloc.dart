@@ -16,6 +16,7 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
   }) : super(LoadScriptInitial()) {
     on<LoadScripts>(_loadScript);
     on<ReloadScripts>(_reloadScript);
+    on<SearchScripts>(_searchScript);
   }
 
   void _loadScript(
@@ -48,5 +49,18 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
     Emitter<LoadScriptState> emit,
   ) async {
     return await _loadScriptFile(event, emit);
+  }
+
+  void _searchScript(
+    SearchScripts event,
+    Emitter<LoadScriptState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is LoadScriptLoaded) {
+      final filtered = [
+        ...currentState.allData.where((script) => script.name.toLowerCase().contains(event.query.toLowerCase()))
+      ];
+      emit(currentState.copyWith(filteredData: filtered));
+    }
   }
 }

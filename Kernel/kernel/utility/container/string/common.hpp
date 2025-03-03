@@ -9,8 +9,8 @@ namespace Sen::Kernel {
     inline constexpr auto hash_string (
         std::string_view const & string
     ) -> std::uint64_t {
-        auto offset = std::uint64_t{14695981039346656037ull};
-        auto prime = std::uint64_t{1099511628211ull};
+        constexpr auto offset = std::uint64_t{14695981039346656037ull};
+        constexpr auto prime = std::uint64_t{1099511628211ull};
         auto result = offset;
         for (auto & element : string) {
             result ^= static_cast<std::uint8_t>(element);
@@ -28,10 +28,9 @@ namespace Sen::Kernel {
         auto result = std::string{};
         result.reserve(str.size());
         auto pos = size_t{0};
-        auto old_sub_len = old_sub.size();
-        auto new_sub_len = new_sub.size();
+        const auto old_sub_len = old_sub.size();
         while (true) {
-            auto found = str.find(old_sub, pos);
+            const auto found = str.find(old_sub, pos);
             if (found == std::string::npos) {
                 result.append(str.substr(pos));
                 break;
@@ -273,5 +272,44 @@ namespace Sen::Kernel {
         }
 
     }
+
+    #ifdef WINDOWS
+    inline auto u16_to_u8(
+        const std::u16string_view& u16
+    ) -> std::string
+    {
+        if (u16.empty()) {
+            return std::string{};
+        }
+        const auto size_needed = static_cast<size_t>(WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(u16.data()),
+            static_cast<int>(u16.size()), nullptr, 0, nullptr, nullptr));
+        if (size_needed <= 0) {
+            return std::string{};
+        }
+        auto result = std::string{};
+        result.resize(size_needed);
+        WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<LPCWCH>(u16.data()),
+            static_cast<int>(u16.size()), result.data(), static_cast<int>(size_needed),
+            nullptr, nullptr);
+        return result;
+    }
+
+    inline auto u8_to_u16(
+        const std::string_view& u8
+    ) -> std::u16string
+    {
+        if (u8.empty()) {
+            return std::u16string{};
+        }
+        const auto size_needed = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, u8.data(), static_cast<int>(u8.size()), nullptr, 0));
+        if (size_needed <= 0) {
+            return std::u16string{};
+        }
+        auto result = std::u16string{};
+        result.resize(size_needed);
+        MultiByteToWideChar(CP_UTF8, 0, u8.data(), static_cast<int>(u8.size()), reinterpret_cast<LPWSTR>(result.data()), static_cast<int>(size_needed));
+        return result;
+    }
+    #endif
 
 }

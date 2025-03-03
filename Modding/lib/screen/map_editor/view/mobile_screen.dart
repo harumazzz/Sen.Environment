@@ -139,14 +139,12 @@ class NavigationView extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               children: [
                 SectionView(sectionItem: state.sectionItem),
-                const Spacer(),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 4),
                   child: VerticalDivider(
                     thickness: 0.5,
                   ),
                 ),
-                const Spacer(),
                 ExtensionView(
                   extensionItem: state.extensionItem,
                 )

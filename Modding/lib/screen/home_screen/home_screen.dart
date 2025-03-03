@@ -87,10 +87,10 @@ class HomeScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final spacing = 4.0 * (crossAxisCount - 1);
-    final availableWidth = (screenWidth - 16 - spacing) / crossAxisCount;
+    final availableWidth = (screenWidth - 18 - spacing) / crossAxisCount;
     final estimatedHeight = availableWidth * 1.1;
-    final maxHeight = screenHeight * 0.38;
-    final temporaryHeight = estimatedHeight.clamp(120, maxHeight);
+    final maxHeight = screenHeight * 0.42;
+    final temporaryHeight = estimatedHeight.clamp(130, maxHeight);
     return availableWidth / temporaryHeight;
   }
 

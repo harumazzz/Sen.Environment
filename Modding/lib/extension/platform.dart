@@ -12,4 +12,6 @@ extension CurrentPlatform on Platform {
   static bool get isLinux => Platform.isLinux;
 
   static bool get isWindows => Platform.isWindows;
+
+  static String get locale => Platform.localeName.split('_').first;
 }

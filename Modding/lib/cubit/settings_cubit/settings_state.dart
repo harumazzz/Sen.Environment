@@ -27,10 +27,18 @@ class SettingsState extends Equatable {
     required this.jsRunAsLauncher,
   });
 
+  static String currentLocale() {
+    final locale = CurrentPlatform.locale;
+    if (k_locale.Localization.locales.contains(CurrentPlatform.locale)) {
+      return locale;
+    }
+    return k_locale.Localization.locales.first;
+  }
+
   factory SettingsState.initialize() {
-    return const SettingsState(
+    return SettingsState(
       theme: 'system',
-      locale: 'en',
+      locale: currentLocale(),
       sendNotification: false,
       toolChain: '',
       isValid: false,

@@ -1,7 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:sen/extension/platform.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sen/constant/localization.dart' as k_locale;
 
 part 'settings_state.dart';
 

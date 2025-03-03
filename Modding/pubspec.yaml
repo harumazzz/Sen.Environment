@@ -50,6 +50,7 @@ dev_dependencies:
     flutter_test:
         sdk: flutter
     flutter_lints: ^5.0.0
+    msix: ^3.16.8
 flutter_launcher_icons:
     android: true
     ios: true
@@ -76,3 +77,21 @@ flutter:
         - family: PVZ2Font
           fonts:
               - asset: assets/font/fbUsv8C5eI.ttf
+msix_config:
+    display_name: Sen
+    publisher_display_name: Haruma
+    identity_name: com.haruma.sen.environment
+    publisher: CN=Haruma
+    architecture: x64
+    logo_path: assets/images/logo.png
+    install_certificate: false
+    author: Haruma
+    app_installer:
+        publish_folder_path: ./publish
+        hours_between_update_checks: 0
+        automatic_background_task: true
+        update_blocks_activation: true
+        show_prompt: true
+        force_update_from_any_version: true
+    certificate_path: ./certificate.pfx
+    certificate_password: haruma123

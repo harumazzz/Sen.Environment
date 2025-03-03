@@ -28,6 +28,8 @@ class AnimationScreen extends StatefulWidget {
     required this.visualHelper,
     required this.selectedLabelBloc,
     required this.controller,
+    required this.matrix,
+    required this.transformationController,
     required this.mediaDirectory,
     required this.sourceFile,
   });
@@ -44,6 +46,8 @@ class AnimationScreen extends StatefulWidget {
 
   final MediaScreen mediaScreen;
 
+  final Matrix4? matrix;
+
   final AnimationController animationController;
 
   final VisualHelper visualHelper;
@@ -51,6 +55,8 @@ class AnimationScreen extends StatefulWidget {
   final SelectedLabelBloc selectedLabelBloc;
 
   final ScreenshotController controller;
+
+  final TransformationController transformationController;
 
   @override
   State<AnimationScreen> createState() => _AnimationScreenState();
@@ -60,13 +66,10 @@ class _AnimationScreenState extends State<AnimationScreen> {
   bool _dragging = false;
   late ValueNotifier<double> _scaleNotifier;
   late ValueNotifier<double> _frameNotifier;
-  late TransformationController _transformationController;
 
   late Widget? _animationVisual;
   late GlobalKey<PopupMenuButtonState<String>> _popupMenuKey;
   bool _isPause = false;
-
-  Matrix4? _matrix;
 
   double _maxFrame = 0;
 
@@ -77,14 +80,16 @@ class _AnimationScreenState extends State<AnimationScreen> {
     _scaleNotifier = ValueNotifier(1.0);
     _frameNotifier = ValueNotifier(0.0);
     _popupMenuKey = GlobalKey<PopupMenuButtonState<String>>();
+    widget.transformationController.addListener(() {
+      _scaleNotifier.value =
+          widget.transformationController.value.getMaxScaleOnAxis() - 1.0;
+    });
     super.initState();
     _animationVisual = null;
-    _transformationController = TransformationController();
   }
 
   @override
   void dispose() {
-    _transformationController.dispose();
     super.dispose();
     return;
   }
@@ -95,7 +100,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
       splashColor: Colors.blue.withAlpha(30),
       onTap: widget.onUploadFile,
       child: Center(
-        child: _dragging ? Text(los.drop_file_to_upload) : Text(los.upload_file_to_continue),
+        child: _dragging
+            ? Text(los.drop_file_to_upload)
+            : Text(los.upload_file_to_continue),
       ),
     );
   }
@@ -120,7 +127,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
           final file = details.files.first;
           widget.onDragFile(file.path);
           if (widget.visualHelper.hasAnimation) {
-            widget.visualHelper.workingFrameRate = widget.visualHelper.animation.frameRate.toDouble();
+            widget.visualHelper.workingFrameRate =
+                widget.visualHelper.animation.frameRate.toDouble();
           }
         }
       },
@@ -129,17 +137,23 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   void _loadWorkingSprite(int index) {
-    final labelInfo = widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
-    final duration =
-        ((labelInfo.endIndex - labelInfo.startIndex) / widget.visualHelper.workingFrameRate * 1000).toInt();
+    final labelInfo =
+        widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
+    final duration = ((labelInfo.endIndex - labelInfo.startIndex) /
+            widget.visualHelper.workingFrameRate *
+            1000)
+        .toInt();
     widget.animationController.duration = Duration(milliseconds: duration);
-    _animationVisual = widget.visualHelper.visualizeSprite(index, widget.animationController);
+    _animationVisual =
+        widget.visualHelper.visualizeSprite(index, widget.animationController);
     _animationVisual = SizedBox.fromSize(
-      size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+      size: Size(widget.visualHelper.animation.size.width,
+          widget.visualHelper.animation.size.height),
       child: UnconstrainedBox(
         child: SizedOverflowBox(
           alignment: AlignmentDirectional.topStart,
-          size: Size(widget.visualHelper.animation.size.width, widget.visualHelper.animation.size.height),
+          size: Size(widget.visualHelper.animation.size.width,
+              widget.visualHelper.animation.size.height),
           child: _animationVisual,
         ),
       ),
@@ -150,17 +164,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
     });
     if (!_isPause) {
       widget.animationController.repeat();
-    }
-    if (_matrix == null) {
-      final matrix = _transformationController.value;
-      matrix[0] = 2;
-      matrix[1] = 0;
-      matrix[4] = 0;
-      matrix[5] = 2;
-      matrix[12] = -widget.visualHelper.animation.size.width * 4;
-      matrix[13] = -widget.visualHelper.animation.size.height * 4;
-      _matrix = matrix.clone();
-      _transformationController.value = matrix;
     }
   }
 
@@ -182,7 +185,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
     required String text,
   }) {
     return InkWell(
-      onTap: CurrentPlatform.isAndroid ? null : () async => await _onReveal(icon: icon, text: text),
+      onTap: CurrentPlatform.isAndroid
+          ? null
+          : () async => await _onReveal(icon: icon, text: text),
       child: Tooltip(
         message: context.los.open,
         child: Container(
@@ -228,7 +233,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
           scaleEnabled: true,
           scaleFactor: 1000,
           maxScale: 10,
-          transformationController: _transformationController,
+          minScale: 1.1,
+          transformationController: widget.transformationController,
           builder: (context, quad) {
             return Transform.scale(
               scale: 0.5,
@@ -242,17 +248,15 @@ class _AnimationScreenState extends State<AnimationScreen> {
         ),
       ),
     );
-    if (CurrentPlatform.isDesktop) {
-      return Stack(
-        children: [
-          mainScreen,
-          _buildRegularPath(),
-          _buildBasicInformation(),
-          _buildControlInformation(),
-        ],
-      );
-    }
-    return mainScreen;
+    return Stack(
+      children: [
+        mainScreen,
+        if (CurrentPlatform.isDesktop)
+        _buildRegularPath(),
+        _buildBasicInformation(),
+        _buildControlInformation(),
+      ],
+    );
   }
 
   Widget _buildControlInformation() {
@@ -355,17 +359,24 @@ class _AnimationScreenState extends State<AnimationScreen> {
             _informationOf(
               icon: Symbols.image,
               key: context.los.width,
-              value: widget.visualHelper.animation.size.width.toStringAsFixed(0),
+              value:
+                  widget.visualHelper.animation.size.width.toStringAsFixed(0),
             ),
             _informationOf(
               icon: Symbols.image,
               key: context.los.height,
-              value: widget.visualHelper.animation.size.height.toStringAsFixed(0),
+              value:
+                  widget.visualHelper.animation.size.height.toStringAsFixed(0),
             ),
-            _informationOf(
-              icon: Symbols.scale,
-              key: context.los.scale,
-              value: _scaleNotifier.value.toStringAsFixed(0),
+            ValueListenableBuilder<double>(
+              valueListenable: _scaleNotifier,
+              builder: (context, value, child) {
+                return _informationOf(
+                  icon: Symbols.scale,
+                  key: context.los.scale,
+                  value: value.toStringAsFixed(1),
+                );
+              },
             ),
           ],
         ),
@@ -394,11 +405,15 @@ class _AnimationScreenState extends State<AnimationScreen> {
     return ValueListenableBuilder<double>(
       valueListenable: notifier,
       builder: (context, value, child) {
-        final textStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
+        final textStyle = Theme.of(context)
+            .textTheme
+            .titleSmall!
+            .copyWith(fontWeight: FontWeight.bold);
         return Card(
           color: Theme.of(context).colorScheme.surfaceContainerHigh,
           elevation: 4.0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -503,12 +518,11 @@ class _AnimationScreenState extends State<AnimationScreen> {
             _isPause = !_isPause;
             return _isPause;
           },
-          scaleNotifier: _scaleNotifier,
           setState: setState,
           resetFocus: () {
             setState(() {
-              if (_matrix != null) {
-                _transformationController.value = _matrix!.clone();
+              if (widget.matrix != null) {
+                widget.transformationController.value = widget.matrix!.clone();
               }
             });
           },

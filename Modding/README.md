@@ -70,3 +70,8 @@ Additional modules to Sen.
 
 -   All configuration has been made in `native_splash.yaml`, however if you want better splash
     screen, please change it as your wish.
+
+## MSIX Package
+
+-   `MSIX Package` is already configurated, you need to run: `dart run msix:create` to build an msix
+    package.

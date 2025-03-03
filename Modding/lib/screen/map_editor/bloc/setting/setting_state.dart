@@ -1,22 +1,23 @@
 part of 'setting_bloc.dart';
 
 final class SettingState extends Equatable {
-  const SettingState(
-      {required this.boundBackground,
-      required this.showTopScreenShortcut,
-      required this.islandImageBorder,
-      required this.islandAnimationBorder,
-      required this.eventBorder,
-      required this.hideMissingArt,
-      required this.hideOldEvent,
-      required this.mapPath,
-      required this.plantCostume,
-      required this.mapCompleted,
-      required this.mapGrid,
-      required this.boundingColor,
-      required this.playSingleFrame,
-      required this.muteAudio,
-      required this.filterQuality});
+  const SettingState({
+    required this.boundBackground,
+    required this.showTopScreenShortcut,
+    required this.islandImageBorder,
+    required this.islandAnimationBorder,
+    required this.eventBorder,
+    required this.hideMissingArt,
+    required this.hideOldEvent,
+    required this.mapPath,
+    required this.plantCostume,
+    required this.mapCompleted,
+    required this.mapGrid,
+    required this.boundingColor,
+    required this.playSingleFrame,
+    required this.muteAudio,
+    required this.filterQuality,
+  });
 
   final BorderBackground boundBackground;
 
@@ -55,7 +56,7 @@ final class SettingState extends Equatable {
       islandImageBorder: true,
       islandAnimationBorder: true,
       eventBorder: true,
-      hideMissingArt: false,
+      hideMissingArt: true,
       hideOldEvent: true,
       mapPath: true,
       plantCostume: true,
@@ -85,11 +86,10 @@ final class SettingState extends Equatable {
       bool? muteAudio,
       FilterQuality? filterQuality}) {
     return SettingState(
-      showTopScreenShortcut: showTopScreenShortcut ?? this.showTopScreenShortcut,
+        showTopScreenShortcut: showTopScreenShortcut ?? this.showTopScreenShortcut,
         boundBackground: boundBackground ?? this.boundBackground,
         islandImageBorder: islandImageBorder ?? this.islandImageBorder,
-        islandAnimationBorder:
-            islandAnimationBorder ?? this.islandAnimationBorder,
+        islandAnimationBorder: islandAnimationBorder ?? this.islandAnimationBorder,
         eventBorder: eventBorder ?? this.eventBorder,
         hideMissingArt: hideMissingArt ?? this.hideMissingArt,
         hideOldEvent: hideOldEvent ?? this.hideOldEvent,

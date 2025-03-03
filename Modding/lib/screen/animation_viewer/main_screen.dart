@@ -45,8 +45,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late List<String> _media;
   late List<String> _label;
   late TextEditingController _controller;
+  late TransformationController _transformationController;
   late AnimationController _animationController;
   late AnimationController _staticController;
+  Matrix4? _matrix;
   String? _animationFile;
   String? _mediaDirectory;
 
@@ -59,6 +61,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void initState() {
     _animationController = AnimationController(vsync: this);
     _staticController = AnimationController(vsync: this);
+    _transformationController = TransformationController();
     _staticController.stop();
     _controller = TextEditingController();
     _visualHelper = VisualHelper(
@@ -75,6 +78,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _transformationController.dispose();
     _animationController.dispose();
     _staticController.dispose();
     _controller.dispose();
@@ -234,6 +238,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     void resetImageEvent() => widget.selectedImageBloc.add(const SelectedImageResetEvent());
     void resetSpriteEvent() => widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
     void resetLabelEvent() => widget.selectedLabelBloc.add(const ResetLabelEvent());
+    _animationController.stop();
     final file = await FileHelper.uploadFile(
       initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
     );
@@ -247,6 +252,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _resetAnimation();
         await _visualHelper.loadAnimation(file);
         _visualHelper.hasAnimation = true;
+        if (_matrix == null) {
+          final matrix = _transformationController.value;
+          matrix[0] = 2;
+          matrix[1] = 0;
+          matrix[4] = 0;
+          matrix[5] = 2;
+          matrix[12] = -_visualHelper.animation.size.width * 4;
+          matrix[13] = -_visualHelper.animation.size.height * 4;
+          _matrix = matrix.clone();
+          _transformationController.value = matrix;
+        }
         await _onUploadMedia();
         _loadMedia();
         setState(() {
@@ -290,6 +306,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         onDragFile: _onDragFile,
         hasFile: false,
         mediaScreen: mediaScreen,
+        matrix: _matrix,
+        transformationController: _transformationController,
         animationController: _animationController,
         mediaDirectory: _mediaDirectory,
         sourceFile: _animationFile,

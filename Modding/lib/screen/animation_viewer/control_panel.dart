@@ -16,7 +16,6 @@ class ControlPanel extends StatelessWidget {
     required this.isPause,
     required this.toggleEvent,
     required this.setState,
-    required this.scaleNotifier,
     required this.forcePlay,
     required this.resetFocus,
     required this.visualHelper,
@@ -30,8 +29,6 @@ class ControlPanel extends StatelessWidget {
   final void Function(VoidCallback callback) setState;
 
   final AnimationController animationController;
-
-  final ValueNotifier<double> scaleNotifier;
 
   final bool isPause;
 

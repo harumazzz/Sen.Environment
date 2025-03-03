@@ -81,6 +81,7 @@ class SectionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
+    final toolWidth = isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
     return Tooltip(
       message: '${item.description}.',
       waitDuration: const Duration(seconds: 1),
@@ -95,7 +96,7 @@ class SectionItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             onTap: onSetting,
             child: SizedBox(
-              width: selected ? 180 : 45,
+              width: selected ? 180 : toolWidth,
               child: selected
                   ? Row(
                       children: [
@@ -168,6 +169,7 @@ class ExtensionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
+    final toolWidth = isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),
@@ -182,7 +184,7 @@ class ExtensionItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             onTap: onSetting,
             child: SizedBox(
-              width: 45,
+              width: toolWidth,
               child: item.icon,
             ),
           )),

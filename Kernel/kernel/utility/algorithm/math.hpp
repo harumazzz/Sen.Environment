@@ -133,12 +133,36 @@ namespace Sen::Kernel::Math {
 		return false;
 	}
 
-	template <typename F, auto... Indices> requires (std::is_same_v<type_of<Indices>, size_t> && ...)
+	template <auto Index, typename F>
+	inline constexpr auto apply(
+		F&& func
+	) -> void {
+		func.template operator()<Index>();
+	}
+
+	template <typename F, auto... Indices>
 	inline constexpr auto generate_each(
-		F&& func,
+		F&& func, 
 		std::index_sequence<Indices...>
 	) -> void {
-		(func(Indices), ...);
+		(apply<Indices>(func), ...);
+	}
+
+	template <auto N, typename F> requires std::is_same_v<type_of<N>, usize>
+	inline constexpr auto iterate_each(F&& func) -> void {
+		return generate_each(std::forward<F>(func), std::make_index_sequence<N>{});
+	}
+
+	template <auto N, typename Conditional, typename Callable>
+	inline constexpr auto match_each(
+		const Conditional& condition, 
+		Callable&& callback
+	) -> void {
+		return iterate_each<N>([&]<auto index>() -> void {
+			if (index == condition) {
+				callback();
+			}
+		});
 	}
 
 	template <auto N, typename F> requires (std::is_same_v<type_of<N>, size_t>)
@@ -174,10 +198,49 @@ namespace Sen::Kernel::Math {
 
 	template <typename Container, std::ranges::range R>
 	requires std::constructible_from<Container, std::ranges::iterator_t<R>, std::ranges::sentinel_t<R>>
-	auto to(
+	inline auto to(
 		R&& range
 	) -> Container {
 		return Container{std::ranges::begin(range), std::ranges::end(range)};
+	}
+
+	template <auto A, auto B, typename F, auto... Indices>
+	inline constexpr auto generate_each_range(
+		F&& func,
+		std::integer_sequence<std::underlying_type_t<decltype(A)>, Indices...>
+	) -> void {
+		((Indices >= static_cast<std::underlying_type_t<decltype(A)>>(A) &&
+		  Indices < static_cast<std::underlying_type_t<decltype(B)>>(B)
+		  ? apply<Indices>(func)
+		  : void()), ...);
+	}
+
+
+	template <auto A, auto B, typename F>
+	inline constexpr auto for_each_range(
+		F&& func
+	) -> void {
+		using Integer = std::underlying_type_t<decltype(A)>;
+		constexpr auto start = static_cast<Integer>(A);
+		constexpr auto end = static_cast<Integer>(B);
+		static_assert(end >= start, "B must be greater than or equal to A");
+		return generate_each_range<A, B>(
+			std::forward<F>(func),
+			std::make_integer_sequence<Integer, end - start>{}
+		);
+	}
+
+
+	template <auto A, auto B, typename Conditional, typename Callable>
+	inline constexpr auto match_range(
+		const Conditional& condition,
+		Callable&& callback
+	) -> void {
+		return for_each_range<A, B>([&]<auto index>() -> void {
+			if (index == static_cast<std::underlying_type_t<Conditional>>(condition)) {
+				callback.template operator()<index>();
+			}
+		});
 	}
 
 }
