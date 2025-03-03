@@ -11,7 +11,7 @@ namespace Sen::Kernel::Compression::bzip2 {
     /// Usually use Block Size = 9 and Work Factor = 0
 
     template <auto block_size, auto work_factor> requires std::is_integral_v<type_of<block_size>> && std::is_integral_v<type_of<work_factor>> &&
-        is_between_v<block_size, 1_size, 9_size> && is_between_v<work_factor, 0_size, 250_size>
+        is_between_v<block_size, 1, 9> && is_between_v<work_factor, 0, 250>
     struct Compress : Common {
 
     protected:

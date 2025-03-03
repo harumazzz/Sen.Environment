@@ -9,7 +9,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
     struct Decode : Common
     {
     private:
-
+        /*
         template<typename RawShort, typename RawLong, typename Container> requires is_integer<RawShort> && is_integer<RawLong> && is_list_v<Container>
         static auto exchange_integer_variant_and_resize(ReadMemoryStream& stream, Container &list) -> void
         {
@@ -248,15 +248,17 @@ namespace Sen::Kernel::Support::PopCap::Animation
             exchange_list<u16>(&exchange_sprite, stream, model.sprite);
             exchange_main_sprite(stream, model.main_sprite);
         }
-
+        */
     public:
         static auto process_whole(ReadMemoryStream& stream, SexyAnimation &model) -> void
         {
+            /*
             assert_conditional(stream.u32() == k_magic_identifier, fmt::format("{}", Language::get("popcap.animation.invalid_magic")), "process_whole");
             exchange_number_fixed<u32>(stream, k_version);
             assert_conditional(contain_version(k_version), fmt::format("{}", Language::get("popcap.animation.invalid_version")), "process_whole");
             model.version = k_version;
             exchange_animation(stream, model);
+            */
         }
 
         static auto process_fs(

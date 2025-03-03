@@ -9,6 +9,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct Encode : Common
     {
     private:
+        /*
         template <auto platform, typename TransformClass> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television> && is_class<TransformClass>
         static auto exchange_transform_value(WriteMemoryStream &stream, TransformClass const &value) -> void
         {
@@ -113,10 +114,10 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             exchange_null_block(stream, ignored_size);
             exchange_track_list<platform>(stream, model.track);
         }
-
+        */
     public:
         static auto process_whole(WriteMemoryStream &stream, ReanimInfo const &model, VersionPlatform const &platform) -> void
-        {
+        {/*
             switch (platform)
             {
             case VersionPlatform::desktop:
@@ -148,6 +149,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                     assert_conditional(false, "Invalid platform", "get_k_magic_identifier"); //TODO
                 }
             }
+            */
         }
 
         static auto process_fs(StringView const &source, StringView const &destination, VersionPlatform const &platform) -> void

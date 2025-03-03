@@ -8,6 +8,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	struct Encode : Common {
 
 	private:
+	    /*
         static auto exchange_number_string(WriteMemoryStream &stream, Optional<String> const &value) -> void
         {
             if (value.has_value())
@@ -149,13 +150,15 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
             }
 	    }
 
-
+        */
 	public:
         static auto process_whole(WriteMemoryStream &stream, ResourcesModel const& model) -> void
         {
+            /*
             stream.allocate_full(6400000);
             exchange_number_fixed<u32>(stream, model.slot_count);
             exchange_list<u32>(&exchange_group, stream, model.groups);
+            */
         }
 
 	    static auto process_fs(StringView const &source, StringView const & destination) -> void

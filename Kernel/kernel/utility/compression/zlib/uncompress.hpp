@@ -9,7 +9,7 @@ namespace Sen::Kernel::Compression::Zlib {
     struct Uncompress : Common {
 
         template <auto format, auto windows_bits, typename Source, typename Destination>
-        requires is_valid_uncompress<format, windows_bits>
+        requires is_valid_uncompress<format, windows_bits> && FileSystem::Detail::is_buffer_container_v<Source> && FileSystem::Detail::is_buffer_container_v<Destination>
         static auto process_whole (
             const Source& source,
             Destination& destination
@@ -25,16 +25,19 @@ namespace Sen::Kernel::Compression::Zlib {
                 actual_window_bits += 16_size;
             }
             auto avail_out = k_none_size;
-            if constexpr (std::is_same_v<Destination, Uint8Array>) {
+            if constexpr (is_array_v<Destination>) {
                 avail_out = destination.size();
             }
             else {
                 destination.allocate(source.size() * 8_size);
                 avail_out = destination.capacity();
             }
+            const auto source_size = source.size() * source.sizeof_value();
+            debug(source_size);
+            debug(avail_out);
             auto z_stream = Subprojects::zlib::z_stream{
                 .next_in = reinterpret_cast<Subprojects::zlib::Bytef*>(source.begin()),
-                .avail_in = static_cast<Subprojects::zlib::uInt>(source.size()),
+                .avail_in = static_cast<Subprojects::zlib::uInt>(source_size),
                 .total_in = 0,
                 .next_out = reinterpret_cast<Subprojects::zlib::Bytef*>(destination.begin()),
                 .avail_out = static_cast<Subprojects::zlib::uInt>(avail_out),
@@ -65,20 +68,21 @@ namespace Sen::Kernel::Compression::Zlib {
                 &z_stream
             );
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to uncompress zlib state", "process_whole");
-            if constexpr (std::is_same_v<Destination, Uint8List>) {
-                destination.resize(z_stream.total_out);
+            if constexpr (is_list_v<Destination>) {
+                destination.resize(static_cast<usize>(z_stream.total_out / destination.sizeof_value()));
             }
             #pragma clang diagnostic pop
         }
 
-        template <auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Source, typename Destination>
-        requires is_valid_uncompress<type, windows_bits> && is_buffer_container<Destination>
+        template < auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Source, typename Destination>
+        requires is_valid_uncompress<type, windows_bits> && FileSystem::Detail::is_buffer_container_v<Source> && FileSystem::Detail::is_buffer_container_v<Destination>
         static auto process (
             Source& source,
             Destination& destination
         ) -> void {
             process_whole<type, windows_bits>(source, destination);
         }
+
     };
 
 }

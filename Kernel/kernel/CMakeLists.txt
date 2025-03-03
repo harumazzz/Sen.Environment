@@ -27,6 +27,7 @@ add_library(
         ./subprojects/thread-pool.hpp
         ./subprojects/mscharconv.hpp
         ./subprojects/jsoncons.hpp
+	./subprojects/decodeless.hpp
 
         ./utility/macro.hpp
         ./utility/range/forward.hpp
@@ -121,6 +122,7 @@ add_library(
 
         ./utility/filesystem/file_handler.hpp
         ./utility/filesystem/windows_file_handler.hpp
+        ./utility/algorithm/shared.hpp
         ./utility/algorithm/image/max_rects/common.hpp
         ./utility/algorithm/image/max_rects/extended_image.hpp
         ./utility/algorithm/image/max_rects/max_rects_bin.hpp
@@ -238,7 +240,6 @@ add_library(
         ./support/popcap/re_animation/convert/from_flash.hpp
         ./support/popcap/re_animation/convert/instance.hpp
         ./support/popcap/re_animation/convert/to_flash.hpp
-        ./support/miscellaneous/shared.hpp
         ./support/texture/compression/pvrtc/color.hpp
         ./support/texture/compression/pvrtc/packet.hpp
         ./support/texture/compression/pvrtc/pvrtc.hpp
@@ -286,7 +287,9 @@ add_library(
         utility/stream/readable_stream.hpp
         utility/stream/writeable_stream.hpp
         utility/stream/read_file_stream.hpp
-        utility/stream/write_file_stream.hpp
+        utility/byte_stream/mapped_stream.hpp
+        utility/byte_stream/common.hpp
+        utility/byte_stream/writer_stream.hpp
         support/popcap/reflection_object_notation/decrypt.hpp
         utility/container/array_view/array_view.hpp
         utility/container/list_view/list_view.hpp
@@ -306,6 +309,7 @@ add_library(
         utility/trait/numeric.hpp
         utility/container/variant/common.hpp
         utility/exception/common.hpp
+        utility/stream/write_file_stream.hpp
         utility/stream/output/output_stream.hpp
         utility/stream/output/buffered_output_stream.hpp
 
@@ -381,6 +385,7 @@ target_link_libraries(
         jsoncons
         pugixml
         pvrtc
+	    decodeless
 )
 
 if (WIN32)

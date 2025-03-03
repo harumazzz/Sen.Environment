@@ -1,8 +1,6 @@
 #pragma once
 
 #include "kernel/utility/utility.hpp"
-#include "kernel/support/popcap/resource_stream_group/common.hpp"
-#include "kernel/support/popcap/resource_stream_bundle/common.hpp"
 
 namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 {
@@ -15,7 +13,22 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
     using Dimension = Encoding::Image::Rectangle;
 
+    struct WorkOption {
+        size_t inherit_length;
+        size_t parent_offset;
+        bool has;
+
+        friend auto operator << (
+            std::ostream& os,
+            const WorkOption& other
+        ) -> std::ostream& {
+            os << "WorkOption(" << other.inherit_length << ", " << other.parent_offset <<  ", " << other.has << ")";
+            return os;
+        }
+    };
+
     struct DataMapPosition {
+        u32 index;
         u32 offset;
         u32 size;
 
@@ -27,7 +40,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             std::ostream& os,
             const DataMapPosition& other
         ) -> std::ostream& {
-            os << "DataMapPosition(" << other.offset << ", " << other.size << ")";
+            os << "DataMapPosition("  << other.index << other.offset << ", " << other.size << ")";
             return os;
         }
 
@@ -50,8 +63,10 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
         }
     };
 
+
     struct TextureResource {
         String path;
+        Optional<u32> format;
         Dimension dimension;
         DataMapPosition _mapping;
 
@@ -69,12 +84,12 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
     };
 
-    using ItemResource = std::variant<GeneralResource, TextureResource>;
+    using ItemResource = std::variant<TextureResource, GeneralResource>;
 
     struct PacketInformation {
         u32 version;
         u32 compression;
-        List<ItemResource> resources;
+        List<ItemResource> resource;
 
         constexpr explicit PacketInformation() = default;
 
@@ -85,7 +100,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             const PacketInformation& other
         ) -> std::ostream& {
             os << "PacketInformation(" << other.version << ", " << other.compression << ", ";
-            for (const auto& resource : other.resources) {
+            for (const auto& resource : other.resource) {
                 if (std::holds_alternative<GeneralResource>(resource)) {
                     os << std::get<GeneralResource>(resource);
                 } else {
@@ -100,6 +115,6 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
 
 JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::GeneralResource, path);
 
-JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::TextureResource, path, dimension);
+JSONCONS_N_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::TextureResource, 2, path, dimension, format);
 
-JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::PacketInformation, version, compression, resources);
+JSONCONS_ALL_MEMBER_TRAITS(Sen::Kernel::Support::PopCap::ResourceStreamGroup::PacketInformation, version, compression, resource);

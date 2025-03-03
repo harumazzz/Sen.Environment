@@ -11,8 +11,8 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
     { 
 
          static auto process_fs(
-            std::string_view source,
-            std::string_view destination) -> void
+            StringView const& source,
+            StringView const& destination) -> void
         {
         }
     };

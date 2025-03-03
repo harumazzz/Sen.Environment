@@ -65,6 +65,10 @@ namespace Sen::Kernel {
 				}
 			}
 
+			[[nodiscard]] constexpr auto sizeof_value() const noexcept -> Size {
+				return sizeof(T);
+			}
+
 	        constexpr auto allocate(
 	            Size const& size
 	        ) -> void

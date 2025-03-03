@@ -43,6 +43,7 @@ add_subdirectory("./subprojects/thread-pool")
 add_subdirectory("./subprojects/jsoncons")
 add_subdirectory("./subprojects/pugixml")
 add_subdirectory("./subprojects/PVRTCCompressor")
+add_subdirectory("./subprojects/decodeless")
 
 if (MSVC)
   add_subdirectory("./subprojects/dirent")

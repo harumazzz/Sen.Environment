@@ -52,6 +52,7 @@
 #include "kernel/subprojects/mscharconv.hpp"
 #include "kernel/subprojects/jsoncons.hpp"
 #include "kernel/subprojects/pvrtc.hpp"
+#include "kernel/subprojects/decodeless.hpp"
 
 namespace Sen::Kernel {
 

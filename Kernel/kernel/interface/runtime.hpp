@@ -200,6 +200,11 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_function_by_proxy<&Support::PopCap::ResourceStreamGroup::Pack::process_fs>("pack_fs"_s);
         }
         {
+            auto s_ResourceStreamBundle = s_PopCap.add_space("ResourceStreamBundle"_s);
+            s_ResourceStreamBundle.add_function_by_proxy<&Support::PopCap::ResourceStreamBundle::Unpack::process_fs>("unpack_fs"_s)
+            .add_function_by_proxy<&Support::PopCap::ResourceStreamBundle::Pack::process_fs>("pack_fs"_s);
+        }
+        {
             auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
             s_ReAnimation.add_function_by_proxy<&Support::PopCap::ReAnimation::Decode::process_fs>("decode_fs"_s)
             .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s)

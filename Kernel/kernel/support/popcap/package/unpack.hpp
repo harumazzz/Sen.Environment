@@ -9,6 +9,7 @@ namespace Sen::Kernel::Support::PopCap::Package
     struct Unpack : Common
     {
     private:
+        /*
         template <auto compress, typename ReadStream> requires is_readable_stream<ReadStream> && std::is_same_v<type_of<compress>, bool>
         static auto process_package(ReadStream &stream, PackageInfo &model, StringView const &resource_directory) -> void
         {
@@ -62,8 +63,9 @@ namespace Sen::Kernel::Support::PopCap::Package
                 }
             }
         }
-
+        */
     public:
+        /*
         template <typename ReadStream> requires is_readable_stream<ReadStream>
         static auto process_whole(ReadStream &stream, PackageInfo &model, StringView const &destination, bool const& compressed) -> void
         {
@@ -78,6 +80,7 @@ namespace Sen::Kernel::Support::PopCap::Package
             }
 
         }
+        */
 
         static auto process_fs(
             StringView const& source,
@@ -86,7 +89,7 @@ namespace Sen::Kernel::Support::PopCap::Package
         {
             auto stream = ReadFileStream{source};
             auto model = PackageInfo{};
-            process_whole(stream, model, destination, compressed);
+            //process_whole(stream, model, destination, compressed);
             FileSystem::write_json(source, model);
         }
     };

@@ -8,6 +8,7 @@ namespace Sen::Kernel::Support::PopCap::Package
     struct Pack : Common
     {
     private:
+        /*
         template <auto compress, typename WriteStream> requires is_writable_stream<WriteStream> && std::is_same_v<type_of<compress>, bool>
         static auto process_package(WriteStream &stream, PackageInfo const &model, StringView const &resource_directory) -> void
         {
@@ -42,8 +43,9 @@ namespace Sen::Kernel::Support::PopCap::Package
                 stream.bytes(resource_data);
             }
         }
-
+        */
     public:
+        /*
         template <typename WriteStream> requires is_writable_stream<WriteStream>
         static auto process_whole(WriteStream &stream, PackageInfo const &model, StringView const &destination, bool const& compressed) -> void
         {
@@ -58,7 +60,7 @@ namespace Sen::Kernel::Support::PopCap::Package
             }
 
         }
-
+        */
         static auto process_fs(
             StringView const& source,
             StringView const& destination,
@@ -68,7 +70,7 @@ namespace Sen::Kernel::Support::PopCap::Package
             auto stream = WriteFileStream{source};
             auto model = PackageInfo{};
             FileSystem::read_json(source, model);
-            process_whole(stream, model, destination, compressed);
+            //process_whole(stream, model, destination, compressed);
         }
     };
 }

@@ -11,6 +11,7 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
     struct Decode : Common
     {
     private:
+        /*
         template <auto platform, typename TransformClass> requires is_between_v<platform, VersionPlatform::desktop, VersionPlatform::television> && is_class<TransformClass>
         static auto exchange_transform_value(ReadMemoryStream &stream, TransformClass &value) -> void
         {
@@ -134,8 +135,9 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
             exchange_null_block(stream, ignored_size);
             exchange_track_list<platform>(stream, model.track);
         }
-
+        */
     public:
+        /*
         static auto process_whole(ReadMemoryStream &stream, ReanimInfo &model, VersionPlatform const &platform) -> void
         {
             switch (platform)
@@ -170,12 +172,12 @@ namespace Sen::Kernel::Support::PopCap::ReAnimation
                 }
             }
         }
-
+        */
         static auto process_fs(StringView const &source, StringView const &destination, VersionPlatform const &platform) -> void
         {
             auto stream = ReadMemoryStream{source};
             auto model = ReanimInfo{};
-            process_whole(stream, model, platform);
+           // process_whole(stream, model, platform);
             FileSystem::write_json(destination, model);
         }
     };

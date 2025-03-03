@@ -9,7 +9,7 @@ namespace Sen::Kernel::Support::PopCap::Animation
     struct Encode : Common
     {
     private:
-
+        /*
         template<is_integer RawShort, is_integer RawLong>
         static auto exchange_integer_variant(WriteMemoryStream& stream, u32 const &size) -> void
         {
@@ -274,15 +274,17 @@ namespace Sen::Kernel::Support::PopCap::Animation
             exchange_list<u16>(&exchange_sprite, stream, model.sprite);
             exchange_main_sprite(stream, model.main_sprite);
         }
-
+        */
     public:
         static auto process_whole(WriteMemoryStream& stream, SexyAnimation const &model) -> void
         {
+            /*
             stream.u32(k_magic_identifier);
             k_version = model.version;
             assert_conditional(contain_version(k_version), fmt::format("{}", Language::get("popcap.animation.invalid_version")), "process_whole");
             exchange_number_fixed<u32>(stream, k_version);
             exchange_animation(stream, model);
+            */
         }
 
         static auto process_fs(

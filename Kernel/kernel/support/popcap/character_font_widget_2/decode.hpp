@@ -7,6 +7,7 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
     struct Decode
     {
     private:
+        /*
         static auto exchange_character_item(ReadMemoryStream& stream, CharacterItem& model) -> void
         {
             exchange_unicode_fixed<u16>(stream, model.index);
@@ -88,11 +89,11 @@ namespace Sen::Kernel::Support::PopCap::CharacterFontWidget2
             exchange_boolean(stream, model.force_scaled_image_white);
             exchange_boolean(stream, model.activate_all_layer);
         }
-
+        */
     public:
         static auto process_whole(ReadMemoryStream& stream, FontWidget& model) -> void
         {
-            exchange_font_widget(stream, model);
+            //exchange_font_widget(stream, model);
         }
 
         static auto process_fs(StringView const& source, StringView const& destination) -> void

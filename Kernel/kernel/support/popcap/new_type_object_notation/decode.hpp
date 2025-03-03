@@ -8,7 +8,7 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	struct Decode : Common {
 
 	private:
-
+		/*
         static auto exchange_number_string(ReadMemoryStream &stream, Optional<String> &value) -> void
         {
             if (const auto data = stream.u32(); data != 0_ui)
@@ -170,15 +170,17 @@ namespace Sen::Kernel::Support::PopCap::NewTypeObjectNotation {
 	            }
 	        }
 	    }
-
+		*/
 
 	public:
         static auto process_whole(ReadMemoryStream &stream, ResourcesModel& model) -> void
         {
+        	/*
             model.version = k_default_version;
             model.content_version = k_default_version;
             exchange_number_fixed<u32>(stream, model.slot_count);
             exchange_list<u32>(&exchange_group, stream, model.groups);
+            */
         }
 
 	    static auto process_fs(StringView const &source, StringView const & destination) -> void

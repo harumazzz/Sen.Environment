@@ -18,11 +18,11 @@ namespace Sen::Kernel {
 }
 
 template<typename Json>
-struct jsoncons::json_type_traits<Json, Sen::Kernel::HashMap<typename Json::string_view_type, typename Json::value_type>> {
-    using class_type = Sen::Kernel::HashMap<typename Json::string_view_type, typename Json::value_type>;
+struct jsoncons::json_type_traits<Json, Sen::Kernel::HashMap<Sen::Kernel::String, typename Json::value_type>> {
+    using class_type = Sen::Kernel::HashMap<Sen::Kernel::String, typename Json::value_type>;
     using allocator_type = typename Json::allocator_type;
     using char_type = typename Json::char_type;
-    using string_view_type = typename Json::string_view_type;
+  //  using string_view_type = typename Json::string_view_type;
     using mapped_type = typename Json::value_type;
 
     static bool is(const Json &ajson) noexcept {
@@ -34,7 +34,8 @@ struct jsoncons::json_type_traits<Json, Sen::Kernel::HashMap<typename Json::stri
 
         class_type class_instance;
         for (const auto& item : ajson.object_range()) {
-            class_instance[item.key()] = item.value().template as<mapped_type>();
+            auto key = Sen::Kernel::String{item.key().data(), item.key().size()};
+            class_instance[key] = item.value().template as<mapped_type>();
         }
         return class_instance;
     }
