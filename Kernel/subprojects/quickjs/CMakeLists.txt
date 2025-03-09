@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
     quickjs
-    VERSION 0.8.0
+    VERSION 0.9.0
     HOMEPAGE_URL https://github.com/quickjs-ng/quickjs
     LANGUAGES C
 )
@@ -39,6 +39,10 @@ set(
     unicode_gen.c
 )
 
+if(MSVC)
+    add_link_options("/FORCE:MULTIPLE")
+endif()
+
 add_library(
     ${PROJECT_NAME} STATIC
     ${QUICKJS_HEADERS}
@@ -50,26 +54,27 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-include(CheckCCompilerFlag)
-include(GNUInstallDirs)
-
 function(xcheck_add_c_compiler_flag flag)
     if(NOT MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE ${flag})
     endif()
 endfunction()
 
-# Add GCC/Clang-specific flags
-if(NOT MSVC)
-    xcheck_add_c_compiler_flag(-Wno-implicit-fallthrough)
-    xcheck_add_c_compiler_flag(-Wno-sign-compare)
-    xcheck_add_c_compiler_flag(-Wno-missing-field-initializers)
-    xcheck_add_c_compiler_flag(-Wno-unused-parameter)
-    xcheck_add_c_compiler_flag(-Wno-unused-but-set-variable)
-    xcheck_add_c_compiler_flag(-Wno-array-bounds)
-    xcheck_add_c_compiler_flag(-Wno-format-truncation)
-    xcheck_add_c_compiler_flag(-funsigned-char)
-endif()
+xcheck_add_c_compiler_flag(-Wno-unsafe-buffer-usage)
+xcheck_add_c_compiler_flag(-Wno-sign-conversion)
+xcheck_add_c_compiler_flag(-Wno-nonportable-system-include-path)
+xcheck_add_c_compiler_flag(-Wno-implicit-int-conversion)
+xcheck_add_c_compiler_flag(-Wno-shorten-64-to-32)
+xcheck_add_c_compiler_flag(-Wno-reserved-macro-identifier)
+xcheck_add_c_compiler_flag(-Wno-reserved-identifier)
+xcheck_add_c_compiler_flag(-Wdeprecated-declarations)
+xcheck_add_c_compiler_flag(-Wno-implicit-fallthrough)
+xcheck_add_c_compiler_flag(-Wno-sign-compare)
+xcheck_add_c_compiler_flag(-Wno-missing-field-initializers)
+xcheck_add_c_compiler_flag(-Wno-unused-parameter)
+xcheck_add_c_compiler_flag(-Wno-unused-but-set-variable)
+xcheck_add_c_compiler_flag(-Wno-array-bounds)
+xcheck_add_c_compiler_flag(-Wno-format-truncation)
 
 # MSVC-specific configuration
 if(MSVC)
@@ -79,6 +84,7 @@ if(MSVC)
     target_compile_options(
         ${PROJECT_NAME} PRIVATE
         /experimental:c11atomics
+        /J
         /wd4018
         /wd4061
         /wd4100
@@ -97,19 +103,18 @@ if(MSVC)
     )
 endif()
 
-if(APPLE AND CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 11)
-    xcheck_add_c_compiler_flag(-Wno-maybe-uninitialized)
+if(WIN32)
+    set(STACK_SIZE 8388608)
+    if(MSVC)
+        add_link_options("/STACK:${STACK_SIZE}")
+    else()
+        add_link_options("-Wl,--stack,${STACK_SIZE}")
+    endif()
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
-    add_compile_definitions(
-        _WASI_EMULATED_PROCESS_CLOCKS
-        _WASI_EMULATED_SIGNAL
-    )
-    add_link_options(
-        -lwasi-emulated-process-clocks
-        -lwasi-emulated-signal
-    )
+
+if(APPLE AND CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 11)
+    xcheck_add_c_compiler_flag(-Wno-maybe-uninitialized)
 endif()
 
 set_source_files_properties(
@@ -120,24 +125,6 @@ set_source_files_properties(
 if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX _WINSOCKAPI_ _UCRT_NOISY_NAN)
     target_compile_options(${PROJECT_NAME} PRIVATE /wd4005)
-else()
-    if(NOT DEFINED CLOCK_MONOTONIC)
-        add_definitions(-DCLOCK_MONOTONIC=1)
-    endif()
-    add_definitions(-D_POSIX_C_SOURCE=200809L)
-    add_definitions(-Dtm_gmtoff=__tm_gmtoff)
-endif()
-
-if(UNIX AND NOT APPLE)
-    add_definitions(-D_POSIX_C_SOURCE=200809L)
-
-    if(DEFINED CMAKE_SYSTEM_NAME AND (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
-                                       CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
-                                       CMAKE_SYSTEM_NAME STREQUAL "NetBSD"))
-        add_definitions(-D_POSIX_C_SOURCE=200809L)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE "ENVRION_DEFINED")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE "SIGHANDLER_T_DEFINED")
-    endif()
 endif()
 
 if(UNIX AND NOT APPLE)

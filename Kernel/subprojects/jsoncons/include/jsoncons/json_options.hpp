@@ -266,18 +266,24 @@ public:
     using typename super_type::char_type;
     using typename super_type::string_type;
 private:
-    bool lossless_number_;
+    bool lossless_number_{false};
+    bool allow_comments_{true};
+    bool allow_trailing_comma_{false};
     std::function<bool(json_errc,const ser_context&)> err_handler_;
 public:
     basic_json_decode_options()
-        : lossless_number_(false), err_handler_(default_json_parsing())
+        : err_handler_(default_json_parsing())
     {
     }
 
     basic_json_decode_options(const basic_json_decode_options&) = default;
 
     basic_json_decode_options(basic_json_decode_options&& other) noexcept
-        : super_type(std::move(other)), lossless_number_(other.lossless_number_), err_handler_(std::move(other.err_handler_))
+        : super_type(std::move(other)), 
+          lossless_number_(other.lossless_number_), 
+          allow_comments_(other.allow_comments_), 
+          allow_trailing_comma_(other.allow_trailing_comma_), 
+          err_handler_(std::move(other.err_handler_))
     {
     }
 protected:
@@ -287,6 +293,16 @@ public:
     bool lossless_number() const 
     {
         return lossless_number_;
+    }
+
+    bool allow_comments() const 
+    {
+        return allow_comments_;
+    }
+
+    bool allow_trailing_comma() const 
+    {
+        return allow_trailing_comma_;
     }
 
     const std::function<bool(json_errc,const ser_context&)>& err_handler() const 
@@ -309,7 +325,7 @@ public:
     static constexpr uint8_t indent_size_default = 1;
     static constexpr size_t line_length_limit_default = 120;
 
-    // Haruma : modify
+    // Haruma : Add
     static constexpr char indent_char_default = '\t';
 private:
     bool escape_all_non_ascii_:1;
@@ -328,8 +344,6 @@ private:
     spaces_option spaces_around_comma_;
     int8_t precision_{0};
     uint8_t indent_size_{indent_size_default};
-    // Haruma : Add
-    char indent_char_{indent_char_default};
     std::size_t line_length_limit_{line_length_limit_default};
     string_type new_line_chars_;
 public:
@@ -480,6 +494,8 @@ public:
     using basic_json_decode_options<CharT>::neginf_to_num;
 
     using basic_json_decode_options<CharT>::lossless_number;
+    using basic_json_decode_options<CharT>::allow_comments;
+    using basic_json_decode_options<CharT>::allow_trailing_comma;
     using basic_json_decode_options<CharT>::err_handler;
 
     using basic_json_encode_options<CharT>::byte_string_format;
@@ -552,6 +568,12 @@ public:
         return *this;
     }
 
+     // Haruma : add
+     basic_json_options& indent_char(char value) {
+        this->indent_char_ = value;
+        return *this;
+    }
+
     basic_json_options& neginf_to_str(const string_type& value, bool enable_inverse = true)
     {
         this->enable_neginf_to_str_ = true;
@@ -584,12 +606,6 @@ public:
     basic_json_options& indent_size(uint8_t value)
     {
         this->indent_size_ = value;
-        return *this;
-    }
-
-    // Haruma : add
-    basic_json_options& indent_char(char value) {
-        this->indent_char_ = value;
         return *this;
     }
 
@@ -626,6 +642,18 @@ public:
     basic_json_options& lossless_number(bool value) 
     {
         this->lossless_number_ = value;
+        return *this;
+    }
+
+    basic_json_options& allow_comments(bool value) 
+    {
+        this->allow_comments_ = value;
+        return *this;
+    }
+
+    basic_json_options& allow_trailing_comma(bool value) 
+    {
+        this->allow_trailing_comma_ = value;
         return *this;
     }
 

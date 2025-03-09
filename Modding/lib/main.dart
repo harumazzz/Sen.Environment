@@ -8,9 +8,7 @@ import 'package:sen/service/windows_helper.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:sen/extension/platform.dart';
 
-Future<void> main(
-  List<String> arguments,
-) async {
+Future<void> main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(SystemOverlay.kDefaultOverlay);
@@ -30,7 +28,5 @@ Future<void> main(
   if (CurrentPlatform.isWindows) {
     WindowsHelper.initialize();
   }
-  runApp(
-    const Application(),
-  );
+  runApp(const Application());
 }

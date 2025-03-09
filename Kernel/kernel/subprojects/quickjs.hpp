@@ -105,6 +105,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 
 	using ::JS_IsObject;
 
+	using ::JS_IsObjectOfObject;
+
 	using ::JS_IsString;
 
 	using ::JS_IsFunction;
@@ -136,6 +138,8 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	using ::JS_NewBool;
 
 	using ::JS_NewArray;
+
+	using ::JS_NewArrayFrom;
 
 	using ::JS_NewArrayBuffer;
 
@@ -180,6 +184,10 @@ namespace Sen::Kernel::Subprojects::quickjs {
 	using ::JS_SetOpaque;
 
 	using ::JS_NewCFunction2;
+
+	using ::JSValueConst;
+
+	using ::JS_NewObjectFrom;
 
 	inline static auto constexpr $JS_EVAL_TYPE_MODULE = int{JS_EVAL_TYPE_MODULE};
 

@@ -39,18 +39,8 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     super.dispose();
   }
 
-  Widget _buildWrapper({
-    required Widget child,
-  }) {
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-          vertical: 6.0,
-          horizontal: 8.0,
-        ),
-        child: child,
-      ),
-    );
+  Widget _buildWrapper({required Widget child}) {
+    return SafeArea(child: Container(margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0), child: child));
   }
 
   final List<String> arguments = const [
@@ -69,18 +59,14 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
           return const BooleanBar();
         }
         if (state is EnumerationSelectState) {
-          return EnumerationBar(
-            onSelect: _onEnumerationSelect,
-          );
+          return EnumerationBar(onSelect: _onEnumerationSelect);
         }
         return const EmptyBar();
       },
     );
   }
 
-  void _onLaunch(
-    BuildContext context,
-  ) {
+  void _onLaunch(BuildContext context) {
     context.read<LaunchStatusBloc>().add(LaunchStatusBegin(client: this, arguments: arguments));
   }
 
@@ -89,11 +75,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     return BlocBuilder<LaunchStatusBloc, LaunchStatusState>(
       builder: (context, state) {
         if (state is LaunchStatusInitial || state is LaunchStatusEnd) {
-          return _buildWrapper(
-            child: IdleBar(
-              onLaunch: () => _onLaunch(context),
-            ),
-          );
+          return _buildWrapper(child: IdleBar(onLaunch: () => _onLaunch(context)));
         }
         return _buildWrapper(
           child: Column(
@@ -101,19 +83,14 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
-            children: [
-              const LoadingBar(),
-              _buildInteraction(),
-            ],
+            children: [const LoadingBar(), _buildInteraction()],
           ),
         );
       },
     );
   }
 
-  Future<void> _onDisplay(
-    List<String> arguments,
-  ) async {
+  Future<void> _onDisplay(List<String> arguments) async {
     final title = arguments[1];
     var color = null as String?;
     var subtitle = null as String?;
@@ -124,23 +101,15 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
       subtitle = arguments[3];
     }
     addMessage() {
-      BlocProvider.of<MessageBloc>(context).add(
-        AddMessage(
-          message: Message(
-            title: title,
-            color: color,
-            subtitle: subtitle,
-          ),
-        ),
-      );
+      BlocProvider.of<MessageBloc>(
+        context,
+      ).add(AddMessage(message: Message(title: title, color: color, subtitle: subtitle)));
     }
 
-    await Future.delayed(const Duration(milliseconds: 150), addMessage);
+    addMessage();
   }
 
-  Future<void> _onInputString(
-    List<String> destination,
-  ) async {
+  Future<void> _onInputString(List<String> destination) async {
     _completer = Completer<String?>();
     context.read<InteractionBloc>().add(StringInputEvent(completer: _completer));
     final result = await _completer.future;
@@ -149,9 +118,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     }
   }
 
-  Future<void> _onInputBoolean(
-    List<String> destination,
-  ) async {
+  Future<void> _onInputBoolean(List<String> destination) async {
     _completer = Completer<String?>();
     context.read<InteractionBloc>().add(BooleanInputEvent(completer: _completer));
     final result = await _completer.future;
@@ -171,10 +138,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     );
   }
 
-  Future<void> _onSelectEnumeration(
-    List<String> selectedOptions,
-    List<String> destination,
-  ) async {
+  Future<void> _onSelectEnumeration(List<String> selectedOptions, List<String> destination) async {
     _completer = Completer<String?>();
     _option = UIHelper.makeEnumerationOption(selectedOptions);
     context.read<InteractionBloc>().add(EnumerationSelectEvent(completer: _completer));
@@ -186,24 +150,14 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     }
   }
 
-  void _onDisplayStack(
-    String title,
-    String subtitle,
-  ) {
-    BlocProvider.of<ErrorTracebackBloc>(context).add(
-      ErrorTracebackMessageEvent(
-        message: Message(
-          title: title,
-          subtitle: subtitle,
-        ),
-      ),
-    );
+  void _onDisplayStack(String title, String subtitle) {
+    BlocProvider.of<ErrorTracebackBloc>(
+      context,
+    ).add(ErrorTracebackMessageEvent(message: Message(title: title, subtitle: subtitle)));
   }
 
   @override
-  Future<List<String>> callback(
-    List<String> arguments,
-  ) async {
+  Future<List<String>> callback(List<String> arguments) async {
     final result = <String>[];
     switch (arguments[0]) {
       case 'display':

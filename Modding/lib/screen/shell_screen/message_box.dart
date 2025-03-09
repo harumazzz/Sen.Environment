@@ -29,38 +29,6 @@ class _MessageBoxState extends State<MessageBox> {
     super.dispose();
   }
 
-  Widget _buildLauncher() {
-    return BlocConsumer<MessageBloc, MessageState>(
-      listener: (context, state) async {
-        if (state is MessageScrollState) {
-          final shouldScroll = _scrollController.position.pixels == _scrollController.position.maxScrollExtent;
-          await WidgetsBinding.instance.endOfFrame;
-          if (shouldScroll) {
-            await _scrollController.position.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeOut,
-            );
-          }
-        }
-      },
-      builder: (context, state) {
-        return Screenshot(
-          controller: context.read<AddOptionBloc>().screenshotController,
-          child: ListView.builder(
-            itemCount: state.size,
-            controller: _scrollController,
-            itemBuilder: (context, index) {
-              return MessageCard(
-                message: state[index],
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildShimmer() {
     return ListView.builder(
       itemCount: 10,
@@ -79,7 +47,43 @@ class _MessageBoxState extends State<MessageBox> {
         }
       },
       builder: (context, state) {
-        return state is LaunchStatusLoading ? _buildShimmer() : _buildLauncher();
+        return state is LaunchStatusLoading ? _buildShimmer() : _MessageList(scrollController: _scrollController);
+      },
+    );
+  }
+}
+
+class _MessageList extends StatelessWidget {
+  const _MessageList({required this.scrollController});
+
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<MessageBloc, MessageState>(
+      listener: (context, state) async {
+        if (state is MessageScrollState) {
+          final hasClient = scrollController.hasClients;
+          if (!hasClient) return;
+          final shouldScroll = scrollController.position.pixels == scrollController.position.maxScrollExtent;
+          await Future.delayed(Duration.zero);
+          await WidgetsBinding.instance.endOfFrame;
+          if (scrollController.hasClients && shouldScroll) {
+            scrollController.position.jumpTo(scrollController.position.maxScrollExtent);
+          }
+        }
+      },
+      builder: (context, state) {
+        return Screenshot(
+          controller: context.read<AddOptionBloc>().screenshotController,
+          child: ListView.builder(
+            itemCount: state.size,
+            controller: scrollController,
+            itemBuilder: (context, index) {
+              return MessageCard(message: state[index]);
+            },
+          ),
+        );
       },
     );
   }

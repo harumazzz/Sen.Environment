@@ -1,9 +1,9 @@
 /*
  * QuickJS command line compiler
  *
- * Copyright (c) 2018-2021 Fabrice Bellard
- * Copyright (c) 2023 Ben Noordhuis
- * Copyright (c) 2023 Saúl Ibarra Corretgé
+ * Copyright (c) 2018-2024 Fabrice Bellard
+ * Copyright (c) 2023-2025 Ben Noordhuis
+ * Copyright (c) 2023-2025 Saúl Ibarra Corretgé
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,7 +158,7 @@ static void dump_hex(FILE *f, const uint8_t *buf, size_t len)
 
 static void output_object_code(JSContext *ctx,
                                FILE *fo, JSValue obj, const char *c_name,
-                               BOOL load_only)
+                               bool load_only)
 {
     uint8_t *out_buf;
     size_t out_buf_len;
@@ -261,7 +261,7 @@ JSModuleDef *jsc_module_loader(JSContext *ctx,
         if (namelist_find(&cname_list, cname)) {
             find_unique_cname(cname, sizeof(cname));
         }
-        output_object_code(ctx, outfile, func_val, cname, TRUE);
+        output_object_code(ctx, outfile, func_val, cname, true);
 
         /* the module is already referenced, so we must free it */
         m = JS_VALUE_GET_PTR(func_val);
@@ -307,7 +307,7 @@ static void compile_file(JSContext *ctx, FILE *fo,
     } else {
         get_c_name(c_name, sizeof(c_name), filename);
     }
-    output_object_code(ctx, fo, obj, c_name, FALSE);
+    output_object_code(ctx, fo, obj, c_name, false);
     JS_FreeValue(ctx, obj);
 }
 
@@ -315,7 +315,6 @@ static const char main_c_template1[] =
     "int main(int argc, char **argv)\n"
     "{\n"
     "  int r;\n"
-    "  JSValue ret;\n"
     "  JSRuntime *rt;\n"
     "  JSContext *ctx;\n"
     "  r = 0;\n"
@@ -325,14 +324,12 @@ static const char main_c_template1[] =
     ;
 
 static const char main_c_template2[] =
-    "  ret = js_std_loop(ctx);\n"
-    "  if (JS_IsException(ret)) {\n"
-    "    js_std_dump_error1(ctx, ret);\n"
-    "    r = 1;\n"
+    "  r = js_std_loop(ctx);\n"
+    "  if (r) {\n"
+    "    js_std_dump_error(ctx);\n"
     "  }\n"
-    "  JS_FreeValue(ctx, ret);\n"
-    "  JS_FreeContext(ctx);\n"
     "  js_std_free_handlers(rt);\n"
+    "  JS_FreeContext(ctx);\n"
     "  JS_FreeRuntime(rt);\n"
     "  return r;\n"
     "}\n";

@@ -149,16 +149,6 @@ namespace Sen::Kernel {
             return thiz._size;
         }
 
-        virtual auto clear(
-
-        ) -> void {
-            thiz._size = 0;
-            if (thiz.value != nullptr) {
-                delete[] thiz.value;
-            }
-            thiz.value = nullptr;
-        }
-
         constexpr auto empty(
         ) const -> bool {
             return thiz._size == 0;

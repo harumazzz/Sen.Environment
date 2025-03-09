@@ -221,6 +221,7 @@ private:
                 std::allocator_traits<real_allocator_type>::deallocate(alloc, data_, capacity_);
                 JSONCONS_RETHROW;
             }
+            JSONCONS_ASSERT(stor.data_ != nullptr);
             std::memcpy(data_, stor.data_, size_type(stor.length_*sizeof(uint64_t)));
         }
 
@@ -355,14 +356,18 @@ public:
         common_stor_.is_negative_ = value;
     }
 
-    constexpr const uint64_t* data() const
+    const uint64_t* data() const
     {
-        return is_dynamic() ? dynamic_stor_.data_ : short_stor_.values_;
+        const uint64_t* p = is_dynamic() ? dynamic_stor_.data_ : short_stor_.values_;
+        JSONCONS_ASSERT(p != nullptr);
+        return p;
     }
 
     uint64_t* data() 
     {
-        return is_dynamic() ? dynamic_stor_.data_ : short_stor_.values_;
+        uint64_t* p = is_dynamic() ? dynamic_stor_.data_ : short_stor_.values_;
+        JSONCONS_ASSERT(p != nullptr);
+        return p;
     }
 
     template <typename CharT>
@@ -577,27 +582,30 @@ public:
 
     basic_bigint& operator+=( const basic_bigint<Allocator>& y )
     {
+        const uint64_t* y_data = y.data();
+        
         if ( is_negative() != y.is_negative() )
             return *this -= -y;
         uint64_t d;
         uint64_t carry = 0;
 
         resize( (std::max)(y.length(), length()) + 1 );
+        uint64_t* this_data = data();
 
         for (size_type i = 0; i < length(); i++ )
         {
             if ( i >= y.length() && carry == 0 )
                 break;
-            d = data()[i] + carry;
+            d = this_data[i] + carry;
             carry = d < carry;
             if ( i < y.length() )
             {
-                data()[i] = d + y.data()[i];
-                if ( data()[i] < d )
+                this_data[i] = d + y_data[i];
+                if ( this_data[i] < d )
                     carry = 1;
             }
             else
-                data()[i] = d;
+                this_data[i] = d;
         }
         reduce();
         return *this;
@@ -605,6 +613,8 @@ public:
 
     basic_bigint& operator-=( const basic_bigint<Allocator>& y )
     {
+        const uint64_t* y_data = y.data();
+
         if ( is_negative() != y.is_negative() )
             return *this += -y;
         if ( (!is_negative() && y > *this) || (is_negative() && y < *this) )
@@ -619,7 +629,7 @@ public:
             borrow = d > data()[i];
             if ( i < y.length())
             {
-                data()[i] = d - y.data()[i];
+                data()[i] = d - y_data[i];
                 if ( data()[i] > d )
                     borrow = 1;
             }
@@ -647,28 +657,31 @@ public:
         uint64_t carry = 0;
 
         resize( length() + 1 );
+        uint64_t* this_data = data();
 
         size_type i = 0;
         for (i = 0; i < len0; i++ )
         {
             DDproduct( dig, y, hi, lo );
-            data()[i] = lo + carry;
-            dig = data()[i+1];
-            carry = hi + (data()[i] < lo);
+            this_data[i] = lo + carry;
+            dig = this_data[i+1];
+            carry = hi + (this_data[i] < lo);
         }
-        data()[i] = carry;
+        this_data[i] = carry;
         reduce();
         return *this;
     }
 
-    basic_bigint& operator*=( basic_bigint<Allocator> y )
+    basic_bigint& operator*=(const basic_bigint<Allocator>& y)
     {
+        const uint64_t* y_data = y.data();
+
         if ( length() == 0 || y.length() == 0 )
                     return *this = 0;
         bool difSigns = is_negative() != y.is_negative();
         if ( length() + y.length() == max_short_storage_size ) // length() = y.length() = 1
         {
-            uint64_t a = data()[0], b = y.data()[0];
+            uint64_t a = data()[0], b = y_data[0];
             data()[0] = a * b;
             if ( data()[0] / a != b )
             {
@@ -687,14 +700,16 @@ public:
         else
         {
             if ( y.length() == 1 )
-                *this *= y.data()[0];
+                *this *= y_data[0];
             else
             {
                 size_type lenProd = length() + y.length(), jA, jB;
                 uint64_t sumHi = 0, sumLo, hi, lo,
                 sumLo_old, sumHi_old, carry=0;
                 basic_bigint<Allocator> x = *this;
+                const uint64_t* x_data = x.data();
                 resize( lenProd ); // Give *this length lenProd
+                uint64_t* this_data = data();
 
                 for (size_type i = 0; i < lenProd; i++ )
                 {
@@ -706,7 +721,7 @@ public:
                         jB = i - jA;
                         if ( jB >= 0 && jB < y.length() )
                         {
-                            DDproduct( x.data()[jA], y.data()[jB], hi, lo );
+                            DDproduct( x_data[jA], y_data[jB], hi, lo );
                             sumLo_old = sumLo;
                             sumHi_old = sumHi;
                             sumLo += lo;
@@ -716,7 +731,7 @@ public:
                             carry += (sumHi < sumHi_old);
                         }
                     }
-                    data()[i] = sumLo;
+                    this_data[i] = sumLo;
                 }
             }
         }
@@ -745,8 +760,9 @@ public:
         if ( q ) // Increase common_stor_.length_ by q:
         {
             resize(length() + q);
+            uint64_t* this_data = data();
             for (size_type i = length(); i-- > 0; )
-                data()[i] = ( i < q ? 0 : data()[i - q]);
+                this_data[i] = ( i < q ? 0 : this_data[i - q]);
             k %= basic_type_bits;
         }
         if ( k )  // 0 < k < basic_type_bits:
@@ -754,11 +770,12 @@ public:
             uint64_t k1 = basic_type_bits - k;
             uint64_t mask = (uint64_t(1) << k) - uint64_t(1);
             resize( length() + 1 );
+            uint64_t* this_data = data();
             for (size_type i = length(); i-- > 0; )
             {
-                data()[i] <<= k;
+                this_data[i] <<= k;
                 if ( i > 0 )
-                    data()[i] |= (data()[i-1] >> k1) & mask;
+                    this_data[i] |= (this_data[i-1] >> k1) & mask;
             }
         }
         reduce();
@@ -785,14 +802,15 @@ public:
             }
         }
 
+        uint64_t* this_data = data();
         size_type n = size_type(length() - 1);
         int64_t k1 = basic_type_bits - k;
         uint64_t mask = (uint64_t(1) << k) - 1;
         for (size_type i = 0; i <= n; i++)
         {
-            data()[i] >>= k;
+            this_data[i] >>= k;
             if ( i < n )
-                data()[i] |= ((data()[i+1] & mask) << k1);
+                this_data[i] |= ((this_data[i+1] & mask) << k1);
         }
         reduce();
         return *this;
@@ -1315,7 +1333,7 @@ public:
         basic_bigint<Allocator> q;
 
         b <<= 1;
-        while ( b >>= 2, b > 0 )
+        while ( (void)(b >>= 2), b > 0 )
         {
             x >>= 1;
         }
@@ -1339,6 +1357,8 @@ public:
 
     int compare( const basic_bigint<Allocator>& y ) const noexcept
     {
+        const uint64_t* y_data = y.data();
+
         if ( is_negative() != y.is_negative() )
             return y.is_negative() - is_negative();
         int code = 0;
@@ -1352,12 +1372,12 @@ public:
         {
             for (size_type i = length(); i-- > 0; )
             {
-                if (data()[i] > y.data()[i])
+                if (data()[i] > y_data[i])
                 {
                     code = 1;
                     break;
                 }
-                else if (data()[i] < y.data()[i])
+                else if (data()[i] < y_data[i])
                 {
                     code = -1;
                     break;

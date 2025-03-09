@@ -119,16 +119,14 @@ namespace Sen::Kernel::Javascript {
             ) const -> ValueType {
                 switch (Subprojects::quickjs::$JS_VALUE_GET_TAG(thiz.m_value)) {
                     case Subprojects::quickjs::$JS_TAG_OBJECT: {
-                        auto name = NativeString{};
-                        auto name_property = thiz.get_property("constructor"_sv).get_property("name"_sv);
-                        name_property.template get<NativeString>(name);
-                        switch (hash_string(name.view())) {
-                            case hash_string("Object"_sv):
-                                return ValueType::object;
-                            case hash_string("Array"_sv):
-                                return ValueType::array;
-                            default:
-                                return ValueType::unknown;
+                        if (thiz.is_array()) {
+                            return ValueType::array;
+                        }
+                        else if (thiz.is_object_of_object()) {
+                            return ValueType::object;
+                        }
+                        else {
+                            return ValueType::unknown;
                         }
                     }
                     case Subprojects::quickjs::$JS_TAG_BIG_INT:
@@ -222,20 +220,14 @@ namespace Sen::Kernel::Javascript {
 
             ) const -> bool
             {
-                if (!thiz.is_object()) {
-                    return false;
-                }
-                auto name = NativeString{};
-                auto name_property = thiz.get_property("constructor"_sv).get_property("name"_sv);
-                name_property.template get<NativeString>(name);
-                return static_cast<bool>(name == "Object"_sv);
+                return static_cast<bool>(Subprojects::quickjs::JS_IsObjectOfObject(thiz.m_value));
             }
 
             inline auto is_array(
 
             ) const -> bool
             {
-                return static_cast<bool>(Subprojects::quickjs::JS_IsArray(thiz.m_context, thiz.m_value));
+                return static_cast<bool>(Subprojects::quickjs::JS_IsArray(thiz.m_value));
             }
 
             inline auto set_value (
@@ -265,10 +257,10 @@ namespace Sen::Kernel::Javascript {
                     value.begin(),
                     value.size(),
                     !is_new_owner ? nullptr : [](Subprojects::quickjs::JSRuntime* rt, void * opaque, void * ptr) -> void {
-                        delete[] static_cast<std::uint8_t*>(ptr);
+                        Allocator<uint8_t>::deallocate(static_cast<uint8_t*>(ptr));
                     },
                     nullptr,
-                    static_cast<int>(false)
+                    false
                 ));
             }
 
@@ -596,20 +588,20 @@ namespace Sen::Kernel::Javascript {
                     }
                     case ValueType::bigint: {
                         auto value = i64{};
-                        source.template get<i64>(value);
-                        destination.template set<i64>(value);
+                        source.get<i64>(value);
+                        destination.set<i64>(value);
                         break;
                     }
                     case ValueType::boolean: {
                         auto value = bool{};
-                        source.template get<bool>(value);
-                        destination.template set<bool>(value);
+                        source.get<bool>(value);
+                        destination.set<bool>(value);
                         break;
                     }
                     case ValueType::number: {
                         auto value = f64{};
-                        source.template get<f64>(value);
-                        destination.template set<f64>(value);
+                        source.get<f64>(value);
+                        destination.set<f64>(value);
                         break;
                     }
                     case ValueType::null: {
@@ -618,8 +610,8 @@ namespace Sen::Kernel::Javascript {
                     }
                     case ValueType::string: {
                         auto value = String{};
-                        source.template get<String>(value);
-                        destination.template set<String>(value);
+                        source.get<String>(value);
+                        destination.set<String>(value);
                         break;
                     }
                     case ValueType::undefined: {

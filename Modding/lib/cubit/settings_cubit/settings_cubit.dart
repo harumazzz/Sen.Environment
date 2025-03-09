@@ -12,30 +12,23 @@ class SettingsCubit extends Cubit<SettingsState> {
     _loadPreferences();
   }
 
-  ThemeMode get themeData {
-    final Map<String, ThemeMode> exchanger = {
-      'system': ThemeMode.system,
-      'dark': ThemeMode.dark,
-      'light': ThemeMode.light,
-    };
-    return exchanger[state.theme] ?? ThemeMode.system;
-  }
-
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    emit(state.copyWith(
-      theme: prefs.getString('theme') ?? 'system',
-      locale: prefs.getString('locale') ?? 'en',
-      sendNotification: prefs.getBool('sendNotification') ?? false,
-      toolChain: prefs.getString('toolchain') ?? '',
-      isValid: prefs.getBool('isValid') ?? false,
-      requestedPermission: prefs.getBool('requestedPermission') ?? false,
-      jsRunAsLauncher: prefs.getBool('jsRunAsLauncher') ?? false,
-      jsShowConfirmDialog: prefs.getBool('jsShowConfirmDialog') ?? true,
-      levelMakerResource: prefs.getString('levelMakerResource') ?? '',
-      mapEditorResource: prefs.getString('mapEditorResource') ?? '',
-      shellLaunchImmediately: prefs.getBool('shellLaunchImmediately') ?? true,
-    ));
+    emit(
+      state.copyWith(
+        theme: prefs.getString('theme') ?? 'system',
+        locale: prefs.getString('locale') ?? 'en',
+        sendNotification: prefs.getBool('sendNotification') ?? false,
+        toolChain: prefs.getString('toolchain') ?? '',
+        isValid: prefs.getBool('isValid') ?? false,
+        requestedPermission: prefs.getBool('requestedPermission') ?? false,
+        jsRunAsLauncher: prefs.getBool('jsRunAsLauncher') ?? false,
+        jsShowConfirmDialog: prefs.getBool('jsShowConfirmDialog') ?? true,
+        levelMakerResource: prefs.getString('levelMakerResource') ?? '',
+        mapEditorResource: prefs.getString('mapEditorResource') ?? '',
+        shellLaunchImmediately: prefs.getBool('shellLaunchImmediately') ?? true,
+      ),
+    );
   }
 
   Future<void> setTheme(String theme) async {

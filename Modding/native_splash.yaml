@@ -2,7 +2,6 @@ flutter_native_splash:
     android: true
     ios: true
     web: false
-
     background_image: 'assets/images/background.png'
     image: 'assets/images/splash_logo.png'
     background_image_dark: 'assets/images/background_dark.png'

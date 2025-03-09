@@ -8,8 +8,8 @@
 inline constexpr auto hash_string (
 	std::string_view const & string
 ) -> std::uint64_t {
-	auto offset = std::uint64_t{14695981039346656037ull};
-	auto prime = std::uint64_t{1099511628211ull};
+	constexpr auto offset = std::uint64_t{14695981039346656037ull};
+	constexpr auto prime = std::uint64_t{1099511628211ull};
 	auto result = offset;
 	for (auto & element : string) {
 		result ^= static_cast<std::uint8_t>(element);
@@ -22,9 +22,10 @@ inline auto utf8_to_utf16(
 	const std::string& utf8
 ) -> std::wstring
 {
-	auto size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()), nullptr, 0);
-	auto utf16 = std::wstring(size_needed, L'\0');
-	auto state = MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()), utf16.data(), size_needed);
+	auto size_needed = static_cast<size_t>(MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()), nullptr, 0));
+	auto utf16 = std::wstring{};
+	utf16.resize(size_needed);
+	auto state = MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()), utf16.data(), static_cast<int>(size_needed));
 	if (state <= 0) {
         throw std::runtime_error("Failed to convert UTF-8 to UTF-16.");
     }

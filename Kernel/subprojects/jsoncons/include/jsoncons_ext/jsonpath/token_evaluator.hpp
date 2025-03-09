@@ -2315,7 +2315,7 @@ namespace detail {
         {
             auto temp = jsoncons::make_unique<Json>(std::forward<Args>(args)...);
             Json* ptr = temp.get();
-            temp_json_values_.emplace_back(std::move(temp));
+            temp_json_values_.push_back(std::move(temp));
             return ptr;
         }
 
@@ -2329,7 +2329,7 @@ namespace detail {
         {
             auto temp = jsoncons::make_unique<path_node_type>(std::forward<Args>(args)...);
             path_node_type* ptr = temp.get();
-            temp_node_values_.emplace_back(std::move(temp));
+            temp_node_values_.push_back(std::move(temp));
             return ptr;
         }
     };
@@ -2623,7 +2623,7 @@ namespace detail {
         typename std::enable_if<std::is_const<typename std::remove_reference<typename T::reference>::type>::value,const_selector_type*>::type    
         new_selector(T&& val)
         {
-            const_selectors_.emplace_back(jsoncons::make_unique<T>(std::forward<T>(val)));
+            const_selectors_.push_back(jsoncons::make_unique<T>(std::forward<T>(val)));
             return const_selectors_.back().get();
         }
 
@@ -2631,7 +2631,7 @@ namespace detail {
         typename std::enable_if<!std::is_const<typename std::remove_reference<typename T::reference>::type>::value,selector_type*>::type    
         new_selector(T&& val)
         {
-            selectors_.emplace_back(jsoncons::make_unique<T>(std::forward<T>(val)));
+            selectors_.push_back(jsoncons::make_unique<T>(std::forward<T>(val)));
             return selectors_.back().get();
         }
 
@@ -2895,7 +2895,12 @@ namespace detail {
 
         bool is_path() const
         {
-            return token_kind_ == jsonpath_token_kind::selector && selector_->is_path(); 
+            if (token_kind_ == jsonpath_token_kind::selector)
+            {
+                JSONCONS_ASSERT(selector_ != nullptr);
+                return selector_->is_path(); 
+            }
+            return false;
         }
 
         bool is_operator() const
@@ -2909,10 +2914,13 @@ namespace detail {
             switch(token_kind_)
             {
                 case jsonpath_token_kind::selector:
+                    JSONCONS_ASSERT(selector_ != nullptr);
                     return selector_->precedence_level();
                 case jsonpath_token_kind::unary_operator:
+                    JSONCONS_ASSERT(unary_operator_ != nullptr);
                     return unary_operator_->precedence_level();
                 case jsonpath_token_kind::binary_operator:
+                    JSONCONS_ASSERT(binary_operator_ != nullptr);
                     return binary_operator_->precedence_level();
                 default:
                     return 0;
@@ -2921,7 +2929,12 @@ namespace detail {
 
         jsoncons::optional<std::size_t> arity() const
         {
-            return token_kind_ == jsonpath_token_kind::function ? function_->arity() : jsoncons::optional<std::size_t>();
+            if (token_kind_ == jsonpath_token_kind::function)
+            {
+                JSONCONS_ASSERT(function_ != nullptr);
+                return function_->arity();
+            }
+            return jsoncons::optional<std::size_t>();
         }
 
         bool is_right_associative() const
@@ -2929,10 +2942,13 @@ namespace detail {
             switch(token_kind_)
             {
                 case jsonpath_token_kind::selector:
+                    JSONCONS_ASSERT(selector_ != nullptr);
                     return selector_->is_right_associative();
                 case jsonpath_token_kind::unary_operator:
+                    JSONCONS_ASSERT(unary_operator_ != nullptr);
                     return unary_operator_->is_right_associative();
                 case jsonpath_token_kind::binary_operator:
+                    JSONCONS_ASSERT(binary_operator_ != nullptr);
                     return binary_operator_->is_right_associative();
                 default:
                     return false;
@@ -3019,6 +3035,7 @@ namespace detail {
                     s.append("argument");
                     break;
                 case jsonpath_token_kind::selector:
+                    JSONCONS_ASSERT(selector_ != nullptr);
                     s.append(selector_->to_string(level));
                     break;
                 case jsonpath_token_kind::expression:
@@ -3173,62 +3190,72 @@ namespace detail {
 
             const result_options require_more = result_options::nodups | result_options::sort | result_options::sort_descending;
 
-            if (selector_ != nullptr && (options & require_more) != result_options())
+            if (selector_ != nullptr)
             {
-                path_value_receiver<Json,JsonReference> receiver{alloc_};
-                selector_->select(context, root, path, current, receiver, options);
-
-                if (receiver.nodes.size() > 1) 
+                if ((options & require_more) != result_options())
                 {
-                    if ((options & result_options::sort_descending) == result_options::sort_descending)
-                    {
-                        std::sort(receiver.nodes.begin(), receiver.nodes.end(), path_value_pair_greater_type());
-                    } 
-                    else if ((options & result_options::sort) == result_options::sort)
-                    {
-                        std::sort(receiver.nodes.begin(), receiver.nodes.end(), path_value_pair_less_type());
-                    }
-                }
+                    path_value_receiver<Json,JsonReference> receiver{alloc_};
+                    selector_->select(context, root, path, current, receiver, options);
 
-                if (receiver.nodes.size() > 1 && (options & result_options::nodups) == result_options::nodups)
-                {
-                    if ((options & result_options::sort_descending) == result_options::sort_descending)
+                    if (receiver.nodes.size() > 1) 
                     {
-                        auto last = std::unique(receiver.nodes.rbegin(),receiver.nodes.rend(),path_value_pair_equal_type());
-                        receiver.nodes.erase(receiver.nodes.begin(), last.base());
-                        for (auto& node : receiver.nodes)
+                        if ((options & result_options::sort_descending) == result_options::sort_descending)
                         {
-                            callback(node.path(), node.value());
+                            std::sort(receiver.nodes.begin(), receiver.nodes.end(), path_value_pair_greater_type());
+                        } 
+                        else if ((options & result_options::sort) == result_options::sort)
+                        {
+                            std::sort(receiver.nodes.begin(), receiver.nodes.end(), path_value_pair_less_type());
                         }
                     }
-                    else if ((options & result_options::sort) == result_options::sort)
+
+                    if (receiver.nodes.size() > 1 && (options & result_options::nodups) == result_options::nodups)
                     {
-                        auto last = std::unique(receiver.nodes.begin(),receiver.nodes.end(),path_value_pair_equal_type());
-                        receiver.nodes.erase(last,receiver.nodes.end());
-                        for (auto& node : receiver.nodes)
+                        if ((options & result_options::sort_descending) == result_options::sort_descending)
                         {
-                            callback(node.path(), node.value());
+                            auto last = std::unique(receiver.nodes.rbegin(),receiver.nodes.rend(),path_value_pair_equal_type());
+                            receiver.nodes.erase(receiver.nodes.begin(), last.base());
+                            for (auto& node : receiver.nodes)
+                            {
+                                callback(node.path(), node.value());
+                            }
+                        }
+                        else if ((options & result_options::sort) == result_options::sort)
+                        {
+                            auto last = std::unique(receiver.nodes.begin(),receiver.nodes.end(),path_value_pair_equal_type());
+                            receiver.nodes.erase(last,receiver.nodes.end());
+                            for (auto& node : receiver.nodes)
+                            {
+                                callback(node.path(), node.value());
+                            }
+                        }
+                        else
+                        {
+                            std::vector<path_value_pair_type> index(receiver.nodes);
+                            std::sort(index.begin(), index.end(), path_value_pair_less_type());
+                            auto last = std::unique(index.begin(),index.end(),path_value_pair_equal_type());
+                            index.erase(last,index.end());
+
+                            std::vector<path_value_pair_type> temp2;
+                            temp2.reserve(index.size());
+                            for (auto&& node : receiver.nodes)
+                            {
+                                auto it = std::lower_bound(index.begin(),index.end(),node, path_value_pair_less_type());
+                                if (it != index.end() && (*it).path() == node.path()) 
+                                {
+                                    temp2.emplace_back(std::move(node));
+                                    index.erase(it);
+                                }
+                            }
+                            for (auto& node : temp2)
+                            {
+                                callback(node.path(), node.value());
+                            }
                         }
                     }
                     else
                     {
-                        std::vector<path_value_pair_type> index(receiver.nodes);
-                        std::sort(index.begin(), index.end(), path_value_pair_less_type());
-                        auto last = std::unique(index.begin(),index.end(),path_value_pair_equal_type());
-                        index.erase(last,index.end());
-
-                        std::vector<path_value_pair_type> temp2;
-                        temp2.reserve(index.size());
-                        for (auto&& node : receiver.nodes)
-                        {
-                            auto it = std::lower_bound(index.begin(),index.end(),node, path_value_pair_less_type());
-                            if (it != index.end() && (*it).path() == node.path()) 
-                            {
-                                temp2.emplace_back(std::move(node));
-                                index.erase(it);
-                            }
-                        }
-                        for (auto& node : temp2)
+                        for (auto& node : receiver.nodes)
                         {
                             callback(node.path(), node.value());
                         }
@@ -3236,16 +3263,9 @@ namespace detail {
                 }
                 else
                 {
-                    for (auto& node : receiver.nodes)
-                    {
-                        callback(node.path(), node.value());
-                    }
+                    callback_receiver<Callback,Json,JsonReference> receiver(callback, alloc_);
+                    selector_->select(context, root, path, current, receiver, options);
                 }
-            }
-            else
-            {
-                callback_receiver<Callback,Json,JsonReference> receiver(callback, alloc_);
-                selector_->select(context, root, path, current, receiver, options);
             }
         }
 

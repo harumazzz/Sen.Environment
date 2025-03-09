@@ -66,13 +66,14 @@ class JavaScriptCard extends StatelessWidget {
       final los = AppLocalizations.of(context)!;
       await _showDialog(context, los.done, los.spawn_success(item.name));
     }
-
     String launcher() => '${context.read<SettingsCubit>().state.toolChain}/Launcher.exe';
     try {
       await WindowsHelper.runLauncher(
         argument: '${launcher()} ${_makeArguments().join(' ')}',
       );
-      await showSuccess();
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        await showSuccess();
+      });
     } catch (e) {
       await showError(e);
     }

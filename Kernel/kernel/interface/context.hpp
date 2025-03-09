@@ -67,7 +67,7 @@ namespace Sen::Kernel::Interface {
                 data.set_object();
                 auto set_home = [&]() -> void {
                     auto home = data.new_value();
-                    home.template set<std::string_view>(arguments[2].view());
+                    home.template set<StringView>(arguments[2].as_view());
                     data.define_property("home"_s, home.release());
                 };
                 auto set_argument = [&]() -> void {
@@ -79,8 +79,7 @@ namespace Sen::Kernel::Interface {
                 set_argument();
                 return data;
             };
-            auto result = List<Javascript::Value>{1_size};
-            result.append(make_data());
+            auto result = make_list<Javascript::Value>(make_data());
             return result;
         }
 

@@ -16,8 +16,7 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace Sen::Kernel::Subprojects::thread_pool 
-{
+namespace Sen::Kernel::Subprojects::thread_pool {
 
 	
 

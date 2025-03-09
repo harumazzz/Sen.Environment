@@ -81,16 +81,25 @@ class SettingsState extends Equatable {
 
   @override
   List<Object?> get props => [
-        theme,
-        locale,
-        sendNotification,
-        toolChain,
-        isValid,
-        requestedPermission,
-        mapEditorResource,
-        levelMakerResource,
-        shellLaunchImmediately,
-        jsRunAsLauncher,
-        jsShowConfirmDialog,
-      ];
+    theme,
+    locale,
+    sendNotification,
+    toolChain,
+    isValid,
+    requestedPermission,
+    mapEditorResource,
+    levelMakerResource,
+    shellLaunchImmediately,
+    jsRunAsLauncher,
+    jsShowConfirmDialog,
+  ];
+
+  ThemeMode get themeData {
+    final Map<String, ThemeMode> exchanger = {
+      'system': ThemeMode.system,
+      'dark': ThemeMode.dark,
+      'light': ThemeMode.light,
+    };
+    return exchanger[theme] ?? ThemeMode.system;
+  }
 }

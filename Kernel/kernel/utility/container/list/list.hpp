@@ -12,8 +12,12 @@ namespace Sen::Kernel {
 
     template<typename T>
     class CList : public Common, public BaseContainer<T> {
+
     protected:
+
         using Common = Common;
+
+        using Alloc = Allocator<T>;
 
     public:
         using Size = std::size_t;
@@ -25,30 +29,24 @@ namespace Sen::Kernel {
         Size _capacity{};
 
     public:
-        constexpr explicit CList(
-            const Size &size
-        ) : BaseContainer<T>{new T[size], 0_size}, _capacity{size} {
+        constexpr explicit CList(const Size& size)
+            : BaseContainer<T>{Alloc::allocate(size), 0_size}, _capacity{size} {
         }
 
-        constexpr explicit CList(
-            Pointer<T> const &source,
-            const Size &size
-        ) : BaseContainer<T>{source, size}, _capacity{size} {
+        constexpr explicit CList(Pointer<T> const& source, const Size& size)
+            : BaseContainer<T>{source, size}, _capacity{size} {
         }
 
-        constexpr explicit CList(
-
-        ) : BaseContainer<T>{new T[64_size], 0_size}, _capacity{64_size} {
+        constexpr explicit CList()
+            : BaseContainer<T>{Alloc::allocate(64_size), 0_size}, _capacity{64_size} {
         }
 
-        explicit constexpr CList(
-            const std::span<T> &init
-        ) : BaseContainer<T>{new T[init.size()], init.size()}, _capacity{init.size()} {
-            std::uninitialized_copy(init.begin(), init.end(), thiz.value);
+        explicit constexpr CList(const std::span<T>& init)
+            : BaseContainer<T>{Alloc::allocate(init.size()), init.size()}, _capacity{init.size()} {
+            Alloc::copy(thiz.value, init.data(), init.size());
         }
 
-        constexpr auto release(
-        ) -> std::tuple<Pointer<T>, Size> override {
+        constexpr auto release() -> std::tuple<Pointer<T>, Size> override {
             auto raw = thiz.value;
             auto size = thiz._size;
             thiz.value = nullptr;
@@ -57,62 +55,49 @@ namespace Sen::Kernel {
             return std::make_tuple(raw, size);
         }
 
-        constexpr auto allocate(
-            Size const &size
-        ) -> void {
+        constexpr auto allocate(const Size& size) -> void {
             if (thiz.value != nullptr) {
-                delete[] thiz.value;
+                Alloc::deallocate(thiz.value);
             }
-            thiz.value = new T[size];
+            thiz.value = Alloc::allocate(size);
             thiz._size = 0_size;
             thiz._capacity = size;
         }
 
-        constexpr ~CList(
-
-        ) override {
+        constexpr ~CList() override {
             if (thiz.value != nullptr) {
-                delete[] thiz.value;
+                Alloc::deallocate(thiz.value);
                 thiz.value = nullptr;
             }
         }
 
-        constexpr CList(
-            const CList &other
-        ) : CList<T>{other._capacity} {
-            for (auto &e: other) {
-                thiz.append(e);
-            }
+        constexpr CList(const CList& other) : CList<T>{other._capacity} {
+            Alloc::copy(thiz.value, other.value, other._size);
+            thiz._size = other._size;
         }
 
-        constexpr auto operator =(
-            const CList &other
-        ) -> CList & {
-            thiz.allocate(other._capacity);
-            for (auto &e: other) {
-                thiz.append(e);
+        constexpr auto operator=(const CList& other) -> CList& {
+            if (this != &other) {
+                allocate(other._capacity);
+                Alloc::copy(thiz.value, other.value, other._size);
+                thiz._size = other._size;
             }
             return thiz;
         }
 
-        constexpr auto operator [](
-            Size const &index
-        ) const -> T & {
-            assert_index(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("operator[]({})", index));
+        constexpr auto operator[](const Size& index) const -> T& {
+            assert_index(index < thiz._size, "Index out of bounds of the List", fmt::format("operator[]({})", index));
             return thiz.value[index];
         }
 
-        constexpr CList(
-            CList &&other
-        ) noexcept : BaseContainer<T>{std::move(other)}, _capacity{other._capacity} {
+        constexpr CList(CList&& other) noexcept
+            : BaseContainer<T>{std::move(other)}, _capacity{other._capacity} {
             other._capacity = 0;
         }
 
-        constexpr auto operator=(
-            CList &&other
-        ) noexcept -> CList & {
+        constexpr auto operator=(CList&& other) noexcept -> CList& {
             if (this != &other) {
-                delete[] thiz.value;
+                Alloc::deallocate(thiz.value);
                 thiz._size = other._size;
                 thiz.value = other.value;
                 thiz._capacity = other._capacity;
@@ -123,52 +108,106 @@ namespace Sen::Kernel {
             return thiz;
         }
 
-        auto operator ==(
-            const CList &other
-        ) -> bool = delete;
-
-        auto operator !=(
-            const CList &other
-        ) -> bool = delete;
-
-        auto operator <(
-            const CList &other
-        ) -> bool = delete;
-
-        auto operator >(
-            const CList &other
-        ) = delete;
-
-        auto operator <=(
-            const CList &other
-        ) -> bool = delete;
-
-        auto operator >=(
-            const CList &other
-        ) -> bool = delete;
-
-        constexpr auto take_ownership(
-            CList &other
-        ) -> void {
-            thiz.value = other.value;
-            thiz._size = other._size;
-            other.value = nullptr;
-            other._size = 0;
+        constexpr auto reallocate(const Size& size) -> void {
+            if (thiz._capacity < size) {
+                auto new_value = Alloc::allocate(size);
+                Alloc::move(new_value, thiz.value, thiz._size);
+                Alloc::deallocate(thiz.value);
+                thiz.value = new_value;
+                thiz._capacity = size;
+            }
         }
 
-        constexpr auto take_ownership(
-            CArray<T> &other
+        template<typename U>
+        constexpr auto append(U&& value) -> void {
+            if (thiz._size + 1 > thiz._capacity) {
+                reallocate(thiz._capacity * 2);
+            }
+            new (&thiz.value[thiz._size]) T(std::forward<U>(value));
+            ++thiz._size;
+        }
+
+		friend class CArray<T>;
+
+        constexpr auto append(
         ) -> void {
-            thiz.value = other.value;
-            thiz._size = other._size;
-            other.value = nullptr;
-            other._size = 0;
+            if (thiz._size + 1 > thiz._capacity) {
+                thiz.reallocate(thiz._capacity * 2);
+            }
+            ++thiz._size;
+        }
+
+        constexpr auto pop() -> void {
+            assert_conditional(thiz._size > 0, "List is empty, cannot pop any element", "pop");
+            --thiz._size;
+        }
+
+        constexpr auto pop(const Size& index) -> void {
+            assert_conditional(index < thiz._size, "Index out of bounds of the List", "pop");
+            Alloc::move(thiz.value + index, thiz.value + index + 1, thiz._size - index - 1);
+            --thiz._size;
+        }
+
+        constexpr auto view() -> CListView<T> {
+            return CListView<T>{thiz.value, thiz._size, thiz._capacity};
+        }
+
+        constexpr operator CListView<T>() {
+            return CListView<T>{thiz.value, thiz._size, thiz._capacity};
+        }
+
+        constexpr auto insert(const Size& index, T&& element) -> void {
+            assert_conditional(index <= thiz._size, "Index out of bounds of the List", "insert");
+            if (thiz._size >= thiz._capacity) {
+                reallocate(_capacity * 2);
+            }
+            Alloc::move(thiz.value + index + 1, thiz.value + index, thiz._size - index);
+            thiz.value[index] = std::move(element);
+            ++thiz._size;
+        }
+
+        constexpr static auto make_list(const std::span<T>& init) -> CList {
+            return CList{init};
+        }
+
+        constexpr static auto make_list(const std::initializer_list<T>& init) -> CList {
+            auto result = CList{init.size()};
+            std::move(init.begin(), init.end(), result.value);
+            result._size = init.size();
+            return result;
         }
 
         constexpr auto capacity(
-
         ) -> Size {
             return thiz._capacity;
+        }
+
+        constexpr auto clear (
+        ) -> void {
+            Alloc::deallocate(thiz.value);
+            thiz.value = nullptr;
+            thiz._size = 0_size;
+            thiz._capacity = 0_size;
+        }
+
+        constexpr auto assign(
+            CArray<T> &other
+        ) -> void {
+            if (thiz.value != nullptr) {
+                Alloc::deallocate(thiz.value);
+            }
+            thiz.value = other.value;
+            thiz._size = other._size;
+            thiz._capacity = other._size;
+            other.value = nullptr;
+            other._size = 0;
+        }
+
+        constexpr auto resize(
+            const Size &new_size
+        ) -> void {
+            assert_conditional(new_size <= thiz._capacity, "Size must be smaller than current capacity", "size");
+            thiz._size = new_size;
         }
 
         [[nodiscard]] constexpr auto size(
@@ -185,77 +224,15 @@ namespace Sen::Kernel {
             return thiz._size != 0;
         }
 
-        [[nodiscard]] constexpr auto sizeof_value() const -> Size {
+        [[nodiscard]] static constexpr auto sizeof_value() -> Size {
             return sizeof(T);
-        }
-
-        constexpr auto resize(
-            const Size &new_size
-        ) -> void {
-            assert_conditional(new_size <= thiz._capacity, "Size must be smaller than current capacity", "size");
-            thiz._size = new_size;
-        }
-
-        constexpr auto clear(
-
-        ) -> void override {
-            thiz._capacity = 0;
-            BaseContainer<T>::clear();
-        }
-
-        constexpr auto reallocate(
-            const Size &size
-        ) -> void {
-            if (thiz._capacity < size) {
-                auto new_value = new T[size];
-                if constexpr (std::is_trivially_copyable_v<T>) {
-                    std::memmove(new_value, thiz.value, thiz._size * sizeof(T));
-                } else {
-                    std::uninitialized_move(thiz.value, thiz.value + thiz._size, new_value);
-                }
-                delete[] thiz.value;
-                thiz.value = new_value;
-                thiz._capacity = size;
-            }
-        }
-
-        template<typename U>
-        constexpr auto append(
-            U &&value
-        ) -> void {
-            if (thiz._size + 1 > thiz._capacity) {
-                thiz.reallocate(thiz._capacity * 4);
-            }
-            new(&thiz.value[thiz._size]) T(std::forward<U>(value));
-            ++thiz._size;
-        }
-
-        constexpr auto append(
-        ) -> void {
-            if (thiz._size + 1 > thiz._capacity) {
-                thiz.reallocate(thiz._capacity * 4);
-            }
-            ++thiz._size;
-        }
-
-        constexpr auto assign(
-            CArray<T> &other
-        ) -> void {
-            if (thiz.value != nullptr) {
-                delete[] thiz.value;
-            }
-            thiz.value = other.value;
-            thiz._size = other._size;
-            thiz._capacity = other._size;
-            other.value = nullptr;
-            other._size = 0;
         }
 
         constexpr auto assign(
             CList &other
         ) -> void {
             if (thiz.value != nullptr) {
-                delete[] thiz.value;
+                Alloc::deallocate(thiz.value);
             }
             thiz.value = other.value;
             thiz._size = other._size;
@@ -264,69 +241,8 @@ namespace Sen::Kernel {
             other._size = 0;
             other._capacity = 0;
         }
-
-        template<typename... Args> requires (std::is_same_v<Args, Size> && ... )
-        constexpr auto pop(
-            const Args &... args
-        ) -> void {
-            assert_conditional(thiz._size > 0, fmt::format("No argument to pop, the current list is empty"), "pop");
-            if constexpr (sizeof...(args) == 0) {
-                --thiz._size;
-            } else {
-                static_assert(sizeof...(args) == 1, "Expected 1 argument only");
-                auto index = std::get<0>(std::make_tuple<>(args...));
-                assert_conditional(index < thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("pop", index));
-                if constexpr (is_numeric_v<T>) {
-                    std::memcpy(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
-                } else {
-                    std::memmove(thiz.value + index, thiz.value + index + 1, (thiz._size - index - 1) * sizeof(T));
-                }
-                --thiz._size;
-            }
-        }
-
-        constexpr auto view(
-        ) -> CListView<T> {
-            return CListView<T>{thiz.value, thiz._size, thiz._capacity};
-        }
-
-        constexpr operator CListView<T>() {
-            return CListView<T>{thiz.value, thiz._size, thiz._capacity};
-        }
-
-        constexpr auto insert(
-            const Size &index,
-            T &&element
-        ) -> void {
-            assert_conditional(index <= thiz._size, fmt::format("Accessed index is larger than the size of the list"), fmt::format("insert", index));
-            if (thiz._size >= thiz._capacity) {
-                thiz.reallocate(_capacity * 2);
-            }
-            if constexpr (is_numeric_v<T>) {
-                std::memcpy(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
-            } else {
-                std::memmove(thiz.value + index + 1, thiz.value + index, (thiz._size - index) * sizeof(T));
-            }
-            thiz.value[index] = std::move(element);
-            ++thiz._size;
-        }
-
-        friend class CArray<T>;
-
-        constexpr static auto make_list(
-            const std::span<T> &init
-        ) -> CList {
-            return CList{init};
-        }
-
-        constexpr static auto make_list(
-            const std::initializer_list<T> &init
-        ) -> CList {
-            auto result = CList{init.size()};
-            std::move(init.begin(), init.end(), init.begin());
-            return result;
-        }
     };
+
 
     template<typename T>
     inline auto operator<<(

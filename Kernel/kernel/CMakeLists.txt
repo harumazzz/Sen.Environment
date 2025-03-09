@@ -27,7 +27,7 @@ add_library(
         ./subprojects/thread-pool.hpp
         ./subprojects/mscharconv.hpp
         ./subprojects/jsoncons.hpp
-	./subprojects/decodeless.hpp
+	    ./subprojects/decodeless.hpp
 
         ./utility/macro.hpp
         ./utility/range/forward.hpp
@@ -312,6 +312,14 @@ add_library(
         utility/stream/write_file_stream.hpp
         utility/stream/output/output_stream.hpp
         utility/stream/output/buffered_output_stream.hpp
+        utility/container/allocator.hpp
+        utility/encoding/xml/comment.hpp
+        utility/encoding/xml/common.hpp
+        utility/encoding/xml/element.hpp
+        utility/encoding/xml/node.hpp
+        utility/encoding/xml/text.hpp
+        utility/encoding/xml/read.hpp
+        utility/encoding/xml/write.hpp
 
 )
 

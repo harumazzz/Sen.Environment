@@ -19,19 +19,21 @@ namespace Sen::Kernel {
 			template <typename U>
 			using Pointer = U*;
 
+			using Alloc = Allocator<T>;
+
 		private:
 
 			constexpr explicit CArray(
 				const std::span<T>& init
-			) : BaseContainer<T>{new T[init.size()], init.size()} {
-				std::uninitialized_copy(init.begin(), init.end(), thiz.value);
+			) : BaseContainer<T>{Alloc::allocate(init.size()), init.size()} {
+				Alloc::copy(thiz.value, init.data(), init.size());
 			}
 
 		public:
 
 			constexpr explicit CArray(
 				const Size& size
-			) : BaseContainer<T>{new T[size], size}
+			) : BaseContainer<T>{Alloc::allocate(size), size}
 			{
 
 			}
@@ -46,8 +48,8 @@ namespace Sen::Kernel {
 
 			template <typename Iterator>
 			constexpr explicit CArray(Iterator first, Iterator last)
-			: BaseContainer<T>{new T[std::distance(first, last)], static_cast<Size>(std::distance(first, last))} {
-				std::move(first, last, this->data());
+			: BaseContainer<T>{Alloc::allocate(std::distance(first, last)), static_cast<Size>(std::distance(first, last))} {
+				std::move(first, last, thiz.value);
 			}
 
 
@@ -60,12 +62,12 @@ namespace Sen::Kernel {
 			) override
 			{
 				if (thiz.value != nullptr) {
-					delete[] thiz.value;
+					Alloc::deallocate(thiz.value);
 					thiz.value = nullptr;
 				}
 			}
 
-			[[nodiscard]] constexpr auto sizeof_value() const noexcept -> Size {
+			[[nodiscard]] static constexpr auto sizeof_value() noexcept -> Size {
 				return sizeof(T);
 			}
 
@@ -74,7 +76,7 @@ namespace Sen::Kernel {
 	        ) -> void
 	        {
 	            if (thiz.value != nullptr) {
-	                delete[] thiz.value;
+	            	Alloc::deallocate(thiz.value);
 	            }
 	            thiz.value = new T[size];
 	            thiz._size = size;
@@ -106,7 +108,7 @@ namespace Sen::Kernel {
 				CArray&& other
 			) noexcept -> CArray& {
 				if (this != &other) {
-					delete[] thiz.value;
+					Alloc::deallocate(thiz.value);
 					thiz._size = other._size;
 					thiz.value = other.value;
 					other.value = nullptr;
@@ -172,7 +174,7 @@ namespace Sen::Kernel {
 				CArray& other
 			) -> void {
 				if (thiz.value != nullptr) {
-					delete[] thiz.value;
+					Alloc::deallocate(thiz.value);
 				}
 				thiz.value = other.value;
 				thiz._size = other._size;
@@ -184,7 +186,7 @@ namespace Sen::Kernel {
 				CList<T>& other
 			) -> void {
 				if (thiz.value != nullptr) {
-					delete[] thiz.value;
+					Alloc::deallocate(thiz.value);
 				}
 				thiz.value = other.value;
 				thiz._size = other._capacity;
@@ -199,6 +201,13 @@ namespace Sen::Kernel {
 				const std::span<T>& init
 			) -> CArray {
 				return CArray{init};
+			}
+
+			constexpr auto clear (
+			) -> void {
+				Alloc::deallocate(thiz.value);
+				thiz.value = nullptr;
+				thiz._size = 0_size;
 			}
 	};
 

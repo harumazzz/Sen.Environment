@@ -12,9 +12,9 @@ namespace Sen::Kernel::Javascript {
         std::is_void_v<typename is_global_function<std::decay_t<type_of<Callable>>>::ReturnType>
     inline auto proxy_native_function (
         Subprojects::quickjs::JSContext* ctx,
-        Subprojects::quickjs::JSValue this_val,
+        Subprojects::quickjs::JSValueConst this_val,
         int argc,
-        Subprojects::quickjs::JSValue* argv
+        Subprojects::quickjs::JSValueConst* argv
     ) -> Subprojects::quickjs::JSValue {
         auto context = Context::new_ref(ctx);
         auto value = Value::new_ref(ctx, this_val);

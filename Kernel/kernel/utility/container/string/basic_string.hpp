@@ -27,6 +27,8 @@ namespace Sen::Kernel {
 
     	using allocator_type = std::allocator<char>;
 
+    	using Alloc = Allocator<char>;
+
     	template <typename T>
     	using List = CList<T>;
 
@@ -42,7 +44,7 @@ namespace Sen::Kernel {
 
 		constexpr explicit BasicString(
 			const Size& size
-		) : BaseContainer<char>{new Character[size + 1], size}, _capacity{size + 1}
+		) : BaseContainer<char>{Alloc::allocate(size + 1), size}, _capacity{size + 1}
 		{
 			thiz.value[size] = '\0';
 		}
@@ -52,7 +54,7 @@ namespace Sen::Kernel {
 		) : BaseContainer<char>{nullptr, std::strlen(data)}, _capacity{}
 		{
 			thiz._capacity = thiz._size + 1;
-			thiz.value = new Character[thiz._capacity];
+			thiz.value = Alloc::allocate(thiz._capacity);
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data, thiz._size);
 		}
@@ -60,7 +62,7 @@ namespace Sen::Kernel {
     	explicit BasicString(
 			char* data,
 			const Size& size
-		) : BaseContainer<char>{ new Character[size + 1], size }, _capacity{size + 1}
+		) : BaseContainer<char>{ Alloc::allocate(size + 1), size }, _capacity{size + 1}
 		{
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data, thiz._size);
@@ -69,7 +71,7 @@ namespace Sen::Kernel {
 		explicit BasicString(
 			const char* data,
 			const Size& size
-		) : BaseContainer<char>{ new Character[size + 1], size }, _capacity{size + 1}
+		) : BaseContainer<char>{ Alloc::allocate(size + 1), size }, _capacity{size + 1}
 		{
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data, thiz._size);
@@ -77,7 +79,7 @@ namespace Sen::Kernel {
 
     	explicit BasicString(
 		   const std::string_view data
-	   ) : BaseContainer<char>{new Character[data.size() + 1], data.size()}, _capacity{data.size() + 1} {
+	   ) : BaseContainer<char>{Alloc::allocate(data.size() + 1), data.size()}, _capacity{data.size() + 1} {
 			thiz.value[thiz._size] = '\0';
 			std::memcpy(thiz.value, data.data(), thiz._size);
 		}
@@ -95,9 +97,9 @@ namespace Sen::Kernel {
 			Size const& size
 		) -> void
 		{
-			delete[] thiz.value;
+			Alloc::deallocate(thiz.value);
 			thiz._capacity = size + 1;
-			thiz.value = new Character[thiz._capacity];
+			thiz.value = Alloc::allocate(thiz._capacity);
 			std::memset(thiz.value, 0, thiz._capacity);
 			thiz._size = 0;
 		}
@@ -107,20 +109,20 @@ namespace Sen::Kernel {
 		) -> void
 		{
 			thiz._capacity = size + 1;
-			const auto new_value = new Character[thiz._capacity];
+			const auto new_value = Alloc::allocate(thiz._capacity);
 			std::memcpy(new_value, thiz.value, thiz._size);
-			delete[] thiz.value;
+			Alloc::deallocate(thiz.value);
 			thiz.value = new_value;
 			std::memset(thiz.value + thiz._size, 0, thiz._capacity - thiz._size);
 			thiz._size = size;
 		}
 
-		virtual constexpr ~BasicString(
+		constexpr ~BasicString(
 
 		) override
 		{
 			if (thiz.value != nullptr) {
-				delete[] value;
+			Alloc::deallocate(thiz.value);
 				thiz.value = nullptr;
 			}
 		}
@@ -132,7 +134,7 @@ namespace Sen::Kernel {
 		BasicString(
 			const BasicString& other
 		) {
-			thiz.value = new Character[other._capacity];
+			thiz.value = Alloc::allocate(other._capacity);
 			thiz._size = other._size;
 			thiz._capacity = other._capacity;
 			std::memcpy(thiz.value, other.value, other._size);
@@ -142,9 +144,9 @@ namespace Sen::Kernel {
 		auto operator =(
 			const BasicString& other
 		) -> BasicString & {
-			delete[] thiz.value;
+			Alloc::deallocate(thiz.value);
 			thiz._capacity = other._capacity;
-			thiz.value = new Character[thiz._capacity];
+			thiz.value = Alloc::allocate(thiz._capacity);
 			thiz._size = other._size;
 			std::memcpy(thiz.value, other.value, other._size);
 			thiz.value[thiz._size] = '\0';
@@ -175,7 +177,7 @@ namespace Sen::Kernel {
 			BasicString&& other
 		) noexcept -> BasicString& {
 			if (this != &other) {
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz._size = other._size;
 				thiz.value = other.value;
 				thiz._capacity = other._capacity;
@@ -318,7 +320,7 @@ namespace Sen::Kernel {
     	constexpr auto take_ownership (
 			BasicString& other
 		) -> void {
-		    delete[] thiz.value;
+			Alloc::deallocate(thiz.value);
 			thiz.value = other.value;
 			thiz._size = other._size;
 			thiz._capacity = other._capacity;
@@ -339,12 +341,12 @@ namespace Sen::Kernel {
 				std::memcpy(thiz.value + index, str, len);
 			} else {
 				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				const auto raw = new Character[new_capacity + 1];
+				const auto raw = Alloc::allocate(new_capacity + 1);
 				std::memcpy(raw, thiz.value, index);
 				std::memcpy(raw + index, str, len);
 				std::memcpy(raw + index + len, thiz.value + index, thiz._size - index);
 				raw[new_size] = '\0';
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz.value = raw;
 				thiz._capacity = new_capacity;
 			}
@@ -398,10 +400,10 @@ namespace Sen::Kernel {
 				thiz.value[thiz._size] = c;
 			} else {
 				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				const auto new_value = new Character[new_capacity + 1];
+				const auto new_value = Alloc::allocate(new_capacity + 1);
 				std::memcpy(new_value, thiz.value, thiz._size);
 				new_value[thiz._size] = c;
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz.value = new_value;
 				thiz._capacity = new_capacity;
 			}
@@ -427,10 +429,10 @@ namespace Sen::Kernel {
 				std::memset(thiz.value + thiz._size, ch, count);
 			} else {
 				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				const auto new_value = new Character[new_capacity + 1];
+				const auto new_value = Alloc::allocate(new_capacity + 1);
 				std::memcpy(new_value, thiz.value, thiz._size);
 				std::memset(new_value + thiz._size, ch, count);
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz.value = new_value;
 				thiz._capacity = new_capacity;
 			}
@@ -449,10 +451,10 @@ namespace Sen::Kernel {
 				std::memcpy(thiz.value + thiz._size, s, count);
 			} else {
 				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				const auto new_value = new Character[new_capacity + 1];
+				const auto new_value = Alloc::allocate(new_capacity + 1);
 				std::memcpy(new_value, thiz.value, thiz._size);
 				std::memcpy(new_value + thiz._size, s, count);
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz.value = new_value;
 				thiz._capacity = new_capacity;
 			}
@@ -539,11 +541,11 @@ namespace Sen::Kernel {
 				std::memcpy(thiz.value + pos, cstr, count2);
 			} else {
 				const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-				const auto new_value = new Character[new_capacity + 1];
+				const auto new_value = Alloc::allocate(new_capacity + 1);
 				std::memcpy(new_value, thiz.value, pos);
 				std::memcpy(new_value + pos, cstr, count2);
 				std::memcpy(new_value + pos + count2, thiz.value + pos + count, thiz._size - pos - count);
-				delete[] thiz.value;
+				Alloc::deallocate(thiz.value);
 				thiz.value = new_value;
 				thiz._capacity = new_capacity;
 			}
@@ -640,10 +642,10 @@ namespace Sen::Kernel {
 		        std::memcpy(thiz.value + thiz._size, other, other_size);
 		    } else {
 		        const auto new_capacity = std::max(new_size, thiz._capacity + 4096_size);
-		        const auto new_value = new Character[new_capacity + 1];
+		        const auto new_value = Alloc::allocate(new_capacity + 1);
 		        std::memcpy(new_value, thiz.value, thiz._size);
 		        std::memcpy(new_value + thiz._size, other, other_size);
-		        delete[] thiz.value;
+		    	Alloc::deallocate(thiz.value);
 		        thiz.value = new_value;
 		        thiz._capacity = new_capacity;
 		    }
@@ -715,9 +717,10 @@ namespace Sen::Kernel {
 		) -> void {
 			assert_conditional(to <= thiz._size, "To index must be smaller than string size", "substring");
 			assert_conditional(from <= to, fmt::format("From index must be smaller than to index, from: {}, to: {}", from, to), "substring");
-			const auto result = new Character[to - from];
+			const auto result = Alloc::allocate(to - from + 1);
 			std::memcpy(result, thiz.value + from, to - from);
-			delete[] thiz.value;
+    		Alloc::deallocate(thiz.value);
+    		result[to - from] = '\0';
 			thiz.value = result;
 			thiz._size = to - from;
 		}
@@ -857,9 +860,9 @@ namespace Sen::Kernel {
     		}
     		if (index > 0) {
     			const auto new_size = thiz._size - index;
-    			const auto new_value = new Character[new_size + 1];
+    			const auto new_value = Alloc::allocate(new_size + 1);
     			std::memcpy(new_value, value + index, new_size + 1);
-    			delete[] thiz.value;
+    			Alloc::deallocate(thiz.value);
     			thiz.value = new_value;
     			thiz._size = new_size;
     		}
@@ -955,7 +958,7 @@ namespace Sen::Kernel {
     					}
     				}
     				new_data[new_length] = '\0';
-    				delete[] thiz.value;
+    				Alloc::deallocate(thiz.value);
     				thiz.value = new_data;
     				thiz._capacity = new_capacity;
     			} else {
@@ -1018,7 +1021,7 @@ namespace Sen::Kernel {
     	constexpr auto assign (
     		String& other
     	) -> void {
-			delete[] thiz.value;
+			Alloc::deallocate(thiz.value);
 			thiz.value = other.value;
 			other.value = nullptr;
 			thiz._size = other._size;

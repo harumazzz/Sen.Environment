@@ -21,7 +21,6 @@ auto execute (
         while (context.runtime().has_promise()) {
             context.runtime().call_promise(as_lvalue(Context::new_context()));
         }
-        assert_conditional(result.is_undefined(), "Thread has not been completed", "execute");
     }
     catch(...) {
         auto exception_message = Runtime::make_exception();

@@ -111,4 +111,14 @@ namespace Sen::Kernel {
     template <auto T>
     constexpr auto is_implemented_stream_v = is_implemented_stream<decltype(T)>;
 
+    template <typename T>
+    struct is_trivially_copyable
+        : std::bool_constant<std::is_integral_v<T> ||
+                             std::is_floating_point_v<T> ||
+                             std::is_pointer_v<T>>
+    {};
+
+    template <typename T>
+    inline constexpr auto is_trivially_copyable_v = is_trivially_copyable<T>::value;
+
 }

@@ -163,6 +163,18 @@ namespace Sen::Kernel::Javascript {
     };
 
     template <>
+    struct Trait<StringView> {
+
+        static auto to_value(
+            auto&& source,
+            Value& destination
+        ) -> void {
+            destination.set_value(Subprojects::quickjs::JS_NewStringLen(destination._context(), source.data(), source.size()));
+        }
+
+    };
+
+    template <>
     struct Trait<bool> {
 
         static auto from_value(
@@ -205,13 +217,13 @@ namespace Sen::Kernel::Javascript {
             const List<T>& source,
             Value& destination
         ) -> void {
-            destination.set_array();
-            // TODO : Refactor code with quickjs api : 0.9.0 for fast array
-            for (auto index : Range{source.size()}) {
+            auto args = std::views::transform(source, [&](auto&& e) -> Subprojects::quickjs::JSValue {
                 auto value = Value::new_value(destination._context());
-                Trait<T>::to_value(source[index], value);
-                destination.set_property(index, value.release());
-            }
+                Trait<T>::to_value(e, value);
+                return value.release();
+            });
+            const auto arguments = Array<Subprojects::quickjs::JSValue>{args.begin(), args.end()};
+            destination.set_value(Subprojects::quickjs::JS_NewArrayFrom(destination._context(), static_cast<int>(arguments.size()), arguments.begin()));
         }
 
     };
@@ -239,13 +251,13 @@ namespace Sen::Kernel::Javascript {
             const List<T>& source,
             Value& destination
         ) -> void {
-            destination.set_array();
-            // TODO : Refactor code with quickjs api : 0.9.0 for fast array
-            for (auto index : Range{source.size()}) {
+            auto args = std::views::transform(source, [&](auto&& e) -> Subprojects::quickjs::JSValue {
                 auto value = Value::new_value(destination._context());
-                Trait<T>::to_value(source[index], value);
-                destination.set_property(index, value.release());
-            }
+                Trait<T>::to_value(e, value);
+                return value.release();
+            });
+            const auto arguments = Array<Subprojects::quickjs::JSValue>{args.begin(), args.end()};
+            destination.set_value(Subprojects::quickjs::JS_NewArrayFrom(destination._context(), static_cast<int>(arguments.size()), arguments.begin()));
         }
 
     };
@@ -276,13 +288,13 @@ namespace Sen::Kernel::Javascript {
             const CArray<T>& source,
             Value& destination
         ) -> void {
-            destination.set_array();
-            // TODO : Refactor code with quickjs api : 0.9.0 for fast array
-            for (auto index : Range{source.size()}) {
+            auto args = std::views::transform(source, [&](auto&& e) -> Subprojects::quickjs::JSValue {
                 auto value = Value::new_value(destination._context());
-                Trait<T>::to_value(source[index], value);
-                destination.set_property(index, value.release());
-            }
+                Trait<T>::to_value(e, value);
+                return value.release();
+            });
+            const auto arguments = Array<Subprojects::quickjs::JSValue>{args.begin(), args.end()};
+            destination.set_value(Subprojects::quickjs::JS_NewArrayFrom(destination._context(), static_cast<int>(arguments.size()), arguments.begin()));
         }
 
     };
