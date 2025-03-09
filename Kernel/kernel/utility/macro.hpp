@@ -48,6 +48,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <csetjmp>
+#include <csignal>
 #endif
 
 #if APPLE

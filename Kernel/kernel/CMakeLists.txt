@@ -320,6 +320,7 @@ add_library(
         utility/encoding/xml/text.hpp
         utility/encoding/xml/read.hpp
         utility/encoding/xml/write.hpp
+        interface/executor.hpp
 
 )
 

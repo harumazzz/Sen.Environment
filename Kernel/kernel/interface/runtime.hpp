@@ -220,14 +220,30 @@ namespace Sen::Kernel::Interface::Runtime {
         }
     }
 
+    template <typename... Args>
     inline auto make_exception(
+        Args&&... message
     ) -> CArray<String> {
         return make_array<String>(
             "display"_s,
-            StringHelper::make_string(parse_exception()->what()),
+            (message)...,
             "red"_s
         );
-    };
+    }
+
+    inline auto make_runtime_exception(
+    ) -> CArray<String> {
+        return make_exception(
+            std::forward<String>(StringHelper::make_string(parse_exception()->what()))
+        );
+    }
+
+    inline auto make_unhandled_exception(
+    ) -> CArray<String> {
+        return make_exception(
+            std::forward<String>(StringHelper::make_string(fmt::format("Unhandled exception: {}", "Kernel is about to crash, but was prevented.")))
+        );
+    }
 
     inline auto bind_service (
         Service* service
