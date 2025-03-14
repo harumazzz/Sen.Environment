@@ -1,10 +1,11 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/model/item.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
+import '../../../extension/platform.dart';
+import '../../../model/item.dart';
+import '../bloc/section/section_bloc.dart';
 
 class SectionView extends StatelessWidget {
   const SectionView({super.key, required this.sectionItem});
@@ -92,6 +93,17 @@ class SectionView extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<HashMap<SectionType, Item>>(
+        'sectionItem',
+        sectionItem,
+      ),
+    );
+  }
 }
 
 class SectionItem extends StatelessWidget {
@@ -155,6 +167,17 @@ class SectionItem extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('selected', selected));
+    properties.add(DiagnosticsProperty<Item>('item', item));
+    properties.add(ColorProperty('buttonColor', buttonColor));
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onSetting', onSetting),
+    );
+  }
 }
 
 class ExtensionView extends StatelessWidget {
@@ -213,6 +236,17 @@ class ExtensionView extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<HashMap<ExtensionType, Item>>(
+        'extensionItem',
+        extensionItem,
+      ),
+    );
+  }
 }
 
 class ExtensionItem extends StatelessWidget {
@@ -251,6 +285,16 @@ class ExtensionItem extends StatelessWidget {
           child: SizedBox(width: toolWidth, child: Icon(item.icon)),
         ),
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Item>('item', item));
+    properties.add(ColorProperty('buttonColor', buttonColor));
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onSetting', onSetting),
     );
   }
 }

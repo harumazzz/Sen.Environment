@@ -13,11 +13,8 @@ final class ErrorTracebackInitial extends ErrorTracebackState {
 }
 
 final class ErrorTracebackMessage extends ErrorTracebackState {
+  const ErrorTracebackMessage({required this.message});
   final Message message;
-
-  const ErrorTracebackMessage({
-    required this.message,
-  });
 
   @override
   List<Object?> get props => [message];

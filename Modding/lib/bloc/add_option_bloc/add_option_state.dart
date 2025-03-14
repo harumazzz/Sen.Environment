@@ -5,7 +5,7 @@ sealed class AddOptionState extends Equatable {
   const AddOptionState();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => <Object?>[];
 }
 
 final class AddOptionInitial extends AddOptionState {
@@ -13,13 +13,11 @@ final class AddOptionInitial extends AddOptionState {
 }
 
 final class ExportLogState extends AddOptionState {
+  const ExportLogState({required this.value});
   final String value;
-  const ExportLogState({
-    required this.value,
-  });
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => <Object?>[value];
 }
 
 final class NoneOptionState extends AddOptionState {
@@ -27,11 +25,9 @@ final class NoneOptionState extends AddOptionState {
 }
 
 final class CaptureState extends AddOptionState {
+  const CaptureState({required this.data});
   final Uint8List data;
-  const CaptureState({
-    required this.data,
-  });
 
   @override
-  List<Object?> get props => [...super.props, data];
+  List<Object?> get props => <Object?>[...super.props, data];
 }

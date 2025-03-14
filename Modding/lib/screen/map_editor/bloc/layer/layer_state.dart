@@ -4,16 +4,16 @@ enum RootLayerType { pieces, events }
 
 final class LayerState extends Equatable {
   const LayerState({required this.treeController});
-
-  final TreeController<LayerNode> treeController;
-
   factory LayerState.initailize() {
     return LayerState(
-        treeController: TreeController(
-      roots: [],
-      childrenProvider: (LayerNode node) => node.children.values,
-    ));
+      treeController: TreeController(
+        roots: [],
+        childrenProvider: (LayerNode node) => node.children.values,
+      ),
+    );
   }
+
+  final TreeController<LayerNode> treeController;
 
   LayerState copyWith({TreeController<LayerNode>? treeController}) {
     return LayerState(treeController: treeController ?? this.treeController);

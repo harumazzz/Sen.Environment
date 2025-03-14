@@ -13,22 +13,16 @@ final class SelectedImageResetEvent extends SelectedImageEvent {
 }
 
 final class SelectedImageToggleEvent extends SelectedImageEvent {
+  const SelectedImageToggleEvent({required this.index});
   final int index;
-
-  const SelectedImageToggleEvent({
-    required this.index,
-  });
 
   @override
   List<Object?> get props => [index];
 }
 
 final class SelectedImageAllocateEvent extends SelectedImageEvent {
+  const SelectedImageAllocateEvent({required this.size});
   final int size;
-
-  const SelectedImageAllocateEvent({
-    required this.size,
-  });
 
   @override
   List<Object?> get props => [size];

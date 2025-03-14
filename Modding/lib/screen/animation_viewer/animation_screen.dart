@@ -1,20 +1,21 @@
 import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
-import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
-import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/animation_viewer/control_panel.dart';
-import 'package:sen/screen/animation_viewer/media_screen.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
+import '../../bloc/selected_label_bloc/selected_label_bloc.dart';
+import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import 'control_panel.dart';
+import 'media_screen.dart';
+import 'visual_helper.dart';
+import '../../i18n/app_localizations.dart';
+import '../../service/file_helper.dart';
 import 'package:path/path.dart' as p;
 
 class AnimationScreen extends StatefulWidget {
@@ -60,6 +61,51 @@ class AnimationScreen extends StatefulWidget {
 
   @override
   State<AnimationScreen> createState() => _AnimationScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('hasFile', hasFile));
+    properties.add(StringProperty('mediaDirectory', mediaDirectory));
+    properties.add(StringProperty('sourceFile', sourceFile));
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has(
+        'onUploadFile',
+        onUploadFile,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<void Function(String value)>.has(
+        'onDragFile',
+        onDragFile,
+      ),
+    );
+    properties.add(TransformProperty('matrix', matrix));
+    properties.add(
+      DiagnosticsProperty<AnimationController>(
+        'animationController',
+        animationController,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<VisualHelper>('visualHelper', visualHelper),
+    );
+    properties.add(
+      DiagnosticsProperty<SelectedLabelBloc>(
+        'selectedLabelBloc',
+        selectedLabelBloc,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<ScreenshotController>('controller', controller),
+    );
+    properties.add(
+      DiagnosticsProperty<TransformationController>(
+        'transformationController',
+        transformationController,
+      ),
+    );
+  }
 }
 
 class _AnimationScreenState extends State<AnimationScreen> {
@@ -100,9 +146,10 @@ class _AnimationScreenState extends State<AnimationScreen> {
       splashColor: Colors.blue.withAlpha(30),
       onTap: widget.onUploadFile,
       child: Center(
-        child: _dragging
-            ? Text(los.drop_file_to_upload)
-            : Text(los.upload_file_to_continue),
+        child:
+            _dragging
+                ? Text(los.drop_file_to_upload)
+                : Text(los.upload_file_to_continue),
       ),
     );
   }
@@ -139,21 +186,28 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void _loadWorkingSprite(int index) {
     final labelInfo =
         widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
-    final duration = ((labelInfo.endIndex - labelInfo.startIndex) /
-            widget.visualHelper.workingFrameRate *
-            1000)
-        .toInt();
+    final duration =
+        ((labelInfo.endIndex - labelInfo.startIndex) /
+                widget.visualHelper.workingFrameRate *
+                1000)
+            .toInt();
     widget.animationController.duration = Duration(milliseconds: duration);
-    _animationVisual =
-        widget.visualHelper.visualizeSprite(index, widget.animationController);
+    _animationVisual = widget.visualHelper.visualizeSprite(
+      index,
+      widget.animationController,
+    );
     _animationVisual = SizedBox.fromSize(
-      size: Size(widget.visualHelper.animation.size.width,
-          widget.visualHelper.animation.size.height),
+      size: Size(
+        widget.visualHelper.animation.size.width,
+        widget.visualHelper.animation.size.height,
+      ),
       child: UnconstrainedBox(
         child: SizedOverflowBox(
           alignment: AlignmentDirectional.topStart,
-          size: Size(widget.visualHelper.animation.size.width,
-              widget.visualHelper.animation.size.height),
+          size: Size(
+            widget.visualHelper.animation.size.width,
+            widget.visualHelper.animation.size.height,
+          ),
           child: _animationVisual,
         ),
       ),
@@ -167,27 +221,22 @@ class _AnimationScreenState extends State<AnimationScreen> {
     }
   }
 
-  Future<void> _onReveal({
-    required IconData icon,
-    required String text,
-  }) async {
+  Future<void> _onReveal({required IconData icon, required String text}) async {
     var destination = null as String?;
     if (icon == Symbols.folder) {
-      destination = (text);
+      destination = text;
     } else {
-      destination = (p.dirname(text));
+      destination = p.dirname(text);
     }
     await FileHelper.revealFile(destination);
   }
 
-  Widget _buildPathField({
-    required IconData icon,
-    required String text,
-  }) {
+  Widget _buildPathField({required IconData icon, required String text}) {
     return InkWell(
-      onTap: CurrentPlatform.isAndroid
-          ? null
-          : () async => await _onReveal(icon: icon, text: text),
+      onTap:
+          CurrentPlatform.isAndroid
+              ? null
+              : () async => await _onReveal(icon: icon, text: text),
       child: Tooltip(
         message: context.los.open,
         child: Container(
@@ -229,8 +278,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: InteractiveViewer.builder(
-          panEnabled: true,
-          scaleEnabled: true,
           scaleFactor: 1000,
           maxScale: 10,
           minScale: 1.1,
@@ -251,8 +298,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
     return Stack(
       children: [
         mainScreen,
-        if (CurrentPlatform.isDesktop)
-        _buildRegularPath(),
+        if (CurrentPlatform.isDesktop) _buildRegularPath(),
         _buildBasicInformation(),
         _buildControlInformation(),
       ],
@@ -330,16 +376,11 @@ class _AnimationScreenState extends State<AnimationScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         child: Row(
           spacing: 8.0,
-          mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon),
             Text('$key:'),
-            Text(
-              value,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 4,
-            ),
+            Text(value, overflow: TextOverflow.ellipsis, maxLines: 4),
           ],
         ),
       ),
@@ -359,14 +400,16 @@ class _AnimationScreenState extends State<AnimationScreen> {
             _informationOf(
               icon: Symbols.image,
               key: context.los.width,
-              value:
-                  widget.visualHelper.animation.size.width.toStringAsFixed(0),
+              value: widget.visualHelper.animation.size.width.toStringAsFixed(
+                0,
+              ),
             ),
             _informationOf(
               icon: Symbols.image,
               key: context.los.height,
-              value:
-                  widget.visualHelper.animation.size.height.toStringAsFixed(0),
+              value: widget.visualHelper.animation.size.height.toStringAsFixed(
+                0,
+              ),
             ),
             ValueListenableBuilder<double>(
               valueListenable: _scaleNotifier,
@@ -405,15 +448,15 @@ class _AnimationScreenState extends State<AnimationScreen> {
     return ValueListenableBuilder<double>(
       valueListenable: notifier,
       builder: (context, value, child) {
-        final textStyle = Theme.of(context)
-            .textTheme
-            .titleSmall!
-            .copyWith(fontWeight: FontWeight.bold);
+        final textStyle = Theme.of(
+          context,
+        ).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
         return Card(
           color: Theme.of(context).colorScheme.surfaceContainerHigh,
           elevation: 4.0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -435,7 +478,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
                             value: value,
                             min: min,
                             max: max,
-                            onChanged: (val) => _onSliderChanged(val),
+                            onChanged: _onSliderChanged,
                           ),
                         ),
                         Text(_maxFrame.toStringAsFixed(0), style: textStyle),
@@ -475,9 +518,10 @@ class _AnimationScreenState extends State<AnimationScreen> {
             ),
           ],
           border: Border.all(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.3),
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -516,6 +560,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
           isPause: _isPause,
           toggleEvent: () {
             _isPause = !_isPause;
+            setState(() {});
             return _isPause;
           },
           setState: setState,

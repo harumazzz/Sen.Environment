@@ -1,17 +1,12 @@
 part of '../wave.dart';
 
 class TidalChange implements Wave {
-  int changeAmount;
-
-  TidalChange({
-    required this.changeAmount,
-  });
+  TidalChange({required this.changeAmount});
 
   TidalChange.withDefault() : changeAmount = 1;
+  int changeAmount;
 
-  void replaceWith({
-    int? changeAmount,
-  }) {
+  void replaceWith({int? changeAmount}) {
     this.changeAmount = changeAmount ?? this.changeAmount;
   }
 
@@ -24,8 +19,8 @@ class TidalChange implements Wave {
         'TidalChange': {
           'ChangeAmount': 9 - changeAmount,
           'ChangeType': 'absolute',
-        }
-      }
+        },
+      },
     };
   }
 }

@@ -1,9 +1,5 @@
 class Level {
-  int? version;
-  List<dynamic>? objects;
-
   Level({this.version, this.objects});
-
   Level.fromJson(Map<String, dynamic> json) {
     version = json['version'];
     if (json['objects'] != null) {
@@ -13,6 +9,8 @@ class Level {
       });
     }
   }
+  int? version;
+  List<dynamic>? objects;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

@@ -3,25 +3,25 @@ import 'dart:collection';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/selected/selected_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/suggestion/suggestion_bloc.dart';
-import 'package:sen/screen/map_editor/include/uuid.dart';
-import 'package:sen/screen/map_editor/models/action_service.dart';
-import 'package:sen/screen/map_editor/models/event_node.dart';
-import 'package:sen/screen/map_editor/models/layer_node.dart';
-import 'package:sen/screen/map_editor/models/map_const.dart';
-import 'package:sen/model/worldmap.dart';
-import 'package:sen/screen/map_editor/models/action_model.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../canvas/canvas_bloc.dart';
+import '../history/history_bloc.dart';
+import '../init_bloc/init_bloc.dart';
+import '../item/item_bloc.dart';
+import '../layer/layer_bloc.dart';
+import '../resource/resource_bloc.dart';
+import '../section/section_bloc.dart';
+import '../selected/selected_bloc.dart';
+import '../setting/setting_bloc.dart';
+import '../suggestion/suggestion_bloc.dart';
+import '../../include/uuid.dart';
+import '../../models/action_service.dart';
+import '../../models/event_node.dart';
+import '../../models/layer_node.dart';
+import '../../models/map_const.dart';
+import '../../../../model/worldmap.dart';
+import '../../models/action_model.dart';
+import '../../../../i18n/app_localizations.dart';
 
 part 'stage_event.dart';
 part 'stage_state.dart';
@@ -79,8 +79,9 @@ class StageBloc extends Bloc<StageEvent, StageState> {
 
   final AppLocalizations los;
 
-  HashMap<String, MapPieceItem> clonePieces(
-      {HashMap<String, MapPieceItem>? currentPieces}) {
+  HashMap<String, MapPieceItem> clonePieces({
+    HashMap<String, MapPieceItem>? currentPieces,
+  }) {
     final newPieces = HashMap<String, MapPieceItem>();
     final oldPieces = currentPieces ?? state.pieces;
     for (final key in oldPieces.keys) {
@@ -89,8 +90,9 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     return newPieces;
   }
 
-  HashMap<String, MapEventItem> cloneEvents(
-      {HashMap<String, MapEventItem>? currentEvents}) {
+  HashMap<String, MapEventItem> cloneEvents({
+    HashMap<String, MapEventItem>? currentEvents,
+  }) {
     final newEvents = HashMap<String, MapEventItem>();
     final oldEvents = currentEvents ?? state.events;
     for (final key in oldEvents.keys) {
@@ -100,12 +102,16 @@ class StageBloc extends Bloc<StageEvent, StageState> {
   }
 
   void _updateMapInformation(
-      UpdateMapInformation event, Emitter<StageState> emit) {
-    emit(state.copyWith(
-      worldName: event.worldName,
-      worldId: event.worldId,
-      resGroupId: event.resId,
-    ));
+    UpdateMapInformation event,
+    Emitter<StageState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        worldName: event.worldName,
+        worldId: event.worldId,
+        resGroupId: event.resId,
+      ),
+    );
   }
 
   void _updateItemPosition(UpdateItemPosition event, Emitter<StageState> emit) {
@@ -130,27 +136,35 @@ class StageBloc extends Bloc<StageEvent, StageState> {
   }
 
   void _changeWorldResource(
-      ChangeResouceWorldEvent event, Emitter<StageState> emit) {
+    ChangeResouceWorldEvent event,
+    Emitter<StageState> emit,
+  ) {
     final worldResource = event.worldResource;
     final config = cubit.state.configModel;
     resourceBloc.add(const ResourceLoading());
-    resourceBloc.add(LoadResourceByWorldName(
-      events: state.events,
+    resourceBloc.add(
+      LoadResourceByWorldName(
+        events: state.events,
         worldName: worldResource,
         animationDetails: config.resource.worldmap[worldResource]!,
         itemUpdate: () => event.itemBloc.add(const ItemStoreUpdated()),
-        notifyType: NotifyType.loadResource));
+        notifyType: NotifyType.loadResource,
+      ),
+    );
 
     final newState = state.copyWith(worldResource: worldResource);
     if (event.layerBloc.isEmptyNode()) {
       event.layerBloc.add(const InitailizeTreeController());
-      historyBloc.add(InitailizeCapture(
+      historyBloc.add(
+        InitailizeCapture(
           state: _mapInitializeService(
-        actionType: ActionType.loadWorldResource,
-        stageState: state,
-        stageBloc: event.stageBloc,
-        layerBloc: event.layerBloc,
-      )));
+            actionType: ActionType.loadWorldResource,
+            stageState: state,
+            stageBloc: event.stageBloc,
+            layerBloc: event.layerBloc,
+          ),
+        ),
+      );
     }
     emit(newState);
   }
@@ -162,13 +176,13 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     final view = WidgetsBinding.instance.platformDispatcher.views.first;
     final screenWidth = view.physicalSize.width;
     final screenHeight = view.physicalSize.height;
-    
+
     final currentPosX =
-        -(controllerTransform[12] - state.boundingRect.x ) / viewportScale;
+        -(controllerTransform[12] - state.boundingRect.x) / viewportScale;
     final currentPosY =
         -(controllerTransform[13] - state.boundingRect.y) / viewportScale;
-   // final screenWidth = view.physicalSize.width;
-   // final screenHeight = view.physicalSize.height;
+    // final screenWidth = view.physicalSize.width;
+    // final screenHeight = view.physicalSize.height;
     return Position(
       x: currentPosX - screenWidth / 8,
       y: currentPosY - screenHeight / 4,
@@ -188,50 +202,59 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     final lastLayerIndex =
         event.layerBloc.state.treeController.roots.first.children.keys.first;
     final piece = MapPieceItem(
-        imageID: event.imageId,
-        pieceType: event.isAnimation ? PieceType.animation : PieceType.image,
-        position: position,
-        parallax: 0,
-        layer: lastLayerIndex,
-        scaleX: 1.0,
-        scaleY: 1.0,
-        isArtFlipped: false,
-        rotationAngle: 0,
-        rotationRate: 0.0);
+      imageID: event.imageId,
+      pieceType: event.isAnimation ? PieceType.animation : PieceType.image,
+      position: position,
+      parallax: 0,
+      layer: lastLayerIndex,
+      scaleX: 1.0,
+      scaleY: 1.0,
+      isArtFlipped: false,
+      rotationAngle: 0,
+      rotationRate: 0.0,
+    );
     final id = uuid.v4();
     state.pieces[id] = piece;
     if (!settingBloc.state.muteAudio) {
       cubit.state.editorResource.setItemSound.resume();
     }
     event.layerBloc.updateNodeParallax(lastLayerIndex);
-    event.layerBloc.updateTree(true);
+    event.layerBloc.updateTree(refresh: true);
     final stageBloc = event.stageBloc;
     final actionService = ActionService<ActionModelType>(
-        actionType: ActionType.addItem,
-        data: {
-          ActionModelType.mapPieces: clonePieces(),
-          ActionModelType.mapEvents: cloneEvents(),
-          ActionModelType.int: lastLayerIndex
-        },
-        change: (data) {
-          final pieces =
-              data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-          final events =
-              data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-          stageBloc.add(UpdateStageState(
-              stageState: state.copyWith(events: events, pieces: pieces)));
-          event.layerBloc.updateNodeParallax(data[ActionModelType.int] as int,
-              pieceItems: pieces);
-          event.layerBloc.updateTree(true);
-        });
+      actionType: ActionType.addItem,
+      data: {
+        ActionModelType.mapPieces: clonePieces(),
+        ActionModelType.mapEvents: cloneEvents(),
+        ActionModelType.int: lastLayerIndex,
+      },
+      change: (data) {
+        final pieces =
+            data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+        final events =
+            data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+        stageBloc.add(
+          UpdateStageState(
+            stageState: state.copyWith(events: events, pieces: pieces),
+          ),
+        );
+        event.layerBloc.updateNodeParallax(
+          data[ActionModelType.int] as int,
+          pieceItems: pieces,
+        );
+        event.layerBloc.updateTree(refresh: true);
+      },
+    );
     historyBloc.add(CaptureState(state: actionService));
-    stageBloc.add(PickItemEvent(
-        idList: [id], itemBloc: event.itemBloc, playSound: false));
+    stageBloc.add(
+      PickItemEvent(idList: [id], itemBloc: event.itemBloc, playSound: false),
+    );
   }
 
   void _addEventItem(AddEventItemEvent event, Emitter<StageState> emit) async {
     final position = _getScreenItemPosition();
-    final eventId = (state.events.isNotEmpty
+    final eventId =
+        (state.events.isNotEmpty
             ? (state.events.values
                 .reduce((a, b) => a.eventID > b.eventID ? a : b)
                 .eventID)
@@ -299,12 +322,12 @@ class StageBloc extends Bloc<StageEvent, StageState> {
           if (plantType != null &&
               !cubit.state.gameResource.plant.containsKey(plantType)) {
             final settingPath = cubit.state.settingPath;
-            cubit.state.gameResource.plant[plantType] =
-                await cubit.loadPlantVisualAnimation(
-              '$settingPath/plant/$plantType',
-              plantType,
-              settingBloc.state.plantCostume,
-            );
+            cubit.state.gameResource.plant[plantType] = await cubit
+                .loadPlantVisualAnimation(
+                  '$settingPath/plant/$plantType',
+                  plantType,
+                  enableCostume: settingBloc.state.plantCostume,
+                );
           }
           break;
         }
@@ -350,28 +373,33 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     final id = uuid.v4();
     state.events[id] = eventItem;
     if (!settingBloc.state.muteAudio) {
-      cubit.state.editorResource.setItemSound.resume();
+      await cubit.state.editorResource.setItemSound.resume();
     }
     final stageBloc = event.stageBloc;
     final actionService = ActionService<ActionModelType>(
-        actionType: ActionType.addItem,
-        data: {
-          ActionModelType.mapPieces: clonePieces(),
-          ActionModelType.mapEvents: cloneEvents(),
-        },
-        change: (data) {
-          final pieces =
-              data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
-          final events =
-              data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
-          stageBloc.add(UpdateStageState(
-              stageState: state.copyWith(events: events, pieces: pieces)));
-          event.itemBloc.add(const ItemStoreUpdated());
-        });
+      actionType: ActionType.addItem,
+      data: {
+        ActionModelType.mapPieces: clonePieces(),
+        ActionModelType.mapEvents: cloneEvents(),
+      },
+      change: (data) {
+        final pieces =
+            data![ActionModelType.mapPieces] as HashMap<String, MapPieceItem>;
+        final events =
+            data[ActionModelType.mapEvents] as HashMap<String, MapEventItem>;
+        stageBloc.add(
+          UpdateStageState(
+            stageState: state.copyWith(events: events, pieces: pieces),
+          ),
+        );
+        event.itemBloc.add(const ItemStoreUpdated());
+      },
+    );
     historyBloc.add(CaptureState(state: actionService));
     event.itemBloc.add(const ItemStoreUpdated());
-    stageBloc.add(PickItemEvent(
-        idList: [id], itemBloc: event.itemBloc, playSound: false));
+    stageBloc.add(
+      PickItemEvent(idList: [id], itemBloc: event.itemBloc, playSound: false),
+    );
   }
 
   void _pickItem(PickItemEvent event, Emitter<StageState> emit) {
@@ -403,7 +431,7 @@ class StageBloc extends Bloc<StageEvent, StageState> {
       }
     }
     if (!settingBloc.state.muteAudio && event.playSound) {
-       cubit.state.editorResource.pickItemSound.resume();
+      cubit.state.editorResource.pickItemSound.resume();
     }
     event.itemBloc.add(const ItemStoreUpdated());
     /*
@@ -432,9 +460,12 @@ class StageBloc extends Bloc<StageEvent, StageState> {
         final itemProfile = itemStore[id];
         if (itemProfile != null) {
           if (selectedBloc.state.selectedList.contains(id)) {
-            selectedBloc.add(SelectedListUpdated(
-                selectedList: selectedBloc.state.selectedList.toList()
-                  ..remove(id)));
+            selectedBloc.add(
+              SelectedListUpdated(
+                selectedList:
+                    selectedBloc.state.selectedList.toList()..remove(id),
+              ),
+            );
           }
           if (itemProfile.isEvent) {
             state.events.remove(id);
@@ -449,7 +480,7 @@ class StageBloc extends Bloc<StageEvent, StageState> {
           }
         }
       }
-      event.layerBloc.updateTree(true);
+      event.layerBloc.updateTree(refresh: true);
       if (!settingBloc.state.muteAudio) {
         cubit.state.editorResource.removeItemSound.resume();
       }
@@ -480,7 +511,7 @@ class StageBloc extends Bloc<StageEvent, StageState> {
         newIdList.add(newId);
       }
     }
-    event.layerBloc.updateTree(true);
+    event.layerBloc.updateTree(refresh: true);
     if (!settingBloc.state.muteAudio) {
       cubit.state.editorResource.setItemSound.resume();
     }
@@ -524,24 +555,22 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     }
   }
 
-  ActionService<ActionModelType> _mapInitializeService(
-      {required ActionType actionType,
-      required StageState stageState,
-      required StageBloc stageBloc,
-      required LayerBloc layerBloc}) {
+  ActionService<ActionModelType> _mapInitializeService({
+    required ActionType actionType,
+    required StageState stageState,
+    required StageBloc stageBloc,
+    required LayerBloc layerBloc,
+  }) {
     return ActionService<ActionModelType>(
-        actionType: actionType,
-        data: {
-          ActionModelType.stage: stageState,
-        },
-        change: (data) {
-          final state = (data![ActionModelType.stage] as StageState);
-          stageBloc.add(UpdateStageState(
-            stageState: state,
-          ));
-          layerBloc.add(const InitailizeTreeController());
-          layerBloc.add(const InitailizeLayerNode());
-        });
+      actionType: actionType,
+      data: {ActionModelType.stage: stageState},
+      change: (data) {
+        final state = data![ActionModelType.stage] as StageState;
+        stageBloc.add(UpdateStageState(stageState: state));
+        layerBloc.add(const InitailizeTreeController());
+        layerBloc.add(const InitailizeLayerNode());
+      },
+    );
   }
 
   Iterable<String> getLevelName() {
@@ -549,7 +578,8 @@ class StageBloc extends Bloc<StageEvent, StageState> {
   }
 
   HashMap<(int, int), ItemProperty?> _createPieceProperty(
-      HashMap<String, MapPieceItem> pieces) {
+    HashMap<String, MapPieceItem> pieces,
+  ) {
     final property = HashMap<(int, int), ItemProperty>();
     for (final e in pieces.values) {
       final id = (e.layer, e.parallax);
@@ -561,7 +591,9 @@ class StageBloc extends Bloc<StageEvent, StageState> {
   }
 
   Future<void> _loadWorld(
-      LoadWorldEvent event, Emitter<StageState> emit) async {
+    LoadWorldEvent event,
+    Emitter<StageState> emit,
+  ) async {
     final worldData = event.worldData;
     final config = cubit.state.configModel;
     var worldResource = 'none';
@@ -577,12 +609,15 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     if (config.resource.worldmap.containsKey(worldData.worldName)) {
       worldResource = worldData.worldName;
       resourceBloc.add(const ResourceLoading());
-      resourceBloc.add(LoadResourceByWorldName(
+      resourceBloc.add(
+        LoadResourceByWorldName(
           events: events,
           worldName: worldResource,
           animationDetails: config.resource.worldmap[worldResource]!,
           notifyType: NotifyType.loadWorld,
-          itemUpdate: () => event.itemBloc.add(const ItemStoreUpdated())));
+          itemUpdate: () => event.itemBloc.add(const ItemStoreUpdated()),
+        ),
+      );
     } else {
       //resourceBloc.add(const ResourceLoading());
       resourceBloc.add(const ResourceClear());
@@ -594,22 +629,27 @@ class StageBloc extends Bloc<StageEvent, StageState> {
     event.itemBloc.add(const ItemStoreUpdated());
     suggestionBloc.add(UpdateEventNameList(eventNameList: getLevelName()));
     final newState = StageState(
-        worldResource: worldResource,
-        worldName: worldData.worldName,
-        worldId: worldData.worldID,
-        resGroupId: worldData.resGroupID,
-        boundingRect: worldData.boundingRect.clone(),
-        pieces: pieces,
-        events: events,
-        pieceProperty: _createPieceProperty(pieces),
-        eventProperty: ItemProperty());
+      worldResource: worldResource,
+      worldName: worldData.worldName,
+      worldId: worldData.worldID,
+      resGroupId: worldData.resGroupID,
+      boundingRect: worldData.boundingRect.clone(),
+      pieces: pieces,
+      events: events,
+      pieceProperty: _createPieceProperty(pieces),
+      eventProperty: ItemProperty(),
+    );
 
-    historyBloc.add(InitailizeCapture(
+    historyBloc.add(
+      InitailizeCapture(
         state: _mapInitializeService(
-            actionType: ActionType.openWorldMap,
-            stageState: newState.copyWith(),
-            stageBloc: event.stageBloc,
-            layerBloc: event.layerBloc)));
+          actionType: ActionType.openWorldMap,
+          stageState: newState.copyWith(),
+          stageBloc: event.stageBloc,
+          layerBloc: event.layerBloc,
+        ),
+      ),
+    );
     emit(newState);
   }
 

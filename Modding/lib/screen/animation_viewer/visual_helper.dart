@@ -1,15 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
-import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
-import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
-import 'package:sen/model/animation.dart' as model;
-import 'package:sen/screen/animation_viewer/label_info.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
+import '../../bloc/selected_label_bloc/selected_label_bloc.dart';
+import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import '../../model/animation.dart' as model;
+import 'label_info.dart';
+import '../../service/file_helper.dart';
 import 'dart:collection';
 import 'dart:math' as math;
 
 class VisualHelper {
+  VisualHelper({
+    Matrix4? initialMatrix,
+    model.Color? initialColor,
+    List<ImageProvider?>? imageSource,
+    bool? hasAnimation,
+    bool? hasMedia,
+    int? workingSpriteIndex,
+    double? workingFrameRate,
+    required this.context,
+    Map<String, LabelInfo>? labelInfo,
+  }) : initialMatrix = initialMatrix ?? Matrix4.identity(),
+       initialColor = initialColor ?? [1.0, 1.0, 1.0, 1.0],
+       imageSource = imageSource ?? [],
+       hasAnimation = hasAnimation ?? false,
+       hasMedia = hasMedia ?? false,
+       workingSpriteIndex = workingSpriteIndex ?? 0,
+       workingFrameRate = workingFrameRate ?? 30,
+       labelInfo = labelInfo ?? {};
   Matrix4 initialMatrix;
   model.Color initialColor;
   late model.SexyAnimation animation;
@@ -21,26 +39,6 @@ class VisualHelper {
   Map<String, LabelInfo> labelInfo;
   final BuildContext context;
 
-  VisualHelper({
-    Matrix4? initialMatrix,
-    model.Color? initialColor,
-    model.SexyAnimation? animation,
-    List<ImageProvider?>? imageSource,
-    bool? hasAnimation,
-    bool? hasMedia,
-    int? workingSpriteIndex,
-    double? workingFrameRate,
-    required this.context,
-    Map<String, LabelInfo>? labelInfo,
-  })  : initialMatrix = initialMatrix ?? Matrix4.identity(),
-        initialColor = initialColor ?? [1.0, 1.0, 1.0, 1.0],
-        imageSource = imageSource ?? [],
-        hasAnimation = hasAnimation ?? false,
-        hasMedia = hasMedia ?? false,
-        workingSpriteIndex = workingSpriteIndex ?? 0,
-        workingFrameRate = workingFrameRate ?? 30,
-        labelInfo = labelInfo ?? {};
-
   Future<void> loadAnimation(String path) async {
     dispose();
     animation = model.SexyAnimation.fromJson(
@@ -49,9 +47,7 @@ class VisualHelper {
     return;
   }
 
-  void loadImageSource(
-    String directory,
-  ) {
+  void loadImageSource(String directory) {
     for (final image in animation.image) {
       final file = '$directory/${image.path}.png';
       var source = null as MemoryImage?;
@@ -100,9 +96,7 @@ class VisualHelper {
     return matrix;
   }
 
-  ColorFilter makeColor(
-    model.Color value,
-  ) {
+  ColorFilter makeColor(model.Color value) {
     final result = ColorFilter.mode(
       Color.fromARGB(
         (255.0 * value[3]).toInt(),
@@ -116,7 +110,12 @@ class VisualHelper {
   }
 
   Color colorFromVariant(model.Color color) {
-    return Color.fromRGBO((color[0] * 255).round(), (color[1] * 255).round(), (color[2] * 255).round(), color[3]);
+    return Color.fromRGBO(
+      (color[0] * 255).round(),
+      (color[1] * 255).round(),
+      (color[2] * 255).round(),
+      color[3],
+    );
   }
 
   model.AnimationImage selectImage(int index) {
@@ -129,9 +128,7 @@ class VisualHelper {
     return result;
   }
 
-  model.AnimationSprite selectSprite(
-    int index,
-  ) {
+  model.AnimationSprite selectSprite(int index) {
     var result = null as model.AnimationSprite?;
     if (0 <= index && index < animation.sprite.length) {
       result = animation.sprite[index];
@@ -151,30 +148,26 @@ class VisualHelper {
     }
   }
 
-  Widget visualizeImage(
-    int index,
-  ) {
+  Widget visualizeImage(int index) {
     final image = selectImage(index);
     return Visibility(
       visible: context.read<SelectedImageBloc>().state.value[index],
       child: Transform(
         transform: transformMatrixFromVariant(image.transform),
-        child: imageSource[index] == null
-            ? Text('Missing ${image.path}')
-            : Image(
-                image: imageSource[index]!,
-                width: image.dimension.width.toDouble(),
-                height: image.dimension.height.toDouble(),
-                fit: BoxFit.fill,
-              ),
+        child:
+            imageSource[index] == null
+                ? Text('Missing ${image.path}')
+                : Image(
+                  image: imageSource[index]!,
+                  width: image.dimension.width.toDouble(),
+                  height: image.dimension.height.toDouble(),
+                  fit: BoxFit.fill,
+                ),
       ),
     );
   }
 
-  Widget visualizeSprite(
-    int index,
-    AnimationController animationController,
-  ) {
+  Widget visualizeSprite(int index, AnimationController animationController) {
     final sprite = selectSprite(index);
     final isMainSprite = index == animation.sprite.length;
     final layerList = SplayTreeMap<int, _VisualLayer>();
@@ -190,16 +183,23 @@ class VisualHelper {
         }
         final currentLabel = context.read<SelectedLabelBloc>().state.label;
         final layer = layerList[action.index] = _VisualLayer();
-        final subController = isMainSprite
-            ? animationController
-                .drive(IntTween(begin: labelInfo[currentLabel]!.startIndex, end: labelInfo[currentLabel]!.endIndex - 1))
-            : animationController.drive(
-                IntTween(begin: 0, end: sprite.frame.length - 1),
-              );
+        final subController =
+            isMainSprite
+                ? animationController.drive(
+                  IntTween(
+                    begin: labelInfo[currentLabel]!.startIndex,
+                    end: labelInfo[currentLabel]!.endIndex - 1,
+                  ),
+                )
+                : animationController.drive(
+                  IntTween(begin: 0, end: sprite.frame.length - 1),
+                );
         layer.view = AnimatedBuilder(
           animation: subController,
           child:
-              !action.sprite ? visualizeImage(action.resource) : visualizeSprite(action.resource, animationController),
+              !action.sprite
+                  ? visualizeImage(action.resource)
+                  : visualizeSprite(action.resource, animationController),
           builder: (context, child) {
             var index = subController.value;
             var property = layer.property[index];
@@ -208,10 +208,7 @@ class VisualHelper {
             }
             return ColorFiltered(
               colorFilter: property.$2,
-              child: Transform(
-                transform: property.$1,
-                child: child,
-              ),
+              child: Transform(transform: property.$1, child: child),
             );
           },
         );
@@ -225,12 +222,16 @@ class VisualHelper {
         if (layer.isChanged) {
           layer.property[frameIndex] = (
             transformMatrixFromVariant(action.transform),
-            action.color != null ? makeColor(action.color!) : layer.property[frameIndex]!.$2,
+            action.color != null
+                ? makeColor(action.color!)
+                : layer.property[frameIndex]!.$2,
           );
         } else {
           layer.property[frameIndex] = (
             transformMatrixFromVariant(action.transform),
-            action.color != null ? makeColor(action.color!) : layer.property[frameIndex - 1]!.$2,
+            action.color != null
+                ? makeColor(action.color!)
+                : layer.property[frameIndex - 1]!.$2,
           );
         }
         layer.isChanged = true;
@@ -243,7 +244,7 @@ class VisualHelper {
           layer.isChanged = false;
           continue;
         }
-        layer.property[frameIndex] = layer.property[frameIndex - 1]!;
+        layer.property[frameIndex] = layer.property[frameIndex - 1];
       }
       ++frameIndex;
     }

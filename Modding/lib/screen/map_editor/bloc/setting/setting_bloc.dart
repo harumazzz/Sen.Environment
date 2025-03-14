@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/screen/map_editor/models/config.dart';
+import '../../models/config.dart';
 
 part 'setting_event.dart';
 part 'setting_state.dart';
@@ -26,11 +26,12 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   }
 
   void _setPlaySingleFrame(
-      SetPlaySingleFrame event, Emitter<SettingState> emit) {
+    SetPlaySingleFrame event,
+    Emitter<SettingState> emit,
+  ) {
     emit(state.copyWith(playSingleFrame: event.playSingleFrame));
   }
 
-  
   void _setMuteAudio(SetMuteAudio event, Emitter<SettingState> emit) {
     emit(state.copyWith(muteAudio: event.muteAudio));
   }
@@ -40,23 +41,30 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   }
 
   void _setBoundBackground(
-      SetBoundBackground event, Emitter<SettingState> emit) {
+    SetBoundBackground event,
+    Emitter<SettingState> emit,
+  ) {
     emit(state.copyWith(boundBackground: event.background));
   }
 
   void _setShowScreenShortcut(
-      SetShowScreenShortcut event, Emitter<SettingState> emit) {
+    SetShowScreenShortcut event,
+    Emitter<SettingState> emit,
+  ) {
     emit(state.copyWith(showTopScreenShortcut: event.enabled));
   }
 
-
   void _setIslandImageBorder(
-      SetIslandImageBorder event, Emitter<SettingState> emit) {
+    SetIslandImageBorder event,
+    Emitter<SettingState> emit,
+  ) {
     emit(state.copyWith(islandImageBorder: event.enabled));
   }
 
   void _setIslandAnimationBorder(
-      SetIslandAnimationBorder event, Emitter<SettingState> emit) {
+    SetIslandAnimationBorder event,
+    Emitter<SettingState> emit,
+  ) {
     emit(state.copyWith(islandAnimationBorder: event.enabled));
   }
 

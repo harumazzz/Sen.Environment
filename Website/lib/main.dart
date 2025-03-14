@@ -12,7 +12,7 @@ external void flutterWebRendererReady();
 
 Future<void> main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env', isOptional: false);
+  await dotenv.load(fileName: 'assets/environment', isOptional: false);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   ServiceLocator.instance.registerSingleton();
   if (kIsWeb) {

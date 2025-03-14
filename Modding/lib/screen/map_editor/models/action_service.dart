@@ -48,17 +48,16 @@ enum ActionType {
   deleteLayer,
   mergeDownLayer,
   moveUpLayer,
-  moveDownLayer
+  moveDownLayer,
 }
 
 class ActionService<T> {
+  ActionService({required this.actionType, required this.change, this.data});
   ActionType actionType;
 
   Map<T, dynamic>? data;
 
   void Function(Map<T, dynamic>?) change;
-
-  ActionService({required this.actionType, required this.change, this.data});
 
   void run() {
     change(data);

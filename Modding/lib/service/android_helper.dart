@@ -1,24 +1,19 @@
 import 'package:flutter/services.dart';
 
 class AndroidHelper {
-  static late final MethodChannel _methodChannel;
-
   const AndroidHelper._();
+  static late final MethodChannel _methodChannel;
 
   static List<String>? _arguments;
 
   static List<String>? get arguments => _arguments;
 
   static void initialize() {
-    _methodChannel = const MethodChannel(
-      'com.haruma.sen.environment',
-    );
+    _methodChannel = const MethodChannel('com.haruma.sen.environment');
     _methodChannel.setMethodCallHandler(_handleMethod);
   }
 
-  static Future<void> _handleMethod(
-    MethodCall call,
-  ) async {
+  static Future<void> _handleMethod(MethodCall call) async {
     switch (call.method) {
       case 'onResourcesReceived':
         _arguments = List<String>.from(call.arguments);
@@ -42,31 +37,25 @@ class AndroidHelper {
     return result!;
   }
 
-  static Future<String?> pickFileFromDocument(
-    String? initialDirectory,
-  ) async {
-    final result = await _methodChannel.invokeMethod<String?>(
-      'pick_file',
-      {
-        'initialDirectory': initialDirectory,
-      },
-    );
+  static Future<String?> pickFileFromDocument(String? initialDirectory) async {
+    final result = await _methodChannel.invokeMethod<String?>('pick_file', {
+      'initialDirectory': initialDirectory,
+    });
     return result;
   }
 
   static Future<String?> pickDirectoryFromDocument(
     String? initialDirectory,
   ) async {
-    final result = await _methodChannel.invokeMethod<String?>('pick_directory', {
-      'initialDirectory': initialDirectory,
-    });
+    final result = await _methodChannel.invokeMethod<String?>(
+      'pick_directory',
+      {'initialDirectory': initialDirectory},
+    );
     return result;
   }
 
   static Future<String?> saveFileFromDocument() async {
-    final result = await _methodChannel.invokeMethod<String?>(
-      'save_file',
-    );
+    final result = await _methodChannel.invokeMethod<String?>('save_file');
     return result;
   }
 }

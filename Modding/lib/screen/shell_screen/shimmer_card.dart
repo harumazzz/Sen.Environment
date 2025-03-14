@@ -7,7 +7,8 @@ class ShimmerCard extends StatefulWidget {
   State<ShimmerCard> createState() => _ShimmerCardState();
 }
 
-class _ShimmerCardState extends State<ShimmerCard> with SingleTickerProviderStateMixin {
+class _ShimmerCardState extends State<ShimmerCard>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -45,9 +46,17 @@ class _ShimmerCardState extends State<ShimmerCard> with SingleTickerProviderStat
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildShimmerContainer(width: double.infinity, height: 16, borderRadius: 4),
+                    _buildShimmerContainer(
+                      width: double.infinity,
+                      height: 16,
+                      borderRadius: 4,
+                    ),
                     const SizedBox(height: 4.0),
-                    _buildShimmerContainer(width: 150, height: 12, borderRadius: 4),
+                    _buildShimmerContainer(
+                      width: 150,
+                      height: 12,
+                      borderRadius: 4,
+                    ),
                   ],
                 ),
               ),
@@ -69,13 +78,7 @@ class _ShimmerCardState extends State<ShimmerCard> with SingleTickerProviderStat
         return ShaderMask(
           shaderCallback: (bounds) {
             return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Colors.grey[300]!,
-                Colors.grey[100]!,
-                Colors.grey[300]!,
-              ],
+              colors: [Colors.grey[300]!, Colors.grey[100]!, Colors.grey[300]!],
               stops: [
                 _controller.value - 0.3,
                 _controller.value,

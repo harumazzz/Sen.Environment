@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/extension/platform.dart';
+import '../../extension/platform.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sen/constant/localization.dart' as k_locale;
+import '../../constant/localization.dart' as k_locale;
 
 part 'settings_state.dart';
 
@@ -43,7 +43,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(locale: locale));
   }
 
-  Future<void> setNotification(bool sendNotification) async {
+  Future<void> setNotification({required bool sendNotification}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('sendNotification', sendNotification);
     emit(state.copyWith(sendNotification: sendNotification));
@@ -55,19 +55,21 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(toolChain: toolChain));
   }
 
-  Future<void> setIsValid(bool isValid) async {
+  Future<void> setIsValid({required bool isValid}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isValid', isValid);
     emit(state.copyWith(isValid: isValid));
   }
 
-  Future<void> setRequestedPermission(bool requestedPermission) async {
+  Future<void> setRequestedPermission({
+    required bool requestedPermission,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('requestedPermission', requestedPermission);
     emit(state.copyWith(requestedPermission: requestedPermission));
   }
 
-  Future<void> setRunAsLauncher(bool value) async {
+  Future<void> setRunAsLauncher({required bool value}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('jsRunAsLauncher', value);
     emit(state.copyWith(jsRunAsLauncher: value));
@@ -79,13 +81,13 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(levelMakerResource: value));
   }
 
-  Future<void> setShowConfirmDialog(bool value) async {
+  Future<void> setShowConfirmDialog({required bool value}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('jsShowConfirmDialog', value);
     emit(state.copyWith(jsShowConfirmDialog: value));
   }
 
-  Future<void> setShellLaunchImmediately(bool value) async {
+  Future<void> setShellLaunchImmediately({required bool value}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('shellLaunchImmediately', value);
     emit(state.copyWith(shellLaunchImmediately: value));

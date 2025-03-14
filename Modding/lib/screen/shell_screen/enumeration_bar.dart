@@ -1,12 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/extension/context.dart';
+import '../../extension/context.dart';
 
 class EnumerationBar extends StatelessWidget {
-  const EnumerationBar({
-    super.key,
-    required this.onSelect,
-  });
+  const EnumerationBar({super.key, required this.onSelect});
 
   final void Function() onSelect;
 
@@ -20,7 +18,6 @@ class EnumerationBar extends StatelessWidget {
         child: FloatingActionButton(
           onPressed: onSelect,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
             children: [
@@ -30,6 +27,14 @@ class EnumerationBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onSelect', onSelect),
     );
   }
 }

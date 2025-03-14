@@ -24,11 +24,15 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
   void _addSelection(AddSelectionEvent event, Emitter<SelectedState> emit) {
     final id = event.id;
     if (!state.selectedList.contains(id)) {
-      final newState = state.copyWith(selectedList: [...state.selectedList, id]);
+      final newState = state.copyWith(
+        selectedList: [...state.selectedList, id],
+      );
       emit(newState);
     } else {
       if (event.toggle) {
-        final newState = state.copyWith(selectedList: state.selectedList.toList()..remove(id));
+        final newState = state.copyWith(
+          selectedList: state.selectedList.toList()..remove(id),
+        );
         emit(newState);
       }
     }
@@ -38,32 +42,44 @@ class SelectedBloc extends Bloc<SelectedEvent, SelectedState> {
     emit(state.copyWith(selectedList: [event.id]));
   }
 
-  void _clearSelectedList(ClearSelectedList event, Emitter<SelectedState> emit) {
-    emit(SelectedState(selectedList: const [], copyList: state.copyList, hoverSelect: false));
+  void _clearSelectedList(
+    ClearSelectedList event,
+    Emitter<SelectedState> emit,
+  ) {
+    emit(SelectedState(selectedList: const [], copyList: state.copyList));
   }
 
-  void _selectedListUpdate(SelectedListUpdated event, Emitter<SelectedState> emit) {
+  void _selectedListUpdate(
+    SelectedListUpdated event,
+    Emitter<SelectedState> emit,
+  ) {
     emit(state.copyWith(selectedList: event.selectedList));
   }
 
   void _copySelected(CopySelectedList event, Emitter<SelectedState> emit) {
     final newState = state.copyWith(
       selectedList: state.selectedList,
-      copyList: event.isCut ? [...state.selectedList, 'paste_cut'] : state.selectedList,
+      copyList:
+          event.isCut
+              ? [...state.selectedList, 'paste_cut']
+              : state.selectedList,
     );
 
     emit(newState);
   }
 
   void _clearSelected(ClearCopyList event, Emitter<SelectedState> emit) {
-    emit(state.copyWith(
-      selectedList: state.selectedList,
-      copyList: [],
-    ));
+    emit(state.copyWith(selectedList: state.selectedList, copyList: []));
   }
 
   void _setNull(SetOnSelectedNull event, Emitter<SelectedState> emit) {
-    emit(SelectedState(selectedList: state.selectedList, copyList: state.copyList, hoverSelect: state.hoverSelect));
+    emit(
+      SelectedState(
+        selectedList: state.selectedList,
+        copyList: state.copyList,
+        hoverSelect: state.hoverSelect,
+      ),
+    );
   }
 
   void _setHoverSelected(SetHoverSelected event, Emitter<SelectedState> emit) {

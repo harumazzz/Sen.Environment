@@ -9,11 +9,8 @@ sealed class MessageEvent extends Equatable {
 }
 
 final class AddMessage extends MessageEvent {
+  const AddMessage({required this.message});
   final Message message;
-
-  const AddMessage({
-    required this.message,
-  });
 }
 
 final class ClearMessage extends MessageEvent {

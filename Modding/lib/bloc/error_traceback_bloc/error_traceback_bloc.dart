@@ -1,12 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:sen/model/message.dart';
+import '../../model/message.dart';
 
 part 'error_traceback_event.dart';
 part 'error_traceback_state.dart';
 
-class ErrorTracebackBloc extends Bloc<ErrorTracebackEvent, ErrorTracebackState> {
+class ErrorTracebackBloc
+    extends Bloc<ErrorTracebackEvent, ErrorTracebackState> {
   ErrorTracebackBloc() : super(const ErrorTracebackInitial()) {
     on<ErrorTracebackMessageEvent>(_onError);
     on<ErrorTracebackClearEvent>(_onClear);

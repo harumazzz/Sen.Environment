@@ -9,33 +9,28 @@ enum ToolType {
   resizeTool,
   clearEditor,
   configEditor,
-  shortcutMenu
+  shortcutMenu,
 }
 
 final class ToolBarState extends Equatable {
-  const ToolBarState({
-    required this.toolStatus,
-  });
-
-  final HashMap<ToolType, bool> toolStatus;
-
+  const ToolBarState({required this.toolStatus});
   factory ToolBarState.initailize() {
     return ToolBarState(
-      toolStatus: HashMap.from(
-        {
-          ToolType.openFile: false,
-          ToolType.saveFile: false,
-          ToolType.rectangleTool: false,
-          ToolType.eraseTool: false,
-          ToolType.panTool: false,
-          ToolType.resizeTool: false,
-          ToolType.clearEditor: false,
-          ToolType.configEditor: false,
-          ToolType.shortcutMenu: false,
-        },
-      ),
+      toolStatus: HashMap.from({
+        ToolType.openFile: false,
+        ToolType.saveFile: false,
+        ToolType.rectangleTool: false,
+        ToolType.eraseTool: false,
+        ToolType.panTool: false,
+        ToolType.resizeTool: false,
+        ToolType.clearEditor: false,
+        ToolType.configEditor: false,
+        ToolType.shortcutMenu: false,
+      }),
     );
   }
+
+  final HashMap<ToolType, bool> toolStatus;
 
   ToolBarState copyWith({HashMap<ToolType, bool>? toolStatus}) {
     final toolBarState = ToolBarState.initailize();

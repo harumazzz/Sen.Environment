@@ -3,17 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/constant/translators.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/model/translator.dart';
-import 'package:sen/screen/setting_screen/locale_option_list.dart';
-import 'package:sen/screen/setting_screen/notification_option_list.dart';
-import 'package:sen/screen/setting_screen/theme_option_list.dart';
-import 'package:sen/screen/setting_screen/translator_page.dart';
-import 'package:sen/service/android_helper.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../constant/translators.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../i18n/app_localizations.dart';
+import '../../model/translator.dart';
+import 'locale_option_list.dart';
+import 'notification_option_list.dart';
+import 'theme_option_list.dart';
+import 'translator_page.dart';
+import '../../service/android_helper.dart';
+import '../../service/file_helper.dart';
+import '../../service/ui_helper.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -46,13 +46,12 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Future<bool> _checkDefaultPermission() async {
-    return Platform.isAndroid ? await AndroidHelper.checkStoragePermission() : true;
+    return Platform.isAndroid
+        ? await AndroidHelper.checkStoragePermission()
+        : true;
   }
 
-  Future<void> _showDialog(
-    Widget content,
-    String title,
-  ) async {
+  Future<void> _showDialog(Widget content, String title) async {
     await UIHelper.showDetailDialog(
       context: context,
       title: Text(title),
@@ -90,61 +89,67 @@ class _SettingScreenState extends State<SettingScreen> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-              _buildSection(
-                los.default_setting,
-                [
-                  _buildSettingTile(
-                    icon: Symbols.dark_mode,
-                    title: los.theme,
-                    subtitle: _exchangeTheme(state.theme),
-                    onTap: () async => await _showDialog(
-                      const ThemeOptionList(),
-                      los.theme,
-                    ),
-                  ),
-                  _buildSettingTile(
-                    icon: Symbols.translate,
-                    title: los.language,
-                    subtitle: _exchangeLocale(state.locale),
-                    onTap: () async => await _showDialog(
-                      const LocaleOptionList(),
-                      los.language,
-                    ),
-                  ),
-                  _buildSettingTile(
-                    icon: Symbols.person,
-                    title: los.author,
-                    subtitle: los.author_of_this_locale,
-                    onTap: () async {
-                      await UIHelper.showCustomDialog(
-                        context: context,
-                        child: TranslatorPage(translator: _exchangeTranslator(state.locale)),
-                      );
-                    },
-                  ),
-                ],
-              ),
+              _buildSection(los.default_setting, [
+                _buildSettingTile(
+                  icon: Symbols.dark_mode,
+                  title: los.theme,
+                  subtitle: _exchangeTheme(state.theme),
+                  onTap:
+                      () async =>
+                          await _showDialog(const ThemeOptionList(), los.theme),
+                ),
+                _buildSettingTile(
+                  icon: Symbols.translate,
+                  title: los.language,
+                  subtitle: _exchangeLocale(state.locale),
+                  onTap:
+                      () async => await _showDialog(
+                        const LocaleOptionList(),
+                        los.language,
+                      ),
+                ),
+                _buildSettingTile(
+                  icon: Symbols.person,
+                  title: los.author,
+                  subtitle: los.author_of_this_locale,
+                  onTap: () async {
+                    await UIHelper.showCustomDialog(
+                      context: context,
+                      child: TranslatorPage(
+                        translator: _exchangeTranslator(state.locale),
+                      ),
+                    );
+                  },
+                ),
+              ]),
               const SizedBox(height: 16),
               _buildSection(los.application_setting, [
                 _buildSettingTile(
                   icon: Symbols.notifications,
                   title: los.send_notification,
                   subtitle: state.sendNotification ? los.enable : los.disable,
-                  onTap: () async => await _showDialog(
-                    const NotificationOptionList(),
-                    los.send_notification,
-                  ),
+                  onTap:
+                      () async => await _showDialog(
+                        const NotificationOptionList(),
+                        los.send_notification,
+                      ),
                 ),
                 _buildSettingTile(
                   icon: Symbols.storage,
                   title: los.storage_permission,
                   subtitle: _hasPermission ? los.granted : los.denied,
-                  onTap: !_hasPermission ? () => AndroidHelper.requestStoragePermission() : null,
+                  onTap:
+                      !_hasPermission
+                          ? AndroidHelper.requestStoragePermission
+                          : null,
                 ),
                 _buildSettingTile(
                   icon: Symbols.build,
                   title: los.toolchain,
-                  subtitle: state.toolChain.isEmpty ? los.not_specified : state.toolChain,
+                  subtitle:
+                      state.toolChain.isEmpty
+                          ? los.not_specified
+                          : state.toolChain,
                   onTap: !Platform.isAndroid ? _onChangeToolChain : null,
                 ),
               ]),
@@ -159,40 +164,37 @@ class _SettingScreenState extends State<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.toolchain),
-        content: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-              ),
-            ),
-            Tooltip(
-              message: los.upload_directory,
-              child: IconButton(
-                onPressed: () async {
-                  Future<void> setDirectory() async {
-                    await BlocProvider.of<SettingsCubit>(context).setToolChain(_controller.text);
-                  }
+      builder:
+          (context) => AlertDialog(
+            title: Text(los.toolchain),
+            content: Row(
+              children: [
+                Expanded(child: TextField(controller: _controller)),
+                Tooltip(
+                  message: los.upload_directory,
+                  child: IconButton(
+                    onPressed: () async {
+                      Future<void> setDirectory() async {
+                        await BlocProvider.of<SettingsCubit>(
+                          context,
+                        ).setToolChain(_controller.text);
+                      }
 
-                  final directory = await FileHelper.uploadDirectory();
-                  if (directory == null) {
-                    return;
-                  }
-                  _controller.text = directory;
-                  await setDirectory();
-                  _onCheckValidator();
-                },
-                icon: const Icon(Symbols.drive_folder_upload),
-              ),
+                      final directory = await FileHelper.uploadDirectory();
+                      if (directory == null) {
+                        return;
+                      }
+                      _controller.text = directory;
+                      await setDirectory();
+                      _onCheckValidator();
+                    },
+                    icon: const Icon(Symbols.drive_folder_upload),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          _toolChainValidator(),
-        ],
-      ),
+            actions: [_toolChainValidator()],
+          ),
     );
   }
 
@@ -200,7 +202,9 @@ class _SettingScreenState extends State<SettingScreen> {
     final los = AppLocalizations.of(context)!;
     return TextButton(
       onPressed: () async {
-        await BlocProvider.of<SettingsCubit>(context).setToolChain(_controller.text);
+        await BlocProvider.of<SettingsCubit>(
+          context,
+        ).setToolChain(_controller.text);
         _onCheckValidator();
         _onClose();
       },
@@ -214,11 +218,12 @@ class _SettingScreenState extends State<SettingScreen> {
 
   void _onCheckValidator() async {
     if (BlocProvider.of<SettingsCubit>(context).state.toolChain.isNotEmpty) {
-      final state = _existKernel(BlocProvider.of<SettingsCubit>(context).state.toolChain) &&
-          _existScript(
+      final state =
+          _existKernel(
             BlocProvider.of<SettingsCubit>(context).state.toolChain,
-          );
-      await BlocProvider.of<SettingsCubit>(context).setIsValid(state);
+          ) &&
+          _existScript(BlocProvider.of<SettingsCubit>(context).state.toolChain);
+      await BlocProvider.of<SettingsCubit>(context).setIsValid(isValid: state);
     }
   }
 
@@ -270,7 +275,8 @@ class _SettingScreenState extends State<SettingScreen> {
       leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-      trailing: onTap != null ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
+      trailing:
+          onTap != null ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
       onTap: onTap,
     );
   }

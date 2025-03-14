@@ -1,28 +1,22 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../service/file_helper.dart';
+import '../../i18n/app_localizations.dart';
 
 part 'load_script_event.dart';
 part 'load_script_state.dart';
 
 class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
-  final SettingsCubit settingsCubit;
-
-  LoadScriptBloc({
-    required this.settingsCubit,
-  }) : super(LoadScriptInitial()) {
+  LoadScriptBloc({required this.settingsCubit}) : super(LoadScriptInitial()) {
     on<LoadScripts>(_loadScript);
     on<ReloadScripts>(_reloadScript);
     on<SearchScripts>(_searchScript);
   }
+  final SettingsCubit settingsCubit;
 
-  void _loadScript(
-    LoadScripts event,
-    Emitter<LoadScriptState> emit,
-  ) async {
+  void _loadScript(LoadScripts event, Emitter<LoadScriptState> emit) async {
     return await _loadScriptFile(event, emit);
   }
 
@@ -32,7 +26,8 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
   ) async {
     emit(LoadScriptLoading());
     try {
-      final scriptPath = '${settingsCubit.state.toolChain}/Script/Helper/script.json';
+      final scriptPath =
+          '${settingsCubit.state.toolChain}/Script/Helper/script.json';
       if (FileHelper.isFile(scriptPath)) {
         final json = await FileHelper.readJsonAsync(source: scriptPath);
         emit(LoadScriptLoaded.fromJson(json));
@@ -44,21 +39,18 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
     }
   }
 
-  void _reloadScript(
-    ReloadScripts event,
-    Emitter<LoadScriptState> emit,
-  ) async {
+  void _reloadScript(ReloadScripts event, Emitter<LoadScriptState> emit) async {
     return await _loadScriptFile(event, emit);
   }
 
-  void _searchScript(
-    SearchScripts event,
-    Emitter<LoadScriptState> emit,
-  ) {
+  void _searchScript(SearchScripts event, Emitter<LoadScriptState> emit) {
     final currentState = state;
     if (currentState is LoadScriptLoaded) {
       final filtered = [
-        ...currentState.allData.where((script) => script.name.toLowerCase().contains(event.query.toLowerCase()))
+        ...currentState.allData.where(
+          (script) =>
+              script.name.toLowerCase().contains(event.query.toLowerCase()),
+        ),
       ];
       emit(currentState.copyWith(filteredData: filtered));
     }

@@ -1,6 +1,26 @@
 part of '../wave.dart';
 
 class SpiderRain implements Wave {
+  SpiderRain({
+    required this.columnStart,
+    required this.columnEnd,
+    required this.groupSize,
+    required this.timeBetweenGroups,
+    required this.fallTime,
+    required this.typename,
+    required this.count,
+    required this.message,
+  });
+
+  SpiderRain.withDefault()
+    : columnStart = 5,
+      columnEnd = 6,
+      timeBetweenGroups = 0.2,
+      fallTime = 1.5,
+      groupSize = 1,
+      count = 3,
+      message = 'Spider Rain!',
+      typename = 'future_imp';
   int columnStart;
 
   int columnEnd;
@@ -16,27 +36,6 @@ class SpiderRain implements Wave {
   int count;
 
   String message;
-
-  SpiderRain({
-    required this.columnStart,
-    required this.columnEnd,
-    required this.groupSize,
-    required this.timeBetweenGroups,
-    required this.fallTime,
-    required this.typename,
-    required this.count,
-    required this.message,
-  });
-
-  SpiderRain.withDefault()
-      : columnStart = 5,
-        columnEnd = 6,
-        timeBetweenGroups = 0.2,
-        fallTime = 1.5,
-        groupSize = 1,
-        count = 3,
-        message = 'Spider Rain!',
-        typename = 'future_imp';
 
   void replaceWith({
     int? columnStart,

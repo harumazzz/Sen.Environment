@@ -2,10 +2,8 @@ part of 'load_script_bloc.dart';
 
 @immutable
 sealed class LoadScriptEvent extends Equatable {
+  const LoadScriptEvent({required this.localizations});
   final AppLocalizations localizations;
-  const LoadScriptEvent({
-    required this.localizations,
-  });
 
   @override
   List<Object?> get props => [localizations];
@@ -20,12 +18,8 @@ class ReloadScripts extends LoadScriptEvent {
 }
 
 class SearchScripts extends LoadScriptEvent {
+  const SearchScripts({required this.query, required super.localizations});
   final String query;
-
-  const SearchScripts({
-    required this.query,
-    required super.localizations,
-  });
 
   @override
   List<Object?> get props => [localizations, query];

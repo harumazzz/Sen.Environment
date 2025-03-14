@@ -5,7 +5,8 @@ import 'package:meta/meta.dart';
 part 'selected_sprite_event.dart';
 part 'selected_sprite_state.dart';
 
-class SelectedSpriteBloc extends Bloc<SelectedSpriteEvent, SelectedSpriteState> {
+class SelectedSpriteBloc
+    extends Bloc<SelectedSpriteEvent, SelectedSpriteState> {
   SelectedSpriteBloc() : super(const SelectedSpriteState(value: [])) {
     on<SelectedSpriteResetEvent>(_onReset);
     on<SelectedSpriteToggleEvent>(_onToggle);

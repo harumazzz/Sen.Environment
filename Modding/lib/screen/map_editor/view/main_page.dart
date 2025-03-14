@@ -1,33 +1,34 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/screen/map_editor/bloc/autosave/autosave_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/canvas/canvas_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/mouse_cursor/mouse_cursor_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/selected/selected_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/shortcut/shortcut_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/suggestion/suggestion_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/ticker/ticker_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
-import 'package:sen/screen/map_editor/include/ticker.dart';
-import 'package:sen/screen/map_editor/view/map.dart';
-import 'package:sen/screen/map_editor/view/desktop_screen.dart';
-import 'package:sen/screen/map_editor/view/mobile_screen.dart';
-import 'package:sen/screen/map_editor/widgets/tool_dialog/clear_tool.dart';
-import 'package:sen/screen/map_editor/widgets/tool_dialog/config_tool.dart';
-import 'package:sen/screen/map_editor/widgets/tool_dialog/shortcut_help.dart';
+import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../../extension/context.dart';
+import '../bloc/autosave/autosave_bloc.dart';
+import '../bloc/canvas/canvas_bloc.dart';
+import '../bloc/history/history_bloc.dart';
+import '../bloc/init_bloc/init_bloc.dart';
+import '../bloc/item/item_bloc.dart';
+import '../bloc/layer/layer_bloc.dart';
+import '../bloc/mouse_cursor/mouse_cursor_bloc.dart';
+import '../bloc/resource/resource_bloc.dart';
+import '../bloc/section/section_bloc.dart';
+import '../bloc/selected/selected_bloc.dart';
+import '../bloc/setting/setting_bloc.dart';
+import '../bloc/shortcut/shortcut_bloc.dart';
+import '../bloc/stage/stage_bloc.dart';
+import '../bloc/suggestion/suggestion_bloc.dart';
+import '../bloc/ticker/ticker_bloc.dart';
+import '../bloc/toolbar/toolbar_bloc.dart';
+import '../include/ticker.dart';
+import 'map.dart';
+import 'desktop_screen.dart';
+import 'mobile_screen.dart';
+import '../widgets/tool_dialog/clear_tool.dart';
+import '../widgets/tool_dialog/config_tool.dart';
+import '../widgets/tool_dialog/shortcut_help.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key, required this.mapEditorConfigurationCubit});
@@ -133,6 +134,17 @@ class MainPage extends StatelessWidget {
         ),
       ],
       child: const MainPageChild(),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<MapEditorConfigurationCubit>(
+        'mapEditorConfigurationCubit',
+        mapEditorConfigurationCubit,
+      ),
     );
   }
 }

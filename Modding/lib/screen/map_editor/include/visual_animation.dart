@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:sen/model/animation.dart' as model;
-import 'package:sen/screen/map_editor/include/visual_image.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../../model/animation.dart' as model;
+import 'visual_image.dart';
+import '../../../service/file_helper.dart';
 import 'dart:math' as math;
 
 class VisualAnimation {
@@ -21,50 +21,62 @@ class VisualAnimation {
 
   final List<int> _spriteDisable = [];
 
-  FilterQuality _filterQuality = FilterQuality.high;
+  FilterQuality filterQuality = FilterQuality.high;
 
   String labelPlay = 'main';
 
-  static Future<VisualAnimation> create(String animationPath, String mediaPath,
-      {FilterQuality? filterQuality, Iterable<String>? spriteDisable}) async {
+  static Future<VisualAnimation> create(
+    String animationPath,
+    String mediaPath, {
+    FilterQuality? filterQuality,
+    Iterable<String>? spriteDisable,
+  }) async {
     final component = VisualAnimation();
     if (filterQuality != null) {
-      component.setFilterQuality(filterQuality);
+      component.filterQuality = filterQuality;
     }
-    await component.load(animationPath, mediaPath,
-        spriteDisable: spriteDisable);
+    await component.load(
+      animationPath,
+      mediaPath,
+      spriteDisable: spriteDisable,
+    );
     component.initSprite();
     return component;
   }
 
-  static Future<VisualAnimation> createByAnimation(model.SexyAnimation animation, String mediaPath,
-      {FilterQuality? filterQuality, Iterable<String>? spriteDisable}) async {
+  static Future<VisualAnimation> createByAnimation(
+    model.SexyAnimation animation,
+    String mediaPath, {
+    FilterQuality? filterQuality,
+    Iterable<String>? spriteDisable,
+  }) async {
     final component = VisualAnimation();
     if (filterQuality != null) {
-      component.setFilterQuality(filterQuality);
+      component.filterQuality = filterQuality;
     }
-    await component.process(animation, mediaPath,
-        spriteDisable: spriteDisable);
+    await component.process(animation, mediaPath, spriteDisable: spriteDisable);
     component.initSprite();
     return component;
   }
 
-
-  void setFilterQuality(FilterQuality filterQuality) {
-    _filterQuality = filterQuality;
-  }
-
-  Future<void> load(String animationPath, String mediaPath,
-      {Iterable<String>? spriteDisable}) async {
+  Future<void> load(
+    String animationPath,
+    String mediaPath, {
+    Iterable<String>? spriteDisable,
+  }) async {
     final animation = model.SexyAnimation.fromJson(
-        FileHelper.readJson(source: animationPath));
+      FileHelper.readJson(source: animationPath),
+    );
     await process(animation, mediaPath, spriteDisable: spriteDisable);
     return;
   }
 
-  Future<void> process(model.SexyAnimation animation, String mediaPath,
-      {Iterable<String>? spriteDisable}) async {
-        clear();
+  Future<void> process(
+    model.SexyAnimation animation,
+    String mediaPath, {
+    Iterable<String>? spriteDisable,
+  }) async {
+    clear();
     visualSize = Size(animation.size.width, animation.size.height);
     frameRate = animation.frameRate;
     for (final image in animation.image) {
@@ -96,8 +108,10 @@ class VisualAnimation {
       for (final layerIndex in spriteFrame.keys) {
         final visualLayer = spriteFrame[layerIndex]!.clone();
         visualLayer.matrix = layer.matrix.multiplied(visualLayer.matrix);
-        visualLayer.color =
-            VisualFrame.mixColor(visualLayer.color, layer.color);
+        visualLayer.color = VisualFrame.mixColor(
+          visualLayer.color,
+          layer.color,
+        );
         _drawWidget(children, visualLayer);
       }
     } else {
@@ -121,16 +135,13 @@ class VisualAnimation {
     final List<Widget> frameWidget = [];
     for (var i = 0; i < sprite.length; ++i) {
       final layerList = sprite[i];
-      // final List<Widget> children = [];
       final keys = layerList.keys.toList();
       keys.sort();
-      final spritePainter = SpritePainter(filterQuality: _filterQuality);
+      final spritePainter = SpritePainter(filterQuality: filterQuality);
       for (final layerIndex in keys) {
         _drawWidget(spritePainter, layerList[layerIndex]!);
       }
-      frameWidget.add(CustomPaint(
-        painter: spritePainter,
-      ));
+      frameWidget.add(CustomPaint(painter: spritePainter));
     }
     return frameWidget;
   }
@@ -167,15 +178,15 @@ class VisualAnimation {
     });
 
     final stream = ResizeImage(
-            MemoryImage(FileHelper.readBuffer(source: imagePath)),
-            width: image.dimension.width,
-            height: image.dimension.height)
-        .resolve(const ImageConfiguration())
-      ..addListener(listener);
+      MemoryImage(FileHelper.readBuffer(source: imagePath)),
+      width: image.dimension.width,
+      height: image.dimension.height,
+    ).resolve(const ImageConfiguration())..addListener(listener);
     _imageList.add((
-      await completer.future,
-      VisualFrame.transformMatrixFromVariant(image.transform)
-    ));
+        await completer.future,
+        VisualFrame.transformMatrixFromVariant(image.transform),
+      ),
+    );
     stream.removeListener(listener);
     return;
   }
@@ -243,8 +254,12 @@ class VisualFrame {
   }
 
   static Color colorFromVariant(model.Color color) {
-    return Color.fromRGBO((color[0] * 255).round(), (color[1] * 255).round(),
-        (color[2] * 255).round(), color[3]);
+    return Color.fromRGBO(
+      (color[0] * 255).round(),
+      (color[1] * 255).round(),
+      (color[2] * 255).round(),
+      color[3],
+    );
   }
 
   static Color mixColor(Color source, Color change) {
@@ -260,21 +275,20 @@ class VisualFrame {
     late VisualSpriteFrame visualFrameSprite = [];
     late LayerFrame layerList = {};
     for (final frame in sprite.frame) {
-      for (final removeIndex in frame.remove) {
-        layerList.remove(removeIndex);
-      }
+      frame.remove.forEach(layerList.remove);
       for (final append in frame.append) {
         final layer = VisualLayer(
-            resource: append.resource,
-            matrix: initialMatrix,
-            color: initialColor);
+          resource: append.resource,
+          matrix: initialMatrix,
+          color: initialColor,
+        );
         layer.spriteFrame = append.sprite ? 0 : null;
         layerList[append.index] = layer;
       }
       for (final layerIndex in layerList.keys) {
         final layer = layerList[layerIndex]!;
         if (layer.spriteFrame != null) {
-          layer.spriteFrame = (layer.spriteFrame! + 1);
+          layer.spriteFrame = layer.spriteFrame! + 1;
         }
       }
       for (final change in frame.change) {
@@ -297,24 +311,22 @@ class VisualFrame {
 }
 
 class LabelInfo {
+  LabelInfo({required this.begin, required this.end});
   final int begin;
   int end;
-
-  LabelInfo({required this.begin, required this.end});
 }
 
 class VisualLayer {
-  int resource;
-  Matrix4 matrix;
-  Color color;
-  int? spriteFrame;
-
   VisualLayer({
     required this.resource,
     required this.matrix,
     required this.color,
     this.spriteFrame,
   });
+  int resource;
+  Matrix4 matrix;
+  Color color;
+  int? spriteFrame;
 
   VisualLayer clone() {
     return VisualLayer(

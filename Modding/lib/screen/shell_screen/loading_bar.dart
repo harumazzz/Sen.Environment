@@ -1,15 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class LoadingBar extends StatefulWidget {
-  final double? progress;
-
   const LoadingBar({super.key, this.progress});
+  final double? progress;
 
   @override
   State<LoadingBar> createState() => _LoadingBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('progress', progress));
+  }
 }
 
-class _LoadingBarState extends State<LoadingBar> with SingleTickerProviderStateMixin {
+class _LoadingBarState extends State<LoadingBar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   @override
@@ -18,8 +25,6 @@ class _LoadingBarState extends State<LoadingBar> with SingleTickerProviderStateM
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-      lowerBound: 0.0,
-      upperBound: 1.0,
     );
     if (widget.progress != null) {
       _animationController.value = widget.progress!;
@@ -54,9 +59,12 @@ class _LoadingBarState extends State<LoadingBar> with SingleTickerProviderStateM
           animation: _animationController,
           builder: (context, child) {
             return LinearProgressIndicator(
-              value: widget.progress == null ? null : _animationController.value,
+              value:
+                  widget.progress == null ? null : _animationController.value,
               backgroundColor: Colors.grey.shade300,
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
               minHeight: 6.0,
             );
           },

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart' as file_selector;
-import 'package:sen/extension/platform.dart';
-import 'package:sen/service/android_helper.dart';
+import '../extension/platform.dart';
+import 'android_helper.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:archive/archive.dart';
@@ -19,7 +19,7 @@ class FileHelper {
     final dir = Directory(source);
     final list = dir.listSync(recursive: recursive);
     List<String> result = [];
-    for (var ripe in list) {
+    for (final ripe in list) {
       result.add(ripe.path);
     }
     return result;
@@ -31,7 +31,7 @@ class FileHelper {
   }) async {
     final dir = Directory(source);
     List<String> result = [];
-    await for (var entity in dir.list(recursive: recursive)) {
+    await for (final entity in dir.list(recursive: recursive)) {
       result.add(entity.path);
     }
     return result;
@@ -50,7 +50,7 @@ class FileHelper {
           ))?.path;
     }
     if (Platform.isAndroid) {
-      outputFile = (await AndroidHelper.saveFileFromDocument());
+      outputFile = await AndroidHelper.saveFileFromDocument();
     }
     return outputFile != null ? p.absolute(outputFile) : null;
   }
@@ -80,7 +80,7 @@ class FileHelper {
     required dynamic data,
   }) async {
     final file = File(source);
-    file.writeAsString(
+    await file.writeAsString(
       const JsonEncoder.withIndent('\t').convert(data),
       flush: true,
     );
@@ -126,9 +126,9 @@ class FileHelper {
         initialDirectory,
       );
     } else {
-      directory = (await file_selector.getDirectoryPath(
+      directory = await file_selector.getDirectoryPath(
         initialDirectory: initialDirectory,
-      ));
+      );
     }
     if (directory == null || directory.isEmpty) {
       return null;
@@ -182,7 +182,7 @@ class FileHelper {
     return File(source).deleteSync();
   }
 
-  static unzipFile(String source, String destination) {
+  static Future<void> unzipFile(String source, String destination) async {
     final inputStream = InputFileStream(source);
     final archive = ZipDecoder().decodeStream(inputStream);
     final symbolicLinks = [];

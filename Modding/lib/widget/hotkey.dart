@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sen/extension/platform.dart';
+import '../extension/platform.dart';
 import 'package:window_manager/window_manager.dart';
 
 class HotkeyBuilder extends StatefulWidget {
-  const HotkeyBuilder({
-    super.key,
-    required this.child,
-  });
+  const HotkeyBuilder({super.key, required this.child});
 
   final Widget child;
 
@@ -39,9 +36,7 @@ class _HotkeyBuilderState extends State<HotkeyBuilder> {
     super.dispose();
   }
 
-  void _keyEventPresed(
-    KeyEvent keyboardEvent,
-  ) async {
+  void _keyEventPresed(KeyEvent keyboardEvent) async {
     if (keyboardEvent is KeyDownEvent) {
       final logicalKey = keyboardEvent.logicalKey;
       switch (logicalKey) {

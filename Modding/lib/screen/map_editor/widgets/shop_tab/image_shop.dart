@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/resource/resource_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../../../extension/context.dart';
+import '../../bloc/item/item_bloc.dart';
+import '../../bloc/layer/layer_bloc.dart';
+import '../../bloc/resource/resource_bloc.dart';
+import '../../bloc/section/section_bloc.dart';
+import '../../bloc/stage/stage_bloc.dart';
 
 class ImageShopView extends StatelessWidget {
   const ImageShopView({super.key});

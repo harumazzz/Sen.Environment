@@ -19,7 +19,7 @@ enum EventNodeType {
   stargateLeft,
   pathNode,
   doodad,
-  mapPath
+  mapPath,
 }
 
 const Map<EventNodeType, bool> eventAnimation = {
@@ -46,7 +46,7 @@ const Map<EventNodeType, bool> eventAnimation = {
 
 //$1 is lock, $2 is open
 const Map<EventNodeType, (Iterable<String>, Iterable<String>)>
-    eventAnimationLabel = {
+eventAnimationLabel = {
   EventNodeType.firstLevel: (['unlocked'], ['finished']),
   EventNodeType.normal: (['locked_idle'], ['finished']),
   EventNodeType.minigame: (['locked_idle'], ['finished']),
@@ -56,17 +56,9 @@ const Map<EventNodeType, (Iterable<String>, Iterable<String>)>
   // EventNodeType.zombossNode: (['active'], ['defeated']),
   EventNodeType.hologramBoss: (
     ['idle', 'idle2', 'laugh_broken', 'idle3', 'laugh', 'idle4'],
-    ['defeated']
+    ['defeated'],
   ),
-  EventNodeType.plant: (
-    [],
-    [
-      'idle',
-      'idle2',
-      'idle3',
-      'idle4',
-    ]
-  ),
+  EventNodeType.plant: ([], ['idle', 'idle2', 'idle3', 'idle4']),
   EventNodeType.danger: (['locked_idle'], ['unlocked_idle']),
   EventNodeType.giftbox: (['idle'], ['open_idle']),
   EventNodeType.stargate: (['locked_right'], ['open_right']),
@@ -77,9 +69,10 @@ const Map<EventNodeType, (Iterable<String>, Iterable<String>)>
 };
 
 Iterable<String> getIdlePlay(String? plantType, Iterable<String> labelInfo) {
-  final playLabelEvent = plantIdleLabel.containsKey(plantType)
-      ? plantIdleLabel[plantType]!
-      : eventAnimationLabel[EventNodeType.plant]!.$2;
+  final playLabelEvent =
+      plantIdleLabel.containsKey(plantType)
+          ? plantIdleLabel[plantType]!
+          : eventAnimationLabel[EventNodeType.plant]!.$2;
   final label = <String>[];
   for (final e in playLabelEvent) {
     if (labelInfo.contains(e)) {
@@ -90,18 +83,10 @@ Iterable<String> getIdlePlay(String? plantType, Iterable<String> labelInfo) {
 }
 
 Iterable<String> getCostumeSpriteDisable(
-    String plantType, Iterable<String> spriteList,
-    {bool enableCostume = true}) {
-  /*
-  final defaultSpriteList = eventAnimationSpriteDisable[EventNodeType.plant]!.toList();
-  if (enableCostume) {
-    defaultSpriteList.remove('_custom');
-    defaultSpriteList.remove('_custom_02');
-    defaultSpriteList.remove('_custom_left');
-    defaultSpriteList.remove('_custom_right');
-    defaultSpriteList.remove('custom_01');
-  }
-  */
+  String plantType,
+  Iterable<String> spriteList, {
+  bool enableCostume = true,
+}) {
   final defaultSpriteList = <String>[];
   for (final e in spriteList) {
     if (e.toLowerCase().startsWith('custom_')) {
@@ -116,8 +101,9 @@ Iterable<String> getCostumeSpriteDisable(
   final disableList = plantSpriteDisable[plantType] ?? ([], []);
   if (enableCostume) {
     final oldLength = defaultSpriteList.length;
-    defaultSpriteList
-        .removeWhere((e) => (disableList.$2).contains(e.toLowerCase()));
+    defaultSpriteList.removeWhere(
+      (e) => disableList.$2.contains(e.toLowerCase()),
+    );
     if (oldLength == defaultSpriteList.length) {
       final first = defaultSpriteList.firstWhere(
         (e) => e.toLowerCase().startsWith('custom_'),
@@ -199,12 +185,8 @@ const Map<EventNodeType, Iterable<String>> eventAnimationSpriteDisable = {
 const Map<String, (Iterable<String>, Iterable<String>)> plantSpriteDisable = {
   'ready': ([r'rg*\b\w*custom\w*\b'], []),
   'wallnut': (['custom_crableg', r'rg*\b\w*armor\w*\b'], []),
-  'cherry_bomb': (
-    [
-    ], ['custom_02_left', 'custom_02_right']),
-  'splitpea': (
-    [
-    ], ['custom_01_halo', 'custom_01_horns']),
+  'cherry_bomb': ([], ['custom_02_left', 'custom_02_right']),
+  'splitpea': ([], ['custom_01_halo', 'custom_01_horns']),
   'tallnut': (['custom_valentines', r'rg*\b\w*armor\w*\b'], []),
   'endurian': ([r'rg*\b\w*armor\w*\b'], []),
   'peanut': ([r'rg*\b\w*helmet\w*\b'], []),

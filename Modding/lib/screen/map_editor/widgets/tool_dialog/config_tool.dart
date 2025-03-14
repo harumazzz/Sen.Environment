@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/include/check_box_field.dart';
+import '../../../../extension/context.dart';
+import '../../../../extension/platform.dart';
+import '../../bloc/setting/setting_bloc.dart';
+import '../../include/check_box_field.dart';
 
 class ConfigSettingWidget extends StatefulWidget {
   const ConfigSettingWidget({super.key, required this.bloc});
@@ -11,6 +12,12 @@ class ConfigSettingWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _ConfigSettingState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<SettingBloc>('bloc', bloc));
+  }
 }
 
 class _ConfigSettingState extends State<ConfigSettingWidget> {
@@ -29,25 +36,36 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
         child: SizedBox(
           width: 300,
           child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
             child: Column(
               children: [
                 CheckBoxField(
                   label: context.los.play_single_animation_frame,
                   value: bloc.state.playSingleFrame,
-                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
+                  margin: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: bottomSpacing,
+                    top: topSpacing,
+                  ),
                   underline: false,
-                  onChanged: (value) {
-                    bloc.add(SetPlaySingleFrame(playSingleFrame: value ?? false));
+                  onChanged: ({required bool? value}) {
+                    bloc.add(
+                      SetPlaySingleFrame(playSingleFrame: value ?? false),
+                    );
                     setState(() {});
                   },
                 ),
                 CheckBoxField(
                   label: los.mute_audio,
                   value: bloc.state.muteAudio,
-                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
+                  margin: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: bottomSpacing,
+                    top: topSpacing,
+                  ),
                   underline: false,
-                  onChanged: (value) {
+                  onChanged: ({required bool? value}) {
                     bloc.add(SetMuteAudio(muteAudio: value ?? false));
                     setState(() {});
                   },
@@ -55,20 +73,34 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                 CheckBoxField(
                   label: los.plant_costume,
                   value: bloc.state.plantCostume,
-                  margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
+                  margin: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: bottomSpacing,
+                    top: topSpacing,
+                  ),
                   underline: false,
-                  onChanged: (value) {
+                  onChanged: ({required bool? value}) {
                     bloc.add(SetPlantCostume(enabled: value ?? false));
                     setState(() {});
                   },
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomSpacing, top: topSpacing),
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: bottomSpacing,
+                    top: topSpacing,
+                  ),
                   child: Row(
                     children: [
-                      Text(los.filter_quality,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      Text(
+                        los.filter_quality,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       const Spacer(),
                       SizedBox(
                         width: 100,
@@ -77,23 +109,32 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                           isExpanded: true,
                           focusColor: Colors.transparent,
                           underline: DecoratedBox(
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      bottom: BorderSide(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            width: 0.8,
-                          )))),
-                          items: FilterQuality.values
-                              .map((e) => DropdownMenuItem<FilterQuality>(
-                                    value: e,
-                                    child: Text(
-                                      e.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                  width: 0.8,
+                                ),
+                              ),
+                            ),
+                          ),
+                          items:
+                              FilterQuality.values
+                                  .map(
+                                    (e) => DropdownMenuItem<FilterQuality>(
+                                      value: e,
+                                      child: Text(
+                                        e.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: true,
+                                      ),
                                     ),
-                                  ))
-                              .toList(),
+                                  )
+                                  .toList(),
                           onChanged: (value) {
                             bloc.add(SetFilterQuality(filterQuality: value!));
                             setState(() {});

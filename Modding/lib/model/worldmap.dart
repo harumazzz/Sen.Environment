@@ -36,11 +36,14 @@ enum EventType {
   giftbox,
   pinata,
   level,
-  island
+  island,
 }
 
 T getType<T extends Enum>(String name, List<T> values) {
-  final eventType = values.firstWhere((e) => e.name.toLowerCase() == name.toLowerCase(), orElse: () => values.first);
+  final eventType = values.firstWhere(
+    (e) => e.name.toLowerCase() == name.toLowerCase(),
+    orElse: () => values.first,
+  );
   return eventType;
 }
 
@@ -64,7 +67,7 @@ int parseString(dynamic value) {
 
 bool parseBool(dynamic value) {
   if (value is String) {
-    return value.toLowerCase() == "true";
+    return value.toLowerCase() == 'true';
   } else if (value is bool) {
     return value;
   } else {
@@ -73,23 +76,15 @@ bool parseBool(dynamic value) {
 }
 
 class Position {
+  Position({required this.x, required this.y});
+  factory Position.fromJson(Map<String, dynamic> json) {
+    return Position(x: json['x'].toDouble(), y: json['y'].toDouble());
+  }
   double x;
   double y;
 
-  Position({
-    required this.x,
-    required this.y,
-  });
-
   Position clone() {
     return Position(x: x, y: y);
-  }
-
-  factory Position.fromJson(Map<String, dynamic> json) {
-    return Position(
-      x: (json['x']).toDouble(),
-      y: (json['y']).toDouble(),
-    );
   }
 
   static Map<String, dynamic> toJson(Position data) {
@@ -100,43 +95,18 @@ class Position {
 enum PieceType { image, animation, invaild }
 
 class MapPieceItem {
-  int imageID;
-  PieceType pieceType;
-  Position position;
-  int parallax;
-  int layer;
-  double scaleX;
-  double scaleY;
-  bool isArtFlipped;
-  int rotationAngle;
-  double rotationRate;
-
-  MapPieceItem(
-      {required this.imageID,
-      required this.pieceType,
-      required this.position,
-      required this.parallax,
-      required this.layer,
-      required this.scaleX,
-      required this.scaleY,
-      required this.isArtFlipped,
-      required this.rotationAngle,
-      required this.rotationRate});
-
-  MapPieceItem clone() {
-    return MapPieceItem(
-      imageID: imageID,
-      pieceType: pieceType,
-      position: position.clone(),
-      parallax: parallax,
-      layer: layer,
-      scaleX: scaleX,
-      scaleY: scaleY,
-      isArtFlipped: isArtFlipped,
-      rotationAngle: rotationAngle,
-      rotationRate: rotationRate,
-    );
-  }
+  MapPieceItem({
+    required this.imageID,
+    required this.pieceType,
+    required this.position,
+    required this.parallax,
+    required this.layer,
+    required this.scaleX,
+    required this.scaleY,
+    required this.isArtFlipped,
+    required this.rotationAngle,
+    required this.rotationRate,
+  });
 
   factory MapPieceItem.fromJson(Map<String, dynamic> json) {
     var imageID = parseString(json['m_imageID']);
@@ -160,6 +130,31 @@ class MapPieceItem {
       rotationRate: (json['m_rotationRate'] ?? 0.0).toDouble(),
     );
   }
+  int imageID;
+  PieceType pieceType;
+  Position position;
+  int parallax;
+  int layer;
+  double scaleX;
+  double scaleY;
+  bool isArtFlipped;
+  int rotationAngle;
+  double rotationRate;
+
+  MapPieceItem clone() {
+    return MapPieceItem(
+      imageID: imageID,
+      pieceType: pieceType,
+      position: position.clone(),
+      parallax: parallax,
+      layer: layer,
+      scaleX: scaleX,
+      scaleY: scaleY,
+      isArtFlipped: isArtFlipped,
+      rotationAngle: rotationAngle,
+      rotationRate: rotationRate,
+    );
+  }
 
   static Map<String, dynamic> toJson(MapPieceItem data) {
     var imageID = data.imageID;
@@ -180,12 +175,66 @@ class MapPieceItem {
       'm_scaleY': data.scaleY,
       'm_isArtFlipped': data.isArtFlipped,
       'm_rotationAngle': data.rotationAngle,
-      'm_rotationRate': data.rotationRate
+      'm_rotationRate': data.rotationRate,
     };
   }
 }
 
 class MapEventItem {
+  MapEventItem({
+    required this.eventType,
+    required this.eventID,
+    required this.position,
+    required this.name,
+    this.toggleName,
+    this.dataString,
+    required this.unlockedFrom,
+    required this.visibleFrom,
+    required this.parentEvent,
+    required this.autoVisible,
+    this.isChallengeType,
+    this.isArtFlipped,
+    this.cost,
+    this.displayText,
+    this.unlockedNarrationID,
+    this.completedNarrationID,
+    this.worldMapTutorial,
+    this.worldMapTutorialVisibleWhen,
+    this.levelNodeType,
+  });
+
+  factory MapEventItem.fromJson(Map<String, dynamic> json) {
+    return MapEventItem(
+      eventType: getType(json['m_eventType'].toString(), EventType.values),
+      eventID: parseString(json['m_eventId']),
+      position: Position.fromJson(json['m_position']),
+      name: json['m_name'] ?? '',
+      toggleName: json['m_toggleName'],
+      dataString: json['m_dataString'],
+      unlockedFrom: json['m_unlockedFrom'] ?? '',
+      visibleFrom: json['m_visibleFrom'] ?? '',
+      isChallengeType: parseBool(json['m_isChallengeType']),
+      autoVisible: parseBool(json['m_autoVisible']),
+      isArtFlipped: parseBool(json['m_isArtFlipped']),
+      cost: json['m_cost'],
+      parentEvent: json['m_parentEvent'] ?? '',
+      displayText: json['m_displayText'] ?? '',
+      unlockedNarrationID: json['m_unlockedNarrationID'],
+      completedNarrationID: json['m_completedNarrationID'],
+      worldMapTutorial: getType(
+        json['m_worldMapTutorial'].toString(),
+        WorldMapEventTutorial.values,
+      ),
+      worldMapTutorialVisibleWhen: getType(
+        json['m_worldMapTutorialVisibleWhen'].toString(),
+        WorldMapEventStatus.values,
+      ),
+      levelNodeType: getType(
+        json['m_levelNodeType'].toString(),
+        LevelNodeType.values,
+      ),
+    );
+  }
   EventType eventType;
   int eventID;
   Position position;
@@ -205,27 +254,6 @@ class MapEventItem {
   WorldMapEventTutorial? worldMapTutorial;
   WorldMapEventStatus? worldMapTutorialVisibleWhen;
   LevelNodeType? levelNodeType;
-
-  MapEventItem(
-      {required this.eventType,
-      required this.eventID,
-      required this.position,
-      required this.name,
-      this.toggleName,
-      this.dataString,
-      required this.unlockedFrom,
-      required this.visibleFrom,
-      required this.parentEvent,
-      required this.autoVisible,
-      this.isChallengeType,
-      this.isArtFlipped,
-      this.cost,
-      this.displayText,
-      this.unlockedNarrationID,
-      this.completedNarrationID,
-      this.worldMapTutorial,
-      this.worldMapTutorialVisibleWhen,
-      this.levelNodeType});
 
   MapEventItem clone() {
     return MapEventItem(
@@ -251,31 +279,6 @@ class MapEventItem {
     );
   }
 
-  factory MapEventItem.fromJson(Map<String, dynamic> json) {
-    return MapEventItem(
-      eventType: getType(json['m_eventType'].toString(), EventType.values),
-      eventID: parseString(json['m_eventId']),
-      position: Position.fromJson(json['m_position']),
-      name: json['m_name'] ?? '',
-      toggleName: json['m_toggleName'],
-      dataString: json['m_dataString'],
-      unlockedFrom: json['m_unlockedFrom'] ?? '',
-      visibleFrom: json['m_visibleFrom'] ?? '',
-      isChallengeType: parseBool(json['m_isChallengeType']),
-      autoVisible: parseBool(json['m_autoVisible']),
-      isArtFlipped: parseBool(json['m_isArtFlipped']),
-      cost: json['m_cost'],
-      parentEvent: json['m_parentEvent'] ?? '',
-      displayText: json['m_displayText'] ?? '',
-      unlockedNarrationID: json['m_unlockedNarrationID'],
-      completedNarrationID: json['m_completedNarrationID'],
-      worldMapTutorial: getType(json['m_worldMapTutorial'].toString(), WorldMapEventTutorial.values),
-      worldMapTutorialVisibleWhen:
-          getType(json['m_worldMapTutorialVisibleWhen'].toString(), WorldMapEventStatus.values),
-      levelNodeType: getType(json['m_levelNodeType'].toString(), LevelNodeType.values),
-    );
-  }
-
   static Map<String, dynamic> toJson(MapEventItem data) {
     return {
       'm_eventType': getName(data.eventType),
@@ -295,44 +298,75 @@ class MapEventItem {
       'm_unlockedNarrationID': data.unlockedNarrationID ?? '',
       'm_completedNarrationID': data.completedNarrationID ?? '',
       'm_worldMapTutorial': getName(data.worldMapTutorial) ?? '',
-      'm_worldMapTutorialVisibleWhen': getName(data.worldMapTutorialVisibleWhen) ?? '',
+      'm_worldMapTutorialVisibleWhen':
+          getName(data.worldMapTutorialVisibleWhen) ?? '',
       'm_levelNodeType': getName(data.levelNodeType) ?? '',
     };
   }
 }
 
 class BoundingRect {
+  BoundingRect({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+
+  factory BoundingRect.fromJson(Map<String, dynamic> json) {
+    return BoundingRect(
+      x: json['mX'],
+      y: json['mY'],
+      width: json['mWidth'],
+      height: json['mHeight'],
+    );
+  }
   int x;
   int y;
   int width;
   int height;
 
-  BoundingRect({required this.x, required this.y, required this.width, required this.height});
-
   BoundingRect clone() {
-    return BoundingRect(
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    );
-  }
-
-  factory BoundingRect.fromJson(Map<String, dynamic> json) {
-    return BoundingRect(
-      x: (json['mX']),
-      y: (json['mY']),
-      width: (json['mWidth']),
-      height: (json['mHeight']),
-    );
+    return BoundingRect(x: x, y: y, width: width, height: height);
   }
 
   static Map<String, dynamic> toJson(BoundingRect data) {
-    return {'mX': data.x, 'mY': data.y, 'mWidth': data.width, 'mHeight': data.height};
+    return {
+      'mX': data.x,
+      'mY': data.y,
+      'mWidth': data.width,
+      'mHeight': data.height,
+    };
   }
 }
 
 class WorldData {
+  WorldData({
+    required this.worldName,
+    required this.worldID,
+    required this.resGroupID,
+    required this.boundingRect,
+    required this.pieces,
+    required this.events,
+    this.creationTime,
+  });
+
+  factory WorldData.fromJson(Map<String, dynamic> json) {
+    return WorldData(
+      worldName: json['m_worldName'],
+      worldID: json['m_worldId'],
+      resGroupID: json['m_resGroupID'],
+      boundingRect: BoundingRect.fromJson(json['m_boundingRect']),
+      pieces:
+          (json['m_mapPieces'] as List)
+              .map((e) => MapPieceItem.fromJson(e))
+              .toList(),
+      events:
+          (json['m_eventList'] as List)
+              .map((e) => MapEventItem.fromJson(e))
+              .toList(),
+    );
+  }
   String worldName;
   int worldID;
   int resGroupID;
@@ -342,62 +376,44 @@ class WorldData {
   int? creationTime;
   final int version = kVersion;
 
-  WorldData(
-      {required this.worldName,
-      required this.worldID,
-      required this.resGroupID,
-      required this.boundingRect,
-      required this.pieces,
-      required this.events,
-      this.creationTime});
-
-  factory WorldData.fromJson(Map<String, dynamic> json) {
-    return WorldData(
-        worldName: json['m_worldName'],
-        worldID: json['m_worldId'],
-        resGroupID: json['m_resGroupID'],
-        boundingRect: BoundingRect.fromJson(json['m_boundingRect']),
-        pieces: (json['m_mapPieces'] as List).map((e) => MapPieceItem.fromJson(e)).toList(),
-        events: (json['m_eventList'] as List).map((e) => MapEventItem.fromJson(e)).toList());
-  }
-
   static Map<String, dynamic> toJson(WorldData data) {
     return {
       'm_worldName': data.worldName,
       'm_worldId': data.worldID,
       'm_resGroupID': data.resGroupID,
       'm_boundingRect': BoundingRect.toJson(data.boundingRect),
-      'm_mapPieces': data.pieces.map((e) => MapPieceItem.toJson(e)).toList(),
-      'm_eventList': data.events.map((e) => MapEventItem.toJson(e)).toList(),
+      'm_mapPieces': data.pieces.map(MapPieceItem.toJson).toList(),
+      'm_eventList': data.events.map(MapEventItem.toJson).toList(),
       'm_creationTime': data.creationTime,
-      'm_version': data.version
+      'm_version': data.version,
     };
   }
 }
 
 class WorldMap {
   WorldMap({required this.list});
+  factory WorldMap.fromJson(Map<String, dynamic> json) {
+    return WorldMap(
+      list:
+          (json['objects'] as List).map((e) {
+            if (e['objclass'] != 'WorldData') {
+              throw Exception('Invalid Worldmap data objclass');
+            }
+            return WorldData.fromJson(e['objdata']);
+          }).toList(),
+    );
+  }
 
   final int version = kVersion;
   List<WorldData> list;
 
-  factory WorldMap.fromJson(Map<String, dynamic> json) {
-    return WorldMap(
-      list: (json['objects'] as List).map((e) {
-        if (e['objclass'] != 'WorldData') {
-          throw Exception('Invalid Worldmap data objclass');
-        }
-        return WorldData.fromJson(e['objdata']);
-      }).toList(),
-    );
-  }
-
   static Map<String, dynamic> toJson(WorldMap data) {
     return {
       'version': data.version,
-      'objects': data.list.map((e) {
-        return {'objclass': 'WorldData', 'objdata': WorldData.toJson(e)};
-      }).toList()
+      'objects':
+          data.list.map((e) {
+            return {'objclass': 'WorldData', 'objdata': WorldData.toJson(e)};
+          }).toList(),
     };
   }
 }

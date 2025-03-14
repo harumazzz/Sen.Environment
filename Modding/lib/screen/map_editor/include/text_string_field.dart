@@ -1,13 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class TextStringField extends StatelessWidget {
-  const TextStringField(
-      {super.key,
-      required this.label,
-      required this.value,
-      required this.onFieldSubmitted,
-      this.autovalidateMode,
-      this.validator});
+  const TextStringField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onFieldSubmitted,
+    this.autovalidateMode,
+    this.validator,
+  });
 
   final String label;
 
@@ -25,18 +27,36 @@ class TextStringField extends StatelessWidget {
     return TextFormField(
       controller: textController,
       decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          contentPadding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-          floatingLabelBehavior: FloatingLabelBehavior.always),
-      /*
-      onTapOutside: (_) {
-        textController.text = value ?? '';
-      },
-      */
+        labelText: label,
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        contentPadding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+      ),
       autovalidateMode: autovalidateMode,
       validator: validator,
       onFieldSubmitted: onFieldSubmitted,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label));
+    properties.add(StringProperty('value', value));
+    properties.add(
+      ObjectFlagProperty<void Function(String p1)>.has(
+        'onFieldSubmitted',
+        onFieldSubmitted,
+      ),
+    );
+    properties.add(
+      EnumProperty<AutovalidateMode?>('autovalidateMode', autovalidateMode),
+    );
+    properties.add(
+      ObjectFlagProperty<String? Function(String? p1)?>.has(
+        'validator',
+        validator,
+      ),
     );
   }
 }

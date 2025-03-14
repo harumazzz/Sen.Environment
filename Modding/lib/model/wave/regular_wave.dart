@@ -1,13 +1,10 @@
 part of '../wave.dart';
 
 class RegularWave implements Wave {
+  RegularWave({required this.zombies}) : additionalPlantfood = 0;
   final List<Spawn> zombies;
 
   int additionalPlantfood;
-
-  RegularWave({
-    required this.zombies,
-  }) : additionalPlantfood = 0;
 
   @override
   dynamic toJson(String aliasesName) {
@@ -16,25 +13,22 @@ class RegularWave implements Wave {
       'objclass': 'SpawnZombiesJitteredWaveActionProps',
       'objdata': {
         'AdditionalPlantfood': additionalPlantfood,
-        'Zombies': zombies
-            .map(
-              (e) => {
-                'Row': e.row,
-                'Type': 'RTID(${e.typename}@ZombieTypes)',
-              },
-            )
-            .toList(),
-      }
+        'Zombies':
+            zombies
+                .map(
+                  (e) => {
+                    'Row': e.row,
+                    'Type': 'RTID(${e.typename}@ZombieTypes)',
+                  },
+                )
+                .toList(),
+      },
     };
   }
 }
 
 class Spawn {
+  Spawn({required this.row, required this.typename});
   final int row;
   final String typename;
-
-  Spawn({
-    required this.row,
-    required this.typename,
-  });
 }

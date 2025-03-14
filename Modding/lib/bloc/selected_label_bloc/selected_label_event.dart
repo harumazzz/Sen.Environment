@@ -9,11 +9,8 @@ sealed class SelectedLabelEvent extends Equatable {
 }
 
 class SetLabelEvent extends SelectedLabelEvent {
+  const SetLabelEvent({required this.newLabel});
   final String newLabel;
-
-  const SetLabelEvent({
-    required this.newLabel,
-  });
 
   @override
   List<Object?> get props => [newLabel];

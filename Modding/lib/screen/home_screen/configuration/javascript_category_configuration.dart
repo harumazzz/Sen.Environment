@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import '../../../extension/platform.dart';
+import '../../../i18n/app_localizations.dart';
+import '../../../cubit/settings_cubit/settings_cubit.dart';
 
 class JavaScriptCategoryConfiguration extends StatelessWidget {
   const JavaScriptCategoryConfiguration({super.key});
 
   void _onChangeDialog(bool value, BuildContext context) {
-    BlocProvider.of<SettingsCubit>(context).setShowConfirmDialog(value);
+    BlocProvider.of<SettingsCubit>(context).setShowConfirmDialog(value: value);
   }
 
   void _onChangeLauncher(bool value, BuildContext context) {
-    BlocProvider.of<SettingsCubit>(context).setRunAsLauncher(value);
+    BlocProvider.of<SettingsCubit>(context).setRunAsLauncher(value: value);
   }
 
   @override

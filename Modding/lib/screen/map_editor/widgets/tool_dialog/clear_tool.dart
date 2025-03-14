@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sen/extension/context.dart';
+import '../../../../extension/context.dart';
 
 class ClearToolWidget extends StatefulWidget {
   const ClearToolWidget({super.key});

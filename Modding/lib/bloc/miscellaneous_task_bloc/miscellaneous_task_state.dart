@@ -33,11 +33,8 @@ class ScriptDownloaded extends MiscellaneousTaskState {
 }
 
 class ScriptDownloadFailed extends MiscellaneousTaskState {
+  const ScriptDownloadFailed({required this.error});
   final String error;
-
-  const ScriptDownloadFailed({
-    required this.error,
-  });
 
   @override
   List<Object> get props => [error];

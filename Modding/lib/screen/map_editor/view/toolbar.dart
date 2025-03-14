@@ -1,14 +1,15 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/model/item.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
+import '../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../extension/platform.dart';
+import '../../../model/item.dart';
+import '../bloc/item/item_bloc.dart';
+import '../bloc/layer/layer_bloc.dart';
+import '../bloc/stage/stage_bloc.dart';
+import '../bloc/toolbar/toolbar_bloc.dart';
 
 class ToolBarView extends StatelessWidget {
   const ToolBarView({super.key, required this.toolItem});
@@ -75,6 +76,14 @@ class ToolBarView extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<HashMap<ToolType, Item>>('toolItem', toolItem),
+    );
+  }
 }
 
 class ToolItem extends StatelessWidget {
@@ -114,6 +123,16 @@ class ToolItem extends StatelessWidget {
           icon: Icon(item.icon),
         ),
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Item>('item', item));
+    properties.add(ColorProperty('buttonColor', buttonColor));
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onSetting', onSetting),
     );
   }
 }

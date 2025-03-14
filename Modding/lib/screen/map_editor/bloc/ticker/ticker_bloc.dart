@@ -2,24 +2,24 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:sen/screen/map_editor/include/ticker.dart';
+import '../../include/ticker.dart';
 
 part 'ticker_event.dart';
 part 'ticker_state.dart';
 
 class TickerBloc extends Bloc<TickerEvent, TickerState> {
-  TickerBloc(
-      {required Ticker ticker,
-      required int tickStart,
-      required int tickEnd,
-      int tickDuration = 1000, // 1000 milis = 1s
-      bool repeat = true})
-      : _ticker = ticker,
-        _tickStart = tickStart,
-        _tickEnd = tickEnd,
-        _tickDuration = tickDuration,
-        _repeat = repeat,
-        super(TickerInitial(tickStart)) {
+  TickerBloc({
+    required Ticker ticker,
+    required int tickStart,
+    required int tickEnd,
+    int tickDuration = 1000, // 1000 milis = 1s
+    bool repeat = true,
+  }) : _ticker = ticker,
+       _tickStart = tickStart,
+       _tickEnd = tickEnd,
+       _tickDuration = tickDuration,
+       _repeat = repeat,
+       super(TickerInitial(tickStart)) {
     on<TickerStarted>(_onStarted);
     on<TickerPaused>(_onPaused);
     on<TickerResumed>(_onResumed);

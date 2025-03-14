@@ -1,24 +1,19 @@
 part of '../wave.dart';
 
 class FrostWind implements Wave {
-  List<Wind> winds;
-
-  FrostWind({
-    required this.winds,
-  });
+  FrostWind({required this.winds});
 
   FrostWind.withDefault() : winds = [];
+  List<Wind> winds;
 
   FrostWind clone() {
     return FrostWind(
-      winds: winds
-          .map(
-            (Wind wind) => Wind(
-              row: wind.row,
-              direction: wind.direction,
-            ),
-          )
-          .toList(),
+      winds:
+          winds
+              .map(
+                (Wind wind) => Wind(row: wind.row, direction: wind.direction),
+              )
+              .toList(),
     );
   }
 
@@ -28,11 +23,7 @@ class FrostWind implements Wave {
       'aliases': [aliasesName],
       'objclass': 'FrostWindWaveActionProps',
       'objdata': {
-        'Winds': [
-          ...winds.map(
-            (Wind e) => e.toJson(),
-          ),
-        ],
+        'Winds': [...winds.map((Wind e) => e.toJson())],
       },
     };
   }
@@ -44,31 +35,20 @@ extension FrostWindReplaceWith on FrostWind {
       ..clear()
       ..addAll(
         other.winds
-            .map(
-              (Wind wind) => Wind(
-                row: wind.row,
-                direction: wind.direction,
-              ),
-            )
+            .map((Wind wind) => Wind(row: wind.row, direction: wind.direction))
             .toList(),
       );
   }
 }
 
 class Wind {
+  Wind({required this.row, required this.direction});
   String direction;
 
   /// Using row = [1,2,3,4,5] but game load [0,1,2,3,4]
   int row;
-  Wind({
-    required this.row,
-    required this.direction,
-  });
 
   dynamic toJson() {
-    return {
-      'Direction': direction,
-      'Row': (row - 1).toString(),
-    };
+    return {'Direction': direction, 'Row': (row - 1).toString()};
   }
 }

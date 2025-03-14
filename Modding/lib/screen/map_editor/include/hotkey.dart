@@ -1,23 +1,24 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/model/worldmap.dart';
-import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/selected/selected_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/shortcut/shortcut_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
-import 'package:sen/screen/map_editor/include/controller.dart';
-import 'package:sen/screen/map_editor/include/hotkey_listener.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/models/action_model.dart';
-import 'package:sen/screen/map_editor/models/action_service.dart';
-import 'package:sen/screen/map_editor/models/map_const.dart';
+import '../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../model/worldmap.dart';
+import '../bloc/history/history_bloc.dart';
+import '../bloc/item/item_bloc.dart';
+import '../bloc/section/section_bloc.dart';
+import '../bloc/selected/selected_bloc.dart';
+import '../bloc/shortcut/shortcut_bloc.dart';
+import '../bloc/stage/stage_bloc.dart';
+import '../bloc/toolbar/toolbar_bloc.dart';
+import 'controller.dart';
+import 'hotkey_listener.dart';
+import '../bloc/layer/layer_bloc.dart';
+import '../models/action_model.dart';
+import '../models/action_service.dart';
+import '../models/map_const.dart';
 
 class Hotkey extends StatelessWidget {
   const Hotkey({super.key, required this.controller, required this.child});
@@ -770,6 +771,14 @@ class Hotkey extends StatelessWidget {
         }
       },
       child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<CanvasController>('controller', controller),
     );
   }
 }

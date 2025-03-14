@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/bloc/add_option_bloc/add_option_bloc.dart';
-import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
-import 'package:sen/bloc/message_bloc/message_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../bloc/add_option_bloc/add_option_bloc.dart';
+import '../../bloc/interaction_bloc/interaction_bloc.dart';
+import '../../bloc/message_bloc/message_bloc.dart';
+import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../extension/context.dart';
+import '../../service/file_helper.dart';
+import '../../service/ui_helper.dart';
 
 class InputBar extends StatefulWidget {
   const InputBar({super.key});
@@ -86,7 +86,6 @@ class _InputBarState extends State<InputBar> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: TextField(
-            textAlign: TextAlign.start,
             focusNode: _focusNode,
             controller: _controller,
             decoration: InputDecoration(
@@ -148,7 +147,6 @@ class _InputBarState extends State<InputBar> {
         }
       },
       child: DropTarget(
-        enable: true,
         onDragDone: (details) {
           if (details.files.isNotEmpty) {
             final file = details.files.first;
@@ -165,7 +163,6 @@ class _InputBarState extends State<InputBar> {
             }
           },
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
             spacing: 10.0,
             children: [
               Container(

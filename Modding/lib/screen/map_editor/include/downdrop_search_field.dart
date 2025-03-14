@@ -1,18 +1,20 @@
 import 'dart:async';
 
 import 'package:drop_down_search_field/drop_down_search_field.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DowndropSearchField extends StatelessWidget {
-  const DowndropSearchField(
-      {super.key,
-      required this.label,
-      required this.value,
-      required this.suggestionsCallback,
-      required this.itemBuilder,
-      required this.onSuggestionSelected,
-      this.autovalidateMode = AutovalidateMode.onUnfocus,
-      this.validator});
+  const DowndropSearchField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.suggestionsCallback,
+    required this.itemBuilder,
+    required this.onSuggestionSelected,
+    this.autovalidateMode = AutovalidateMode.onUnfocus,
+    this.validator,
+  });
 
   final String label;
 
@@ -58,6 +60,40 @@ class DowndropSearchField extends StatelessWidget {
       },
       autovalidateMode: autovalidateMode,
       validator: validator,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label));
+    properties.add(StringProperty('value', value));
+    properties.add(
+      ObjectFlagProperty<FutureOr<Iterable<String>> Function(String p1)?>.has(
+        'suggestionsCallback',
+        suggestionsCallback,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Widget Function(BuildContext p1, String p2)>.has(
+        'itemBuilder',
+        itemBuilder,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<void Function(String p1)>.has(
+        'onSuggestionSelected',
+        onSuggestionSelected,
+      ),
+    );
+    properties.add(
+      EnumProperty<AutovalidateMode>('autovalidateMode', autovalidateMode),
+    );
+    properties.add(
+      ObjectFlagProperty<String? Function(String? p1)?>.has(
+        'validator',
+        validator,
+      ),
     );
   }
 }

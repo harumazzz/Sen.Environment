@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/bloc/backup_setting_bloc/backup_setting_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/service/ui_helper.dart';
-import 'package:sen/widget/json_viewer.dart';
+import '../../bloc/backup_setting_bloc/backup_setting_bloc.dart';
+import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import '../../i18n/app_localizations.dart';
+import '../../service/ui_helper.dart';
+import '../../widget/json_viewer.dart';
 
 class BackupSetting extends StatelessWidget {
   const BackupSetting({super.key});
@@ -35,8 +35,10 @@ class BackupSetting extends StatelessWidget {
                   onPressed: () {
                     BlocProvider.of<BackupSettingBloc>(context).add(
                       UploadConfiguration(
-                        toolChain: context.read<SettingsCubit>().state.toolChain,
-                        initialDirectoryCubit: context.read<InitialDirectoryCubit>(),
+                        toolChain:
+                            context.read<SettingsCubit>().state.toolChain,
+                        initialDirectoryCubit:
+                            context.read<InitialDirectoryCubit>(),
                       ),
                     );
                   },
@@ -45,7 +47,9 @@ class BackupSetting extends StatelessWidget {
                   icon: const Icon(Symbols.save),
                   tooltip: los.save_configuration,
                   onPressed: () {
-                    context.read<BackupSettingBloc>().add(const SaveConfiguration());
+                    context.read<BackupSettingBloc>().add(
+                      const SaveConfiguration(),
+                    );
                   },
                 ),
               ],
@@ -68,7 +72,8 @@ class BackupSetting extends StatelessWidget {
                       if (state is ConfigurationLoading) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      if (state is ConfigurationLoaded || state is ConfigurationUploaded) {
+                      if (state is ConfigurationLoaded ||
+                          state is ConfigurationUploaded) {
                         return _buildConfigList(context, state.configuration!);
                       }
                       return _buildLoadingBar(context: context);
@@ -83,13 +88,19 @@ class BackupSetting extends StatelessWidget {
                           child: FilledButton(
                             onPressed: () {
                               context.read<BackupSettingBloc>().add(
-                                    LoadConfiguration(
-                                      toolChain: context.read<SettingsCubit>().state.toolChain,
-                                    ),
-                                  );
+                                LoadConfiguration(
+                                  toolChain:
+                                      context
+                                          .read<SettingsCubit>()
+                                          .state
+                                          .toolChain,
+                                ),
+                              );
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                              ),
                               child: Text(los.load_configuration),
                             ),
                           ),
@@ -98,13 +109,19 @@ class BackupSetting extends StatelessWidget {
                           child: FilledButton.tonal(
                             onPressed: () {
                               context.read<BackupSettingBloc>().add(
-                                    ApplyConfiguration(
-                                      toolChain: context.read<SettingsCubit>().state.toolChain,
-                                    ),
-                                  );
+                                ApplyConfiguration(
+                                  toolChain:
+                                      context
+                                          .read<SettingsCubit>()
+                                          .state
+                                          .toolChain,
+                                ),
+                              );
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                              ),
                               child: Text(los.apply_configuration),
                             ),
                           ),
@@ -132,9 +149,7 @@ class BackupSetting extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingBar({
-    required BuildContext context,
-  }) {
+  Widget _buildLoadingBar({required BuildContext context}) {
     final theme = Theme.of(context);
 
     return Padding(
@@ -175,10 +190,7 @@ class BackupSetting extends StatelessWidget {
     );
   }
 
-  Widget _buildConfigList(
-    BuildContext context,
-    Map<String, dynamic> config,
-  ) {
+  Widget _buildConfigList(BuildContext context, Map<String, dynamic> config) {
     return Expanded(
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -191,13 +203,14 @@ class BackupSetting extends StatelessWidget {
     );
   }
 
-  Widget _buildConfigTile(BuildContext context, MapEntry<String, dynamic> entry) {
+  Widget _buildConfigTile(
+    BuildContext context,
+    MapEntry<String, dynamic> entry,
+  ) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16.0,
@@ -207,25 +220,23 @@ class BackupSetting extends StatelessWidget {
           Symbols.data_object,
           color: Theme.of(context).colorScheme.primary,
         ),
-        title: Text(
-          entry.key,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        title: Text(entry.key, style: Theme.of(context).textTheme.titleMedium),
         trailing: IconButton(
           icon: Icon(
             Symbols.info,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           tooltip: context.los.info,
-          onPressed: () => _onPreviewJson(
-            context: context,
-            name: entry.key,
-            message: const JsonEncoder.withIndent('\t').convert(entry.value),
-          ),
+          onPressed:
+              () => _onPreviewJson(
+                context: context,
+                name: entry.key,
+                message: const JsonEncoder.withIndent(
+                  '\t',
+                ).convert(entry.value),
+              ),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         tileColor: Theme.of(context).colorScheme.surfaceContainerLow,
       ),
     );

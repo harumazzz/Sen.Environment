@@ -1,17 +1,7 @@
 part of '../wave.dart';
 
 class LevelModule {
-  List<String>? notificationEvent;
-  List<String>? portal;
-  List<String>? stage;
-  List<String>? mower;
-
-  LevelModule({
-    this.notificationEvent,
-    this.portal,
-    this.stage,
-    this.mower,
-  });
+  LevelModule({this.notificationEvent, this.portal, this.stage, this.mower});
 
   LevelModule.fromJson(Map<String, dynamic> json) {
     notificationEvent = json['notificationEvent'].cast<String>();
@@ -19,6 +9,10 @@ class LevelModule {
     stage = json['stage'].cast<String>();
     mower = json['mower'].cast<String>();
   }
+  List<String>? notificationEvent;
+  List<String>? portal;
+  List<String>? stage;
+  List<String>? mower;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

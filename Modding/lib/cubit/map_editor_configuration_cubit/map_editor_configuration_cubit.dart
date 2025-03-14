@@ -7,20 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/model/animation.dart';
-import 'package:sen/model/item.dart';
-import 'package:sen/screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/include/visual_animation.dart';
-import 'package:sen/screen/map_editor/include/visual_image.dart';
-import 'package:sen/screen/map_editor/models/action_service.dart';
-import 'package:sen/screen/map_editor/models/config.dart';
-import 'package:sen/screen/map_editor/models/editor_resource.dart';
-import 'package:sen/screen/map_editor/models/event_node.dart';
-import 'package:sen/screen/map_editor/models/game_resource.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../extension/platform.dart';
+import '../../model/animation.dart';
+import '../../model/item.dart';
+import '../../screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
+import '../../screen/map_editor/bloc/section/section_bloc.dart';
+import '../../screen/map_editor/include/visual_animation.dart';
+import '../../screen/map_editor/include/visual_image.dart';
+import '../../screen/map_editor/models/action_service.dart';
+import '../../screen/map_editor/models/config.dart';
+import '../../screen/map_editor/models/editor_resource.dart';
+import '../../screen/map_editor/models/event_node.dart';
+import '../../screen/map_editor/models/game_resource.dart';
+import '../../service/file_helper.dart';
+import '../../i18n/app_localizations.dart';
 
 part 'map_editor_configuration_state.dart';
 
@@ -74,55 +74,55 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
             : null;
     final pickItemSound = AudioPlayer();
     try {
-      pickItemSound.setSourceBytes(
+      await pickItemSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/grab2.mp3'),
       );
-      pickItemSound.setReleaseMode(ReleaseMode.stop);
+      await pickItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final removeItemSound = AudioPlayer();
     try {
-      removeItemSound.setSourceBytes(
+      await removeItemSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/shell_hit.mp3'),
       );
-      removeItemSound.setReleaseMode(ReleaseMode.stop);
+      await removeItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final setItemSound = AudioPlayer();
     try {
-      setItemSound.setSourceBytes(
+      await setItemSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/smb2_throw.mp3'),
       );
-      setItemSound.setReleaseMode(ReleaseMode.stop);
+      await setItemSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final mapLoadedSound = AudioPlayer();
     try {
-      mapLoadedSound.setSourceBytes(
+      await mapLoadedSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/level_select.mp3'),
       );
-      mapLoadedSound.setReleaseMode(ReleaseMode.stop);
+      await mapLoadedSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final clearMapSound = AudioPlayer();
     try {
-      clearMapSound.setSourceBytes(
+      await clearMapSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/smash.mp3'),
       );
-      clearMapSound.setReleaseMode(ReleaseMode.stop);
+      await clearMapSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
     final switchResourceSound = AudioPlayer();
     try {
-      switchResourceSound.setSourceBytes(
+      await switchResourceSound.setSourceBytes(
         FileHelper.readBuffer(source: '$path/sound/has_item.mp3'),
       );
-      switchResourceSound.setReleaseMode(ReleaseMode.stop);
+      await switchResourceSound.setReleaseMode(ReleaseMode.stop);
     }
     // ignore: empty_catches
     catch (ex) {}
@@ -182,8 +182,8 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
 
   Future<VisualAnimation?> loadPlantVisualAnimation(
     String path,
-    String plantType,
-    bool enableCostume, {
+    String plantType, {
+    required bool enableCostume,
     FilterQuality? filterQuality,
   }) async {
     try {
@@ -375,7 +375,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       '$path/plant/sunflower',
       filterQuality: filterQuality,
       'ready',
-      config.setting.plantCostume,
+      enableCostume: config.setting.plantCostume,
     );
     if (readyPlant == null) {
       throw Exception(los.cannot_load_ready_plant);

@@ -9,33 +9,27 @@ sealed class BackupSettingEvent extends Equatable {
 }
 
 class LoadConfiguration extends BackupSettingEvent {
+  const LoadConfiguration({required this.toolChain});
   final String toolChain;
-  const LoadConfiguration({
-    required this.toolChain,
-  });
 
   @override
   List<Object> get props => [toolChain];
 }
 
 class ApplyConfiguration extends BackupSettingEvent {
+  const ApplyConfiguration({required this.toolChain});
   final String toolChain;
-  const ApplyConfiguration({
-    required this.toolChain,
-  });
   @override
-  List<Object> get props => [
-        toolChain,
-      ];
+  List<Object> get props => [toolChain];
 }
 
 class UploadConfiguration extends BackupSettingEvent {
-  final String toolChain;
-  final InitialDirectoryCubit initialDirectoryCubit;
   const UploadConfiguration({
     required this.toolChain,
     required this.initialDirectoryCubit,
   });
+  final String toolChain;
+  final InitialDirectoryCubit initialDirectoryCubit;
   @override
   List<Object> get props => [toolChain, initialDirectoryCubit];
 }

@@ -1,13 +1,10 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class RadioButton extends StatefulWidget {
-  RadioButton({
-    super.key,
-    required this.options,
-    this.isRowProvider = true,
-  }) {
+  RadioButton({super.key, required this.options, this.isRowProvider = true}) {
     _currentOption = options[0];
   }
 
@@ -21,6 +18,14 @@ class RadioButton extends StatefulWidget {
 
   @override
   State<RadioButton> createState() => _RadioButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('options', options));
+    properties.add(StringProperty('currentOption', currentOption));
+    properties.add(DiagnosticsProperty<bool>('isRowProvider', isRowProvider));
+  }
 }
 
 class _RadioButtonState extends State<RadioButton> {
@@ -34,11 +39,9 @@ class _RadioButtonState extends State<RadioButton> {
               value: e,
               groupValue: widget._currentOption,
               onChanged: (ex) {
-                setState(
-                  () {
-                    widget._currentOption = ex.toString();
-                  },
-                );
+                setState(() {
+                  widget._currentOption = ex.toString();
+                });
               },
             ),
           ),

@@ -2,9 +2,8 @@ part of 'navigation_cubit.dart';
 
 @immutable
 sealed class NavigationState extends Equatable {
-  final int selectedIndex;
-
   const NavigationState({required this.selectedIndex});
+  final int selectedIndex;
 
   @override
   List<Object?> get props => [selectedIndex];

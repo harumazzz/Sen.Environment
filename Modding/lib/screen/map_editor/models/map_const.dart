@@ -1,10 +1,9 @@
 import 'package:equatable/equatable.dart';
 
 class Range<T extends Object> extends Equatable {
+  const Range({required this.begin, required this.end});
   final T begin;
   final T end;
-
-  const Range({required this.begin, required this.end});
 
   @override
   List<Object> get props => [begin, end];
@@ -66,7 +65,7 @@ final class MapConst extends Equatable {
     7: 0.7,
     8: 0.8,
     9: 0.9,
-    10: 1.0
+    10: 1.0,
   };
 
   @override

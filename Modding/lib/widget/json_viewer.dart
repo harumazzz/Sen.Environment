@@ -1,25 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../service/ui_helper.dart';
 
 class JsonViewer extends StatelessWidget {
+  const JsonViewer({super.key, required this.name, required this.message});
   final String name;
   final String message;
-
-  const JsonViewer({
-    super.key,
-    required this.name,
-    required this.message,
-  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(12.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       elevation: 4.0,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -39,11 +33,11 @@ class JsonViewer extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Symbols.content_copy, size: 20),
-                  tooltip: "Copy JSON",
+                  tooltip: 'Copy JSON',
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: message));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Copied to clipboard!")),
+                      const SnackBar(content: Text('Copied to clipboard!')),
                     );
                   },
                 ),
@@ -54,23 +48,25 @@ class JsonViewer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: SelectableText(
                   message,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
                 ),
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ...UIHelper.buildSimpleAction(context: context),
-              ],
+              children: [...UIHelper.buildSimpleAction(context: context)],
             ),
             const SizedBox.shrink(),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('name', name));
+    properties.add(StringProperty('message', message));
   }
 }

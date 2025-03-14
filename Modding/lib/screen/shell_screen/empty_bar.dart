@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:sen/bloc/message_bloc/message_bloc.dart';
+import '../../bloc/message_bloc/message_bloc.dart';
 
 class EmptyBar extends StatelessWidget {
-  const EmptyBar({
-    super.key,
-  });
+  const EmptyBar({super.key});
 
   Widget _buildLoadingBar({
     required BuildContext context,
@@ -20,12 +18,9 @@ class EmptyBar extends StatelessWidget {
         child: FloatingActionButton(
           onPressed: null,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
-            children: [
-              child,
-            ],
+            children: [child],
           ),
         ),
       ),

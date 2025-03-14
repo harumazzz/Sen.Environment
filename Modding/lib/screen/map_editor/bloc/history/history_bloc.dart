@@ -2,9 +2,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/screen/map_editor/include/capture_manager.dart';
-import 'package:sen/screen/map_editor/models/action_service.dart';
-import 'package:sen/screen/map_editor/models/action_model.dart';
+import '../../include/capture_manager.dart';
+import '../../models/action_service.dart';
+import '../../models/action_model.dart';
 
 part 'history_event.dart';
 part 'history_state.dart';

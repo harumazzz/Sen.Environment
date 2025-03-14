@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
-import 'package:sen/extension/context.dart';
+import '../../bloc/load_script_bloc/load_script_bloc.dart';
+import '../../extension/context.dart';
 
 class SearchScript extends StatefulWidget {
   const SearchScript({super.key});

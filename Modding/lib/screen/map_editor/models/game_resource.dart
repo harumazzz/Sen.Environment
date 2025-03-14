@@ -1,8 +1,8 @@
 import 'dart:collection';
 
 import 'package:equatable/equatable.dart';
-import 'package:sen/screen/map_editor/include/visual_animation.dart';
-import 'package:sen/screen/map_editor/include/visual_image.dart';
+import '../include/visual_animation.dart';
+import '../include/visual_image.dart';
 
 enum ImageCommonType {
   buttonHudBackNormal,
@@ -33,7 +33,7 @@ enum AnimationCommonType {
   stargate,
   sodRoll,
   collectedUpgradeEffect,
-  readyPlant
+  readyPlant,
 }
 
 class GameResource extends Equatable {

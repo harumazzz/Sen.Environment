@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
 
 class NotificationOptionList extends StatelessWidget {
   const NotificationOptionList({super.key});
 
-  Future<void> _onNotificationChanged(
-    BuildContext context,
-    bool? value,
-  ) async {
-    if (value == null) return;
-    await context.read<SettingsCubit>().setNotification(value);
+  Future<void> _onNotificationChanged(BuildContext context, bool? value) async {
+    if (value == null) {
+      return;
+    }
+    await context.read<SettingsCubit>().setNotification(
+      sendNotification: value,
+    );
   }
 
   @override

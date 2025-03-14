@@ -5,17 +5,17 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:sen/bridge/client.dart';
-import 'package:sen/bridge/model.dart';
-import 'package:sen/bridge/proxy.dart';
+import 'client.dart';
+import 'model.dart';
+import 'proxy.dart';
 
 class Launcher {
-  static final Map<ffi.Pointer<Service>, SendPort> _guard = HashMap<ffi.Pointer<Service>, SendPort>();
+  const Launcher._();
 
-  static Future<void> launch(
-    Client client,
-    List<String> argument,
-  ) async {
+  static final Map<ffi.Pointer<Service>, SendPort> _guard =
+      HashMap<ffi.Pointer<Service>, SendPort>();
+
+  static Future<void> launch(Client client, List<String> argument) async {
     final mainReceivePort = ReceivePort();
     final mainStreamQueue = StreamQueue<dynamic>(mainReceivePort);
     await client.start();
@@ -44,9 +44,7 @@ class Launcher {
     await mainStreamQueue.cancel();
   }
 
-  static Future<void> _run(
-    List<dynamic> args,
-  ) async {
+  static Future<void> _run(List<dynamic> args) async {
     final mainSendPort = args[0] as SendPort;
     final arguments = args[1] as List<String>;
     final dylib = ffi.DynamicLibrary.open(arguments[1]);
@@ -85,7 +83,12 @@ class Launcher {
     assert(value != null);
     final state = ffi.calloc<ffi.Bool>();
     state.value = false;
-    value!.send([state.address, service.address, source.address, destination.address]);
+    value!.send([
+      state.address,
+      service.address,
+      source.address,
+      destination.address,
+    ]);
     while (!state.value) {
       sleep(const Duration(milliseconds: 10));
     }

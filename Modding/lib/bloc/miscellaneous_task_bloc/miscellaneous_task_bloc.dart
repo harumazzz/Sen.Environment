@@ -2,14 +2,15 @@ import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:sen/constant/build_distribution.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../constant/build_distribution.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../service/file_helper.dart';
 
 part 'miscellaneous_task_event.dart';
 part 'miscellaneous_task_state.dart';
 
-class MiscellaneousTaskBloc extends Bloc<MiscellaneousTaskEvent, MiscellaneousTaskState> {
+class MiscellaneousTaskBloc
+    extends Bloc<MiscellaneousTaskEvent, MiscellaneousTaskState> {
   MiscellaneousTaskBloc() : super(const MiscellaneousTaskInitial()) {
     on<BackupConfigurationRequested>(_onBackupConfiguration);
     on<DownloadScriptRequested>(_onDownloadScript);
@@ -30,7 +31,8 @@ class MiscellaneousTaskBloc extends Bloc<MiscellaneousTaskEvent, MiscellaneousTa
   ) async {
     emit(const DownloadingScript());
     try {
-      final destination = '${await FileHelper.getWorkingDirectory()}/CDN ${BuildDistribution.kVersion}';
+      final destination =
+          '${await FileHelper.getWorkingDirectory()}/CDN ${BuildDistribution.kVersion}';
       if (!FileHelper.isDirectory(destination)) {
         FileHelper.createDirectory(destination);
       }
@@ -43,7 +45,7 @@ class MiscellaneousTaskBloc extends Bloc<MiscellaneousTaskEvent, MiscellaneousTa
       await FileHelper.unzipFile(source, '$destination/Script');
       FileHelper.removeFile(source);
       await event.settingsCubit.setToolChain(destination);
-      await event.settingsCubit.setIsValid(true);
+      await event.settingsCubit.setIsValid(isValid: true);
       emit(const ScriptDownloaded());
     } catch (e) {
       emit(ScriptDownloadFailed(error: e.toString()));

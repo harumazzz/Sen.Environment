@@ -1,18 +1,6 @@
 part of 'settings_cubit.dart';
 
 class SettingsState extends Equatable {
-  final String theme;
-  final String locale;
-  final bool sendNotification;
-  final String toolChain;
-  final bool isValid;
-  final bool requestedPermission;
-  final String mapEditorResource;
-  final String levelMakerResource;
-  final bool shellLaunchImmediately;
-  final bool jsShowConfirmDialog;
-  final bool jsRunAsLauncher;
-
   const SettingsState({
     required this.theme,
     required this.locale,
@@ -26,14 +14,6 @@ class SettingsState extends Equatable {
     required this.jsShowConfirmDialog,
     required this.jsRunAsLauncher,
   });
-
-  static String currentLocale() {
-    final locale = CurrentPlatform.locale;
-    if (k_locale.Localization.locales.contains(CurrentPlatform.locale)) {
-      return locale;
-    }
-    return k_locale.Localization.locales.first;
-  }
 
   factory SettingsState.initialize() {
     return SettingsState(
@@ -49,6 +29,25 @@ class SettingsState extends Equatable {
       jsRunAsLauncher: false,
       jsShowConfirmDialog: true,
     );
+  }
+  final String theme;
+  final String locale;
+  final bool sendNotification;
+  final String toolChain;
+  final bool isValid;
+  final bool requestedPermission;
+  final String mapEditorResource;
+  final String levelMakerResource;
+  final bool shellLaunchImmediately;
+  final bool jsShowConfirmDialog;
+  final bool jsRunAsLauncher;
+
+  static String currentLocale() {
+    final locale = CurrentPlatform.locale;
+    if (k_locale.Localization.locales.contains(CurrentPlatform.locale)) {
+      return locale;
+    }
+    return k_locale.Localization.locales.first;
   }
 
   SettingsState copyWith({
@@ -73,7 +72,8 @@ class SettingsState extends Equatable {
       requestedPermission: requestedPermission ?? this.requestedPermission,
       mapEditorResource: mapEditorResource ?? this.mapEditorResource,
       levelMakerResource: levelMakerResource ?? this.levelMakerResource,
-      shellLaunchImmediately: shellLaunchImmediately ?? this.shellLaunchImmediately,
+      shellLaunchImmediately:
+          shellLaunchImmediately ?? this.shellLaunchImmediately,
       jsRunAsLauncher: jsRunAsLauncher ?? this.jsRunAsLauncher,
       jsShowConfirmDialog: jsShowConfirmDialog ?? this.jsShowConfirmDialog,
     );

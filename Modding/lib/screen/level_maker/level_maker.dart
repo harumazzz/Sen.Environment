@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
 
 class LevelMaker extends StatelessWidget {
   const LevelMaker({super.key});

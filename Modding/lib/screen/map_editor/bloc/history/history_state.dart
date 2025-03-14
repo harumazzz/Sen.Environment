@@ -6,13 +6,6 @@ final class HistoryState extends Equatable {
     required this.scrollController,
     required this.index,
   });
-
-  final int index;
-
-  final CaptureManager<ActionService<ActionModelType>> captureManager;
-
-  final ScrollController scrollController;
-
   factory HistoryState.initailize() {
     return HistoryState(
       captureManager: CaptureManager<ActionService<ActionModelType>>(),
@@ -21,15 +14,22 @@ final class HistoryState extends Equatable {
     );
   }
 
+  final int index;
+
+  final CaptureManager<ActionService<ActionModelType>> captureManager;
+
+  final ScrollController scrollController;
+
   HistoryState copyWith({
     CaptureManager<ActionService<ActionModelType>>? captureManager,
     ScrollController? scrollController,
     int? index,
   }) {
     return HistoryState(
-        captureManager: captureManager ?? this.captureManager,
-        scrollController: scrollController ?? this.scrollController,
-        index: index ?? this.index);
+      captureManager: captureManager ?? this.captureManager,
+      scrollController: scrollController ?? this.scrollController,
+      index: index ?? this.index,
+    );
   }
 
   @override

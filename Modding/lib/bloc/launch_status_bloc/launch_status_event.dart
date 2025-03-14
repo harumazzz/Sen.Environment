@@ -8,17 +8,16 @@ sealed class LaunchStatusEvent extends Equatable {
 }
 
 final class LaunchStatusBegin extends LaunchStatusEvent {
-  final Client client;
-
-  final SettingsCubit setting;
-
-  final List<String> arguments;
-
   const LaunchStatusBegin({
     required this.client,
     required this.setting,
     required this.arguments,
   });
+  final Client client;
+
+  final SettingsCubit setting;
+
+  final List<String> arguments;
 
   @override
   List<Object> get props => [client, setting, arguments];

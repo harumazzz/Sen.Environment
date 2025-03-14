@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../service/file_helper.dart';
+import '../../../i18n/app_localizations.dart';
 
 class LevelMakerConfiguration extends StatefulWidget {
   const LevelMakerConfiguration({super.key});
 
   @override
-  State<LevelMakerConfiguration> createState() => _LevelMakerConfigurationState();
+  State<LevelMakerConfiguration> createState() =>
+      _LevelMakerConfigurationState();
 }
 
 class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
@@ -35,7 +36,9 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   }
 
   void _onChangeSetting(String? value) async {
-    if (value == null) return;
+    if (value == null) {
+      return;
+    }
     _resourceLocationController.text = value;
     await _onValueChange();
   }

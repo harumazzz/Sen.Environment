@@ -11,17 +11,11 @@ class SelectedLabelBloc extends Bloc<SelectedLabelEvent, SelectedLabelState> {
     on<ResetLabelEvent>(_onResetLabel);
   }
 
-  void _onSetLabel(
-    SetLabelEvent event,
-    Emitter<SelectedLabelState> emit,
-  ) {
+  void _onSetLabel(SetLabelEvent event, Emitter<SelectedLabelState> emit) {
     emit(SelectedLabelState(label: event.newLabel));
   }
 
-  void _onResetLabel(
-    ResetLabelEvent event,
-    Emitter<SelectedLabelState> emit,
-  ) {
+  void _onResetLabel(ResetLabelEvent event, Emitter<SelectedLabelState> emit) {
     emit(const SelectedLabelState(label: 'main'));
   }
 }

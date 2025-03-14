@@ -1,4 +1,4 @@
-import 'package:sen/model/translator.dart';
+import '../model/translator.dart';
 
 class Translators {
   static const haruma = Translator(
@@ -33,7 +33,7 @@ class Translators {
     name: 'Vi',
     discord: 'vi_i_guess',
     contacts: [
-      ['GitHub', 'https://github.com/viiguess']
+      ['GitHub', 'https://github.com/viiguess'],
     ],
     imageCover: 'assets/images/translator/vi.png',
   );

@@ -25,9 +25,7 @@ class SetNavigator extends SectionEvent {
   List<Object> get props => [navigator];
 }
 
-
 class ExtensionEnabled extends SectionEvent {
-
   const ExtensionEnabled({required this.type});
 
   final ExtensionType type;
@@ -37,7 +35,6 @@ class ExtensionEnabled extends SectionEvent {
 }
 
 class ExtensionToggled extends SectionEvent {
-
   const ExtensionToggled({required this.type, this.enabled});
 
   final ExtensionType type;
@@ -48,7 +45,6 @@ class ExtensionToggled extends SectionEvent {
 }
 
 class SectionMinizeToggled extends SectionEvent {
-
   const SectionMinizeToggled({required this.type, this.minize});
 
   final SectionType type;

@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/include/scalable_item/scale_direction_enum.dart';
+import 'scale_direction_enum.dart';
 
 const defaultDotColor = Colors.blue;
 const defaultOverscaleDotColor = Colors.redAccent;
@@ -12,7 +13,6 @@ class ScalableItem extends StatelessWidget {
     required this.showCornerDots,
     required this.includedScaleDirections,
     required this.isScaling,
-    // this.dot,
     this.showOverScaleBorder = false,
     this.onBottomLeftDotDragging,
     this.onBottomCenterDotDragging,
@@ -30,7 +30,6 @@ class ScalableItem extends StatelessWidget {
   });
 
   final Widget child;
-  // final Widget? dot;
   final Color cornerDotColor;
   final Color overScaleCornerDotColor;
   final bool showCornerDots;
@@ -51,50 +50,44 @@ class ScalableItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color computedDotColor = showCornerDots
-        ? showOverScaleBorder
-            ? overScaleCornerDotColor
-            : cornerDotColor
-        : Colors.transparent;
+    final Color computedDotColor =
+        showCornerDots
+            ? showOverScaleBorder
+                ? overScaleCornerDotColor
+                : cornerDotColor
+            : Colors.transparent;
 
     final Decoration localOverScaleBorderDecoration =
         overScaleBorderDecoration ??
-            BoxDecoration(
-              border: Border.all(
-                width: defaultScaleBorderWidth,
-                color: computedDotColor,
-              ),
-              shape: BoxShape.rectangle,
-            );
+        BoxDecoration(
+          border: Border.all(
+            width: defaultScaleBorderWidth,
+            color: computedDotColor,
+          ),
+        );
 
     final Decoration localDefaultScaleBorderDecoration =
         defaultScaleBorderDecoration ??
-            BoxDecoration(
-              border: Border.all(
-                width: defaultScaleBorderWidth,
-                color: Colors.grey[100]!,
-              ),
-              shape: BoxShape.rectangle,
-            );
+        BoxDecoration(
+          border: Border.all(
+            width: defaultScaleBorderWidth,
+            color: Colors.grey[100]!,
+          ),
+        );
 
-    final Decoration borderDecoration = showOverScaleBorder
-        ? localOverScaleBorderDecoration
-        : localDefaultScaleBorderDecoration;
+    final Decoration borderDecoration =
+        showOverScaleBorder
+            ? localOverScaleBorderDecoration
+            : localDefaultScaleBorderDecoration;
 
     return Stack(
       fit: StackFit.passthrough,
       children: [
         // child
-        Positioned.fill(
-          child: child,
-        ),
+        Positioned.fill(child: child),
 
         if (isScaling)
-          Positioned.fill(
-            child: Container(
-              decoration: borderDecoration,
-            ),
-          ),
+          Positioned.fill(child: Container(decoration: borderDecoration)),
 
         // top left
         if (includedScaleDirections.contains(ScaleDirection.topLeft))
@@ -104,11 +97,11 @@ class ScalableItem extends StatelessWidget {
                 onTopLeftDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.topLeft,
               child: _buildDot(computedDotColor),
@@ -123,11 +116,11 @@ class ScalableItem extends StatelessWidget {
                 onTopCenterDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.topCenter,
               child: _buildDot(computedDotColor),
@@ -142,11 +135,11 @@ class ScalableItem extends StatelessWidget {
                 onTopRightDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.topRight,
               child: _buildDot(computedDotColor),
@@ -161,11 +154,11 @@ class ScalableItem extends StatelessWidget {
                 onBottomLeftDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.bottomLeft,
               child: _buildDot(computedDotColor),
@@ -180,11 +173,11 @@ class ScalableItem extends StatelessWidget {
                 onBottomCenterDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.bottomCenter,
               child: _buildDot(computedDotColor),
@@ -199,11 +192,11 @@ class ScalableItem extends StatelessWidget {
                 onBottomRightDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.bottomRight,
               child: _buildDot(computedDotColor),
@@ -218,11 +211,11 @@ class ScalableItem extends StatelessWidget {
                 onCenterLeftDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.centerLeft,
               child: _buildDot(computedDotColor),
@@ -237,11 +230,11 @@ class ScalableItem extends StatelessWidget {
                 onCenterRightDotDragging!(details);
               }
             },
-            onPanEnd: ((details) {
+            onPanEnd: (details) {
               if (onAnyDotDraggingEnd != null) {
                 onAnyDotDraggingEnd!(details);
               }
-            }),
+            },
             child: Container(
               alignment: Alignment.centerRight,
               child: _buildDot(computedDotColor),
@@ -252,10 +245,92 @@ class ScalableItem extends StatelessWidget {
   }
 
   Widget _buildDot(Color color) {
-    return Icon(
-      Icons.square,
-      size: 25,
-      color: color,
+    return Icon(Icons.square, size: 25, color: color);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('cornerDotColor', cornerDotColor));
+    properties.add(
+      ColorProperty('overScaleCornerDotColor', overScaleCornerDotColor),
     );
+    properties.add(DiagnosticsProperty<bool>('showCornerDots', showCornerDots));
+    properties.add(
+      DiagnosticsProperty<bool>('showOverScaleBorder', showOverScaleBorder),
+    );
+    properties.add(
+      DiagnosticsProperty<Decoration?>(
+        'overScaleBorderDecoration',
+        overScaleBorderDecoration,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<Decoration?>(
+        'defaultScaleBorderDecoration',
+        defaultScaleBorderDecoration,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onTopLeftDotDragging',
+        onTopLeftDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onTopCenterDotDragging',
+        onTopCenterDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onTopRightDotDragging',
+        onTopRightDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onBottomLeftDotDragging',
+        onBottomLeftDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onBottomCenterDotDragging',
+        onBottomCenterDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onBottomRightDotDragging',
+        onBottomRightDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onCenterLeftDotDragging',
+        onCenterLeftDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragUpdateDetails p1)?>.has(
+        'onCenterRightDotDragging',
+        onCenterRightDotDragging,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<Function(DragEndDetails p1)?>.has(
+        'onAnyDotDraggingEnd',
+        onAnyDotDraggingEnd,
+      ),
+    );
+    properties.add(
+      IterableProperty<ScaleDirection>(
+        'includedScaleDirections',
+        includedScaleDirections,
+      ),
+    );
+    properties.add(DiagnosticsProperty<bool>('isScaling', isScaling));
   }
 }

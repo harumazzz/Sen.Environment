@@ -54,15 +54,15 @@ final class SuggestionState extends Equatable {
 
   @override
   List<Object> get props => [
-        plantList,
-        upgradeList,
-        narrationList,
-        eventNameList,
-        /*
+    plantList,
+    upgradeList,
+    narrationList,
+    eventNameList,
+    /*
         matchPlantList,
         matchNarrationList,
         matchUpgradeList,
         matchEventNameList
         */
-      ];
+  ];
 }

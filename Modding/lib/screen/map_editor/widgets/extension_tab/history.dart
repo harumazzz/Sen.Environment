@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/history/history_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/models/action_service.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../bloc/history/history_bloc.dart';
+import '../../bloc/section/section_bloc.dart';
+import '../../models/action_service.dart';
 
 class HistoryWidget extends StatelessWidget {
   const HistoryWidget({super.key});
@@ -121,16 +122,15 @@ class HistoryTree extends StatelessWidget {
 }
 
 class HistoryTile extends StatelessWidget {
-  final ActionService actionService;
-  final int notifierIndex;
-  final int index;
-
   const HistoryTile({
     super.key,
     required this.actionService,
     required this.notifierIndex,
     required this.index,
   });
+  final ActionService actionService;
+  final int notifierIndex;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -180,5 +180,15 @@ class HistoryTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ActionService>('actionService', actionService),
+    );
+    properties.add(IntProperty('notifierIndex', notifierIndex));
+    properties.add(IntProperty('index', index));
   }
 }

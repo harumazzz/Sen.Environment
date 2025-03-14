@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:sen/model/message.dart';
+import '../../model/message.dart';
 
 part 'message_event.dart';
 part 'message_state.dart';

@@ -26,7 +26,7 @@ class MaterialDesign {
     ),
     sliderTheme: material.SliderThemeData(
       trackHeight: 4.0,
-      thumbShape: const material.RoundSliderThumbShape(enabledThumbRadius: 10.0),
+      thumbShape: const material.RoundSliderThumbShape(),
       overlayShape: const material.RoundSliderOverlayShape(overlayRadius: 20.0),
       tickMarkShape: const material.RoundSliderTickMarkShape(),
       activeTrackColor: material.Colors.pinkAccent,
@@ -60,7 +60,10 @@ class MaterialDesign {
       backgroundColor: material.Colors.grey.shade900,
     ),
     pageTransitionsTheme: material.PageTransitionsTheme(
-      builders: Map<material.TargetPlatform, material.PageTransitionsBuilder>.fromIterable(
+      builders: Map<
+        material.TargetPlatform,
+        material.PageTransitionsBuilder
+      >.fromIterable(
         material.TargetPlatform.values,
         value: (_) => const material.FadeForwardsPageTransitionsBuilder(),
       ),
@@ -73,7 +76,6 @@ class MaterialDesign {
     useMaterial3: true,
     colorScheme: material.ColorScheme.fromSeed(
       seedColor: material.Colors.pinkAccent,
-      brightness: material.Brightness.light,
     ),
     progressIndicatorTheme: material.ProgressIndicatorThemeData(
       color: material.Colors.pinkAccent,
@@ -84,7 +86,7 @@ class MaterialDesign {
     ),
     sliderTheme: material.SliderThemeData(
       trackHeight: 4.0,
-      thumbShape: const material.RoundSliderThumbShape(enabledThumbRadius: 10.0),
+      thumbShape: const material.RoundSliderThumbShape(),
       overlayShape: const material.RoundSliderOverlayShape(overlayRadius: 20.0),
       tickMarkShape: const material.RoundSliderTickMarkShape(),
       activeTrackColor: material.Colors.pinkAccent,
@@ -115,7 +117,10 @@ class MaterialDesign {
       ),
     ),
     pageTransitionsTheme: material.PageTransitionsTheme(
-      builders: Map<material.TargetPlatform, material.PageTransitionsBuilder>.fromIterable(
+      builders: Map<
+        material.TargetPlatform,
+        material.PageTransitionsBuilder
+      >.fromIterable(
         material.TargetPlatform.values,
         value: (_) => const material.FadeForwardsPageTransitionsBuilder(),
       ),

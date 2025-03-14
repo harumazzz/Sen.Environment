@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
 
 class LocaleOptionList extends StatelessWidget {
   const LocaleOptionList({super.key});
@@ -27,7 +27,9 @@ class LocaleOptionList extends StatelessWidget {
             value: entry.key,
             groupValue: context.watch<SettingsCubit>().state.locale,
             onChanged: (String? theme) async {
-              if (theme == null) return;
+              if (theme == null) {
+                return;
+              }
               await context.read<SettingsCubit>().setLocale(theme);
             },
           ),

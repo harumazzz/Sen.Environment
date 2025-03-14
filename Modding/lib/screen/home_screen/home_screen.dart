@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/model/item.dart';
-import 'package:sen/screen/animation_viewer/animation_viewer.dart';
-import 'package:sen/screen/home_screen/configuration/javascript_category_configuration.dart';
-import 'package:sen/screen/home_screen/configuration/level_maker_configuration.dart';
-import 'package:sen/screen/home_screen/configuration/map_editor_configuration.dart';
-import 'package:sen/screen/home_screen/configuration/shell_configuration.dart';
-import 'package:sen/screen/home_screen/tab_item.dart';
-import 'package:sen/screen/javascript_category/javascript_category.dart';
-import 'package:sen/screen/level_maker/level_maker.dart';
-import 'package:sen/screen/map_editor/map_editor.dart';
-import 'package:sen/screen/shell_screen/shell_screen.dart';
-import 'package:sen/service/ui_helper.dart';
-import 'package:sen/widget/animated_floating.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import '../../i18n/app_localizations.dart';
+import '../../model/item.dart';
+import '../animation_viewer/animation_viewer.dart';
+import 'configuration/javascript_category_configuration.dart';
+import 'configuration/level_maker_configuration.dart';
+import 'configuration/map_editor_configuration.dart';
+import 'configuration/shell_configuration.dart';
+import 'tab_item.dart';
+import '../javascript_category/javascript_category.dart';
+import '../level_maker/level_maker.dart';
+import '../map_editor/map_editor.dart';
+import '../shell_screen/shell_screen.dart';
+import '../../service/ui_helper.dart';
+import '../../widget/animated_floating.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return DefaultTabController(
       length: _tabs.length + 1,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TabBar(
@@ -122,8 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => _closeTabByIndex(index),
         ),
         PopupMenuItem(
+          onTap: _closeAllTabs,
           child: Text(context.los.close_all_tabs),
-          onTap: () => _closeAllTabs(),
         ),
         PopupMenuItem(
           child: Text(context.los.close_tabs_to_the_left),
@@ -140,7 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _closeTabByIndex(int index) {
     _tabs.removeAt(index);
     setState(() {
-      if (_tabIndex >= _tabs.length) _tabIndex = 0;
+      if (_tabIndex >= _tabs.length) {
+        _tabIndex = 0;
+      }
     });
   }
 
@@ -184,7 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 8.0,
                 children: [icon, Text(title)],
@@ -199,10 +199,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _calculateCrossAxisCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    if (width > 1800) return 7;
-    if (width > 1400) return 5;
-    if (width > 1000) return 4;
-    if (width > 700) return 3;
+    if (width > 1800) {
+      return 7;
+    }
+    if (width > 1400) {
+      return 5;
+    }
+    if (width > 1000) {
+      return 4;
+    }
+    if (width > 700) {
+      return 3;
+    }
     return 2;
   }
 
@@ -283,7 +291,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDesktopCardContent(BuildContext context, Item item) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 15.0,
       children: [
         Align(
@@ -322,7 +329,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(item.icon, size: 50.0, color: item.color),
           const SizedBox(width: 12.0),

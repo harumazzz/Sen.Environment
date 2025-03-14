@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:local_notifier/local_notifier.dart';
-import 'package:sen/constant/build_distribution.dart';
+import '../constant/build_distribution.dart';
 import 'package:window_manager/window_manager.dart';
 
 class NotificationHelper {
@@ -11,10 +11,7 @@ class NotificationHelper {
 
   static Future<void> initialize() async {
     if (Platform.isWindows) {
-      await localNotifier.setup(
-        appName: BuildDistribution.kApplicationName,
-        shortcutPolicy: ShortcutPolicy.requireCreate,
-      );
+      await localNotifier.setup(appName: BuildDistribution.kApplicationName);
     }
     if (Platform.isLinux ||
         Platform.isMacOS ||
@@ -32,7 +29,6 @@ class NotificationHelper {
       );
       await _flutterLocalNotificationsPlugin!.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse: null,
       );
     }
     return;

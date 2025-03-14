@@ -7,14 +7,6 @@ typedef Color = List<double>;
 typedef Matrix = List<double>;
 
 class FrameNode extends Equatable {
-  final int index;
-  final int duration;
-  final int resource;
-  final bool sprite;
-  final int? firstFrame;
-  final Transform transform;
-  final Color color;
-
   const FrameNode({
     required this.index,
     required this.duration,
@@ -27,8 +19,8 @@ class FrameNode extends Equatable {
 
   factory FrameNode.fromJson(Map<String, dynamic> json) {
     return FrameNode(
-      index: (json['index']),
-      duration: (json['duration']),
+      index: json['index'],
+      duration: json['duration'],
       resource: json['resource'],
       sprite: json['sprite'],
       firstFrame: json['first_frame'] != null ? (json['first_frame']) : null,
@@ -36,6 +28,13 @@ class FrameNode extends Equatable {
       color: List<double>.from(json['color']),
     );
   }
+  final int index;
+  final int duration;
+  final int resource;
+  final bool sprite;
+  final int? firstFrame;
+  final Transform transform;
+  final Color color;
 
   Map<String, dynamic> toJson() {
     return {
@@ -71,15 +70,7 @@ class FrameNode extends Equatable {
 
   @override
   List<Object?> get props {
-    return [
-      index,
-      duration,
-      resource,
-      sprite,
-      firstFrame,
-      transform,
-      color,
-    ];
+    return [index, duration, resource, sprite, firstFrame, transform, color];
   }
 }
 
@@ -87,22 +78,9 @@ typedef FrameNodeList = List<FrameNode>;
 
 typedef FrameNodeStructure = Map<int, FrameNodeList>;
 
-enum State {
-  stateNull,
-  stateFalse,
-  stateTrue,
-}
+enum State { stateNull, stateFalse, stateTrue }
 
 class Model extends Equatable {
-  final State state;
-  final int resource;
-  final bool sprite;
-  final Transform transform;
-  final Color color;
-  final int frameStart;
-  final int frameDuration;
-  final int? index;
-
   const Model({
     required this.state,
     required this.resource,
@@ -121,11 +99,19 @@ class Model extends Equatable {
       sprite: json['sprite'],
       transform: List<double>.from(json['transform']),
       color: List<double>.from(json['color']),
-      frameStart: (json['frame_start']),
-      frameDuration: (json['frame_duration']),
+      frameStart: json['frame_start'],
+      frameDuration: json['frame_duration'],
       index: json['index'] != null ? (json['index']) : null,
     );
   }
+  final State state;
+  final int resource;
+  final bool sprite;
+  final Transform transform;
+  final Color color;
+  final int frameStart;
+  final int frameDuration;
+  final int? index;
 
   Model copyWith({
     State? state,
@@ -178,14 +164,6 @@ class Model extends Equatable {
 }
 
 class SexyAnimation extends Equatable {
-  final int version;
-  final int frameRate;
-  final AnimationPosition position;
-  final AnimationSize size;
-  final List<AnimationImage> image;
-  final List<AnimationSprite> sprite;
-  final AnimationSprite mainSprite;
-
   const SexyAnimation({
     required this.version,
     required this.frameRate,
@@ -198,15 +176,28 @@ class SexyAnimation extends Equatable {
 
   factory SexyAnimation.fromJson(Map<String, dynamic> json) {
     return SexyAnimation(
-      version: (json['version']),
-      frameRate: (json['frame_rate']),
+      version: json['version'],
+      frameRate: json['frame_rate'],
       position: AnimationPosition.fromJson(json['position']),
       size: AnimationSize.fromJson(json['size']),
-      image: (json['image'] as List).map((i) => AnimationImage.fromJson(i)).toList(),
-      sprite: (json['sprite'] as List).map((i) => AnimationSprite.fromJson(i)).toList(),
+      image:
+          (json['image'] as List)
+              .map((i) => AnimationImage.fromJson(i))
+              .toList(),
+      sprite:
+          (json['sprite'] as List)
+              .map((i) => AnimationSprite.fromJson(i))
+              .toList(),
       mainSprite: AnimationSprite.fromJson(json['main_sprite']),
     );
   }
+  final int version;
+  final int frameRate;
+  final AnimationPosition position;
+  final AnimationSize size;
+  final List<AnimationImage> image;
+  final List<AnimationSprite> sprite;
+  final AnimationSprite mainSprite;
 
   SexyAnimation copyWith({
     int? version,
@@ -242,49 +233,25 @@ class SexyAnimation extends Equatable {
 
   @override
   List<Object> get props {
-    return [
-      version,
-      frameRate,
-      position,
-      size,
-      image,
-      sprite,
-      mainSprite,
-    ];
+    return [version, frameRate, position, size, image, sprite, mainSprite];
   }
 }
 
 class AnimationPosition extends Equatable {
+  const AnimationPosition({required this.x, required this.y});
+
+  factory AnimationPosition.fromJson(Map<String, dynamic> json) {
+    return AnimationPosition(x: json['x'].toDouble(), y: json['y'].toDouble());
+  }
   final double x;
   final double y;
 
-  const AnimationPosition({
-    required this.x,
-    required this.y,
-  });
-
-  factory AnimationPosition.fromJson(Map<String, dynamic> json) {
-    return AnimationPosition(
-      x: json['x'].toDouble(),
-      y: json['y'].toDouble(),
-    );
-  }
-
   Map<String, dynamic> toJson() {
-    return {
-      'x': x,
-      'y': y,
-    };
+    return {'x': x, 'y': y};
   }
 
-  AnimationPosition copyWith({
-    double? x,
-    double? y,
-  }) {
-    return AnimationPosition(
-      x: x ?? this.x,
-      y: y ?? this.y,
-    );
+  AnimationPosition copyWith({double? x, double? y}) {
+    return AnimationPosition(x: x ?? this.x, y: y ?? this.y);
   }
 
   @override
@@ -292,13 +259,7 @@ class AnimationPosition extends Equatable {
 }
 
 class AnimationSize extends Equatable {
-  final double width;
-  final double height;
-
-  const AnimationSize({
-    required this.width,
-    required this.height,
-  });
+  const AnimationSize({required this.width, required this.height});
 
   factory AnimationSize.fromJson(Map<String, dynamic> json) {
     return AnimationSize(
@@ -307,10 +268,16 @@ class AnimationSize extends Equatable {
     );
   }
 
-  AnimationSize copyWith({
-    double? width,
-    double? height,
-  }) {
+  factory AnimationSize.fromMap(Map<String, dynamic> map) {
+    return AnimationSize(
+      width: map['width']?.toDouble() ?? 0.0,
+      height: map['height']?.toDouble() ?? 0.0,
+    );
+  }
+  final double width;
+  final double height;
+
+  AnimationSize copyWith({double? width, double? height}) {
     return AnimationSize(
       width: width ?? this.width,
       height: height ?? this.height,
@@ -318,17 +285,7 @@ class AnimationSize extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'width': width,
-      'height': height,
-    };
-  }
-
-  factory AnimationSize.fromMap(Map<String, dynamic> map) {
-    return AnimationSize(
-      width: map['width']?.toDouble() ?? 0.0,
-      height: map['height']?.toDouble() ?? 0.0,
-    );
+    return {'width': width, 'height': height};
   }
 
   @override
@@ -336,11 +293,6 @@ class AnimationSize extends Equatable {
 }
 
 class AnimationImage extends Equatable {
-  final String path;
-  final String id;
-  final AnimationDimension dimension;
-  final List<double> transform;
-
   const AnimationImage({
     required this.path,
     required this.id,
@@ -356,6 +308,10 @@ class AnimationImage extends Equatable {
       transform: List<double>.from(json['transform']),
     );
   }
+  final String path;
+  final String id;
+  final AnimationDimension dimension;
+  final List<double> transform;
 
   AnimationImage copyWith({
     String? path,
@@ -385,25 +341,15 @@ class AnimationImage extends Equatable {
 }
 
 class AnimationDimension extends Equatable {
+  const AnimationDimension({required this.width, required this.height});
+
+  factory AnimationDimension.fromJson(Map<String, dynamic> json) {
+    return AnimationDimension(width: json['width'], height: json['height']);
+  }
   final int width;
   final int height;
 
-  const AnimationDimension({
-    required this.width,
-    required this.height,
-  });
-
-  factory AnimationDimension.fromJson(Map<String, dynamic> json) {
-    return AnimationDimension(
-      width: json['width'],
-      height: json['height'],
-    );
-  }
-
-  AnimationDimension copyWith({
-    int? width,
-    int? height,
-  }) {
+  AnimationDimension copyWith({int? width, int? height}) {
     return AnimationDimension(
       width: width ?? this.width,
       height: height ?? this.height,
@@ -411,10 +357,7 @@ class AnimationDimension extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'width': width,
-      'height': height,
-    };
+    return {'width': width, 'height': height};
   }
 
   @override
@@ -422,10 +365,6 @@ class AnimationDimension extends Equatable {
 }
 
 class AnimationSprite extends Equatable {
-  final String name;
-  final AnimationWorkArea workArea;
-  final List<AnimationFrame> frame;
-
   const AnimationSprite({
     required this.name,
     required this.workArea,
@@ -436,9 +375,15 @@ class AnimationSprite extends Equatable {
     return AnimationSprite(
       name: json['name'],
       workArea: AnimationWorkArea.fromJson(json['work_area']),
-      frame: (json['frame'] as List).map((i) => AnimationFrame.fromJson(i)).toList(),
+      frame:
+          (json['frame'] as List)
+              .map((i) => AnimationFrame.fromJson(i))
+              .toList(),
     );
   }
+  final String name;
+  final AnimationWorkArea workArea;
+  final List<AnimationFrame> frame;
 
   AnimationSprite copyWith({
     String? name,
@@ -465,25 +410,15 @@ class AnimationSprite extends Equatable {
 }
 
 class AnimationWorkArea extends Equatable {
+  const AnimationWorkArea({required this.start, required this.duration});
+
+  factory AnimationWorkArea.fromJson(Map<String, dynamic> json) {
+    return AnimationWorkArea(start: json['start'], duration: json['duration']);
+  }
   final int start;
   final int duration;
 
-  const AnimationWorkArea({
-    required this.start,
-    required this.duration,
-  });
-
-  factory AnimationWorkArea.fromJson(Map<String, dynamic> json) {
-    return AnimationWorkArea(
-      start: (json['start']),
-      duration: (json['duration']),
-    );
-  }
-
-  AnimationWorkArea copyWith({
-    int? start,
-    int? duration,
-  }) {
+  AnimationWorkArea copyWith({int? start, int? duration}) {
     return AnimationWorkArea(
       start: start ?? this.start,
       duration: duration ?? this.duration,
@@ -491,10 +426,7 @@ class AnimationWorkArea extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'start': start,
-      'duration': duration,
-    };
+    return {'start': start, 'duration': duration};
   }
 
   @override
@@ -502,13 +434,6 @@ class AnimationWorkArea extends Equatable {
 }
 
 class AnimationFrame extends Equatable {
-  final String label;
-  final bool stop;
-  final List<AnimationCommand> command;
-  final List<int> remove;
-  final List<AnimationAppend> append;
-  final List<AnimationMove> change;
-
   const AnimationFrame({
     required this.label,
     required this.stop,
@@ -522,12 +447,28 @@ class AnimationFrame extends Equatable {
     return AnimationFrame(
       label: json['label'],
       stop: json['stop'],
-      command: (json['command'] as List).map((i) => AnimationCommand.fromJson(i)).toList(),
-      remove: (json['remove'] as List).map((i) => int.parse(i.toString())).toList(),
-      append: (json['append'] as List).map((i) => AnimationAppend.fromJson(i)).toList(),
-      change: (json['change'] as List).map((i) => AnimationMove.fromJson(i)).toList(),
+      command:
+          (json['command'] as List)
+              .map((i) => AnimationCommand.fromJson(i))
+              .toList(),
+      remove:
+          (json['remove'] as List).map((i) => int.parse(i.toString())).toList(),
+      append:
+          (json['append'] as List)
+              .map((i) => AnimationAppend.fromJson(i))
+              .toList(),
+      change:
+          (json['change'] as List)
+              .map((i) => AnimationMove.fromJson(i))
+              .toList(),
     );
   }
+  final String label;
+  final bool stop;
+  final List<AnimationCommand> command;
+  final List<int> remove;
+  final List<AnimationAppend> append;
+  final List<AnimationMove> change;
 
   AnimationFrame copyWith({
     String? label,
@@ -560,25 +501,12 @@ class AnimationFrame extends Equatable {
 
   @override
   List<Object> get props {
-    return [
-      label,
-      stop,
-      command,
-      remove,
-      append,
-      change,
-    ];
+    return [label, stop, command, remove, append, change];
   }
 }
 
 class AnimationCommand extends Equatable {
-  final String command;
-  final String argument;
-
-  const AnimationCommand({
-    required this.command,
-    required this.argument,
-  });
+  const AnimationCommand({required this.command, required this.argument});
 
   factory AnimationCommand.fromJson(Map<String, dynamic> json) {
     return AnimationCommand(
@@ -586,11 +514,10 @@ class AnimationCommand extends Equatable {
       argument: json['argument'],
     );
   }
+  final String command;
+  final String argument;
 
-  AnimationCommand copyWith({
-    String? command,
-    String? argument,
-  }) {
+  AnimationCommand copyWith({String? command, String? argument}) {
     return AnimationCommand(
       command: command ?? this.command,
       argument: argument ?? this.argument,
@@ -598,10 +525,7 @@ class AnimationCommand extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'command': command,
-      'argument': argument,
-    };
+    return {'command': command, 'argument': argument};
   }
 
   @override
@@ -609,14 +533,6 @@ class AnimationCommand extends Equatable {
 }
 
 class AnimationAppend extends Equatable {
-  final int index;
-  final String name;
-  final int resource;
-  final bool sprite;
-  final bool additive;
-  final int preloadFrame;
-  final double timeScale;
-
   const AnimationAppend({
     required this.index,
     required this.name,
@@ -629,15 +545,22 @@ class AnimationAppend extends Equatable {
 
   factory AnimationAppend.fromJson(Map<String, dynamic> json) {
     return AnimationAppend(
-      index: (json['index']),
+      index: json['index'],
       name: json['name'],
-      resource: (json['resource']),
+      resource: json['resource'],
       sprite: json['sprite'],
       additive: json['additive'],
-      preloadFrame: (json['preload_frame']),
+      preloadFrame: json['preload_frame'],
       timeScale: json['time_scale'].toDouble(),
     );
   }
+  final int index;
+  final String name;
+  final int resource;
+  final bool sprite;
+  final bool additive;
+  final int preloadFrame;
+  final double timeScale;
 
   Map<String, dynamic> toJson() {
     return {
@@ -673,25 +596,11 @@ class AnimationAppend extends Equatable {
 
   @override
   List<Object> get props {
-    return [
-      index,
-      name,
-      resource,
-      sprite,
-      additive,
-      preloadFrame,
-      timeScale,
-    ];
+    return [index, name, resource, sprite, additive, preloadFrame, timeScale];
   }
 }
 
 class AnimationMove extends Equatable {
-  final int index;
-  final List<double> transform;
-  final Color? color;
-  final List<double>? sourceRectangle;
-  final int spriteFrameNumber;
-
   const AnimationMove({
     required this.index,
     required this.transform,
@@ -702,13 +611,21 @@ class AnimationMove extends Equatable {
 
   factory AnimationMove.fromJson(Map<String, dynamic> json) {
     return AnimationMove(
-      index: (json['index']),
+      index: json['index'],
       transform: List<double>.from(json['transform']),
       color: json['color'] != null ? List<double>.from(json['color']) : null,
-      sourceRectangle: json['source_rectangle'] != null ? List<double>.from(json['source_rectangle']) : null,
-      spriteFrameNumber: (json['sprite_frame_number']),
+      sourceRectangle:
+          json['source_rectangle'] != null
+              ? List<double>.from(json['source_rectangle'])
+              : null,
+      spriteFrameNumber: json['sprite_frame_number'],
     );
   }
+  final int index;
+  final List<double> transform;
+  final Color? color;
+  final List<double>? sourceRectangle;
+  final int spriteFrameNumber;
 
   AnimationMove copyWith({
     int? index,
@@ -738,12 +655,6 @@ class AnimationMove extends Equatable {
 
   @override
   List<Object?> get props {
-    return [
-      index,
-      transform,
-      color,
-      sourceRectangle,
-      spriteFrameNumber,
-    ];
+    return [index, transform, color, sourceRectangle, spriteFrameNumber];
   }
 }

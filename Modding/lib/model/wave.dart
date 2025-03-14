@@ -15,8 +15,8 @@ part 'wave/ground_spawn.dart';
 part 'wave/necromancy.dart';
 part 'wave/level_module.dart';
 
-// TODO : Implement Grid Spawn
-// TODO : Implement Conveyor
+// TODO(Haruma): Implement Grid Spawn
+// TODO(Haruma): Implement Conveyor
 
 abstract class Wave {
   dynamic toJson(String aliasesName);

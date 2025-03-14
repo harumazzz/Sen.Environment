@@ -2,25 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/bloc/error_traceback_bloc/error_traceback_bloc.dart';
-import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
-import 'package:sen/bloc/launch_status_bloc/launch_status_bloc.dart';
-import 'package:sen/bloc/message_bloc/message_bloc.dart';
-import 'package:sen/bridge/client.dart';
-import 'package:sen/constant/build_distribution.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/model/message.dart';
-import 'package:sen/model/select_option.dart';
-import 'package:sen/screen/shell_screen/boolean_bar.dart';
-import 'package:sen/screen/shell_screen/empty_bar.dart';
-import 'package:sen/screen/shell_screen/enumeration_bar.dart';
-import 'package:sen/screen/shell_screen/idle_bar.dart';
-import 'package:sen/screen/shell_screen/input_bar.dart';
-import 'package:sen/screen/shell_screen/loading_bar.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../bloc/error_traceback_bloc/error_traceback_bloc.dart';
+import '../../bloc/interaction_bloc/interaction_bloc.dart';
+import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
+import '../../bloc/message_bloc/message_bloc.dart';
+import '../../bridge/client.dart';
+import '../../constant/build_distribution.dart';
+import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../model/message.dart';
+import '../../model/select_option.dart';
+import 'boolean_bar.dart';
+import 'empty_bar.dart';
+import 'enumeration_bar.dart';
+import 'idle_bar.dart';
+import 'input_bar.dart';
+import 'loading_bar.dart';
+import '../../service/file_helper.dart';
+import '../../service/ui_helper.dart';
 
 class InteractionBar extends StatefulWidget {
   const InteractionBar({super.key});
@@ -91,7 +91,6 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
         return _buildWrapper(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
             children: [const LoadingBar(), _buildInteraction()],
@@ -217,9 +216,10 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
         break;
       case 'input_enumeration':
         await _onSelectEnumeration([
-          ...arguments.take(0),
-          ...arguments.skip(1),
-        ], result);
+            ...arguments.take(0),
+            ...arguments.skip(1),
+          ], result,
+        );
         break;
       case 'display_stack':
         _onDisplayStack(arguments[1], arguments[2]);
@@ -255,7 +255,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
           );
       final result = await onPick(initialDirectory: initialDirectory);
       if (result != null) {
-        showDialog(result);
+        await showDialog(result);
       }
       _completer.complete(result);
     };

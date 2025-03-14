@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/include/scalable_item/scale_direction_enum.dart';
-import 'package:sen/screen/map_editor/include/scalable_item/scale_info.dart';
+import 'scale_direction_enum.dart';
+import 'scale_info.dart';
 
 /// A helper that handles scaling stuff
 class ScaleHelper {
+  const ScaleHelper._();
+
   ///
   /// Get new size and position based on [options].
   /// - [current]: The size, position before scaling.
@@ -90,7 +92,8 @@ class ScaleHelper {
         updatedWidth = newWidth > 0 ? newWidth : 0;
 
         // left
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) + 1, // x
               sin(rotateAngle), // y
             ) *
@@ -106,7 +109,8 @@ class ScaleHelper {
         updatedWidth = newWidth > 0 ? newWidth : 0;
 
         // right
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) - 1, // x
               sin(rotateAngle), // y
             ) *
@@ -124,19 +128,16 @@ class ScaleHelper {
         updatedWidth = newWidth > 0 ? newWidth : 0;
 
         // left
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) + 1, // x
               sin(rotateAngle), // y
             ) *
             dx /
             2;
         // top
-        var rotationalOffset2 = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) + 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset2 =
+            Offset(-sin(rotateAngle), cos(rotateAngle) + 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx + rotationalOffset2.dx;
         updatedYPosition += rotationalOffset.dy + rotationalOffset2.dy;
@@ -148,12 +149,8 @@ class ScaleHelper {
         updatedHeight = newHeight > 0 ? newHeight : 0;
 
         // top
-        var rotationalOffset = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) + 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset =
+            Offset(-sin(rotateAngle), cos(rotateAngle) + 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx;
         updatedYPosition += rotationalOffset.dy;
@@ -168,19 +165,16 @@ class ScaleHelper {
         updatedWidth = newWidth > 0 ? newWidth : 0;
 
         // right
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) - 1, // x
               sin(rotateAngle), // y
             ) *
             dx /
             2;
         // top
-        var rotationalOffset2 = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) + 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset2 =
+            Offset(-sin(rotateAngle), cos(rotateAngle) + 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx + rotationalOffset2.dx;
         updatedYPosition += rotationalOffset.dy + rotationalOffset2.dy;
@@ -195,19 +189,16 @@ class ScaleHelper {
         updatedHeight = newHeight > 0 ? newHeight : 0;
 
         // left
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) + 1, // x
               sin(rotateAngle), // y
             ) *
             dx /
             2;
         // bottom
-        var rotationalOffset2 = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) - 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset2 =
+            Offset(-sin(rotateAngle), cos(rotateAngle) - 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx + rotationalOffset2.dx;
         updatedYPosition += rotationalOffset.dy + rotationalOffset2.dy;
@@ -218,12 +209,8 @@ class ScaleHelper {
         updatedHeight = newHeight > 0 ? newHeight : 0;
 
         // bottom
-        var rotationalOffset = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) - 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset =
+            Offset(-sin(rotateAngle), cos(rotateAngle) - 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx;
         updatedYPosition += rotationalOffset.dy;
@@ -234,19 +221,16 @@ class ScaleHelper {
         double newWidth = updatedWidth + dx;
 
         // right
-        var rotationalOffset = Offset(
+        var rotationalOffset =
+            Offset(
               cos(rotateAngle) - 1, // x
               sin(rotateAngle), // y
             ) *
             dx /
             2;
         // bottom
-        var rotationalOffset2 = Offset(
-              -sin(rotateAngle),
-              cos(rotateAngle) - 1,
-            ) *
-            dy /
-            2;
+        var rotationalOffset2 =
+            Offset(-sin(rotateAngle), cos(rotateAngle) - 1) * dy / 2;
 
         updatedXPosition += rotationalOffset.dx + rotationalOffset2.dx;
         updatedYPosition += rotationalOffset.dy + rotationalOffset2.dy;

@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
-import 'package:sen/screen/map_editor/view/main_page.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import 'bloc/init_bloc/init_bloc.dart';
+import 'view/main_page.dart';
+import '../../service/ui_helper.dart';
 
 class MapEditor extends StatelessWidget {
   const MapEditor({super.key});
@@ -125,7 +125,6 @@ class MapEditor extends StatelessWidget {
               return Background(
                 child: Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 16.0,
                     children: [

@@ -1,13 +1,6 @@
 part of '../wave.dart';
 
 class Necromancy implements Wave {
-  String message;
-  int spawnWaitTime;
-  bool suppressActionIfNoGridItemsFound;
-  int additionalPlantFood;
-  List<String> gridTypes;
-  List<String> zombies;
-
   Necromancy({
     required this.message,
     required this.spawnWaitTime,
@@ -18,12 +11,18 @@ class Necromancy implements Wave {
   });
 
   Necromancy.withDefault()
-      : message = 'Necromancy!',
-        spawnWaitTime = 0,
-        suppressActionIfNoGridItemsFound = false,
-        additionalPlantFood = 0,
-        gridTypes = [],
-        zombies = [];
+    : message = 'Necromancy!',
+      spawnWaitTime = 0,
+      suppressActionIfNoGridItemsFound = false,
+      additionalPlantFood = 0,
+      gridTypes = [],
+      zombies = [];
+  String message;
+  int spawnWaitTime;
+  bool suppressActionIfNoGridItemsFound;
+  int additionalPlantFood;
+  List<String> gridTypes;
+  List<String> zombies;
 
   void replaceWith({
     String? message,
@@ -35,7 +34,8 @@ class Necromancy implements Wave {
   }) {
     this.message = message ?? this.message;
     this.spawnWaitTime = spawnWaitTime ?? this.spawnWaitTime;
-    this.suppressActionIfNoGridItemsFound = suppressActionIfNoGridItemsFound ??
+    this.suppressActionIfNoGridItemsFound =
+        suppressActionIfNoGridItemsFound ??
         this.suppressActionIfNoGridItemsFound;
     this.additionalPlantFood = additionalPlantFood ?? this.additionalPlantFood;
     this.gridTypes = gridTypes ?? this.gridTypes;
@@ -52,18 +52,9 @@ class Necromancy implements Wave {
         'ZombieSpawnWaitTime': spawnWaitTime,
         'SuppressActionIfNoGridItemsFound': suppressActionIfNoGridItemsFound,
         'AdditionalPlantfood': additionalPlantFood.toString(),
-        'GridTypes': gridTypes
-            .map(
-              (e) => 'RTID($e@GridItemTypes)',
-            )
-            .toList(),
-        'Zombies': zombies
-            .map(
-              (e) => ({
-                'Type': 'RTID($e@ZombieTypes)',
-              }),
-            )
-            .toList(),
+        'GridTypes': gridTypes.map((e) => 'RTID($e@GridItemTypes)').toList(),
+        'Zombies':
+            zombies.map((e) => {'Type': 'RTID($e@ZombieTypes)'}).toList(),
       },
     };
   }

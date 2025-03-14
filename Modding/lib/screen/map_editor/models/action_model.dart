@@ -13,5 +13,5 @@ enum ActionModelType {
   itemBloc,
   int,
   string,
-  layerNode
+  layerNode,
 }

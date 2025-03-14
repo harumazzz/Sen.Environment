@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/extension/context.dart';
+import '../../../../extension/context.dart';
 
 class ShortCutMenuWidget extends StatelessWidget {
   const ShortCutMenuWidget({super.key});
@@ -99,10 +100,7 @@ class ShortCutMenuWidget extends StatelessWidget {
                     shortcutName: los.increase_scale_y,
                     keyMapList: const ['M'],
                   ),
-                  ShortcutTile(
-                    shortcutName: los.flip,
-                    keyMapList: const ['F'],
-                  ),
+                  ShortcutTile(shortcutName: los.flip, keyMapList: const ['F']),
                   ShortcutTile(
                     shortcutName: los.cut,
                     keyMapList: const ['Ctrl', 'X'],
@@ -154,7 +152,7 @@ class ShortCutMenuWidget extends StatelessWidget {
                   ShortcutTile(
                     shortcutName: los.open_palette,
                     keyMapList: const ['Ctrl', 'P'],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -166,7 +164,11 @@ class ShortCutMenuWidget extends StatelessWidget {
 }
 
 class ShortcutTile extends StatelessWidget {
-  const ShortcutTile({super.key, required this.shortcutName, required this.keyMapList});
+  const ShortcutTile({
+    super.key,
+    required this.shortcutName,
+    required this.keyMapList,
+  });
 
   final String shortcutName;
 
@@ -175,21 +177,30 @@ class ShortcutTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: SizedBox(
-          child: Row(
-            children: [
-              Text(
-                shortcutName,
-                style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: SizedBox(
+        child: Row(
+          children: [
+            Text(
+              shortcutName,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const Spacer(),
-              ...keyMapList.map((e) => KeyCap(
-                    keyName: e,
-                  ))
-            ],
-          ),
-        ));
+            ),
+            const Spacer(),
+            ...keyMapList.map((e) => KeyCap(keyName: e)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('shortcutName', shortcutName));
+    properties.add(IterableProperty<String>('keyMapList', keyMapList));
   }
 }
 
@@ -201,17 +212,24 @@ class KeyCap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       color: Theme.of(context).colorScheme.secondaryContainer,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
         child: Text(
           keyName,
-          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('keyName', keyName));
   }
 }

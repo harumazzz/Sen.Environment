@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/bloc/interaction_bloc/interaction_bloc.dart';
-import 'package:sen/extension/context.dart';
+import '../../bloc/interaction_bloc/interaction_bloc.dart';
+import '../../extension/context.dart';
 
 class BooleanBar extends StatelessWidget {
   const BooleanBar({super.key});
 
-  void _onConfirm(
-    BuildContext context,
-  ) {
-    context.read<InteractionBloc>().add(const BooleanInputCompleteEvent(value: true));
+  void _onConfirm(BuildContext context) {
+    context.read<InteractionBloc>().add(
+      const BooleanInputCompleteEvent(value: true),
+    );
   }
 
-  void _onRefuse(
-    BuildContext context,
-  ) {
-    context.read<InteractionBloc>().add(const BooleanInputCompleteEvent(value: false));
+  void _onRefuse(BuildContext context) {
+    context.read<InteractionBloc>().add(
+      const BooleanInputCompleteEvent(value: false),
+    );
   }
 
   Widget _buildButton({

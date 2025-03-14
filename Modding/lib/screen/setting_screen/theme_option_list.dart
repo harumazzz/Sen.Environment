@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
 
 class ThemeOptionList extends StatelessWidget {
-  const ThemeOptionList({
-    super.key,
-  });
+  const ThemeOptionList({super.key});
 
   Map<String, String> themeOf(BuildContext context) {
     return {
@@ -28,7 +26,9 @@ class ThemeOptionList extends StatelessWidget {
             value: entry.key,
             groupValue: context.watch<SettingsCubit>().state.theme,
             onChanged: (String? theme) async {
-              if (theme == null) return;
+              if (theme == null) {
+                return;
+              }
               await context.read<SettingsCubit>().setTheme(theme);
             },
           ),

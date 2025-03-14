@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/model/translator.dart';
-import 'package:sen/widget/hyperlink.dart';
+import '../../extension/context.dart';
+import '../../model/translator.dart';
+import '../../widget/hyperlink.dart';
 
 class TranslatorPage extends StatelessWidget {
   const TranslatorPage({super.key, required this.translator});
@@ -10,8 +11,8 @@ class TranslatorPage extends StatelessWidget {
   final Translator translator;
 
   bool _isLink(String value) => RegExp(
-          r'((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)')
-      .hasMatch(value);
+    r'((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)',
+  ).hasMatch(value);
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +22,10 @@ class TranslatorPage extends StatelessWidget {
       children: [
         Card(
           elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 16.0,
@@ -54,10 +56,16 @@ class TranslatorPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     context.los.translator,
-                    style: textTheme.bodyMedium?.copyWith(color: colorScheme.primary),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Divider(thickness: 1, height: 24, color: colorScheme.outlineVariant),
+                  Divider(
+                    thickness: 1,
+                    height: 24,
+                    color: colorScheme.outlineVariant,
+                  ),
                   if (translator.discord != null) ...[
                     ListTile(
                       leading: const Icon(
@@ -67,31 +75,46 @@ class TranslatorPage extends StatelessWidget {
                       ),
                       title: SelectableText(
                         translator.discord!,
-                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.secondary),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.secondary,
+                        ),
                       ),
                     ),
-                    Divider(thickness: 1, height: 24, color: colorScheme.outlineVariant),
+                    Divider(
+                      thickness: 1,
+                      height: 24,
+                      color: colorScheme.outlineVariant,
+                    ),
                   ],
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ...translator.contacts.map(
-                        (e) {
-                          final isLink = _isLink(e[1]);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: ListTile(
-                              leading: isLink
-                                  ? const Icon(Symbols.link, color: Colors.grey)
-                                  : const Icon(Symbols.person, color: Colors.grey),
-                              title: Text(e[0], style: textTheme.bodyMedium),
-                              subtitle: isLink
-                                  ? Hyperlink(title: e[0], link: e[1])
-                                  : SelectableText(e[1], style: textTheme.bodyMedium),
-                            ),
-                          );
-                        },
-                      ),
+                      ...translator.contacts.map((e) {
+                        final isLink = _isLink(e[1]);
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            leading:
+                                isLink
+                                    ? const Icon(
+                                      Symbols.link,
+                                      color: Colors.grey,
+                                    )
+                                    : const Icon(
+                                      Symbols.person,
+                                      color: Colors.grey,
+                                    ),
+                            title: Text(e[0], style: textTheme.bodyMedium),
+                            subtitle:
+                                isLink
+                                    ? Hyperlink(title: e[0], link: e[1])
+                                    : SelectableText(
+                                      e[1],
+                                      style: textTheme.bodyMedium,
+                                    ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ],
@@ -111,5 +134,11 @@ class TranslatorPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Translator>('translator', translator));
   }
 }

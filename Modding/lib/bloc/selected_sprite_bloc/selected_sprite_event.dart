@@ -13,22 +13,16 @@ final class SelectedSpriteResetEvent extends SelectedSpriteEvent {
 }
 
 final class SelectedSpriteToggleEvent extends SelectedSpriteEvent {
+  const SelectedSpriteToggleEvent({required this.index});
   final int index;
-
-  const SelectedSpriteToggleEvent({
-    required this.index,
-  });
 
   @override
   List<Object?> get props => [index];
 }
 
 final class SelectedSpriteAllocateEvent extends SelectedSpriteEvent {
+  const SelectedSpriteAllocateEvent({required this.size});
   final int size;
-
-  const SelectedSpriteAllocateEvent({
-    required this.size,
-  });
 
   @override
   List<Object?> get props => [size];

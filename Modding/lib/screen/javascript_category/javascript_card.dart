@@ -1,14 +1,15 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/screen/shell_screen/shell_screen.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/service/ui_helper.dart';
-import 'package:sen/service/windows_helper.dart';
+import '../../bloc/load_script_bloc/load_script_bloc.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../shell_screen/shell_screen.dart';
+import '../../i18n/app_localizations.dart';
+import '../../service/ui_helper.dart';
+import '../../service/windows_helper.dart';
 
 @immutable
 class JavaScriptCard extends StatelessWidget {
@@ -19,6 +20,7 @@ class JavaScriptCard extends StatelessWidget {
   });
 
   final Script item;
+
   final String toolChain;
 
   Color? _iconColor(BuildContext context) {
@@ -32,10 +34,7 @@ class JavaScriptCard extends StatelessWidget {
       '-method',
       'js.evaluate',
       '-source',
-      item.path.replaceFirst(
-        '.',
-        '$toolChain/Script/Helper',
-      ),
+      item.path.replaceFirst('.', '$toolChain/Script/Helper'),
     ];
   }
 
@@ -51,9 +50,7 @@ class JavaScriptCard extends StatelessWidget {
     );
   }
 
-  Future<void> _runAsLauncher(
-    BuildContext context,
-  ) async {
+  Future<void> _runAsLauncher(BuildContext context) async {
     if (!Platform.isWindows) {
       return await _runAsShell(context);
     }
@@ -66,7 +63,9 @@ class JavaScriptCard extends StatelessWidget {
       final los = AppLocalizations.of(context)!;
       await _showDialog(context, los.done, los.spawn_success(item.name));
     }
-    String launcher() => '${context.read<SettingsCubit>().state.toolChain}/Launcher.exe';
+
+    String launcher() =>
+        '${context.read<SettingsCubit>().state.toolChain}/Launcher.exe';
     try {
       await WindowsHelper.runLauncher(
         argument: '${launcher()} ${_makeArguments().join(' ')}',
@@ -79,19 +78,13 @@ class JavaScriptCard extends StatelessWidget {
     }
   }
 
-  Future<void> _runAsShell(
-    BuildContext context,
-  ) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ShellScreen(),
-      ),
-    );
+  Future<void> _runAsShell(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const ShellScreen()));
   }
 
-  void _onTap(
-    BuildContext context,
-  ) async {
+  void _onTap(BuildContext context) async {
     if (context.mounted) {
       await _onConfirm(context, () async {
         if (BlocProvider.of<SettingsCubit>(context).state.jsRunAsLauncher) {
@@ -144,9 +137,7 @@ class JavaScriptCard extends StatelessWidget {
       elevation: 4.0,
       color: cardColor,
       surfaceTintColor: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16.0),
         onTap: () => _onTap(context),
@@ -179,7 +170,11 @@ class JavaScriptCard extends StatelessWidget {
               ),
               Tooltip(
                 message: los.js_execute,
-                child: Icon(Icons.play_arrow_rounded, size: 28, color: theme.colorScheme.primary),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  size: 28,
+                  color: theme.colorScheme.primary,
+                ),
               ),
               const SizedBox(width: 16.0),
             ],
@@ -187,5 +182,12 @@ class JavaScriptCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Script>('item', item));
+    properties.add(StringProperty('toolChain', toolChain));
   }
 }

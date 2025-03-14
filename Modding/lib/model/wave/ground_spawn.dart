@@ -1,14 +1,6 @@
 part of '../wave.dart';
 
 class GroundSpawn implements Wave {
-  int columnStart;
-
-  int columnEnd;
-
-  int additionalPlantFood;
-
-  List<Spawn> zombies;
-
   GroundSpawn({
     required this.columnStart,
     required this.columnEnd,
@@ -17,10 +9,17 @@ class GroundSpawn implements Wave {
   });
 
   GroundSpawn.withDefault()
-      : columnStart = 0,
-        columnEnd = 0,
-        additionalPlantFood = 0,
-        zombies = [];
+    : columnStart = 0,
+      columnEnd = 0,
+      additionalPlantFood = 0,
+      zombies = [];
+  int columnStart;
+
+  int columnEnd;
+
+  int additionalPlantFood;
+
+  List<Spawn> zombies;
 
   void replaceWith({
     int? columnStart,
@@ -43,15 +42,16 @@ class GroundSpawn implements Wave {
         'AdditionalPlantfood': additionalPlantFood.toString(),
         'ColumnStart': columnStart,
         'ColumnEnd': columnEnd,
-        'Zombies': zombies
-            .map(
-              (e) => {
-                // PvZ2 Row count from 1
-                'Row': (e.row + 1).toString(),
-                'Type': 'RTID(${e.typename.toString()}@ZombieTypes)',
-              },
-            )
-            .toList(),
+        'Zombies':
+            zombies
+                .map(
+                  (e) => {
+                    // PvZ2 Row count from 1
+                    'Row': (e.row + 1).toString(),
+                    'Type': 'RTID(${e.typename.toString()}@ZombieTypes)',
+                  },
+                )
+                .toList(),
       },
     };
   }

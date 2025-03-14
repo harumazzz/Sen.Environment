@@ -43,7 +43,9 @@ class CanvasController extends ChangeNotifier {
   bool _mouseDown = false;
   bool get mouseDown => _mouseDown;
   set mouseDown(bool value) {
-    if (value == _mouseDown) return;
+    if (value == _mouseDown) {
+      return;
+    }
     _mouseDown = value;
     notifyListeners();
   }
@@ -51,7 +53,9 @@ class CanvasController extends ChangeNotifier {
   bool _shiftPressed = false;
   bool get shiftPressed => _shiftPressed;
   set shiftPressed(bool value) {
-    if (value == _shiftPressed) return;
+    if (value == _shiftPressed) {
+      return;
+    }
     _shiftPressed = value;
     notifyListeners();
   }
@@ -59,7 +63,9 @@ class CanvasController extends ChangeNotifier {
   bool _spacePressed = false;
   bool get spacePressed => _spacePressed;
   set spacePressed(bool value) {
-    if (value == _spacePressed) return;
+    if (value == _spacePressed) {
+      return;
+    }
     _spacePressed = value;
     notifyListeners();
   }
@@ -67,7 +73,9 @@ class CanvasController extends ChangeNotifier {
   bool _controlPressed = false;
   bool get controlPressed => _controlPressed;
   set controlPressed(bool value) {
-    if (value == _controlPressed) return;
+    if (value == _controlPressed) {
+      return;
+    }
     _controlPressed = value;
     notifyListeners();
   }
@@ -75,7 +83,9 @@ class CanvasController extends ChangeNotifier {
   bool _metaPressed = false;
   bool get metaPressed => _metaPressed;
   set metaPressed(bool value) {
-    if (value == _metaPressed) return;
+    if (value == _metaPressed) {
+      return;
+    }
     _metaPressed = value;
     notifyListeners();
   }
@@ -83,7 +93,9 @@ class CanvasController extends ChangeNotifier {
   double _scale = 1;
   double get scale => _scale;
   set scale(double value) {
-    if (value == _scale) return;
+    if (value == _scale) {
+      return;
+    }
     _scale = value;
     notifyListeners();
   }
@@ -93,11 +105,10 @@ class CanvasController extends ChangeNotifier {
   }
 
   Rect checkMarqueeSelection() {
-    if (marqueeStart == null || marqueeEnd == null) return Rect.zero;
-    return Rect.fromPoints(
-      toLocal(marqueeStart!),
-      toLocal(marqueeEnd!),
-    );
+    if (marqueeStart == null || marqueeEnd == null) {
+      return Rect.zero;
+    }
+    return Rect.fromPoints(toLocal(marqueeStart!), toLocal(marqueeEnd!));
   }
 
   void requestFocus() {
@@ -106,7 +117,9 @@ class CanvasController extends ChangeNotifier {
     }
   }
 
-  void listenerPointerHover(PointerHoverEvent details) {
+  PointerHoverEvent get pointerHoverEvent => _pointerHoverEvent!;
+
+  set pointerHoverEvent(PointerHoverEvent details) {
     _pointerHoverEvent = details;
   }
 
@@ -127,7 +140,9 @@ class CanvasController extends ChangeNotifier {
       final viewDx = matrix[12] - _matrix4Catched![12];
       final viewDy = matrix[13] - _matrix4Catched![13];
       return Offset(
-          (dx - viewDx) / viewscalePort, (dy - viewDy) / viewscalePort);
+        (dx - viewDx) / viewscalePort,
+        (dy - viewDy) / viewscalePort,
+      );
     } else {
       return Offset.zero;
     }

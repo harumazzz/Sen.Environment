@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:sen/bridge/client.dart';
-import 'package:sen/bridge/launcher.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../bridge/client.dart';
+import '../../bridge/launcher.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/platform.dart';
+import '../../service/file_helper.dart';
 
 part 'launch_status_event.dart';
 part 'launch_status_state.dart';
@@ -21,7 +21,7 @@ class LaunchStatusBloc extends Bloc<LaunchStatusEvent, LaunchStatusState> {
     Emitter<LaunchStatusState> emit,
   ) async {
     final workingDirectory = await FileHelper.getWorkingDirectory();
-    final kernel = (() {
+    final kernel = () {
       if (CurrentPlatform.isAndroid) {
         return 'libKernel.so';
       }
@@ -39,7 +39,7 @@ class LaunchStatusBloc extends Bloc<LaunchStatusEvent, LaunchStatusState> {
         return '$toolChain/Kernel.dylib';
       }
       throw Exception('Unsupported platform');
-    }());
+    }();
     final script = '${event.setting.state.toolChain}/Script/main.js';
     emit(const LaunchStatusStart());
     emit(const LaunchStatusLoading());

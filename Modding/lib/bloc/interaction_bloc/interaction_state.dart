@@ -12,33 +12,24 @@ final class InteractionInitial extends InteractionState {
 }
 
 final class StringInputState extends InteractionState {
+  const StringInputState({required this.completer});
   final Completer<String?> completer;
-
-  const StringInputState({
-    required this.completer,
-  });
 
   @override
   List<Object?> get props => [completer];
 }
 
 final class BooleanInputState extends InteractionState {
+  const BooleanInputState({required this.completer});
   final Completer<String?> completer;
-
-  const BooleanInputState({
-    required this.completer,
-  });
 
   @override
   List<Object?> get props => [completer];
 }
 
 final class EnumerationSelectState extends InteractionState {
+  const EnumerationSelectState({required this.completer});
   final Completer<String?> completer;
-
-  const EnumerationSelectState({
-    required this.completer,
-  });
 
   @override
   List<Object?> get props => [completer];

@@ -1,11 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sen/screen/map_editor/include/visual_image.dart';
+import 'visual_image.dart';
 
 class VisualImagePainer extends CustomPainter {
-  const VisualImagePainer(this.property,
-      {this.borderColor = Colors.white,
-      this.borderWidth = 2.0,
-      this.filterQuality = FilterQuality.high});
+  const VisualImagePainer(
+    this.property, {
+    this.borderColor = Colors.white,
+    this.borderWidth = 2.0,
+    this.filterQuality = FilterQuality.high,
+  });
 
   final (VisualImage, Matrix4?) property;
 
@@ -24,14 +27,16 @@ class VisualImagePainer extends CustomPainter {
       canvas.transform(matrix.storage);
     }
     if (borderWidth > 0) {
-      final borderPaint = Paint()
-        ..filterQuality = filterQuality
-        ..color = borderColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth;
+      final borderPaint =
+          Paint()
+            ..filterQuality = filterQuality
+            ..color = borderColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth;
       canvas.drawRect(
-          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-          borderPaint);
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        borderPaint,
+      );
     }
     canvas.drawImage(image, Offset.zero, paint);
   }
@@ -43,12 +48,13 @@ class VisualImagePainer extends CustomPainter {
 }
 
 class BorderPainer extends CustomPainter {
-  const BorderPainer(
-      {required this.itemRect,
-      required this.borderColor,
-      this.borderWidth = 2.0,
-      this.matrix,
-      this.filterQuality = FilterQuality.high});
+  const BorderPainer({
+    required this.itemRect,
+    required this.borderColor,
+    this.borderWidth = 2.0,
+    this.matrix,
+    this.filterQuality = FilterQuality.high,
+  });
 
   final Matrix4? matrix;
 
@@ -68,11 +74,12 @@ class BorderPainer extends CustomPainter {
       scaleRatio = matrix!.getMaxScaleOnAxis();
     }
     if (borderWidth > 0.0) {
-      final borderPaint = Paint()
-        ..filterQuality = filterQuality
-        ..color = borderColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth - borderWidth * scaleRatio;
+      final borderPaint =
+          Paint()
+            ..filterQuality = filterQuality
+            ..color = borderColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth - borderWidth * scaleRatio;
       canvas.drawRect(itemRect, borderPaint);
     }
   }
@@ -84,11 +91,12 @@ class BorderPainer extends CustomPainter {
 }
 
 class SelectPainer extends CustomPainter {
-  const SelectPainer(
-      {required this.matrix,
-      required this.itemRect,
-      this.color = Colors.yellow,
-      this.filterQuality = FilterQuality.high});
+  const SelectPainer({
+    required this.matrix,
+    required this.itemRect,
+    this.color = Colors.yellow,
+    this.filterQuality = FilterQuality.high,
+  });
 
   final Matrix4 matrix;
 
@@ -100,11 +108,12 @@ class SelectPainer extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final borderPaint = Paint()
-      ..filterQuality = filterQuality
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0;
+    final borderPaint =
+        Paint()
+          ..filterQuality = filterQuality
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 6.0;
     canvas.transform(matrix.storage);
     canvas.drawRect(itemRect, borderPaint);
   }
@@ -116,11 +125,7 @@ class SelectPainer extends CustomPainter {
 }
 
 class Marquee extends StatelessWidget {
-  const Marquee({
-    super.key,
-    required this.start,
-    required this.end,
-  });
+  const Marquee({super.key, required this.start, required this.end});
 
   final Offset start, end;
 
@@ -129,15 +134,23 @@ class Marquee extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return CustomPaint(
       painter: InlinePainter(
-        brush: Paint()
-          ..color = colors.secondary.withValues(alpha: 0.3)
-          ..style = PaintingStyle.fill,
+        brush:
+            Paint()
+              ..color = colors.secondary.withValues(alpha: 0.3)
+              ..style = PaintingStyle.fill,
         builder: (brush, canvas, rect) {
           final marqueeRect = Rect.fromPoints(start, end);
           canvas.drawRect(marqueeRect, brush);
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Offset>('start', start));
+    properties.add(DiagnosticsProperty<Offset>('end', end));
   }
 }
 
@@ -193,11 +206,12 @@ class RectangleInnerPainter extends CustomPainter {
 */
 
 class RectanglePainter extends CustomPainter {
-  RectanglePainter(
-      {required this.innerRect,
-      required this.outlineRect,
-      this.boundingColor,
-      this.filterQuality = FilterQuality.high});
+  RectanglePainter({
+    required this.innerRect,
+    required this.outlineRect,
+    this.boundingColor,
+    this.filterQuality = FilterQuality.high,
+  });
 
   final Rect innerRect;
 
@@ -210,19 +224,21 @@ class RectanglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawPath(
-        Path.combine(
-          PathOperation.difference,
-          Path()..addRect(outlineRect),
-          Path()
-            ..addRect(innerRect)
-            ..close(),
-        ),
-        Paint()..color = boundingColor ?? Colors.grey.withValues(alpha: 0.7));
-    final borderPaint = Paint()
-      ..filterQuality = filterQuality
-      ..color = Colors.red
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
+      Path.combine(
+        PathOperation.difference,
+        Path()..addRect(outlineRect),
+        Path()
+          ..addRect(innerRect)
+          ..close(),
+      ),
+      Paint()..color = boundingColor ?? Colors.grey.withValues(alpha: 0.7),
+    );
+    final borderPaint =
+        Paint()
+          ..filterQuality = filterQuality
+          ..color = Colors.red
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0;
 
     canvas.drawRect(innerRect, borderPaint);
   }

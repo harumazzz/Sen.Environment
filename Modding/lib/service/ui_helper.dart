@@ -2,12 +2,12 @@ import 'package:drop_down_list/drop_down_list.dart';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/model/select_option.dart';
+import '../model/select_option.dart';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/service/file_helper.dart';
+import '../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../extension/context.dart';
+import 'file_helper.dart';
 
 class UIHelper {
   const UIHelper._();
@@ -20,7 +20,6 @@ class UIHelper {
   }) {
     DropDownState<T>(
       dropDown: DropDown<T>(
-        isDismissible: true,
         bottomSheetTitle: Text(
           title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
@@ -153,7 +152,6 @@ class UIHelper {
           (context) => buildDialog(
             title: Text(los.save),
             content: InteractiveViewer(
-              panEnabled: true,
               minScale: 1.0,
               maxScale: 5.0,
               child: Center(
@@ -209,7 +207,6 @@ class UIHelper {
               children: [
                 Positioned.fill(
                   child: InteractiveViewer(
-                    panEnabled: true,
                     minScale: 1.0,
                     maxScale: 5.0,
                     child: Center(

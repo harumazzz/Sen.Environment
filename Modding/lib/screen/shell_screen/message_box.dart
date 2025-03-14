@@ -1,11 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:sen/bloc/add_option_bloc/add_option_bloc.dart';
-import 'package:sen/bloc/launch_status_bloc/launch_status_bloc.dart';
-import 'package:sen/bloc/message_bloc/message_bloc.dart';
-import 'package:sen/screen/shell_screen/message_card.dart';
-import 'package:sen/screen/shell_screen/shimmer_card.dart';
+import '../../bloc/add_option_bloc/add_option_bloc.dart';
+import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
+import '../../bloc/message_bloc/message_bloc.dart';
+import 'message_card.dart';
+import 'shimmer_card.dart';
 
 class MessageBox extends StatefulWidget {
   const MessageBox({super.key});
@@ -47,7 +48,9 @@ class _MessageBoxState extends State<MessageBox> {
         }
       },
       builder: (context, state) {
-        return state is LaunchStatusLoading ? _buildShimmer() : _MessageList(scrollController: _scrollController);
+        return state is LaunchStatusLoading
+            ? _buildShimmer()
+            : _MessageList(scrollController: _scrollController);
       },
     );
   }
@@ -64,12 +67,18 @@ class _MessageList extends StatelessWidget {
       listener: (context, state) async {
         if (state is MessageScrollState) {
           final hasClient = scrollController.hasClients;
-          if (!hasClient) return;
-          final shouldScroll = scrollController.position.pixels == scrollController.position.maxScrollExtent;
+          if (!hasClient) {
+            return;
+          }
+          final shouldScroll =
+              scrollController.position.pixels ==
+              scrollController.position.maxScrollExtent;
           await Future.delayed(Duration.zero);
           await WidgetsBinding.instance.endOfFrame;
           if (scrollController.hasClients && shouldScroll) {
-            scrollController.position.jumpTo(scrollController.position.maxScrollExtent);
+            scrollController.position.jumpTo(
+              scrollController.position.maxScrollExtent,
+            );
           }
         }
       },
@@ -85,6 +94,17 @@ class _MessageList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ScrollController>(
+        'scrollController',
+        scrollController,
+      ),
     );
   }
 }

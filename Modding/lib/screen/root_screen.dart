@@ -1,24 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../extension/context.dart';
+import '../extension/platform.dart';
+import '../i18n/app_localizations.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/cubit/navigation_cubit/navigation_cubit.dart';
-import 'package:sen/constant/build_distribution.dart';
-import 'package:sen/screen/home_screen/home_screen.dart';
-import 'package:sen/screen/miscellaneous/miscellaneous_screen.dart';
-import 'package:sen/screen/setting_screen/setting_screen.dart';
-import 'package:sen/screen/shell_screen/shell_screen.dart';
-import 'package:sen/service/android_helper.dart';
-import 'package:sen/service/ui_helper.dart';
-import 'package:sen/widget/hotkey.dart';
+import '../cubit/settings_cubit/settings_cubit.dart';
+import '../cubit/navigation_cubit/navigation_cubit.dart';
+import '../constant/build_distribution.dart';
+import 'home_screen/home_screen.dart';
+import 'miscellaneous/miscellaneous_screen.dart';
+import 'setting_screen/setting_screen.dart';
+import 'shell_screen/shell_screen.dart';
+import '../service/android_helper.dart';
+import '../service/ui_helper.dart';
+import '../widget/hotkey.dart';
 
 class RootScreen extends StatelessWidget {
-  final PageStorageBucket bucket;
-
   const RootScreen({super.key, required this.bucket});
+  final PageStorageBucket bucket;
 
   static const List<Widget> _destinations = [
     HomeScreen(key: PageStorageKey<String>('home')),
@@ -27,7 +27,9 @@ class RootScreen extends StatelessWidget {
   ];
 
   void _handleAndroidPermissions(BuildContext context) {
-    if (!CurrentPlatform.isAndroid) return;
+    if (!CurrentPlatform.isAndroid) {
+      return;
+    }
     final settingsCubit = context.read<SettingsCubit>();
     Future<void> showAndroidPermission() async {
       await _showPermissionDialog(context);
@@ -39,7 +41,7 @@ class RootScreen extends StatelessWidget {
           await showAndroidPermission();
           await AndroidHelper.requestStoragePermission();
         }
-        settingsCubit.setRequestedPermission(true);
+        await settingsCubit.setRequestedPermission(requestedPermission: true);
       }
     });
   }
@@ -63,7 +65,9 @@ class RootScreen extends StatelessWidget {
   }
 
   void _processAndroidArguments(BuildContext context) {
-    if (!CurrentPlatform.isAndroid || AndroidHelper.arguments == null) return;
+    if (!CurrentPlatform.isAndroid || AndroidHelper.arguments == null) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.of(
         context,
@@ -241,5 +245,11 @@ class RootScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<PageStorageBucket>('bucket', bucket));
   }
 }

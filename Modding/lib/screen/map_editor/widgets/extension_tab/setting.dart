@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/include/check_box_field.dart';
-import 'package:sen/screen/map_editor/models/config.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../../../extension/context.dart';
+import '../../../../extension/platform.dart';
+import '../../bloc/item/item_bloc.dart';
+import '../../bloc/section/section_bloc.dart';
+import '../../bloc/setting/setting_bloc.dart';
+import '../../include/check_box_field.dart';
+import '../../models/config.dart';
+import '../../../../i18n/app_localizations.dart';
 
 class EditorSettingWidget extends StatelessWidget {
   const EditorSettingWidget({super.key});
@@ -119,7 +119,7 @@ class EditorSettingState extends StatelessWidget {
                     top: 8,
                   ),
                   underline: false,
-                  onChanged: (value) {
+                  onChanged: ({required bool? value}) {
                     context.read<SettingBloc>().add(
                       SetShowScreenShortcut(enabled: value ?? true),
                     );
@@ -135,7 +135,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetIslandImageBorder(enabled: value ?? true),
                   );
@@ -152,7 +152,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetIslandAnimationBorder(enabled: value ?? true),
                   );
@@ -169,7 +169,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetEventBorder(enabled: value ?? true),
                   );
@@ -186,7 +186,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetHideMissingArt(enabled: value ?? true),
                   );
@@ -203,7 +203,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetHideOldEvent(enabled: value ?? true),
                   );
@@ -220,7 +220,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetMapPath(enabled: value ?? true),
                   );
@@ -237,7 +237,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetMapCompleted(enabled: value ?? true),
                   );
@@ -254,7 +254,7 @@ class EditorSettingState extends StatelessWidget {
                   top: spacing,
                 ),
                 underline: false,
-                onChanged: (value) {
+                onChanged: ({required bool? value}) {
                   context.read<SettingBloc>().add(
                     SetMapGrid(enabled: value ?? true),
                   );

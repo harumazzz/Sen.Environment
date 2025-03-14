@@ -1,14 +1,6 @@
 part of '../wave.dart';
 
 class LowTide implements Wave {
-  int xStart;
-  int xEnd;
-  int groupSize;
-  double delay;
-  String message;
-  String zombieType;
-  int count;
-
   LowTide({
     required this.xStart,
     required this.xEnd,
@@ -20,13 +12,20 @@ class LowTide implements Wave {
   });
 
   LowTide.withDefault()
-      : xStart = 5,
-        xEnd = 6,
-        groupSize = 1,
-        delay = 0.05,
-        message = 'Low Tide!',
-        zombieType = 'tutorial',
-        count = 1;
+    : xStart = 5,
+      xEnd = 6,
+      groupSize = 1,
+      delay = 0.05,
+      message = 'Low Tide!',
+      zombieType = 'tutorial',
+      count = 1;
+  int xStart;
+  int xEnd;
+  int groupSize;
+  double delay;
+  String message;
+  String zombieType;
+  int count;
 
   void replaceWith({
     int? xStart,

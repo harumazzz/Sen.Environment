@@ -1,11 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/model/message.dart';
+import '../../model/message.dart';
 
 class MessageCard extends StatelessWidget {
-  final Message message;
-
   const MessageCard({super.key, required this.message});
+  final Message message;
 
   @override
   Widget build(BuildContext context) {
@@ -68,5 +68,11 @@ class MessageCard extends StatelessWidget {
     return isDark
         ? baseColor.withValues(alpha: 0.36)
         : baseColor.withValues(alpha: 0.82);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Message>('message', message));
   }
 }

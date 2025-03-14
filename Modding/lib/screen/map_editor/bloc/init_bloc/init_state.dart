@@ -5,12 +5,22 @@ enum InitailizeStatus { initailize, success }
 enum AlertDialogShowType { clear, config, shortcut }
 
 final class InitState extends Equatable {
-  const InitState(
-      {required this.status,
-      required this.alertDialogEnable,
-      //   required this.screenshotController,
-      this.text,
-      this.takeShoot});
+  const InitState({
+    required this.status,
+    required this.alertDialogEnable,
+    this.text,
+    this.takeShoot,
+  });
+  factory InitState.initailize() {
+    return InitState(
+      status: InitailizeStatus.initailize,
+      alertDialogEnable: HashMap.from({
+        AlertDialogShowType.clear: false,
+        AlertDialogShowType.config: false,
+        AlertDialogShowType.shortcut: false,
+      }),
+    );
+  }
 
   final InitailizeStatus status;
 
@@ -18,37 +28,24 @@ final class InitState extends Equatable {
 
   final HashMap<AlertDialogShowType, bool> alertDialogEnable;
 
-  // final ScreenshotController screenshotController;
-
   final Future<Uint8List?> Function()? takeShoot;
 
-  factory InitState.initailize() {
-    return InitState(
-        status: InitailizeStatus.initailize,
-        //    screenshotController: ScreenshotController(),
-        alertDialogEnable: HashMap.from({
-          AlertDialogShowType.clear: false,
-          AlertDialogShowType.config: false,
-          AlertDialogShowType.shortcut: false
-        }));
-  }
-
-  InitState copyWith(
-      {InitailizeStatus? status,
-      String? text,
-      //  ScreenshotController? screenshotController,
-      Future<Uint8List?> Function()? takeShoot,
-      HashMap<AlertDialogShowType, bool>? alertDialogEnable}) {
+  InitState copyWith({
+    InitailizeStatus? status,
+    String? text,
+    Future<Uint8List?> Function()? takeShoot,
+    HashMap<AlertDialogShowType, bool>? alertDialogEnable,
+  }) {
     final map = HashMap<AlertDialogShowType, bool>();
     for (final entry in (alertDialogEnable ?? this.alertDialogEnable).entries) {
       map[entry.key] = entry.value;
     }
     return InitState(
-        status: status ?? this.status,
-        // screenshotController: screenshotController ?? this.screenshotController,
-        takeShoot: takeShoot ?? this.takeShoot,
-        text: text ?? this.text,
-        alertDialogEnable: map);
+      status: status ?? this.status,
+      takeShoot: takeShoot ?? this.takeShoot,
+      text: text ?? this.text,
+      alertDialogEnable: map,
+    );
   }
 
   @override

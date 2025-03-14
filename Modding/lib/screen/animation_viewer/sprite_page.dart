@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import '../../extension/platform.dart';
+import 'visual_helper.dart';
+import '../../service/ui_helper.dart';
 
 class SpritePage extends StatelessWidget {
   const SpritePage({
@@ -15,7 +16,9 @@ class SpritePage extends StatelessWidget {
   });
 
   final AnimationController staticController;
+
   final VisualHelper visualHelper;
+
   final List<String> sprite;
 
   @override
@@ -33,31 +36,41 @@ class SpritePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(32.0),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            onTap: !containSprite
-                ? null
-                : () async {
-                    await UIHelper.showWidget(
-                      context: context,
-                      name: sprite[index],
-                      child: visualHelper.visualizeSprite(index, staticController),
-                    );
-                  },
-            leading: !containSprite
-                ? Icon(
-                    Symbols.broken_image,
-                    color: theme.colorScheme.onSurfaceVariant,
-                    size: 32.0,
-                  )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(20.0),
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: UnconstrainedBox(
-                        child: visualHelper.visualizeSprite(index, staticController),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 4.0,
+            ),
+            onTap:
+                !containSprite
+                    ? null
+                    : () async {
+                      await UIHelper.showWidget(
+                        context: context,
+                        name: sprite[index],
+                        child: visualHelper.visualizeSprite(
+                          index,
+                          staticController,
+                        ),
+                      );
+                    },
+            leading:
+                !containSprite
+                    ? Icon(
+                      Symbols.broken_image,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      size: 32.0,
+                    )
+                    : ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: FittedBox(
+                        child: UnconstrainedBox(
+                          child: visualHelper.visualizeSprite(
+                            index,
+                            staticController,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
             title: Text(
               sprite[index],
               style: theme.textTheme.titleSmall?.copyWith(
@@ -69,7 +82,9 @@ class SpritePage extends StatelessWidget {
             trailing: Checkbox.adaptive(
               value: context.watch<SelectedSpriteBloc>().state.value[index],
               onChanged: (_) {
-                context.read<SelectedSpriteBloc>().add(SelectedSpriteToggleEvent(index: index));
+                context.read<SelectedSpriteBloc>().add(
+                  SelectedSpriteToggleEvent(index: index),
+                );
               },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -85,5 +100,20 @@ class SpritePage extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<AnimationController>(
+        'staticController',
+        staticController,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<VisualHelper>('visualHelper', visualHelper),
+    );
+    properties.add(IterableProperty<String>('sprite', sprite));
   }
 }

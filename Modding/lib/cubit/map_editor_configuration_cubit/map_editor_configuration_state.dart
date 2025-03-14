@@ -4,8 +4,10 @@ enum AppConfigurationStatus { initial, success, failed }
 
 final class MapEditorConfigurationState extends Equatable {
   // ignore: prefer_const_constructors_in_immutables
-  MapEditorConfigurationState(
-      {this.status = AppConfigurationStatus.initial, this.errorSnapShot = ''});
+  MapEditorConfigurationState({
+    this.status = AppConfigurationStatus.initial,
+    this.errorSnapShot = '',
+  });
 
   final AppConfigurationStatus status;
   final String errorSnapShot;

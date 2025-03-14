@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
+import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../service/file_helper.dart';
+import '../../../i18n/app_localizations.dart';
 
 class MapEditorConfiguration extends StatefulWidget {
   const MapEditorConfiguration({super.key});
@@ -37,7 +37,9 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
   }
 
   void _onChangeSetting(String? value) async {
-    if (value == null) return;
+    if (value == null) {
+      return;
+    }
     _resourceLocationController.text = value;
     await _onValueChange();
   }
@@ -71,7 +73,9 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
                 onPressed: _onUploadDirectory,
                 icon: const Icon(Symbols.folder),
                 style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
                 ),
               ),
             ),

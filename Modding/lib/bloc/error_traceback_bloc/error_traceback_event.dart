@@ -9,11 +9,8 @@ sealed class ErrorTracebackEvent extends Equatable {
 }
 
 final class ErrorTracebackMessageEvent extends ErrorTracebackEvent {
+  const ErrorTracebackMessageEvent({required this.message});
   final Message message;
-
-  const ErrorTracebackMessageEvent({
-    required this.message,
-  });
 
   @override
   List<Object?> get props => [message];

@@ -2,9 +2,8 @@ part of 'message_bloc.dart';
 
 @immutable
 sealed class MessageState extends Equatable {
-  final List<Message> messages;
-
   const MessageState({required this.messages});
+  final List<Message> messages;
 
   @override
   List<Object?> get props => [messages];

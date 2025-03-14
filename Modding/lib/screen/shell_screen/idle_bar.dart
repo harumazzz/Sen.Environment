@@ -1,12 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/extension/context.dart';
+import '../../extension/context.dart';
 
 class IdleBar extends StatelessWidget {
-  const IdleBar({
-    super.key,
-    required this.onLaunch,
-  });
+  const IdleBar({super.key, required this.onLaunch});
 
   final void Function() onLaunch;
 
@@ -20,7 +18,6 @@ class IdleBar extends StatelessWidget {
         child: FloatingActionButton(
           onPressed: onLaunch,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
             children: [
@@ -30,6 +27,14 @@ class IdleBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onLaunch', onLaunch),
     );
   }
 }

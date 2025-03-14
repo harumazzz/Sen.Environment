@@ -1,14 +1,12 @@
 part of 'launch_status_bloc.dart';
 
 sealed class LaunchStatusState extends Equatable {
+  const LaunchStatusState({required this.isRunning});
+
   final bool isRunning;
 
-  const LaunchStatusState({
-    required this.isRunning,
-  });
-
   @override
-  List<Object> get props => [isRunning];
+  List<Object> get props => <Object>[isRunning];
 }
 
 final class LaunchStatusInitial extends LaunchStatusState {

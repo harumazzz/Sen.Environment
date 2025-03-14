@@ -1,18 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/screen/animation_viewer/image_page.dart';
-import 'package:sen/screen/animation_viewer/media_page.dart';
-import 'package:sen/screen/animation_viewer/sprite_page.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
+import 'image_page.dart';
+import 'media_page.dart';
+import 'sprite_page.dart';
+import '../../i18n/app_localizations.dart';
+import 'visual_helper.dart';
 
 class MediaScreen extends StatelessWidget {
-  final List<String> sprite;
-  final List<String> image;
-  final List<String> media;
-  final VisualHelper visualHelper;
-  final AnimationController staticController;
-
   const MediaScreen({
     super.key,
     required this.sprite,
@@ -22,11 +17,18 @@ class MediaScreen extends StatelessWidget {
     required this.staticController,
   });
 
+  final List<String> sprite;
+
+  final List<String> image;
+
+  final List<String> media;
+
+  final VisualHelper visualHelper;
+
+  final AnimationController staticController;
+
   Widget _buildTab({required IconData icon, required String label}) {
-    return Tab(
-      icon: Icon(icon, size: 22),
-      text: label,
-    );
+    return Tab(icon: Icon(icon, size: 22), text: label);
   }
 
   @override
@@ -34,7 +36,6 @@ class MediaScreen extends StatelessWidget {
     final los = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return DefaultTabController(
-      initialIndex: 0,
       length: 3,
       child: Column(
         children: [
@@ -68,7 +69,9 @@ class MediaScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Card(
                 elevation: 4.0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: TabBarView(
@@ -87,6 +90,23 @@ class MediaScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('sprite', sprite));
+    properties.add(IterableProperty<String>('image', image));
+    properties.add(IterableProperty<String>('media', media));
+    properties.add(
+      DiagnosticsProperty<VisualHelper>('visualHelper', visualHelper),
+    );
+    properties.add(
+      DiagnosticsProperty<AnimationController>(
+        'staticController',
+        staticController,
       ),
     );
   }

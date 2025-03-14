@@ -8,9 +8,7 @@ sealed class MouseCursorEvent extends Equatable {
 }
 
 final class ChangeCursorEvent extends MouseCursorEvent {
-  const ChangeCursorEvent({
-    required this.cursor,
-  });
+  const ChangeCursorEvent({required this.cursor});
 
   final MouseCursor cursor;
 

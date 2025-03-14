@@ -1,15 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:nil/nil.dart';
 import 'package:pie_menu/pie_menu.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../../../../extension/context.dart';
+import '../../bloc/item/item_bloc.dart';
+import '../../bloc/layer/layer_bloc.dart';
+import '../../bloc/section/section_bloc.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-import 'package:sen/screen/map_editor/models/layer_node.dart';
+import '../../models/layer_node.dart';
 
 class LayerWidget extends StatelessWidget {
   const LayerWidget({super.key});
@@ -117,6 +118,7 @@ class TreeTile extends StatelessWidget {
   const TreeTile({super.key, required this.entry, this.onFolderPressed});
 
   final TreeEntry<LayerNode> entry;
+
   final VoidCallback? onFolderPressed;
 
   @override
@@ -230,5 +232,14 @@ class TreeTile extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<VoidCallback?>.has('onFolderPressed', onFolderPressed),
+    );
+    properties.add(DiagnosticsProperty<TreeEntry<LayerNode>>('entry', entry));
   }
 }

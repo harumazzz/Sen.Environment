@@ -7,16 +7,12 @@ part 'initial_directory_state.dart';
 class InitialDirectoryCubit extends Cubit<InitialDirectoryState> {
   InitialDirectoryCubit() : super(InitialDirectoryState.initialize());
 
-  void setDirectoryOfFile({
-    required String source,
-  }) {
+  void setDirectoryOfFile({required String source}) {
     final path = p.dirname(source);
     emit(state.copyWith(initialDirectory: path));
   }
 
-  void setDirectoryOfDirectory({
-    required String source,
-  }) {
+  void setDirectoryOfDirectory({required String source}) {
     emit(state.copyWith(initialDirectory: source));
   }
 

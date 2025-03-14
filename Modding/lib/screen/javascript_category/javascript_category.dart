@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sen/bloc/load_script_bloc/load_script_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/javascript_category/javascript_card.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/screen/javascript_category/search_script.dart';
-import 'package:sen/service/ui_helper.dart';
-import 'package:sen/widget/hotkey.dart';
+import '../../bloc/load_script_bloc/load_script_bloc.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import 'javascript_card.dart';
+import '../../i18n/app_localizations.dart';
+import 'search_script.dart';
+import '../../service/ui_helper.dart';
+import '../../widget/hotkey.dart';
 
 class JavaScriptCategory extends StatelessWidget {
   const JavaScriptCategory({super.key});

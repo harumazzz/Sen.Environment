@@ -1,6 +1,26 @@
 part of '../wave.dart';
 
 class ParachuteRain implements Wave {
+  ParachuteRain({
+    required this.columnStart,
+    required this.columnEnd,
+    required this.groupSize,
+    required this.timeBetweenGroups,
+    required this.fallTime,
+    required this.typename,
+    required this.count,
+    required this.message,
+  });
+
+  ParachuteRain.withDefault()
+    : columnStart = 5,
+      columnEnd = 6,
+      timeBetweenGroups = 0.2,
+      fallTime = 1.5,
+      groupSize = 1,
+      count = 3,
+      message = 'Parachute Rain!',
+      typename = 'lostcity_lostpilot';
   int columnStart;
 
   int columnEnd;
@@ -16,27 +36,6 @@ class ParachuteRain implements Wave {
   int count;
 
   String message;
-
-  ParachuteRain({
-    required this.columnStart,
-    required this.columnEnd,
-    required this.groupSize,
-    required this.timeBetweenGroups,
-    required this.fallTime,
-    required this.typename,
-    required this.count,
-    required this.message,
-  });
-
-  ParachuteRain.withDefault()
-      : columnStart = 5,
-        columnEnd = 6,
-        timeBetweenGroups = 0.2,
-        fallTime = 1.5,
-        groupSize = 1,
-        count = 3,
-        message = 'Parachute Rain!',
-        typename = 'lostcity_lostpilot';
 
   void replaceWith({
     int? columnStart,

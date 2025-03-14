@@ -21,11 +21,12 @@ final class UpdateBoundingRect extends StageEvent {
 }
 
 final class LoadWorldEvent extends StageEvent {
-  const LoadWorldEvent(
-      {required this.worldData,
-      required this.itemBloc,
-      required this.layerBloc,
-      required this.stageBloc});
+  const LoadWorldEvent({
+    required this.worldData,
+    required this.itemBloc,
+    required this.layerBloc,
+    required this.stageBloc,
+  });
 
   final WorldData worldData;
 
@@ -40,11 +41,12 @@ final class LoadWorldEvent extends StageEvent {
 }
 
 final class ChangeResouceWorldEvent extends StageEvent {
-  const ChangeResouceWorldEvent(
-      {required this.worldResource,
-      required this.itemBloc,
-      required this.layerBloc,
-      required this.stageBloc});
+  const ChangeResouceWorldEvent({
+    required this.worldResource,
+    required this.itemBloc,
+    required this.layerBloc,
+    required this.stageBloc,
+  });
 
   final String worldResource;
 
@@ -70,10 +72,7 @@ final class UpdateStageState extends StageEvent {
 }
 
 final class ClearWorldEvent extends StageEvent {
-  const ClearWorldEvent({
-    required this.itemUpdate,
-    required this.layerBloc,
-  });
+  const ClearWorldEvent({required this.itemUpdate, required this.layerBloc});
 
   final void Function() itemUpdate;
 
@@ -135,20 +134,21 @@ final class PickItemEvent extends StageEvent {
 
   @override
   List<Object> get props => [
-        idList,
-        playSound,
-        itemBloc,
-        multiSelect,
-        skipParallax,
-      ];
+    idList,
+    playSound,
+    itemBloc,
+    multiSelect,
+    skipParallax,
+  ];
 }
 
 final class RemoveItemEvent extends StageEvent {
-  const RemoveItemEvent(
-      {required this.idList,
-      required this.itemBloc,
-      required this.layerBloc,
-      this.skipParallax = false});
+  const RemoveItemEvent({
+    required this.idList,
+    required this.itemBloc,
+    required this.layerBloc,
+    this.skipParallax = false,
+  });
 
   final Iterable<String> idList;
   final bool skipParallax;
@@ -157,21 +157,17 @@ final class RemoveItemEvent extends StageEvent {
   final ItemBloc itemBloc;
 
   @override
-  List<Object> get props => [
-        idList,
-        skipParallax,
-        itemBloc,
-        layerBloc,
-      ];
+  List<Object> get props => [idList, skipParallax, itemBloc, layerBloc];
 }
 
 final class CloneItemEvent extends StageEvent {
-  const CloneItemEvent(
-      {required this.idList,
-      required this.itemBloc,
-      required this.layerBloc,
-      this.positionXAdditional = 40,
-      this.positionYAdditional = 40});
+  const CloneItemEvent({
+    required this.idList,
+    required this.itemBloc,
+    required this.layerBloc,
+    this.positionXAdditional = 40,
+    this.positionYAdditional = 40,
+  });
 
   final Iterable<String> idList;
   final ItemBloc itemBloc;
@@ -180,8 +176,12 @@ final class CloneItemEvent extends StageEvent {
   final double positionXAdditional, positionYAdditional;
 
   @override
-  List<Object> get props =>
-      [idList, itemBloc, positionXAdditional, positionYAdditional];
+  List<Object> get props => [
+    idList,
+    itemBloc,
+    positionXAdditional,
+    positionYAdditional,
+  ];
 }
 
 final class AddIslandItemEvent extends StageEvent {
@@ -202,12 +202,12 @@ final class AddIslandItemEvent extends StageEvent {
 
   @override
   List<Object> get props => [
-        imageId,
-        isAnimation,
-        layerBloc,
-        itemBloc,
-        stageBloc,
-      ];
+    imageId,
+    isAnimation,
+    layerBloc,
+    itemBloc,
+    stageBloc,
+  ];
 }
 
 final class AddEventItemEvent extends StageEvent {
@@ -238,8 +238,11 @@ final class UpdateMapInformation extends StageEvent {
 }
 
 final class UpdateItemPosition extends StageEvent {
-  const UpdateItemPosition(
-      {required this.x, required this.y, required this.itemBloc});
+  const UpdateItemPosition({
+    required this.x,
+    required this.y,
+    required this.itemBloc,
+  });
 
   final double x;
 

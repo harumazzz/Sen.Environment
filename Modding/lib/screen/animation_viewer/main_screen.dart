@@ -1,21 +1,21 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:sen/bloc/selected_image_bloc/selected_image_bloc.dart';
-import 'package:sen/bloc/selected_label_bloc/selected_label_bloc.dart';
-import 'package:sen/bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/screen/animation_viewer/animation_screen.dart';
-import 'package:sen/screen/animation_viewer/label_info.dart';
-import 'package:sen/screen/animation_viewer/label_screen.dart';
-import 'package:sen/screen/animation_viewer/media_screen.dart';
-import 'package:sen/service/file_helper.dart';
-import 'package:sen/screen/animation_viewer/visual_helper.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
+import '../../bloc/selected_label_bloc/selected_label_bloc.dart';
+import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
+import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../extension/platform.dart';
+import 'animation_screen.dart';
+import 'label_info.dart';
+import 'label_screen.dart';
+import 'media_screen.dart';
+import '../../service/file_helper.dart';
+import 'visual_helper.dart';
+import '../../i18n/app_localizations.dart';
+import '../../service/ui_helper.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({
@@ -31,10 +31,40 @@ class MainScreen extends StatefulWidget {
   final SelectedImageBloc selectedImageBloc;
 
   final SelectedSpriteBloc selectedSpriteBloc;
+
   final SelectedLabelBloc selectedLabelBloc;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<InitialDirectoryCubit>(
+        'initialDirectoryCubit',
+        initialDirectoryCubit,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<SelectedImageBloc>(
+        'selectedImageBloc',
+        selectedImageBloc,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<SelectedSpriteBloc>(
+        'selectedSpriteBloc',
+        selectedSpriteBloc,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<SelectedLabelBloc>(
+        'selectedLabelBloc',
+        selectedLabelBloc,
+      ),
+    );
+  }
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
@@ -64,9 +94,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _transformationController = TransformationController();
     _staticController.stop();
     _controller = TextEditingController();
-    _visualHelper = VisualHelper(
-      context: context,
-    );
+    _visualHelper = VisualHelper(context: context);
     _screenshotController = ScreenshotController();
     super.initState();
     _sprite = [];
@@ -92,10 +120,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     await UIHelper.showFlutterDialog(
       context: context,
       child: UIHelper.buildDialog(
-        title: Text(
-          los.upload_media,
-          style: theme.textTheme.bodyLarge,
-        ),
+        title: Text(los.upload_media, style: theme.textTheme.bodyLarge),
         content: TextField(
           controller: _controller,
           decoration: InputDecoration(
@@ -107,20 +132,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ),
               onPressed: () async {
                 final directory = await FileHelper.uploadDirectory(
-                  initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
+                  initialDirectory:
+                      widget.initialDirectoryCubit.state.initialDirectory,
                 );
                 if (directory != null) {
                   _controller.text = directory;
                   _mediaDirectory = directory;
-                  widget.initialDirectoryCubit.setDirectoryOfDirectory(source: directory);
+                  widget.initialDirectoryCubit.setDirectoryOfDirectory(
+                    source: directory,
+                  );
                 }
               },
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.0),
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline,
-              ),
+              borderSide: BorderSide(color: theme.colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -159,32 +185,37 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _media.add('${image.path}.png');
     }
     widget.selectedImageBloc.add(
-      SelectedImageAllocateEvent(
-        size: _visualHelper.animation.image.length,
-      ),
+      SelectedImageAllocateEvent(size: _visualHelper.animation.image.length),
     );
     for (final sprite in _visualHelper.animation.sprite) {
       _sprite.add(sprite.name);
     }
-    widget.selectedSpriteBloc.add(SelectedSpriteAllocateEvent(
-      size: _visualHelper.animation.sprite.length,
-    ));
+    widget.selectedSpriteBloc.add(
+      SelectedSpriteAllocateEvent(size: _visualHelper.animation.sprite.length),
+    );
     var labelName = 'main';
     _label.add(labelName);
     _visualHelper.labelInfo[labelName] = LabelInfo(
       startIndex: 0,
       endIndex: _visualHelper.animation.mainSprite.frame.length - 1,
     );
-    for (var frameIndex = 0; frameIndex < _visualHelper.animation.mainSprite.frame.length; ++frameIndex) {
-      final frameLabelName = _visualHelper.animation.mainSprite.frame[frameIndex].label;
+    for (
+      var frameIndex = 0;
+      frameIndex < _visualHelper.animation.mainSprite.frame.length;
+      ++frameIndex
+    ) {
+      final frameLabelName =
+          _visualHelper.animation.mainSprite.frame[frameIndex].label;
       if (frameLabelName != '' && frameLabelName != labelName) {
         labelName = frameLabelName;
-        _visualHelper.labelInfo[labelName] = LabelInfo(startIndex: frameIndex, endIndex: frameIndex);
+        _visualHelper.labelInfo[labelName] = LabelInfo(
+          startIndex: frameIndex,
+          endIndex: frameIndex,
+        );
         _label.add(labelName);
       }
-      _visualHelper.labelInfo[labelName] = _visualHelper.labelInfo[labelName]!.copyWith(
-        endIndex: _visualHelper.labelInfo[labelName]!.endIndex + 1,
-      );
+      _visualHelper.labelInfo[labelName] = _visualHelper.labelInfo[labelName]!
+          .copyWith(endIndex: _visualHelper.labelInfo[labelName]!.endIndex + 1);
     }
   }
 
@@ -192,39 +223,41 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final los = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(los.invalid_request),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(message),
-                  content: Text(stack.toString()),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(los.okay),
-                    ),
-                  ],
-                ),
-              );
-            },
-            child: Text(los.detail),
+      builder:
+          (context) => AlertDialog(
+            title: Text(los.invalid_request),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await showDialog(
+                    context: context,
+                    builder:
+                        (context) => AlertDialog(
+                          title: Text(message),
+                          content: Text(stack.toString()),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(los.okay),
+                            ),
+                          ],
+                        ),
+                  );
+                },
+                child: Text(los.detail),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(los.okay),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(los.okay),
-          ),
-        ],
-      ),
     );
   }
 
@@ -235,9 +268,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _onUploadFile() async {
-    void resetImageEvent() => widget.selectedImageBloc.add(const SelectedImageResetEvent());
-    void resetSpriteEvent() => widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
-    void resetLabelEvent() => widget.selectedLabelBloc.add(const ResetLabelEvent());
+    void resetImageEvent() =>
+        widget.selectedImageBloc.add(const SelectedImageResetEvent());
+    void resetSpriteEvent() =>
+        widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
+    void resetLabelEvent() =>
+        widget.selectedLabelBloc.add(const ResetLabelEvent());
     _animationController.stop();
     final file = await FileHelper.uploadFile(
       initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
@@ -265,26 +301,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         }
         await _onUploadMedia();
         _loadMedia();
-        setState(() {
-          _updateScreens();
-        });
+        setState(_updateScreens);
       } catch (e, s) {
         _onErrorDialog(e.toString(), s);
       }
     }
   }
 
-  void _onDragFile(
-    String file,
-  ) async {
+  void _onDragFile(String file) async {
     await _visualHelper.loadAnimation(file);
     _visualHelper.hasAnimation = true;
     await _onUploadMedia();
     _resetAnimation();
     _loadMedia();
-    setState(() {
-      _updateScreens();
-    });
+    setState(_updateScreens);
   }
 
   void _updateScreens() {
@@ -330,10 +360,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
     return NavigationBar(
       destinations: <Widget>[
-        NavigationDestination(
-          icon: const Icon(Symbols.home),
-          label: los.home,
-        ),
+        NavigationDestination(icon: const Icon(Symbols.home), label: los.home),
         NavigationDestination(
           icon: const Icon(Symbols.label),
           label: los.label,
@@ -365,7 +392,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).shadowColor.withValues(alpha: 0.1),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),

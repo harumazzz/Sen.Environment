@@ -1,16 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pie_menu/pie_menu.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/section/section_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/view/navigation.dart';
-import 'package:sen/screen/map_editor/view/option.dart';
-import 'package:sen/screen/map_editor/view/stage.dart';
-import 'package:sen/screen/map_editor/view/toolbar.dart';
-import 'package:sen/screen/map_editor/widgets/extension_widget.dart';
-import 'package:sen/screen/map_editor/widgets/screen_shortcut.dart';
-import 'package:sen/screen/map_editor/widgets/shop_widget.dart';
+import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../bloc/section/section_bloc.dart';
+import '../bloc/setting/setting_bloc.dart';
+import 'navigation.dart';
+import 'option.dart';
+import 'stage.dart';
+import 'toolbar.dart';
+import '../widgets/extension_widget.dart';
+import '../widgets/screen_shortcut.dart';
+import '../widgets/shop_widget.dart';
 
 class MobileScreen extends StatelessWidget {
   const MobileScreen({super.key});
@@ -181,5 +182,11 @@ class NavigationView extends StatelessWidget {
           return const OptionTabView();
         }
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<NavigationType>('navigator', navigator));
   }
 }

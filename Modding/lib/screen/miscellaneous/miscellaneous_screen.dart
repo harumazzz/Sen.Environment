@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sen/bloc/miscellaneous_task_bloc/miscellaneous_task_bloc.dart';
-import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
-import 'package:sen/extension/context.dart';
-import 'package:sen/extension/platform.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/screen/miscellaneous/backup_setting.dart';
-import 'package:sen/service/ui_helper.dart';
+import '../../bloc/miscellaneous_task_bloc/miscellaneous_task_bloc.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
+import '../../i18n/app_localizations.dart';
+import 'backup_setting.dart';
+import '../../service/ui_helper.dart';
 
 class MiscellaneousScreen extends StatelessWidget {
   const MiscellaneousScreen({super.key});
 
   void _onBackup(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const BackupSetting(),
-    ));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const BackupSetting()));
   }
 
   Widget _backUpConfiguration(BuildContext context) {
@@ -24,47 +24,80 @@ class MiscellaneousScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       elevation: 4,
       child: ListTile(
-        leading: Icon(Symbols.backup, size: 28, color: Colors.lightBlueAccent.withValues(alpha: 0.8)),
-        title: Text(los.backup_configuration, style: Theme.of(context).textTheme.titleMedium),
-        subtitle: Text(los.backup_configuration_description, style: Theme.of(context).textTheme.bodyMedium),
+        leading: Icon(
+          Symbols.backup,
+          size: 28,
+          color: Colors.lightBlueAccent.withValues(alpha: 0.8),
+        ),
+        title: Text(
+          los.backup_configuration,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Text(
+          los.backup_configuration_description,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
         onTap: () => _onBackup(context),
-        trailing: const Icon(Symbols.arrow_forward, size: 24.0, color: Colors.grey),
+        trailing: const Icon(
+          Symbols.arrow_forward,
+          size: 24.0,
+          color: Colors.grey,
+        ),
       ),
     );
   }
 
   Widget _installScript(BuildContext context) {
     final los = context.los;
-    isAvailable() => CurrentPlatform.isAndroid
-        ? const Icon(Symbols.arrow_downward, size: 24.0, color: Colors.grey)
-        : Tooltip(
-            message: context.los.not_specified,
-            child: const Icon(Symbols.dangerous, size: 24.0, color: Colors.red),
-          );
+    isAvailable() =>
+        CurrentPlatform.isAndroid
+            ? const Icon(Symbols.arrow_downward, size: 24.0, color: Colors.grey)
+            : Tooltip(
+              message: context.los.not_specified,
+              child: const Icon(
+                Symbols.dangerous,
+                size: 24.0,
+                color: Colors.red,
+              ),
+            );
     return BlocBuilder<MiscellaneousTaskBloc, MiscellaneousTaskState>(
       builder: (context, state) {
         return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
           elevation: 4.0,
           child: ListTile(
-            leading: Icon(Symbols.download_2, size: 28.0, color: Colors.green.withValues(alpha: 0.8)),
-            title: Text(los.download_script, style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Text(los.download_script_description, style: Theme.of(context).textTheme.bodyMedium),
-            onTap: CurrentPlatform.isAndroid
-                ? () => BlocProvider.of<MiscellaneousTaskBloc>(context).add(
+            leading: Icon(
+              Symbols.download_2,
+              size: 28.0,
+              color: Colors.green.withValues(alpha: 0.8),
+            ),
+            title: Text(
+              los.download_script,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              los.download_script_description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            onTap:
+                CurrentPlatform.isAndroid
+                    ? () => BlocProvider.of<MiscellaneousTaskBloc>(context).add(
                       DownloadScriptRequested(
                         settingsCubit: context.read<SettingsCubit>(),
                       ),
                     )
-                : null,
+                    : null,
             enabled: CurrentPlatform.isAndroid,
-            trailing: state is DownloadingScript
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator.adaptive(),
-                  )
-                : isAvailable(),
+            trailing:
+                state is DownloadingScript
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator.adaptive(),
+                    )
+                    : isAvailable(),
           ),
         );
       },
@@ -87,9 +120,9 @@ class MiscellaneousScreen extends StatelessWidget {
                   content: los.script_has_been_downloaded,
                 );
               } else if (state is ScriptDownloadFailed) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.error)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.error)));
               }
             },
             child: Padding(

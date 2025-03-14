@@ -1,14 +1,6 @@
 part of '../wave.dart';
 
 class StormEvent implements Wave {
-  int additionalPlantfood;
-  int columnStart;
-  int columnEnd;
-  double timeBetweenGroups;
-  int groupSize;
-  List<String> zombies;
-  String eventName;
-
   StormEvent({
     required this.additionalPlantfood,
     required this.columnStart,
@@ -18,6 +10,22 @@ class StormEvent implements Wave {
     required this.zombies,
     required this.eventName,
   });
+
+  StormEvent.withDefault()
+    : additionalPlantfood = 0,
+      columnStart = 0,
+      columnEnd = 0,
+      timeBetweenGroups = 0.5,
+      eventName = 'sandstorm',
+      groupSize = 1,
+      zombies = [];
+  int additionalPlantfood;
+  int columnStart;
+  int columnEnd;
+  double timeBetweenGroups;
+  int groupSize;
+  List<String> zombies;
+  String eventName;
 
   void replaceWith({
     int? additionalPlantfood,
@@ -37,14 +45,6 @@ class StormEvent implements Wave {
     this.eventName = eventName ?? this.eventName;
   }
 
-  StormEvent.withDefault()
-      : additionalPlantfood = 0,
-        columnStart = 0,
-        columnEnd = 0,
-        timeBetweenGroups = 0.5,
-        eventName = 'sandstorm',
-        groupSize = 1,
-        zombies = [];
   @override
   dynamic toJson(String aliasesName) {
     return {
@@ -57,13 +57,8 @@ class StormEvent implements Wave {
         'ColumnEnd': columnEnd,
         'TimeBetweenGroups': timeBetweenGroups,
         'GroupSize': groupSize,
-        'Zombies': zombies
-            .map(
-              (e) => {
-                'Type': 'RTID($e@ZombieTypes)',
-              },
-            )
-            .toList(),
+        'Zombies':
+            zombies.map((e) => {'Type': 'RTID($e@ZombieTypes)'}).toList(),
       },
     };
   }

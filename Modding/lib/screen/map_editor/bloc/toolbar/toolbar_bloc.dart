@@ -2,17 +2,17 @@ import 'dart:collection';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:sen/cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import 'package:sen/model/worldmap.dart';
-import 'package:sen/cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import 'package:sen/screen/map_editor/bloc/init_bloc/init_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/item/item_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/layer/layer_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/setting/setting_bloc.dart';
-import 'package:sen/screen/map_editor/bloc/stage/stage_bloc.dart';
-import 'package:sen/screen/map_editor/models/config.dart';
-import 'package:sen/i18n/app_localizations.dart';
-import 'package:sen/service/file_helper.dart';
+import '../../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../../model/worldmap.dart';
+import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
+import '../init_bloc/init_bloc.dart';
+import '../item/item_bloc.dart';
+import '../layer/layer_bloc.dart';
+import '../setting/setting_bloc.dart';
+import '../stage/stage_bloc.dart';
+import '../../models/config.dart';
+import '../../../../i18n/app_localizations.dart';
+import '../../../../service/file_helper.dart';
 
 part 'toolbar_event.dart';
 part 'toolbar_state.dart';
@@ -113,10 +113,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
       );
       FileHelper.writeJson(source: path, data: WorldMap.toJson(worldMap));
       if (!settingBloc.state.muteAudio) {
-        cubit.state.editorResource.switchResourceSound.resume();
+        await cubit.state.editorResource.switchResourceSound.resume();
       }
       initBloc.add(ShowSnackBarEvent(text: los.worldmap_saved));
-      //event.autosaveBloc.add(const CleanAutosaveEvent());
     }
   }
 
@@ -127,7 +126,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     final path = await FileHelper.uploadFile(
       initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
     );
-    if (path == null) return;
+    if (path == null) {
+      return;
+    }
     try {
       final worldMap = WorldMap.fromJson(FileHelper.readJson(source: path));
       event.stageBloc.add(

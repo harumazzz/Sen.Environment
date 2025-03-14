@@ -1,15 +1,11 @@
-import 'package:sen/model/dimension.dart';
-import 'package:sen/service/file_helper.dart';
+import '../model/dimension.dart';
+import 'file_helper.dart';
 import 'package:image/image.dart';
 
 class ImageHelper {
-
   const ImageHelper._();
 
-  static void saveImage(
-    String source,
-    Image data,
-  ) {
+  static void saveImage(String source, Image data) {
     FileHelper.writeBuffer(source: source, data: encodePng(data));
     return;
   }
@@ -26,19 +22,12 @@ class ImageHelper {
       width: newDimension.width,
       height: newDimension.height,
     );
-    saveImage(
-      destination,
-      result,
-    );
+    saveImage(destination, result);
     return;
   }
 
-  static Image? readImage(
-    String source,
-  ) {
-    return decodeImage(
-      FileHelper.readBuffer(source: source),
-    );
+  static Image? readImage(String source) {
+    return decodeImage(FileHelper.readBuffer(source: source));
   }
 
   static void cropImage({
@@ -49,13 +38,7 @@ class ImageHelper {
     required int height,
     required String destination,
   }) {
-    final result = copyCrop(
-      original,
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    );
+    final result = copyCrop(original, x: x, y: y, width: width, height: height);
     saveImage(destination, result);
     return;
   }
