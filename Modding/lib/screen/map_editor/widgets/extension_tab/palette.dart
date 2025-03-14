@@ -11,45 +11,54 @@ class PaletteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context
-        .read<MapEditorConfigurationCubit>()
-        .state
-        .extensionItem[ExtensionType.palette]!;
+    final item =
+        context
+            .read<MapEditorConfigurationCubit>()
+            .state
+            .extensionItem[ExtensionType.palette]!;
     return SizedBox(
-        width: 300,
-        height: 445,
-        child: Card(
-          color: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding:
-                const EdgeInsets.only(top: 4, right: 16, left: 16, bottom: 16),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: Row(
-                    children: [
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          child: item.icon),
-                      Text(
-                        item.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          context.read<SectionBloc>().add(
-                              const ExtensionToggled(
-                                  type: ExtensionType.palette, enabled: false));
-                        },
-                        icon: const Icon(Symbols.close),
-                      ),
-                    ],
-                  ),
+      width: 300,
+      height: 445,
+      child: Card(
+        color: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 4,
+            right: 16,
+            left: 16,
+            bottom: 16,
+          ),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 40,
+                child: Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(item.icon),
+                    ),
+                    Text(
+                      item.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        context.read<SectionBloc>().add(
+                          const ExtensionToggled(
+                            type: ExtensionType.palette,
+                            enabled: false,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Symbols.close),
+                    ),
+                  ],
                 ),
-                Expanded(
-                    child: Container(
+              ),
+              Expanded(
+                child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: Theme.of(context).colorScheme.secondaryContainer,
@@ -58,9 +67,9 @@ class PaletteWidget extends StatelessWidget {
                     wheelDiameter: 172,
                     color: context.read<SettingBloc>().state.boundingColor,
                     onColorChanged: (color) {
-                      context
-                          .read<SettingBloc>()
-                          .add(SetBoundingColor(color: color));
+                      context.read<SettingBloc>().add(
+                        SetBoundingColor(color: color),
+                      );
                     },
                     pickersEnabled: const <ColorPickerType, bool>{
                       ColorPickerType.both: false,
@@ -72,10 +81,12 @@ class PaletteWidget extends StatelessWidget {
                     },
                     showColorName: true,
                   ),
-                )),
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

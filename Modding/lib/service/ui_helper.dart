@@ -152,7 +152,17 @@ class UIHelper {
       builder:
           (context) => buildDialog(
             title: Text(los.save),
-            content: Image.memory(image),
+            content: InteractiveViewer(
+              panEnabled: true,
+              minScale: 1.0,
+              maxScale: 5.0,
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Image.memory(image),
+                ),
+              ),
+            ),
             actions: [
               TextButton(
                 child: Text(los.save),

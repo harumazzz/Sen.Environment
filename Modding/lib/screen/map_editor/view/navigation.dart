@@ -19,56 +19,89 @@ class SectionView extends StatelessWidget {
     final isLowScreenWidth = MediaQuery.of(context).size.width < 1340;
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
-        buildWhen: (prev, state) => prev.section != state.section || prev.sectionMinize != state.sectionMinize,
-        builder: (context, state) {
-          final sectionType = state.section;
-          if (isDesktopPlatform) {
-            return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: sectionItem.length,
-                itemBuilder: (context, index) {
-                  final type = SectionType.values[index];
+      buildWhen:
+          (prev, state) =>
+              prev.section != state.section ||
+              prev.sectionMinize != state.sectionMinize,
+      builder: (context, state) {
+        final sectionType = state.section;
+        if (isDesktopPlatform) {
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: sectionItem.length,
+            itemBuilder: (context, index) {
+              final type = SectionType.values[index];
+              final isMinize = state.sectionMinize[type]!;
+              return SectionItem(
+                selected: !isLowScreenWidth || sectionType == type,
+                item: sectionItem[type]!,
+                buttonColor:
+                    sectionType == type
+                        ? isMinize
+                            ? minizeColor
+                            : selectedColor
+                        : buttonColor,
+                onSetting:
+                    () =>
+                        type == sectionType
+                            ? context.read<SectionBloc>().add(
+                              SectionMinizeToggled(
+                                type: type,
+                                minize: !isMinize,
+                              ),
+                            )
+                            : context.read<SectionBloc>().add(
+                              SetSection(section: type),
+                            ),
+              );
+            },
+          );
+        } else {
+          return Row(
+            children:
+                SectionType.values.map((type) {
                   final isMinize = state.sectionMinize[type]!;
-                  return SectionItem(
-                      selected: !isLowScreenWidth || sectionType == type,
-                      item: sectionItem[type]!,
-                      buttonColor: sectionType == type
-                          ? isMinize
-                              ? minizeColor
-                              : selectedColor
-                          : buttonColor,
-                      onSetting: () => type == sectionType
-                          ? context.read<SectionBloc>().add(SectionMinizeToggled(type: type, minize: !isMinize))
-                          : context.read<SectionBloc>().add(SetSection(section: type)));
-                });
-          } else {
-            return Row(
-              children: SectionType.values.map((type) {
-                final isMinize = state.sectionMinize[type]!;
-                return SizedBox(
+                  return SizedBox(
                     height: 60,
                     child: SectionItem(
                       selected: !isLowScreenWidth || sectionType == type,
                       item: sectionItem[type]!,
-                      buttonColor: sectionType == type
-                          ? isMinize
-                              ? minizeColor
-                              : selectedColor
-                          : buttonColor,
-                      onSetting: () => isMinize && type == sectionType
-                          ? context.read<SectionBloc>().add(SectionMinizeToggled(type: type, minize: false))
-                          : context.read<SectionBloc>().add(SetSection(section: type)),
-                    ));
-              }).toList(),
-            );
-          }
-        });
+                      buttonColor:
+                          sectionType == type
+                              ? isMinize
+                                  ? minizeColor
+                                  : selectedColor
+                              : buttonColor,
+                      onSetting:
+                          () =>
+                              isMinize && type == sectionType
+                                  ? context.read<SectionBloc>().add(
+                                    SectionMinizeToggled(
+                                      type: type,
+                                      minize: false,
+                                    ),
+                                  )
+                                  : context.read<SectionBloc>().add(
+                                    SetSection(section: type),
+                                  ),
+                    ),
+                  );
+                }).toList(),
+          );
+        }
+      },
+    );
   }
 }
 
 class SectionItem extends StatelessWidget {
-  const SectionItem(
-      {super.key, required this.selected, required this.item, required this.buttonColor, required this.onSetting});
+  const SectionItem({
+    super.key,
+    required this.selected,
+    required this.item,
+    required this.buttonColor,
+    required this.onSetting,
+  });
 
   final bool selected;
 
@@ -81,35 +114,45 @@ class SectionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final toolWidth = isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
+    final toolWidth =
+        isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
     return Tooltip(
       message: '${item.description}.',
       waitDuration: const Duration(seconds: 1),
       child: Card(
-          margin: isDesktopPlatform ? const EdgeInsets.only(top: 5, bottom: 8, left: 10) : null,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          elevation: isDesktopPlatform ? null : 0,
-          color: buttonColor,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: onSetting,
-            child: SizedBox(
-              width: selected ? 180 : toolWidth,
-              child: selected
-                  ? Row(
+        margin:
+            isDesktopPlatform
+                ? const EdgeInsets.only(top: 5, bottom: 8, left: 10)
+                : null,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: isDesktopPlatform ? null : 0,
+        color: buttonColor,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onSetting,
+          child: SizedBox(
+            width: selected ? 180 : toolWidth,
+            child:
+                selected
+                    ? Row(
                       children: [
-                        Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Icon(item.icon),
+                        ),
                         Text(
                           item.title,
                           style: const TextStyle(fontWeight: FontWeight.bold),
-                        )
+                        ),
                       ],
                     )
-                  : Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
-            ),
-          )),
+                    : Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(item.icon),
+                    ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -125,40 +168,60 @@ class ExtensionView extends StatelessWidget {
     final buttonColor = Theme.of(context).colorScheme.surfaceBright;
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
-        buildWhen: (prev, state) => prev.extension != state.extension,
-        builder: (context, state) {
-          if (isDesktopPlatform) {
-            return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: extensionItem.length,
-                itemBuilder: (context, index) {
-                  final type = ExtensionType.values[index];
-                  final enabled = context.read<SectionBloc>().onExtensionEnabled(type);
-                  return ExtensionItem(
-                    item: extensionItem[type]!,
-                    buttonColor: enabled ? selectedColor : buttonColor,
-                    onSetting: () => context.read<SectionBloc>().add(ExtensionToggled(type: type)),
+      buildWhen: (prev, state) => prev.extension != state.extension,
+      builder: (context, state) {
+        if (isDesktopPlatform) {
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: extensionItem.length,
+            itemBuilder: (context, index) {
+              final type = ExtensionType.values[index];
+              final enabled = context.read<SectionBloc>().onExtensionEnabled(
+                type,
+              );
+              return ExtensionItem(
+                item: extensionItem[type]!,
+                buttonColor: enabled ? selectedColor : buttonColor,
+                onSetting:
+                    () => context.read<SectionBloc>().add(
+                      ExtensionToggled(type: type),
+                    ),
+              );
+            },
+          );
+        } else {
+          return Row(
+            children:
+                ExtensionType.values.map((type) {
+                  final enabled = context
+                      .read<SectionBloc>()
+                      .onExtensionEnabled(type);
+                  return SizedBox(
+                    height: 60,
+                    child: ExtensionItem(
+                      item: extensionItem[type]!,
+                      buttonColor: enabled ? selectedColor : buttonColor,
+                      onSetting:
+                          () => context.read<SectionBloc>().add(
+                            ExtensionToggled(type: type),
+                          ),
+                    ),
                   );
-                });
-          } else {
-            return Row(
-                children: ExtensionType.values.map((type) {
-              final enabled = context.read<SectionBloc>().onExtensionEnabled(type);
-              return SizedBox(
-                  height: 60,
-                  child: ExtensionItem(
-                    item: extensionItem[type]!,
-                    buttonColor: enabled ? selectedColor : buttonColor,
-                    onSetting: () => context.read<SectionBloc>().add(ExtensionToggled(type: type)),
-                  ));
-            }).toList());
-          }
-        });
+                }).toList(),
+          );
+        }
+      },
+    );
   }
 }
 
 class ExtensionItem extends StatelessWidget {
-  const ExtensionItem({super.key, required this.item, required this.buttonColor, required this.onSetting});
+  const ExtensionItem({
+    super.key,
+    required this.item,
+    required this.buttonColor,
+    required this.onSetting,
+  });
 
   final Item item;
 
@@ -169,25 +232,25 @@ class ExtensionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final toolWidth = isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
+    final toolWidth =
+        isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),
       child: Card(
-          elevation: isDesktopPlatform ? null : 0,
-          margin: isDesktopPlatform ? const EdgeInsets.only(top: 5, bottom: 8, left: 10) : null,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          color: buttonColor,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: onSetting,
-            child: SizedBox(
-              width: toolWidth,
-              child: item.icon,
-            ),
-          )),
+        elevation: isDesktopPlatform ? null : 0,
+        margin:
+            isDesktopPlatform
+                ? const EdgeInsets.only(top: 5, bottom: 8, left: 10)
+                : null,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        color: buttonColor,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onSetting,
+          child: SizedBox(width: toolWidth, child: Icon(item.icon)),
+        ),
+      ),
     );
   }
 }

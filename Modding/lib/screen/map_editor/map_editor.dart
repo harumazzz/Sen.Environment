@@ -37,6 +37,30 @@ class MapEditor extends StatelessWidget {
     );
   }
 
+  Widget? _buildLeading(BuildContext context) {
+    return CurrentPlatform.isDesktop
+        ? null
+        : Tooltip(
+          message: context.los.back,
+          child: IconButton(
+            onPressed: () async {
+              final status =
+                  context.read<MapEditorConfigurationCubit>().state.status;
+              if (status == AppConfigurationStatus.success) {
+                if (await _confirmExit(context) ?? false) {
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
+            icon: const Icon(Symbols.arrow_back),
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = context.los;
@@ -51,22 +75,7 @@ class MapEditor extends StatelessWidget {
           appBar: AppBar(
             forceMaterialTransparency: CurrentPlatform.isDesktop,
             title: Text(los.map_editor),
-            leading: Tooltip(
-                message: los.back,
-                child: IconButton(
-                    onPressed: () async {
-                      final status = context.read<MapEditorConfigurationCubit>().state.status;
-                      if (status == AppConfigurationStatus.success) {
-                        if (await _confirmExit(context) ?? false) {
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                          }
-                        }
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(Icons.arrow_back))),
+            leading: _buildLeading(context),
             actions: [
               IconButton(
                 onPressed: () async {
@@ -81,26 +90,37 @@ class MapEditor extends StatelessWidget {
               ),
             ],
           ),
-          body: BlocBuilder<MapEditorConfigurationCubit, MapEditorConfigurationState>(
+          body: BlocBuilder<
+            MapEditorConfigurationCubit,
+            MapEditorConfigurationState
+          >(
             buildWhen: (prev, state) => prev.status != state.status,
             builder: (context, state) {
               final status = state.status;
               if (status == AppConfigurationStatus.initial) {
-                final resourceLocation = context.read<SettingsCubit>().state.mapEditorResource;
-                context.read<MapEditorConfigurationCubit>().load(context.los, resourceLocation);
+                final resourceLocation =
+                    context.read<SettingsCubit>().state.mapEditorResource;
+                context.read<MapEditorConfigurationCubit>().load(
+                  context.los,
+                  resourceLocation,
+                );
               }
               if (status == AppConfigurationStatus.success) {
                 return Background(
-                  child: MainPage(mapEditorConfigurationCubit: context.read<MapEditorConfigurationCubit>()),
+                  child: MainPage(
+                    mapEditorConfigurationCubit:
+                        context.read<MapEditorConfigurationCubit>(),
+                  ),
                 );
               } else if (status == AppConfigurationStatus.failed) {
                 return Background(
-                    child: Center(
-                  child: Text(
-                    '${los.loading_error}: ${state.errorSnapShot}',
-                    style: Theme.of(context).textTheme.bodyLarge,
+                  child: Center(
+                    child: Text(
+                      '${los.loading_error}: ${state.errorSnapShot}',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                   ),
-                ));
+                );
               }
               return Background(
                 child: Center(
@@ -141,10 +161,7 @@ class Background extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              topColor,
-              bottomColor,
-            ],
+            colors: [topColor, bottomColor],
           ),
         ),
         child: child,

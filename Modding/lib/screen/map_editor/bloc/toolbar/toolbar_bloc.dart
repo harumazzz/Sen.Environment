@@ -23,7 +23,6 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     required this.settingBloc,
     required this.initBloc,
     required this.los,
-    required this.initialDirectoryCubit,
   }) : super(ToolBarState.initailize()) {
     on<ToolToogled>(_onToggled);
     on<ToolOpenEvent>(_openTool);
@@ -37,40 +36,27 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
 
   final MapEditorConfigurationCubit cubit;
 
-  final InitialDirectoryCubit initialDirectoryCubit;
-
   final SettingBloc settingBloc;
 
   final InitBloc initBloc;
 
   final AppLocalizations los;
 
-  void _shortcutMenu(
-    ShortcutMenuEvent event,
-    Emitter<ToolBarState> emit,
-  ) {
-    initBloc.add(const ShowAlertDialog(
-      type: AlertDialogShowType.shortcut,
-      enable: true,
-    ));
+  void _shortcutMenu(ShortcutMenuEvent event, Emitter<ToolBarState> emit) {
+    initBloc.add(
+      const ShowAlertDialog(type: AlertDialogShowType.shortcut, enable: true),
+    );
     return;
   }
 
-  void _configTool(
-    ToolConfigEvent event,
-    Emitter<ToolBarState> emit,
-  ) {
-    initBloc.add(const ShowAlertDialog(
-      type: AlertDialogShowType.config,
-      enable: true,
-    ));
+  void _configTool(ToolConfigEvent event, Emitter<ToolBarState> emit) {
+    initBloc.add(
+      const ShowAlertDialog(type: AlertDialogShowType.config, enable: true),
+    );
     return;
   }
 
-  void _configToolDone(
-    ToolConfigSubmitted event,
-    Emitter<ToolBarState> emit,
-  ) {
+  void _configToolDone(ToolConfigSubmitted event, Emitter<ToolBarState> emit) {
     final settingPath = '${cubit.state.settingPath}/config.json';
     final config = cubit.state.configModel;
     config.setting.playSingleFrame = settingBloc.state.playSingleFrame;
@@ -86,25 +72,17 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _clearTool(
-    ToolClearEvent event,
-    Emitter<ToolBarState> emit,
-  ) {
-    initBloc.add(const ShowAlertDialog(
-      type: AlertDialogShowType.clear,
-      enable: true,
-    ));
+  void _clearTool(ToolClearEvent event, Emitter<ToolBarState> emit) {
+    initBloc.add(
+      const ShowAlertDialog(type: AlertDialogShowType.clear, enable: true),
+    );
     return;
   }
 
-  void _clearToolDone(
-    ToolClearSubmitted event,
-    Emitter<ToolBarState> emit,
-  ) {
-    event.stageBloc.add(ClearWorldEvent(
-      itemUpdate: event.itemUpdate,
-      layerBloc: event.layerBloc,
-    ));
+  void _clearToolDone(ToolClearSubmitted event, Emitter<ToolBarState> emit) {
+    event.stageBloc.add(
+      ClearWorldEvent(itemUpdate: event.itemUpdate, layerBloc: event.layerBloc),
+    );
   }
 
   Future<void> _saveTool(
@@ -112,7 +90,7 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     Emitter<ToolBarState> emit,
   ) async {
     var path = await FileHelper.saveFile(
-      initialDirectory: initialDirectoryCubit.state.initialDirectory,
+      initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
       suggestedName: 'worldmap.json',
     );
     if (path != null) {
@@ -120,23 +98,24 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
         path += '.json';
       }
       final state = event.stageBloc.state;
-      final worldMap = WorldMap(list: [
-        WorldData(
+      final worldMap = WorldMap(
+        list: [
+          WorldData(
             worldName: state.worldName,
             worldID: state.worldId,
             resGroupID: state.resGroupId,
             boundingRect: state.boundingRect,
             pieces: state.pieces.values.toList(),
             events: state.events.values.toList(),
-            creationTime: DateTime.now().millisecondsSinceEpoch ~/ 1000)
-      ]);
+            creationTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        ],
+      );
       FileHelper.writeJson(source: path, data: WorldMap.toJson(worldMap));
       if (!settingBloc.state.muteAudio) {
         cubit.state.editorResource.switchResourceSound.resume();
       }
-      initBloc.add(
-        ShowSnackBarEvent(text: los.worldmap_saved),
-      );
+      initBloc.add(ShowSnackBarEvent(text: los.worldmap_saved));
       //event.autosaveBloc.add(const CleanAutosaveEvent());
     }
   }
@@ -146,31 +125,25 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     Emitter<ToolBarState> emit,
   ) async {
     final path = await FileHelper.uploadFile(
-      initialDirectory: initialDirectoryCubit.state.initialDirectory,
+      initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
     );
-    if (path == null) {
-      return;
-    }
+    if (path == null) return;
     try {
       final worldMap = WorldMap.fromJson(FileHelper.readJson(source: path));
-      event.stageBloc.add(LoadWorldEvent(
+      event.stageBloc.add(
+        LoadWorldEvent(
           worldData: worldMap.list.first,
           itemBloc: event.itemBloc,
           layerBloc: event.layerBloc,
-          stageBloc: event.stageBloc));
-    } catch (ex) {
-      initBloc.add(
-        ShowSnackBarEvent(
-          text: los.failed_to_load_worldmap,
+          stageBloc: event.stageBloc,
         ),
       );
+    } catch (ex) {
+      initBloc.add(ShowSnackBarEvent(text: los.failed_to_load_worldmap));
     }
   }
 
-  void _onToggled(
-    ToolToogled event,
-    Emitter<ToolBarState> emit,
-  ) {
+  void _onToggled(ToolToogled event, Emitter<ToolBarState> emit) {
     final toolStatus = state.toolStatus[event.type];
     final toolBarState = state.copyWith();
     toolBarState.toolStatus[event.type] = event.enabled ?? !toolStatus!;

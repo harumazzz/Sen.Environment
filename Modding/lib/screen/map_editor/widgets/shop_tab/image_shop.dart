@@ -14,7 +14,11 @@ class ImageShopView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.read<MapEditorConfigurationCubit>().state.sectionItem[SectionType.image]!;
+    final item =
+        context
+            .read<MapEditorConfigurationCubit>()
+            .state
+            .sectionItem[SectionType.image]!;
     final los = context.los;
 
     return Card(
@@ -27,7 +31,10 @@ class ImageShopView extends StatelessWidget {
               height: 40,
               child: Row(
                 children: [
-                  Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Icon(item.icon),
+                  ),
                   Text(
                     los.island_image_shop,
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -35,23 +42,27 @@ class ImageShopView extends StatelessWidget {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      context
-                          .read<SectionBloc>()
-                          .add(const SectionMinizeToggled(type: SectionType.image, minize: true));
+                      context.read<SectionBloc>().add(
+                        const SectionMinizeToggled(
+                          type: SectionType.image,
+                          minize: true,
+                        ),
+                      );
                     },
                     icon: const Icon(Symbols.close),
-                  )
+                  ),
                 ],
               ),
             ),
             Expanded(
-                child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).colorScheme.secondaryContainer,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                ),
+                child: const ImageShopGrid(),
               ),
-              child: const ImageShopGrid(),
-            )),
+            ),
           ],
         ),
       ),
@@ -65,49 +76,53 @@ class ImageShopGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = context.los;
-    return BlocBuilder<ResourceBloc, ResourceState>(builder: (context, state) {
-      if (state.status == ResourceStateStatus.finished) {
-        final shopList = state.islandImage;
-        final keysList = shopList.keys.toList()..sort();
-        return GridView.builder(
-          itemCount: keysList.length,
-          padding: const EdgeInsets.all(6),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 140),
-          itemBuilder: (context, index) {
-            final imageId = keysList[index];
-            return Card(
-              color: Colors.transparent,
-              shadowColor: Colors.transparent,
-              child: Tooltip(
-                message: '${los.island} $imageId',
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => context.read<StageBloc>().add(AddIslandItemEvent(
-                        imageId: imageId,
-                        isAnimation: false,
-                        layerBloc: context.read<LayerBloc>(),
-                        itemBloc: context.read<ItemBloc>(),
-                        stageBloc: context.read<StageBloc>(),
-                      )),
-                  splashColor: Theme.of(context).colorScheme.secondaryFixedDim,
-                  child: Card(
-                    margin: const EdgeInsets.all(10),
-                    shadowColor: Colors.transparent,
-                    clipBehavior: Clip.antiAlias,
-                    child: RawImage(
-                      image: shopList[imageId],
+    return BlocBuilder<ResourceBloc, ResourceState>(
+      builder: (context, state) {
+        if (state.status == ResourceStateStatus.finished) {
+          final shopList = state.islandImage;
+          final keysList = shopList.keys.toList()..sort();
+          return GridView.builder(
+            itemCount: keysList.length,
+            padding: const EdgeInsets.all(6),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 140,
+            ),
+            itemBuilder: (context, index) {
+              final imageId = keysList[index];
+              return Card(
+                color: Colors.transparent,
+                shadowColor: Colors.transparent,
+                child: Tooltip(
+                  message: '${los.island} $imageId',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap:
+                        () => context.read<StageBloc>().add(
+                          AddIslandItemEvent(
+                            imageId: imageId,
+                            isAnimation: false,
+                            layerBloc: context.read<LayerBloc>(),
+                            itemBloc: context.read<ItemBloc>(),
+                            stageBloc: context.read<StageBloc>(),
+                          ),
+                        ),
+                    splashColor:
+                        Theme.of(context).colorScheme.secondaryFixedDim,
+                    child: Card(
+                      margin: const EdgeInsets.all(10),
+                      shadowColor: Colors.transparent,
+                      clipBehavior: Clip.antiAlias,
+                      child: RawImage(image: shopList[imageId]),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      } else {
-        return const Center(
-          child: CircularProgressIndicator.adaptive(),
-        );
-      }
-    });
+              );
+            },
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+      },
+    );
   }
 }

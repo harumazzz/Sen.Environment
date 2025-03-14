@@ -5,10 +5,7 @@ import 'package:sen/model/message.dart';
 class MessageCard extends StatelessWidget {
   final Message message;
 
-  const MessageCard({
-    super.key,
-    required this.message,
-  });
+  const MessageCard({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +33,7 @@ class MessageCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    SelectableText(
                       message.title,
                       style: theme.textTheme.titleSmall!.copyWith(
                         fontWeight: FontWeight.bold,
@@ -46,7 +43,7 @@ class MessageCard extends StatelessWidget {
                     if (hasMessage)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
+                        child: SelectableText(
                           message.subtitle!,
                           style: theme.textTheme.bodySmall!.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
@@ -68,6 +65,8 @@ class MessageCard extends StatelessWidget {
     final theme = Theme.of(context);
     final baseColor = message.exchangeColor(context);
     final isDark = theme.brightness == Brightness.dark;
-    return isDark ? baseColor.withValues(alpha: 0.36) : baseColor.withValues(alpha: 0.82);
+    return isDark
+        ? baseColor.withValues(alpha: 0.36)
+        : baseColor.withValues(alpha: 0.82);
   }
 }

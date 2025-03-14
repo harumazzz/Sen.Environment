@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 class Item extends Equatable {
   final String title;
   final String description;
-  final Widget icon;
+  final IconData icon;
   final bool selected;
   final Function()? onSetting;
   final Function()? onWidget;
+  final Color? color;
 
   const Item({
     required this.title,
@@ -16,17 +17,11 @@ class Item extends Equatable {
     this.onSetting,
     this.onWidget,
     this.selected = false,
+    this.color,
   });
 
   @override
   List<Object?> get props {
-    return [
-      title,
-      description,
-      icon,
-      selected,
-      onSetting,
-      onWidget,
-    ];
+    return [title, description, icon, selected, onSetting, onWidget, color];
   }
 }

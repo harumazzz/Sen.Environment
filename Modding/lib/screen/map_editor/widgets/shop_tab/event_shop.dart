@@ -15,7 +15,11 @@ class EventShopView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.read<MapEditorConfigurationCubit>().state.sectionItem[SectionType.event]!;
+    final item =
+        context
+            .read<MapEditorConfigurationCubit>()
+            .state
+            .sectionItem[SectionType.event]!;
     return Card(
       color: Theme.of(context).colorScheme.surface,
       child: Padding(
@@ -26,7 +30,10 @@ class EventShopView extends StatelessWidget {
               height: 40,
               child: Row(
                 children: [
-                  Container(margin: const EdgeInsets.symmetric(horizontal: 10), child: item.icon),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Icon(item.icon),
+                  ),
                   Text(
                     context.los.event_shop,
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -34,23 +41,27 @@ class EventShopView extends StatelessWidget {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      context
-                          .read<SectionBloc>()
-                          .add(const SectionMinizeToggled(type: SectionType.event, minize: true));
+                      context.read<SectionBloc>().add(
+                        const SectionMinizeToggled(
+                          type: SectionType.event,
+                          minize: true,
+                        ),
+                      );
                     },
                     icon: const Icon(Symbols.close),
-                  )
+                  ),
                 ],
               ),
             ),
             Expanded(
-                child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).colorScheme.secondaryContainer,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                ),
+                child: const EventShopGrid(),
               ),
-              child: const EventShopGrid(),
-            )),
+            ),
           ],
         ),
       ),
@@ -75,33 +86,40 @@ class EventShopGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ResourceBloc, ResourceState>(builder: (context, state) {
-      if (state.status == ResourceStateStatus.finished) {
-        final shopList = state.eventShop;
-        final eventName = state.eventNodeName;
-        final keysList = shopList.keys.toList();
-        return BlocBuilder<SettingBloc, SettingState>(
+    return BlocBuilder<ResourceBloc, ResourceState>(
+      builder: (context, state) {
+        if (state.status == ResourceStateStatus.finished) {
+          final shopList = state.eventShop;
+          final eventName = state.eventNodeName;
+          final keysList = shopList.keys.toList();
+          return BlocBuilder<SettingBloc, SettingState>(
             buildWhen: (prev, state) => prev.hideOldEvent != state.hideOldEvent,
             builder: (context, state) {
               return GridView.builder(
                 itemCount: keysList.length,
                 padding: const EdgeInsets.all(6),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 140),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 140,
+                ),
                 itemBuilder: (context, index) {
                   final eventType = keysList[index];
                   if (state.hideOldEvent && _checkOldEvent(eventType)) {
                     return Card(
-                        color: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        child: ColorFiltered(
-                          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.modulate),
-                          child: Card(
-                            margin: const EdgeInsets.all(10),
-                            shadowColor: Colors.transparent,
-                            clipBehavior: Clip.antiAlias,
-                            child: shopList[eventType],
-                          ),
-                        ));
+                      color: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      child: ColorFiltered(
+                        colorFilter: const ColorFilter.mode(
+                          Colors.grey,
+                          BlendMode.modulate,
+                        ),
+                        child: Card(
+                          margin: const EdgeInsets.all(10),
+                          shadowColor: Colors.transparent,
+                          clipBehavior: Clip.antiAlias,
+                          child: shopList[eventType],
+                        ),
+                      ),
+                    );
                   } else {
                     return Card(
                       color: Colors.transparent,
@@ -110,12 +128,16 @@ class EventShopGrid extends StatelessWidget {
                         message: eventName[eventType]!,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () => context.read<StageBloc>().add(AddEventItemEvent(
-                                eventType: eventType,
-                                itemBloc: context.read<ItemBloc>(),
-                                stageBloc: context.read<StageBloc>(),
-                              )),
-                          splashColor: Theme.of(context).colorScheme.secondaryFixedDim,
+                          onTap:
+                              () => context.read<StageBloc>().add(
+                                AddEventItemEvent(
+                                  eventType: eventType,
+                                  itemBloc: context.read<ItemBloc>(),
+                                  stageBloc: context.read<StageBloc>(),
+                                ),
+                              ),
+                          splashColor:
+                              Theme.of(context).colorScheme.secondaryFixedDim,
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             shadowColor: Colors.transparent,
@@ -128,12 +150,12 @@ class EventShopGrid extends StatelessWidget {
                   }
                 },
               );
-            });
-      } else {
-        return const Center(
-          child: CircularProgressIndicator.adaptive(),
-        );
-      }
-    });
+            },
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+      },
+    );
   }
 }

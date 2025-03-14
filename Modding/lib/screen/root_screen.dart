@@ -200,6 +200,15 @@ class RootScreen extends StatelessWidget {
     );
   }
 
+  AppBar? _buildAppBar() {
+    return CurrentPlatform.isDesktop
+        ? null
+        : AppBar(
+          title: const Text(BuildDistribution.kApplicationName),
+          centerTitle: false,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     _handleAndroidPermissions(context);
@@ -211,11 +220,7 @@ class RootScreen extends StatelessWidget {
         child: BlocBuilder<NavigationCubit, NavigationState>(
           builder: (context, state) {
             return Scaffold(
-              appBar: AppBar(
-                forceMaterialTransparency: CurrentPlatform.isDesktop,
-                title: const Text(BuildDistribution.kApplicationName),
-                centerTitle: false,
-              ),
+              appBar: _buildAppBar(),
               body: Row(
                 children: [
                   if (CurrentPlatform.isDesktop)
