@@ -23572,7 +23572,7 @@ var $async$XC=A.K(function(b,c){if(b===1)return A.G(c,r)
 while(true)switch(s){case 0:if($.am==null)A.aq5()
 $.am.toString
 s=2
-return A.Q($.arP().vA("assets/environemnt",!1),$async$XC)
+return A.Q($.arP().vA("assets/environment",!1),$async$XC)
 case 2:s=3
 return A.Q(A.a1N(A.aDJ()),$async$XC)
 case 3:B.ir.DU(B.F7,t.Y6)
