@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:website/extension/context.dart';
 import 'package:website/model/github.dart';
 import 'package:website/repository/github_repository.dart';
 import 'package:website/screen/download/thankyou_page.dart';
@@ -53,7 +54,9 @@ class _DownloadPageState extends State<DownloadPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 12.0 : 24.0,
+                  ),
                   child: Column(
                     spacing: 16.0,
                     children: [
@@ -75,8 +78,12 @@ class _DownloadPageState extends State<DownloadPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           spacing: 32.0,
                           children: [
-                            Expanded(child: _buildWindowsInstallation(isSmallScreen)),
-                            Expanded(child: _buildAndroidInstallation(isSmallScreen)),
+                            Expanded(
+                              child: _buildWindowsInstallation(isSmallScreen),
+                            ),
+                            Expanded(
+                              child: _buildAndroidInstallation(isSmallScreen),
+                            ),
                           ],
                         ),
                       _agreeLicense(isSmallScreen),
@@ -102,9 +109,9 @@ class _DownloadPageState extends State<DownloadPage> {
         'Sen: Environment',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontSize: isSmallScreen ? 20 : 28,
-              fontWeight: FontWeight.bold,
-            ),
+          fontSize: isSmallScreen ? 20 : 28,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -112,13 +119,13 @@ class _DownloadPageState extends State<DownloadPage> {
   Widget _subtitleText(bool isSmallScreen) {
     return Center(
       child: Text(
-        'Free and open-source. Fast and efficient, low device requirement.',
+        context.los.sen_title,
         maxLines: 4,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontSize: isSmallScreen ? 16 : 20,
-              fontWeight: FontWeight.bold,
-            ),
+          fontSize: isSmallScreen ? 16 : 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -126,12 +133,15 @@ class _DownloadPageState extends State<DownloadPage> {
   Widget _agreeLicense(bool isSmallScreen) {
     return Center(
       child: Text(
-        'By downloading and using Sen, you agree to the license terms and privacy statement.',
+        context.los.sen_agreement,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: isSmallScreen ? 14 : 16,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
+          fontSize: isSmallScreen ? 14 : 16,
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[300]
+                  : Colors.grey[700],
+        ),
       ),
     );
   }
@@ -139,12 +149,15 @@ class _DownloadPageState extends State<DownloadPage> {
   Widget _downloadCount(bool isSmallScreen) {
     return Center(
       child: Text(
-        'There are $_totalDownloadCount users who have downloaded this Sen version.',
+        context.los.total_sen_users(_totalDownloadCount),
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: isSmallScreen ? 14 : 16,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-            ),
+          fontSize: isSmallScreen ? 14 : 16,
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[300]
+                  : Colors.grey[700],
+        ),
       ),
     );
   }
@@ -160,13 +173,14 @@ class _DownloadPageState extends State<DownloadPage> {
   }
 
   Widget _buildWindowsInstallation(bool isSmallScreen) {
-    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/win-x64.zip';
+    const link =
+        'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/win-x64.zip';
     return _buildDownloadCard(
       title: 'Windows 10+',
       system: 'x64',
       fileType: 'Zip',
       imagePath: 'assets/images/logos/windows.png',
-      buttonText: 'Download for Windows',
+      buttonText: context.los.download_for_windows,
       link: link,
       isWindows: true,
       isSmallScreen: isSmallScreen,
@@ -174,13 +188,14 @@ class _DownloadPageState extends State<DownloadPage> {
   }
 
   Widget _buildAndroidInstallation(bool isSmallScreen) {
-    const link = 'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/android-arm64-v8a.zip';
+    const link =
+        'https://github.com/Haruma-VN/Sen.Environment/releases/download/release/android-arm64-v8a.zip';
     return _buildDownloadCard(
       title: 'Android 7.0+',
       system: 'arm-64',
       fileType: 'Zip',
       imagePath: 'assets/images/logos/android.png',
-      buttonText: 'Download for Android',
+      buttonText: context.los.download_for_android,
       link: link,
       isWindows: false,
       isSmallScreen: isSmallScreen,
@@ -217,18 +232,21 @@ class _DownloadPageState extends State<DownloadPage> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ThankYouPage(
-                  link: link,
-                  isWindows: isWindows,
-                  onNavigate: widget.onNavigate,
-                ),
+                builder:
+                    (context) => ThankYouPage(
+                      link: link,
+                      isWindows: isWindows,
+                      onNavigate: widget.onNavigate,
+                    ),
               ),
             );
             DownloadHelper.downloadFile(link);
           },
           child: Text(
             buttonText,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.white),
           ),
         ),
         Card(
@@ -240,9 +258,9 @@ class _DownloadPageState extends State<DownloadPage> {
                 1: FixedColumnWidth(100),
               },
               children: [
-                _buildTableRow('Version:', title),
-                _buildTableRow('System:', system),
-                _buildTableRow('File type:', fileType),
+                _buildTableRow('${context.los.version}:', title),
+                _buildTableRow('${context.los.system}:', system),
+                _buildTableRow('${context.los.file_type}:', fileType),
               ],
             ),
           ),
@@ -251,13 +269,18 @@ class _DownloadPageState extends State<DownloadPage> {
     );
   }
 
-  TableRow _buildTableRow(
-    String label,
-    String value,
-  ) {
-    return TableRow(children: [
-      Padding(padding: const EdgeInsets.symmetric(vertical: 4.0), child: Text(label)),
-      Padding(padding: const EdgeInsets.symmetric(vertical: 4.0), child: Text(value)),
-    ]);
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(label),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(value),
+        ),
+      ],
+    );
   }
 }

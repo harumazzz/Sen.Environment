@@ -448,5 +448,9 @@
 	"scale": "Scale",
 	"playing": "Playing",
 	"current": "Current",
-	"translator": "Translator"
+	"translator": "Translator",
+	"close": "Close",
+	"close_all_tabs": "Close all tabs",
+	"close_tabs_to_the_left": "Close tabs to the left",
+	"close_tabs_to_the_right": "Close tabs to the right"
 }

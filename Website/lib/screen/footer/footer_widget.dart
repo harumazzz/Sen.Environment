@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:website/extension/context.dart';
 
 class FooterWidget extends StatelessWidget {
-  const FooterWidget({
-    super.key,
-    required this.onNavigate,
-  });
+  const FooterWidget({super.key, required this.onNavigate});
 
   final void Function(int index) onNavigate;
 
-  Widget _supported(
-    BuildContext context,
-  ) {
+  Widget _supported(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -19,32 +15,37 @@ class FooterWidget extends StatelessWidget {
         spacing: 16.0,
         children: [
           Text(
-            'Sen is currently supporting these mods and much more',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            context.los.sen_supported_mod,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          _buildHorizontalView(
-            context: context,
-          ),
+          _buildHorizontalView(context: context),
         ],
       ),
     );
   }
 
-  Widget _buildHorizontalView({
-    required BuildContext context,
-  }) {
+  Widget _buildHorizontalView({required BuildContext context}) {
     List<Widget> childList(double resolution) => [
-          ...<String>['addendum', 'altverz', 'fallen', 'requiem', 'resonance', 'reimagined'].map(
-            (e) => Padding(
-              padding: const EdgeInsets.only(right: 15.0),
-              child: Image.asset(
-                'assets/images/icons/$e.png',
-                width: resolution,
-                height: resolution,
-              ),
-            ),
+      ...<String>[
+        'addendum',
+        'altverz',
+        'fallen',
+        'requiem',
+        'resonance',
+        'reimagined',
+      ].map(
+        (e) => Padding(
+          padding: const EdgeInsets.only(right: 15.0),
+          child: Image.asset(
+            'assets/images/icons/$e.png',
+            width: resolution,
+            height: resolution,
           ),
-        ];
+        ),
+      ),
+    ];
     if (MediaQuery.of(context).size.width < 600) {
       return SizedBox(
         height: 120,
@@ -57,23 +58,26 @@ class FooterWidget extends StatelessWidget {
     }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: childList(200),
-      ),
+      child: Row(children: childList(200)),
     );
   }
 
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200],
+      color:
+          Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[900]
+              : Colors.grey[200],
       padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,22 +94,22 @@ class FooterWidget extends StatelessWidget {
                 children: [
                   _buildFooterColumn(
                     context,
-                    title: 'Quick Links',
+                    title: context.los.quick_links,
                     links: [
-                      _buildNavLink('Home', 0),
-                      _buildNavLink('Download', 1),
-                      _buildNavLink('Features', 2),
-                      _buildNavLink('Contact Us', 3),
+                      _buildNavLink(context.los.home, 0),
+                      _buildNavLink(context.los.download, 1),
+                      _buildNavLink(context.los.changelog, 2),
+                      _buildNavLink(context.los.contact, 3),
                     ],
                   ),
                   _buildFooterColumn(
                     context,
-                    title: 'Resources',
+                    title: context.los.resources,
                     links: [
-                      _buildNavLink('Documentation'),
-                      _buildNavLink('Support'),
-                      _buildNavLink('Community Forum'),
-                      _buildNavLink('FAQ'),
+                      _buildNavLink(context.los.documentation),
+                      _buildNavLink(context.los.support),
+                      _buildNavLink(context.los.community_forum),
+                      _buildNavLink(context.los.faq),
                     ],
                   ),
                 ],
@@ -128,8 +132,11 @@ class FooterWidget extends StatelessWidget {
           Text(
             '© ${DateTime.now().year} copyright Haruma. All rights reserved.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600],
-                ),
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[400]
+                      : Colors.grey[600],
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -137,14 +144,15 @@ class FooterWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterColumn(BuildContext context, {required String title, required List<Widget> links}) {
+  Widget _buildFooterColumn(
+    BuildContext context, {
+    required String title,
+    required List<Widget> links,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 8.0,
-      children: [
-        _buildSectionTitle(context, title),
-        ...links,
-      ],
+      children: [_buildSectionTitle(context, title), ...links],
     );
   }
 

@@ -17,20 +17,29 @@ class Application extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<SettingsCubit>(create: (context) => SettingsCubit()),
-        BlocProvider<InitialDirectoryCubit>(create: (context) => InitialDirectoryCubit()),
-        BlocProvider<MapEditorConfigurationCubit>(create: (context) => MapEditorConfigurationCubit()),
+        BlocProvider<InitialDirectoryCubit>(
+          create: (context) => InitialDirectoryCubit(),
+        ),
+        BlocProvider<MapEditorConfigurationCubit>(
+          create: (context) => MapEditorConfigurationCubit(),
+        ),
       ],
       child: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
           return DynamicColorBuilder(
             builder: (lightDynamic, darkDynamic) {
+              final bucket = PageStorageBucket();
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
                 title: BuildDistribution.kApplicationName,
-                theme: MaterialDesign.lightTheme.copyWith(colorScheme: lightDynamic),
-                darkTheme: MaterialDesign.darkTheme.copyWith(colorScheme: darkDynamic),
+                theme: MaterialDesign.lightTheme.copyWith(
+                  colorScheme: lightDynamic,
+                ),
+                darkTheme: MaterialDesign.darkTheme.copyWith(
+                  colorScheme: darkDynamic,
+                ),
                 themeMode: state.themeData,
-                home: const RootScreen(),
+                home: RootScreen(bucket: bucket),
                 localizationsDelegates: loc.Localization.localizationDelegates,
                 supportedLocales: loc.Localization.supportedLocales,
                 locale: Locale(state.locale),

@@ -6,10 +6,7 @@ import 'package:website/screen/footer/footer_widget.dart';
 import 'package:website/service_locator/service_locator.dart';
 
 class ChangelogPage extends StatefulWidget {
-  const ChangelogPage({
-    super.key,
-    required this.onNavigate,
-  });
+  const ChangelogPage({super.key, required this.onNavigate});
 
   final void Function(int index) onNavigate;
 
@@ -52,17 +49,11 @@ class _ChangelogPageState extends State<ChangelogPage> {
                     child: CircularProgressIndicator.adaptive(),
                   );
                 } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(snapshot.error.toString()),
-                  );
+                  return Center(child: Text(snapshot.error.toString()));
                 } else if (snapshot.hasData) {
                   final data = snapshot.data!;
                   return Column(
-                    children: [
-                      ...data.map(
-                        (e) => ChangelogCard(changelog: e),
-                      ),
-                    ],
+                    children: [...data.map((e) => ChangelogCard(changelog: e))],
                   );
                 } else {
                   return const SizedBox.shrink();
@@ -70,9 +61,7 @@ class _ChangelogPageState extends State<ChangelogPage> {
               },
             ),
           ),
-          FooterWidget(
-            onNavigate: widget.onNavigate,
-          ),
+          FooterWidget(onNavigate: widget.onNavigate),
         ],
       ),
     );

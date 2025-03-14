@@ -1,27 +1,38 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class Changelog {
-  String? version;
-  DateTime? date;
-  List<String>? specialThanks;
-  List<String>? updateChanges;
+class Changelog extends Equatable {
+  final String? version;
+  final DateTime? date;
+  final List<String>? specialThanks;
+  final List<String>? updateChanges;
 
-  Changelog({
+  const Changelog({
     this.date,
     this.version,
     this.specialThanks,
     this.updateChanges,
   });
 
-  Changelog.fromJson(Map<String, dynamic> json) {
-    version = json['version'];
-    date = (json['date'] as Timestamp).toDate();
-    if (json['special_thanks'] != null) {
-      specialThanks = [...(json['special_thanks'] as List<dynamic>).map((e) => e.toString())];
-    }
-    if (json['update_changes'] != null) {
-      updateChanges = [...(json['update_changes'] as List<dynamic>).map((e) => e.toString())];
-    }
-    version = json['version'];
+  factory Changelog.fromJson(Map<String, dynamic> json) {
+    return Changelog(
+      version: json['version'],
+      date: (json['date'] as Timestamp).toDate(),
+      specialThanks:
+          json['special_thanks'] != null
+              ? (json['special_thanks'] as List<dynamic>)
+                  .map((e) => e.toString())
+                  .toList()
+              : null,
+      updateChanges:
+          json['update_changes'] != null
+              ? (json['update_changes'] as List<dynamic>)
+                  .map((e) => e.toString())
+                  .toList()
+              : null,
+    );
   }
+
+  @override
+  List<Object?> get props => [version, date, specialThanks, updateChanges];
 }

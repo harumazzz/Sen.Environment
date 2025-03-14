@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-    sdk: ^3.5.4
+    sdk: ^3.7.0
 dependencies:
     flutter:
         sdk: flutter
@@ -12,7 +12,6 @@ dependencies:
     get_it: ^8.0.3
     flutter_riverpod: ^2.6.1
     material_symbols_icons: ^4.2801.0
-    http: ^1.2.2
     hyperlink: ^0.0.5
     url_launcher_web: ^2.3.3
     firebase_core: ^3.8.1
@@ -20,6 +19,12 @@ dependencies:
     web: ^1.1.0
     flutter_launcher_icons: ^0.14.3
     flutter_native_splash: ^2.4.5
+    dio: ^5.8.0+1
+    flutter_dotenv: ^5.2.1
+    equatable: ^2.0.7
+    flutter_localizations:
+        sdk: flutter
+    dynamic_color: ^1.7.0
 
 dev_dependencies:
     flutter_test:
@@ -35,6 +40,7 @@ flutter:
         - assets/images/light/
         - assets/images/icons/
         - assets/images/logos/
+        - .env
     fonts:
         - family: GoogleSans
           fonts:

@@ -4,22 +4,16 @@ part of 'navigation_cubit.dart';
 sealed class NavigationState extends Equatable {
   final int selectedIndex;
 
-  const NavigationState({
-    required this.selectedIndex,
-  });
+  const NavigationState({required this.selectedIndex});
 
   @override
   List<Object?> get props => [selectedIndex];
 }
 
 final class NavigationInitial extends NavigationState {
-  const NavigationInitial({
-    required super.selectedIndex,
-  });
+  const NavigationInitial({required super.selectedIndex});
 }
 
 final class NavigationChange extends NavigationState {
-  const NavigationChange({
-    required super.selectedIndex,
-  });
+  const NavigationChange({required super.selectedIndex});
 }

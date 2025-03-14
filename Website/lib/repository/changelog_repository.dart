@@ -4,7 +4,7 @@ import 'package:website/model/changelog.dart';
 class ChangelogRepository {
   final ChangelogApi _changelogApi;
 
-  ChangelogRepository(this._changelogApi);
+  const ChangelogRepository(this._changelogApi);
 
   Future<List<Changelog>> getChangelog() async {
     return await _changelogApi.getChangelog();

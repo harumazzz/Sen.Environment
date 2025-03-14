@@ -16,12 +16,14 @@ import 'package:sen/service/ui_helper.dart';
 import 'package:sen/widget/hotkey.dart';
 
 class RootScreen extends StatelessWidget {
-  const RootScreen({super.key});
+  final PageStorageBucket bucket;
+
+  const RootScreen({super.key, required this.bucket});
 
   static const List<Widget> _destinations = [
-    HomeScreen(),
-    MiscellaneousScreen(),
-    SettingScreen(),
+    HomeScreen(key: PageStorageKey<String>('home')),
+    MiscellaneousScreen(key: PageStorageKey<String>('miscellaneous')),
+    SettingScreen(key: PageStorageKey<String>('settings')),
   ];
 
   void _handleAndroidPermissions(BuildContext context) {
@@ -213,25 +215,27 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     _handleAndroidPermissions(context);
     _processAndroidArguments(context);
-
-    return BlocProvider(
+    return BlocProvider<NavigationCubit>(
       create: (_) => NavigationCubit(),
       child: HotkeyBuilder(
         child: BlocBuilder<NavigationCubit, NavigationState>(
           builder: (context, state) {
-            return Scaffold(
-              appBar: _buildAppBar(),
-              body: Row(
-                children: [
-                  if (CurrentPlatform.isDesktop)
-                    ..._buildNavigationRail(context, state),
-                  _buildTransition(state),
-                ],
+            return PageStorage(
+              bucket: bucket,
+              child: Scaffold(
+                appBar: _buildAppBar(),
+                body: Row(
+                  children: [
+                    if (CurrentPlatform.isDesktop)
+                      ..._buildNavigationRail(context, state),
+                    _buildTransition(state),
+                  ],
+                ),
+                bottomNavigationBar:
+                    CurrentPlatform.isMobile
+                        ? _buildNavigationBar(context, state)
+                        : null,
               ),
-              bottomNavigationBar:
-                  CurrentPlatform.isMobile
-                      ? _buildNavigationBar(context, state)
-                      : null,
             );
           },
         ),

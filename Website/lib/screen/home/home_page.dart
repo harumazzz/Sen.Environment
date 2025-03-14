@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:website/extension/context.dart';
 import 'package:website/screen/footer/footer_widget.dart';
 import 'package:website/service/url_helper.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({
-    super.key,
-    required this.onNavigate,
-  });
+  const HomePage({super.key, required this.onNavigate});
 
   final void Function(int index) onNavigate;
 
@@ -41,9 +39,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Widget _introduceText(
-    BuildContext context,
-  ) {
+  Widget _introduceText(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -51,11 +47,11 @@ class _HomePageState extends State<HomePage> {
           builder: (context, constraints) {
             double fontSize = constraints.maxWidth < 400 ? 20 : 24;
             return Text(
-              'Build your PvZ2 mod faster!',
+              context.los.build_your_mod_faster,
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
               softWrap: true,
             );
@@ -73,15 +69,18 @@ class _HomePageState extends State<HomePage> {
           builder: (context, constraints) {
             double fontSize = constraints.maxWidth < 350 ? 16 : 20;
             return Text(
-              'Sen is what you need! The all-in-one tool, is recommended by most modders.',
+              context.los.sen_first_description,
               maxLines: 4,
               softWrap: true,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                  ),
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[300]
+                        : Colors.grey[700],
+              ),
             );
           },
         ),
@@ -97,10 +96,7 @@ class _HomePageState extends State<HomePage> {
           spacing: 8.0,
           runSpacing: 8.0,
           alignment: WrapAlignment.center,
-          children: [
-            _downloadButton(),
-            _viewLogButton(),
-          ],
+          children: [_downloadButton(), _viewLogButton()],
         ),
       ),
     );
@@ -108,7 +104,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _downloadButton() {
     return _responsiveButton(
-      text: 'Download now',
+      text: context.los.download_now,
       color: Colors.blue,
       icon: Symbols.download,
       onPressed: () {
@@ -119,7 +115,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _viewLogButton() {
     return _responsiveButton(
-      text: 'Discord server',
+      text: context.los.discord_server,
       icon: Icons.discord,
       color: const Color(0xFF5865F2),
       onPressed: () async {
@@ -148,17 +144,13 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 24.0,
-              color: Colors.white,
-            ),
+            Icon(icon, size: 24.0, color: Colors.white),
             Text(
               text,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -196,15 +188,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _descriptionImage(BuildContext context) {
     if (MediaQuery.of(context).size.width > 600) {
-      return Image.asset(
-        'assets/images/terminal.png',
-        fit: BoxFit.cover,
-      );
+      return Image.asset('assets/images/terminal.png', fit: BoxFit.cover);
     }
-    return Image.asset(
-      'assets/images/phone_view.jpg',
-      fit: BoxFit.cover,
-    );
+    return Image.asset('assets/images/phone_view.jpg', fit: BoxFit.cover);
   }
 
   Widget _description(BuildContext context) {
@@ -220,23 +206,27 @@ class _HomePageState extends State<HomePage> {
             alignment: WrapAlignment.center,
             children: [
               SizedBox(
-                width: isSmallScreen ? double.infinity : constraints.maxWidth * 0.6,
+                width:
+                    isSmallScreen
+                        ? double.infinity
+                        : constraints.maxWidth * 0.6,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 12.0,
                   children: [
                     Text(
-                      'Why Sen?',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      context.los.why_sen,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    _buildText('Improve your mod production speed by 20% with Sen'),
+                    _buildText(context.los.improve_mod_production),
                     _buildRichText(
-                      'Community Support: ',
-                      'Sen comes with a big community to help you modify the game easily.',
+                      '${context.los.community_support}: ',
+                      '${context.los.sen_big_community_support}.',
                     ),
                     _buildRichText(
-                      'Quality Assurance: ',
-                      'Sen offers tons of tools to streamline your workflow.',
+                      '${context.los.quality_assurance}: ',
+                      '${context.los.quality_ensurance_description}.',
                     ),
                   ],
                 ),
@@ -244,7 +234,10 @@ class _HomePageState extends State<HomePage> {
               if (!isSmallScreen) const SizedBox(width: 16.0),
               if (!isSmallScreen)
                 SizedBox(
-                  width: isSmallScreen ? constraints.maxWidth * 0.8 : constraints.maxWidth * 0.3,
+                  width:
+                      isSmallScreen
+                          ? constraints.maxWidth * 0.8
+                          : constraints.maxWidth * 0.3,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20.0),
                     child: _descriptionImage(context),
@@ -261,8 +254,11 @@ class _HomePageState extends State<HomePage> {
     return Text(
       text,
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-          ),
+        color:
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[300]
+                : Colors.grey[700],
+      ),
       softWrap: true,
     );
   }
@@ -274,9 +270,12 @@ class _HomePageState extends State<HomePage> {
           TextSpan(
             text: boldText,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
-                ),
+              fontWeight: FontWeight.bold,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[300]
+                      : Colors.grey[700],
+            ),
           ),
           TextSpan(
             text: normalText,
@@ -313,9 +312,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          FooterWidget(
-            onNavigate: widget.onNavigate,
-          ),
+          FooterWidget(onNavigate: widget.onNavigate),
         ],
       ),
     );

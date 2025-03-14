@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:website/extension/context.dart';
 import 'package:website/screen/footer/footer_widget.dart';
 
 class AboutPage extends StatelessWidget {
-  const AboutPage({
-    super.key,
-    required this.onNavigate,
-  });
+  const AboutPage({super.key, required this.onNavigate});
 
   final void Function(int index) onNavigate;
 
@@ -20,34 +18,43 @@ class AboutPage extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 24.0, vertical: 16.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: isSmallScreen ? 12.0 : 24.0,
+              vertical: 16.0,
+            ),
             child: Column(
               children: [
                 _buildHeader(context, isSmallScreen),
                 const SizedBox(height: 24.0),
                 _infoCard(
                   icon: Symbols.info,
-                  title: 'About',
+                  title: context.los.about,
                   content: Text(
-                    'Sen.Environment is a project designed to summarize my personal expertise in C++ & TypeScript, offering cross-platform capabilities and a robust modular architecture.',
+                    context.los.sen_promotional_description,
                     style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0),
                   ),
                   isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.open_in_new,
-                  title: 'Open Source Project',
+                  title: context.los.open_source_project,
                   content: Text(
-                    'This project is licensed under the GPL-3.0 License, allowing free use and modification as long as the terms are followed.',
+                    context.los.open_source_project_description,
                     style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0),
                   ),
                   isSmallScreen: isSmallScreen,
                 ),
                 _infoCard(
                   icon: Symbols.devices,
-                  title: 'Platform Support',
+                  title: context.los.platform_support,
                   content: _bulletPoints(
-                    ['Windows x64', 'Linux x64', 'Macintosh x64', 'iOS 10.0+', 'Android 7.0+'],
+                    [
+                      'Windows 10+ x64',
+                      'Linux x64',
+                      'Macintosh x64',
+                      'iOS 10.0+',
+                      'Android 7.0+',
+                    ],
                     isDarkTheme,
                     isSmallScreen,
                   ),
@@ -58,9 +65,10 @@ class AboutPage extends StatelessWidget {
                   title: 'Modules',
                   content: _bulletPoints(
                     [
-                      'Kernel - Backend, the core of the program.',
-                      'Shell - Frontend, provides a command-line interface.',
-                      'Script - Script control flows of the tool.',
+                      'Kernel - ${context.los.kernel_description}',
+                      'Shell - ${context.los.shell_description}',
+                      'Script - ${context.los.script_description}',
+                      'Modding - ${context.los.modding_description}',
                     ],
                     isDarkTheme,
                     isSmallScreen,
@@ -69,22 +77,17 @@ class AboutPage extends StatelessWidget {
                 ),
                 _infoCard(
                   icon: Symbols.code,
-                  title: 'Technology',
-                  content: _detailedBulletPoints(
-                    [
-                      {
-                        'title': 'CMake',
-                        'description':
-                            'Cross-platform build system for C++. It is a wide used tool in the C++ community.',
-                      },
-                      {
-                        'title': 'Flutter',
-                        'description':
-                            'Beautiful UI development framework developed by Google. It is mainly used in the GUI app and also this website.',
-                      },
-                    ],
-                    isDarkTheme,
-                  ),
+                  title: context.los.technology,
+                  content: _detailedBulletPoints([
+                    {
+                      'title': 'CMake',
+                      'description': context.los.cmake_description,
+                    },
+                    {
+                      'title': 'Flutter',
+                      'description': context.los.flutter_description,
+                    },
+                  ], isDarkTheme),
                   isSmallScreen: isSmallScreen,
                 ),
               ],
@@ -105,9 +108,10 @@ class AboutPage extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: Theme.of(context).brightness == Brightness.light
-              ? [Colors.blueAccent, Colors.lightBlue.shade100]
-              : [Colors.blueAccent, Colors.pinkAccent.shade100],
+          colors:
+              Theme.of(context).brightness == Brightness.light
+                  ? [Colors.blueAccent, Colors.lightBlue.shade100]
+                  : [Colors.blueAccent, Colors.pinkAccent.shade100],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -134,7 +138,7 @@ class AboutPage extends StatelessWidget {
           ),
           const SizedBox(height: 8.0),
           Text(
-            'An open-source project created by Haruma.',
+            context.los.sen_promotional_title,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isSmallScreen ? 16.0 : 18.0,
@@ -152,15 +156,15 @@ class AboutPage extends StatelessWidget {
   }) {
     return isSmallScreen
         ? Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12.0,
-            children: children,
-          )
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12.0,
+          children: children,
+        )
         : Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 12.0,
-            children: children,
-          );
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 12.0,
+          children: children,
+        );
   }
 
   Widget _infoCard({
@@ -182,14 +186,13 @@ class AboutPage extends StatelessWidget {
             _asWrappable(
               isSmallScreen: isSmallScreen,
               children: [
-                Icon(
-                  icon,
-                  size: 28.0,
-                  color: Colors.blueAccent,
-                ),
+                Icon(icon, size: 28.0, color: Colors.blueAccent),
                 Text(
                   title,
-                  style: TextStyle(fontSize: isSmallScreen ? 16.0 : 18.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 16.0 : 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -207,26 +210,30 @@ class AboutPage extends StatelessWidget {
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: points.map((point) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('• ', style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0)),
-              Expanded(
-                child: Text(
-                  point,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14.0 : 16.0,
-                    color: isDarkTheme ? Colors.white : Colors.black87,
+      children:
+          points.map((point) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '• ',
+                    style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0),
                   ),
-                ),
+                  Expanded(
+                    child: Text(
+                      point,
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 14.0 : 16.0,
+                        color: isDarkTheme ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
   }
 
@@ -236,22 +243,32 @@ class AboutPage extends StatelessWidget {
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: items.map((item) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 4.0,
-            children: [
-              Text(item['title']!, style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-              Text(
-                item['description']!,
-                style: TextStyle(fontSize: 14.0, color: isDarkTheme ? Colors.white54 : Colors.black54),
+      children:
+          items.map((item) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 4.0,
+                children: [
+                  Text(
+                    item['title']!,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    item['description']!,
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      color: isDarkTheme ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
   }
 }

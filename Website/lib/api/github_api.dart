@@ -1,18 +1,18 @@
-import 'dart:convert';
-
 import 'package:website/model/github.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart' as dio;
+import 'package:website/service_locator/service_locator.dart';
 
 class GithubApi {
-  final _url = 'https://api.github.com/repos/Haruma-VN/Sen.Environment/releases/tags/release';
+  const GithubApi();
 
   Future<GitHub> getRelease() async {
-    final uri = Uri.parse(_url);
-    final response = await http.get(uri).timeout(const Duration(seconds: 10));
+    final response = await ServiceLocator.instance.get<dio.Dio>().get(
+      '/release',
+    );
     if (response.statusCode == 200) {
-      return GitHub.fromJson(jsonDecode(response.body));
+      return GitHub.fromJson(response.data);
     } else {
-      throw Exception(response.body.toString());
+      throw Exception(response.data.toString());
     }
   }
 }

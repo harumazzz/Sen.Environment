@@ -118,19 +118,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       items: [
         PopupMenuItem(
-          child: const Text("Close"),
+          child: Text(context.los.close),
           onTap: () => _closeTabByIndex(index),
         ),
         PopupMenuItem(
-          child: const Text("Close All Tabs"),
+          child: Text(context.los.close_all_tabs),
           onTap: () => _closeAllTabs(),
         ),
         PopupMenuItem(
-          child: const Text("Close Tabs to the Left"),
+          child: Text(context.los.close_tabs_to_the_left),
           onTap: () => _closeTabsToLeft(index),
         ),
         PopupMenuItem(
-          child: const Text("Close Tabs to the Right"),
+          child: Text(context.los.close_tabs_to_the_right),
           onTap: () => _closeTabsToRight(index),
         ),
       ],
