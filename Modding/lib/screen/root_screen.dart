@@ -42,9 +42,7 @@ class RootScreen extends StatelessWidget {
     });
   }
 
-  Future<void> _showPermissionDialog(
-    BuildContext context,
-  ) async {
+  Future<void> _showPermissionDialog(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showFlutterDialog(
       context: context,
@@ -65,9 +63,9 @@ class RootScreen extends StatelessWidget {
   void _processAndroidArguments(BuildContext context) {
     if (!CurrentPlatform.isAndroid || AndroidHelper.arguments == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const ShellScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const ShellScreen()));
     });
   }
 
@@ -115,7 +113,8 @@ class RootScreen extends StatelessWidget {
             ),
             child: NavigationRail(
               selectedIndex: state.selectedIndex,
-              onDestinationSelected: context.read<NavigationCubit>().changeIndex,
+              onDestinationSelected:
+                  context.read<NavigationCubit>().changeIndex,
               labelType: NavigationRailLabelType.all,
               useIndicator: true,
               leading: Padding(
@@ -156,23 +155,14 @@ class RootScreen extends StatelessWidget {
     required String label,
   }) {
     return NavigationRailDestination(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8.0,
-        horizontal: 6.0,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
       icon: Icon(icon, size: 24.0),
       selectedIcon: Icon(selectedIcon, size: 24.0),
-      label: Text(
-        label,
-        overflow: TextOverflow.ellipsis,
-      ),
+      label: Text(label, overflow: TextOverflow.ellipsis),
     );
   }
 
-  Widget _buildNavigationBar(
-    BuildContext context,
-    NavigationState state,
-  ) {
+  Widget _buildNavigationBar(BuildContext context, NavigationState state) {
     final los = context.los;
     return NavigationBar(
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -198,17 +188,14 @@ class RootScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTransition(
-    NavigationState state,
-  ) {
+  Widget _buildTransition(NavigationState state) {
     return Expanded(
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 100),
         child: _destinations[state.selectedIndex],
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
+        transitionBuilder:
+            (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
       ),
     );
   }
@@ -231,11 +218,15 @@ class RootScreen extends StatelessWidget {
               ),
               body: Row(
                 children: [
-                  if (CurrentPlatform.isDesktop) ..._buildNavigationRail(context, state),
+                  if (CurrentPlatform.isDesktop)
+                    ..._buildNavigationRail(context, state),
                   _buildTransition(state),
                 ],
               ),
-              bottomNavigationBar: CurrentPlatform.isMobile ? _buildNavigationBar(context, state) : null,
+              bottomNavigationBar:
+                  CurrentPlatform.isMobile
+                      ? _buildNavigationBar(context, state)
+                      : null,
             );
           },
         ),

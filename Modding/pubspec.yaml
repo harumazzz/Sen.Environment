@@ -32,7 +32,6 @@ dependencies:
     drop_down_list: ^2.0.0
     archive: ^4.0.4
     audioplayers: ^6.3.0
-    flutter_bloc: ^9.1.0
     bloc: ^9.0.0
     material_symbols_icons: ^4.2808.0
     intl: ^0.19.0
@@ -41,8 +40,9 @@ dependencies:
     shared_preferences: ^2.5.2
     url_launcher: ^6.3.1
     dio: ^5.8.0+1
-    dynamic_color: ^1.7.0
     flex_color_picker: ^3.7.0
+    flutter_bloc: ^9.1.0
+    dynamic_color: ^1.7.0
 dev_dependencies:
     flutter_test:
         sdk: flutter
@@ -84,6 +84,17 @@ msix_config:
     logo_path: assets/images/logo.png
     install_certificate: false
     author: Haruma
+    files:
+        - source: ./windows/explorer/build/Release/explorer.dll
+          target: explorer.dll
+        - source: ./windows/virtual/build/Release/virtual.exe
+          target: virtual.exe
+    declarations:
+        - comServer
+    applications:
+        - id: DLLHost
+          executable: virtual.exe
+          entryPoint: Windows.FullTrustApplication
     app_installer:
         publish_folder_path: ./publish
         hours_between_update_checks: 0
@@ -93,3 +104,5 @@ msix_config:
         force_update_from_any_version: true
     certificate_path: ./certificate.pfx
     certificate_password: haruma123
+    scripts:
+        on_install: register_context_menu.ps1

@@ -3,6 +3,9 @@ import 'package:sen/service/file_helper.dart';
 import 'package:image/image.dart';
 
 class ImageHelper {
+
+  const ImageHelper._();
+
   static void saveImage(
     String source,
     Image data,

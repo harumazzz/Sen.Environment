@@ -10,15 +10,18 @@ sealed class LaunchStatusEvent extends Equatable {
 final class LaunchStatusBegin extends LaunchStatusEvent {
   final Client client;
 
+  final SettingsCubit setting;
+
   final List<String> arguments;
 
   const LaunchStatusBegin({
     required this.client,
+    required this.setting,
     required this.arguments,
   });
 
   @override
-  List<Object> get props => [client, arguments];
+  List<Object> get props => [client, setting, arguments];
 }
 
 final class LaunchStatusComplete extends LaunchStatusEvent {

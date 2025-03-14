@@ -10,6 +10,8 @@ import 'package:archive/archive.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FileHelper {
+  const FileHelper._();
+
   static List<String> readDirectory({
     required String source,
     required bool recursive,
@@ -41,11 +43,11 @@ class FileHelper {
   }) async {
     var outputFile = null as String?;
     if (CurrentPlatform.isDesktop || Platform.isIOS) {
-      outputFile = (await file_selector.getSaveLocation(
-        suggestedName: suggestedName,
-        initialDirectory: initialDirectory,
-      ))
-          ?.path;
+      outputFile =
+          (await file_selector.getSaveLocation(
+            suggestedName: suggestedName,
+            initialDirectory: initialDirectory,
+          ))?.path;
     }
     if (Platform.isAndroid) {
       outputFile = (await AndroidHelper.saveFileFromDocument());
@@ -61,19 +63,13 @@ class FileHelper {
     return File(source).existsSync();
   }
 
-  static void writeFile({
-    required String source,
-    required String data,
-  }) {
+  static void writeFile({required String source, required String data}) {
     final file = File(source);
     file.writeAsStringSync(data);
     return;
   }
 
-  static void writeJson({
-    required String source,
-    required dynamic data,
-  }) {
+  static void writeJson({required String source, required dynamic data}) {
     final file = File(source);
     file.writeAsStringSync(const JsonEncoder.withIndent('\t').convert(data));
     return;
@@ -84,63 +80,51 @@ class FileHelper {
     required dynamic data,
   }) async {
     final file = File(source);
-    file.writeAsString(const JsonEncoder.withIndent('\t').convert(data), flush: true);
+    file.writeAsString(
+      const JsonEncoder.withIndent('\t').convert(data),
+      flush: true,
+    );
     return;
   }
 
-  static String readFile({
-    required String source,
-  }) {
+  static String readFile({required String source}) {
     return File(source).readAsStringSync();
   }
 
-  static Future<String> readFileAsync({
-    required String source,
-  }) async {
+  static Future<String> readFileAsync({required String source}) async {
     return await File(source).readAsString();
   }
 
-  static Uint8List readBuffer({
-    required String source,
-  }) {
+  static Uint8List readBuffer({required String source}) {
     var file = File(source);
     return file.readAsBytesSync();
   }
 
-  static Future<Uint8List> readBufferAsync({
-    required String source,
-  }) async {
+  static Future<Uint8List> readBufferAsync({required String source}) async {
     var file = File(source);
     return await file.readAsBytes();
   }
 
-  static void writeBuffer({
-    required String source,
-    required Uint8List data,
-  }) {
+  static void writeBuffer({required String source, required Uint8List data}) {
     var file = File(source);
     file.writeAsBytesSync(data);
     return;
   }
 
-  static dynamic readJson({
-    required String source,
-  }) {
+  static dynamic readJson({required String source}) {
     return jsonDecode(readFile(source: source));
   }
 
-  static Future<dynamic> readJsonAsync({
-    required String source,
-  }) async {
+  static Future<dynamic> readJsonAsync({required String source}) async {
     return jsonDecode(await readFileAsync(source: source));
   }
 
-  static Future<String?> uploadDirectory({
-    String? initialDirectory,
-  }) async {
+  static Future<String?> uploadDirectory({String? initialDirectory}) async {
     var directory = null as String?;
     if (Platform.isAndroid) {
-      directory = await AndroidHelper.pickDirectoryFromDocument(initialDirectory);
+      directory = await AndroidHelper.pickDirectoryFromDocument(
+        initialDirectory,
+      );
     } else {
       directory = (await file_selector.getDirectoryPath(
         initialDirectory: initialDirectory,
@@ -152,19 +136,18 @@ class FileHelper {
     return directory;
   }
 
-  static Future<String?> uploadFile({
-    String? initialDirectory,
-  }) async {
+  static Future<String?> uploadFile({String? initialDirectory}) async {
     if (Platform.isAndroid) {
       return await AndroidHelper.pickFileFromDocument(initialDirectory);
     }
     return await _uploadFilePicker(initialDirectory);
   }
 
-  static Future<String?> _uploadFilePicker(
-    String? initialDirectory,
-  ) async {
-    final result = (await file_selector.openFile(initialDirectory: initialDirectory))?.path;
+  static Future<String?> _uploadFilePicker(String? initialDirectory) async {
+    final result =
+        (await file_selector.openFile(
+          initialDirectory: initialDirectory,
+        ))?.path;
     if (result == null) {
       return null;
     } else {
@@ -180,7 +163,9 @@ class FileHelper {
       return (await path_provider.getApplicationDocumentsDirectory()).path;
     }
     if (Platform.isWindows) {
-      return p.absolute((await path_provider.getApplicationSupportDirectory()).path);
+      return p.absolute(
+        (await path_provider.getApplicationSupportDirectory()).path,
+      );
     }
     return (await path_provider.getApplicationSupportDirectory()).path;
   }
@@ -220,21 +205,15 @@ class FileHelper {
     }
   }
 
-  static void deleteFile({
-    required String source,
-  }) {
+  static void deleteFile({required String source}) {
     File(source).deleteSync();
   }
 
-  static Future<void> deleteFileAsync({
-    required String source,
-  }) async {
+  static Future<void> deleteFileAsync({required String source}) async {
     await File(source).delete();
   }
 
-  static Future<void> revealFile(
-    String path,
-  ) async {
+  static Future<void> revealFile(String path) async {
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       await launchUrl(Uri.file(path), mode: LaunchMode.externalApplication);
     }
@@ -245,7 +224,10 @@ class FileHelper {
       }
     }
     if (Platform.isIOS) {
-      await launchUrl(Uri.file(path).replace(scheme: 'shareddocuments'), mode: LaunchMode.externalApplication);
+      await launchUrl(
+        Uri.file(path).replace(scheme: 'shareddocuments'),
+        mode: LaunchMode.externalApplication,
+      );
     }
     return;
   }

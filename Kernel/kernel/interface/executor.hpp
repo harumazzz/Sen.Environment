@@ -45,7 +45,7 @@ namespace Sen::Kernel::Interface::Executor {
     #endif
 
     template <typename Callable>
-    inline auto safe_executor (
+    inline auto spawn (
         Service* service,
         Callable&& executor
     ) -> void {

@@ -573,9 +573,9 @@ namespace Sen.Script.Executor {
 			callback:
 				| (([type, method]: [MethodType, RegExp], source: string) => boolean)
 				| ((
-						[type, method]: [MethodType, ...Array<RegExp>],
-						source: Array<string>,
-				  ) => boolean),
+					[type, method]: [MethodType, ...Array<RegExp>],
+					source: Array<string>,
+				) => boolean),
 			filter: [MethodType, RegExp | Array<RegExp>],
 			source: string | string[],
 			[method_name, option_number]: [method_name: string, option_number: bigint],
@@ -768,13 +768,15 @@ namespace Sen.Script.Executor {
 		}
 	}
 
-	export const k_argument = [
-		[Kernel.Language.get('js.skip_argument_input'), 0n],
-		[Kernel.Language.get('js.process_whole'), 1n],
-		[Kernel.Language.get('js.process_in_queue'), 2n],
-		[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
-		[Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n],
-	] as Array<[string, bigint]>;
+	export let k_argument = (() => {
+		return [
+			[Kernel.Language.get('js.skip_argument_input'), 0n],
+			[Kernel.Language.get('js.process_whole'), 1n],
+			[Kernel.Language.get('js.process_in_queue'), 2n],
+			[Kernel.Language.get('popcap.atlas.split_by_resource_group'), 3n],
+			[Kernel.Language.get('popcap.atlas.split_by_res_info'), 4n],
+		] as Array<[string, bigint]>
+	});
 
 	export function process_module<Argument extends Base>(argument: Argument): void {
 		return (argument.source as Array<string>).forEach((e) =>
@@ -825,10 +827,10 @@ namespace Sen.Script.Executor {
 					(argument.source as string).length,
 				),
 			);
-			if (!is_gui) k_argument.forEach((e) => print_statement(e[0], e[1]));
+			if (!is_gui) k_argument().forEach((e) => print_statement(e[0], e[1]));
 			const input: bigint = input_integer(
 				[0n, 1n, 2n, 3n, 4n],
-				is_gui_or<Array<string>>([], () => k_argument.map((e) => e[0])),
+				is_gui_or<Array<string>>([], () => k_argument().map((e) => e[0])),
 			);
 			switch (input) {
 				case 1n:

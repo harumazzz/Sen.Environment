@@ -31,29 +31,39 @@ class HomeScreen extends StatelessWidget {
     return _buildListView(items, settings);
   }
 
-  List<Item> _buildItems(
-    BuildContext context,
-  ) {
+  List<Item> _buildItems(BuildContext context) {
     final los = context.los;
     return [
       Item(
         title: los.shell,
         description: los.shell_description,
-        icon: Icon(Symbols.terminal_rounded, size: 50, color: Colors.blueGrey.shade600),
+        icon: Icon(
+          Symbols.terminal_rounded,
+          size: 50,
+          color: Colors.blueGrey.shade600,
+        ),
         onWidget: () => const ShellScreen(),
         onSetting: () async => await _onLoadShellConfiguration(context),
       ),
       Item(
         title: los.js_execute,
         description: los.js_execute_description,
-        icon: Icon(Symbols.javascript_rounded, size: 50, color: Colors.yellow.shade600),
+        icon: Icon(
+          Symbols.javascript_rounded,
+          size: 50,
+          color: Colors.yellow.shade600,
+        ),
         onWidget: () => const JavaScriptCategory(),
         onSetting: () async => await _showJsSettings(context),
       ),
       Item(
         title: los.animation_viewer,
         description: los.animation_viewer_description,
-        icon: Icon(Symbols.animated_images, size: 50, color: Colors.green.shade700),
+        icon: Icon(
+          Symbols.animated_images,
+          size: 50,
+          color: Colors.green.shade700,
+        ),
         onWidget: () => const AnimationViewer(),
         onSetting: () async => throw Exception('TODO'),
       ),
@@ -109,42 +119,40 @@ class HomeScreen extends StatelessWidget {
         childAspectRatio: _calculateChildAspectRatio(context, crossAxisCount),
       ),
       itemCount: items.length,
-      itemBuilder: (context, index) => _buildCard(context, items[index], settings),
+      itemBuilder:
+          (context, index) => _buildCard(context, items[index], settings),
     );
   }
 
-  Widget _buildListView(
-    List<Item> items,
-    SettingsCubit settings,
-  ) {
+  Widget _buildListView(List<Item> items, SettingsCubit settings) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 12.0),
         itemCount: items.length,
-        itemBuilder: (context, index) => _buildCard(context, items[index], settings),
+        itemBuilder:
+            (context, index) => _buildCard(context, items[index], settings),
       ),
     );
   }
 
-  Widget _buildCard(
-    BuildContext context,
-    Item item,
-    SettingsCubit settings,
-  ) {
+  Widget _buildCard(BuildContext context, Item item, SettingsCubit settings) {
     final isDesktop = CurrentPlatform.isDesktop;
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => item.onWidget?.call()),
-        ),
+        onTap:
+            () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => item.onWidget?.call()),
+            ),
         borderRadius: BorderRadius.circular(16.0),
         child: Padding(
           padding: _paddingOf(),
-          child: isDesktop ? _buildDesktopCardContent(context, item) : _buildMobileCardContent(context, item),
+          child:
+              isDesktop
+                  ? _buildDesktopCardContent(context, item)
+                  : _buildMobileCardContent(context, item),
         ),
       ),
     );
@@ -152,28 +160,26 @@ class HomeScreen extends StatelessWidget {
 
   EdgeInsetsGeometry _paddingOf() {
     if (CurrentPlatform.isDesktop) {
-      return const EdgeInsets.symmetric(horizontal: 12, vertical: 16);
+      return const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0);
     }
     return const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0);
   }
 
-  Widget _buildDesktopCardContent(
-    BuildContext context,
-    Item item,
-  ) {
+  Widget _buildDesktopCardContent(BuildContext context, Item item) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 15.0,
       children: [
         Align(
           alignment: Alignment.topRight,
-          child: item.onSetting != null
-              ? IconButton(
-                  icon: const Icon(Symbols.settings, size: 24.0),
-                  onPressed: item.onSetting,
-                  tooltip: context.los.settings,
-                )
-              : const SizedBox.shrink(),
+          child:
+              item.onSetting != null
+                  ? IconButton(
+                    icon: const Icon(Symbols.settings, size: 24.0),
+                    onPressed: item.onSetting,
+                    tooltip: context.los.settings,
+                  )
+                  : const SizedBox.shrink(),
         ),
         AnimatedFloating(child: item.icon),
         Text(
@@ -195,10 +201,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileCardContent(
-    BuildContext context,
-    Item item,
-  ) {
+  Widget _buildMobileCardContent(BuildContext context, Item item) {
     final los = context.los;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
@@ -213,7 +216,10 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   item.title,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   softWrap: false,
@@ -242,9 +248,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showJsSettings(
-    BuildContext context,
-  ) async {
+  Future<void> _showJsSettings(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -253,9 +257,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _onLoadLevelMakerConfiguration(
-    BuildContext context,
-  ) async {
+  Future<void> _onLoadLevelMakerConfiguration(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -264,9 +266,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _onLoadMapEditorConfiguration(
-    BuildContext context,
-  ) async {
+  Future<void> _onLoadMapEditorConfiguration(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -275,9 +275,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _onLoadShellConfiguration(
-    BuildContext context,
-  ) async {
+  Future<void> _onLoadShellConfiguration(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,

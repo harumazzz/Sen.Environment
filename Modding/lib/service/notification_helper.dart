@@ -5,6 +5,8 @@ import 'package:sen/constant/build_distribution.dart';
 import 'package:window_manager/window_manager.dart';
 
 class NotificationHelper {
+  const NotificationHelper._();
+
   static FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
 
   static Future<void> initialize() async {
@@ -14,19 +16,18 @@ class NotificationHelper {
         shortcutPolicy: ShortcutPolicy.requireCreate,
       );
     }
-    if (Platform.isLinux || Platform.isMacOS || Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isLinux ||
+        Platform.isMacOS ||
+        Platform.isAndroid ||
+        Platform.isIOS) {
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       var initializationSettings = InitializationSettings(
-        android: const AndroidInitializationSettings(
-          '@mipmap/launcher_icon',
-        ),
+        android: const AndroidInitializationSettings('@mipmap/launcher_icon'),
         iOS: const DarwinInitializationSettings(),
         macOS: const DarwinInitializationSettings(),
         linux: LinuxInitializationSettings(
           defaultActionName: '',
-          defaultIcon: AssetsLinuxIcon(
-            'assets/images/logo.png',
-          ),
+          defaultIcon: AssetsLinuxIcon('assets/images/logo.png'),
         ),
       );
       await _flutterLocalNotificationsPlugin!.initialize(
@@ -37,21 +38,18 @@ class NotificationHelper {
     return;
   }
 
-  static Future<void> push(
-    String title,
-    String description,
-  ) async {
+  static Future<void> push(String title, String description) async {
     if (Platform.isWindows) {
-      final notification = LocalNotification(
-        title: title,
-        body: description,
-      );
+      final notification = LocalNotification(title: title, body: description);
       notification.onClick = () async {
         await windowManager.focus();
       };
       await notification.show();
     }
-    if (Platform.isLinux || Platform.isMacOS || Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isLinux ||
+        Platform.isMacOS ||
+        Platform.isAndroid ||
+        Platform.isIOS) {
       await _flutterLocalNotificationsPlugin!.show(
         DateTime.now().millisecondsSinceEpoch % 0x80000000,
         title,

@@ -13,5 +13,7 @@ extension CurrentPlatform on Platform {
 
   static bool get isWindows => Platform.isWindows;
 
+  static bool get isMacOS => Platform.isMacOS;
+
   static String get locale => Platform.localeName.split('_').first;
 }

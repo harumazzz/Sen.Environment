@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart';
 
 class WindowsHelper {
+
+  const WindowsHelper._();
+
   static late final MethodChannel _methodChannel;
 
   static void initialize() {

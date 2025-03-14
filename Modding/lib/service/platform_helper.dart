@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 
 class PlatformHelper {
+
+  const PlatformHelper._();
+
   static void revealInExplorer(String filePath) {
     if (Platform.isWindows) {
       const executable = 'explorer';

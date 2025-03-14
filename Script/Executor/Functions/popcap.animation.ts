@@ -44,7 +44,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			directory: string;
 		}
 
-		export interface Configuration extends Executor.Configuration {}
+		export interface Configuration extends Executor.Configuration { }
 	}
 
 	export namespace ToFlash {
@@ -75,7 +75,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			directory: string;
 		}
 
-		export interface Configuration extends Executor.Configuration {}
+		export interface Configuration extends Executor.Configuration { }
 	}
 
 	export namespace ToAPNG {
@@ -85,7 +85,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			media?: string;
 		}
 
-		export interface BatchArgument extends Executor.Base {}
+		export interface BatchArgument extends Executor.Base { }
 
 		export interface Configuration extends Executor.Configuration {
 			resolution: bigint;
@@ -103,7 +103,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			directory: string;
 		}
 
-		export interface Configuration extends Executor.Configuration {}
+		export interface Configuration extends Executor.Configuration { }
 	}
 
 	export namespace Encode {
@@ -116,7 +116,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 			directory: string;
 		}
 
-		export interface Configuration extends Executor.Configuration {}
+		export interface Configuration extends Executor.Configuration { }
 	}
 
 	export namespace FromFlashAndEncode {
@@ -366,7 +366,7 @@ namespace Sen.Script.Executor.Functions.PopCap.Animation {
 				'~/Executor/Configuration/popcap.animation.to_flash.json',
 			),
 			direct_forward(argument): void {
-				is_valid_source(argument, true);
+				is_valid_source(argument, false);
 				Console.obtained(argument.source);
 				if (/(.+)\.xfl$/i.test(argument.source)) {
 					defined_or_default(

@@ -10,9 +10,7 @@ sealed class InteractionEvent extends Equatable {
 final class BooleanInputEvent extends InteractionEvent {
   final Completer<String?> completer;
 
-  const BooleanInputEvent({
-    required this.completer,
-  });
+  const BooleanInputEvent({required this.completer});
 
   @override
   List<Object?> get props => [completer];
@@ -21,9 +19,16 @@ final class BooleanInputEvent extends InteractionEvent {
 final class StringInputEvent extends InteractionEvent {
   final Completer<String?> completer;
 
-  const StringInputEvent({
-    required this.completer,
-  });
+  const StringInputEvent({required this.completer});
+
+  @override
+  List<Object?> get props => [completer];
+}
+
+final class PickLocalStorage extends InteractionEvent {
+  final Completer<String?> completer;
+
+  const PickLocalStorage({required this.completer});
 
   @override
   List<Object?> get props => [completer];
@@ -32,9 +37,7 @@ final class StringInputEvent extends InteractionEvent {
 final class StringInputCompleteEvent extends InteractionEvent {
   final String? value;
 
-  const StringInputCompleteEvent({
-    required this.value,
-  });
+  const StringInputCompleteEvent({required this.value});
   @override
   List<Object?> get props => [value];
 }
@@ -42,9 +45,7 @@ final class StringInputCompleteEvent extends InteractionEvent {
 final class BooleanInputCompleteEvent extends InteractionEvent {
   final bool? value;
 
-  const BooleanInputCompleteEvent({
-    required this.value,
-  });
+  const BooleanInputCompleteEvent({required this.value});
   @override
   List<Object?> get props => [value];
 }
@@ -52,9 +53,7 @@ final class BooleanInputCompleteEvent extends InteractionEvent {
 final class EnumerationSelectEvent extends InteractionEvent {
   final Completer<String?> completer;
 
-  const EnumerationSelectEvent({
-    required this.completer,
-  });
+  const EnumerationSelectEvent({required this.completer});
 
   @override
   List<Object?> get props => [completer];
@@ -63,9 +62,7 @@ final class EnumerationSelectEvent extends InteractionEvent {
 final class EnumerationSelectCompleteEvent extends InteractionEvent {
   final String? value;
 
-  const EnumerationSelectCompleteEvent({
-    required this.value,
-  });
+  const EnumerationSelectCompleteEvent({required this.value});
   @override
   List<Object?> get props => [value];
 }

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 class AndroidHelper {
   static late final MethodChannel _methodChannel;
 
+  const AndroidHelper._();
+
   static List<String>? _arguments;
 
   static List<String>? get arguments => _arguments;

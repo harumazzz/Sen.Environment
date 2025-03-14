@@ -34,9 +34,9 @@ class StorageIntentHandler(private val activity: Activity) {
             when (call.method) {
                 "pick_file" -> result.success(pickStorageFileFromDocument(call.argument("initialDirectory")))
                 "pick_directory" -> result.success(pickDirectoryFromDocument(call.argument("initialDirectory")))
-                "save_file" -> result.success(pickSaveFileFromDocument())
-                "request_storage_permission" -> result.success(requestStoragePermission())
-                "check_storage_permission" -> result.success(checkStoragePermission())
+                "save_file" -> result.success(this.pickSaveFileFromDocument())
+                "request_storage_permission" -> result.success(this.requestStoragePermission())
+                "check_storage_permission" -> result.success(this.checkStoragePermission())
                 else -> result.notImplemented()
             }
         } catch (e: Exception) {

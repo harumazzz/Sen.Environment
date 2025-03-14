@@ -2,6 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:sen/bridge/client.dart';
 import 'package:sen/bridge/launcher.dart';
+import 'package:sen/cubit/settings_cubit/settings_cubit.dart';
+import 'package:sen/extension/platform.dart';
+import 'package:sen/service/file_helper.dart';
 
 part 'launch_status_event.dart';
 part 'launch_status_state.dart';
@@ -17,15 +20,38 @@ class LaunchStatusBloc extends Bloc<LaunchStatusEvent, LaunchStatusState> {
     LaunchStatusBegin event,
     Emitter<LaunchStatusState> emit,
   ) async {
+    final workingDirectory = await FileHelper.getWorkingDirectory();
+    final kernel = (() {
+      if (CurrentPlatform.isAndroid) {
+        return 'libKernel.so';
+      }
+      if (CurrentPlatform.isIOS) {
+        return 'libKernel.dylib';
+      }
+      final toolChain = event.setting.state.toolChain;
+      if (CurrentPlatform.isWindows) {
+        return '$toolChain/Kernel.dll';
+      }
+      if (CurrentPlatform.isLinux) {
+        return '$toolChain/Kernel.so';
+      }
+      if (CurrentPlatform.isMacOS) {
+        return '$toolChain/Kernel.dylib';
+      }
+      throw Exception('Unsupported platform');
+    }());
+    final script = '${event.setting.state.toolChain}/Script/main.js';
     emit(const LaunchStatusStart());
     emit(const LaunchStatusLoading());
-    await Launcher.launch(event.client, event.arguments);
+    await Launcher.launch(event.client, [
+      workingDirectory,
+      kernel,
+      script,
+      ...event.arguments,
+    ]);
   }
 
-  void _finish(
-    LaunchStatusComplete event,
-    Emitter<LaunchStatusState> emit,
-  ) {
+  void _finish(LaunchStatusComplete event, Emitter<LaunchStatusState> emit) {
     emit(const LaunchStatusEnd());
   }
 

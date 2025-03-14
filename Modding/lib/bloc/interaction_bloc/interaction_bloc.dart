@@ -14,19 +14,21 @@ class InteractionBloc extends Bloc<InteractionEvent, InteractionState> {
     on<StringInputCompleteEvent>(_submitString);
     on<BooleanInputCompleteEvent>(_submitBoolean);
     on<EnumerationSelectCompleteEvent>(_submitEnumeration);
+    on<PickLocalStorage>(_pickLocalStorage);
   }
 
-  void _inputBoolean(
-    BooleanInputEvent event,
-    Emitter<InteractionState> emit,
-  ) {
+  void _inputBoolean(BooleanInputEvent event, Emitter<InteractionState> emit) {
     emit(BooleanInputState(completer: event.completer));
   }
 
-  void _inputString(
-    StringInputEvent event,
+  void _pickLocalStorage(
+    PickLocalStorage event,
     Emitter<InteractionState> emit,
   ) {
+    emit(const BlockInteractionState());
+  }
+
+  void _inputString(StringInputEvent event, Emitter<InteractionState> emit) {
     emit(StringInputState(completer: event.completer));
   }
 
