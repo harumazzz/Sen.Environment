@@ -2,6 +2,7 @@ import 'package:drop_down_list/drop_down_list.dart';
 import 'package:drop_down_list/model/selected_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../extension/platform.dart';
 import '../model/select_option.dart';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -270,5 +271,19 @@ class UIHelper {
     return context.isDynamicColor
         ? Theme.of(context).colorScheme.surfaceContainer
         : (context.isDarkMode ? Colors.grey[850]! : Colors.white);
+  }
+
+  static AppBar? appBarOr(AppBar appbar) {
+    if (CurrentPlatform.isDesktop) {
+      return null;
+    }
+    return appbar;
+  }
+
+  static Widget? widgetOr(Widget widget) {
+    if (CurrentPlatform.isMobile) {
+      return null;
+    }
+    return widget;
   }
 }

@@ -261,6 +261,15 @@ class IslandConfigTab extends StatelessWidget {
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     softWrap: false,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.copyWith(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .onSurface,
+                                                        ),
                                                   ),
                                                 ),
                                               )

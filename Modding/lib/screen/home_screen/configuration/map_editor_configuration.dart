@@ -58,8 +58,9 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 10.0,
       children: [
-        const SizedBox(height: 10.0),
+        const SizedBox.shrink(),
         TextField(
           controller: _resourceLocationController,
           decoration: InputDecoration(
@@ -81,6 +82,15 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
             ),
           ),
           onChanged: _onChangeSetting,
+        ),
+        ElevatedButton(
+          onPressed: () {
+            context.read<MapEditorConfigurationCubit>().reset();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Text(los.reload_map_resources),
+          ),
         ),
       ],
     );

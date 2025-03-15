@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/load_script_bloc/load_script_bloc.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/context.dart';
-import '../../extension/platform.dart';
 import 'javascript_card.dart';
 import '../../i18n/app_localizations.dart';
 import 'search_script.dart';
@@ -53,10 +52,7 @@ class JavaScriptCategory extends StatelessWidget {
       },
       child: HotkeyBuilder(
         child: Scaffold(
-          appBar: AppBar(
-            forceMaterialTransparency: CurrentPlatform.isDesktop,
-            title: Text(los.js_execute),
-          ),
+          appBar: UIHelper.appBarOr(AppBar(title: Text(los.js_execute))),
           body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: BlocConsumer<LoadScriptBloc, LoadScriptState>(

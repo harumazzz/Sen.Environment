@@ -125,18 +125,128 @@ class MiscellaneousScreen extends StatelessWidget {
                 ).showSnackBar(SnackBar(content: Text(state.error)));
               }
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                spacing: 4.0,
-                children: [
-                  _backUpConfiguration(context),
-                  _installScript(context),
-                ],
-              ),
-            ),
+            child:
+                (() {
+                  if (CurrentPlatform.isDesktop) {
+                    return _buildDesktopLayout(context);
+                  }
+                  return _buildMobileLayout(context);
+                })(),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        spacing: 4.0,
+        children: [_backUpConfiguration(context), _installScript(context)],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(8.0),
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [_buildBackupCard(context), _buildDownloadCard(context)],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackupCard(BuildContext context) {
+    final los = context.los;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              spacing: 10.0,
+              children: [
+                Icon(
+                  Symbols.backup,
+                  size: 28,
+                  color: Colors.lightBlueAccent.withValues(alpha: 0.8),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4.0,
+                  children: [
+                    Text(
+                      los.backup_configuration,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      los.backup_configuration_description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FilledButton.icon(
+              onPressed: () => _onBackup(context),
+              label: Text(los.backup_configuration),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDownloadCard(BuildContext context) {
+    final los = context.los;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              spacing: 12.0,
+              children: [
+                Icon(
+                  Symbols.download_2,
+                  size: 28.0,
+                  color: Colors.green.withValues(alpha: 0.8),
+                ),
+                Column(
+                  spacing: 4.0,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      los.download_script,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      los.download_script_description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FilledButton.icon(
+              onPressed: null,
+              label: Text(los.download_script),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class DropdownButtonField<T> extends StatelessWidget {
   const DropdownButtonField({
@@ -11,11 +12,8 @@ class DropdownButtonField<T> extends StatelessWidget {
   });
 
   final String label;
-
   final T value;
-
   final List<DropdownMenuItem<T>> items;
-
   final void Function(T?) onChanged;
 
   @override
@@ -23,15 +21,42 @@ class DropdownButtonField<T> extends StatelessWidget {
     return DropdownButtonFormField<T>(
       value: value,
       isExpanded: true,
-      focusColor: Colors.transparent,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        contentPadding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 12.0,
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2.0,
+          ),
+        ),
       ),
       items: items,
       onChanged: onChanged,
+      style: Theme.of(context).textTheme.bodyLarge,
+      dropdownColor: Theme.of(context).colorScheme.surface,
+      icon: Icon(
+        Symbols.arrow_drop_down,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 

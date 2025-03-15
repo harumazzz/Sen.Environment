@@ -284,6 +284,7 @@ class EditorSettingState extends StatelessWidget {
                         value: state.boundBackground,
                         isExpanded: true,
                         focusColor: Colors.transparent,
+
                         underline: DecoratedBox(
                           decoration: BoxDecoration(
                             border: Border(
@@ -307,6 +308,14 @@ class EditorSettingState extends StatelessWidget {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       softWrap: true,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      ),
                                     ),
                                   ),
                                 )

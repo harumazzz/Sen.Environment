@@ -30,130 +30,131 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
     final bottomSpacing = isDesktopPlatform ? 8.0 : 2.0;
     return AlertDialog(
       title: Text(los.map_editor_config),
-      backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
-      content: Card(
-        shadowColor: Colors.transparent,
-        child: SizedBox(
-          width: 300,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                CheckBoxField(
-                  label: context.los.play_single_animation_frame,
-                  value: bloc.state.playSingleFrame,
-                  margin: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: bottomSpacing,
-                    top: topSpacing,
-                  ),
-                  underline: false,
-                  onChanged: ({required bool? value}) {
-                    bloc.add(
-                      SetPlaySingleFrame(playSingleFrame: value ?? false),
-                    );
-                    setState(() {});
-                  },
+      content: SizedBox(
+        width: 300,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              CheckBoxField(
+                label: context.los.play_single_animation_frame,
+                value: bloc.state.playSingleFrame,
+                margin: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: bottomSpacing,
+                  top: topSpacing,
                 ),
-                CheckBoxField(
-                  label: los.mute_audio,
-                  value: bloc.state.muteAudio,
-                  margin: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: bottomSpacing,
-                    top: topSpacing,
-                  ),
-                  underline: false,
-                  onChanged: ({required bool? value}) {
-                    bloc.add(SetMuteAudio(muteAudio: value ?? false));
-                    setState(() {});
-                  },
+                underline: false,
+                onChanged: ({required bool? value}) {
+                  bloc.add(SetPlaySingleFrame(playSingleFrame: value ?? false));
+                  setState(() {});
+                },
+              ),
+              CheckBoxField(
+                label: los.mute_audio,
+                value: bloc.state.muteAudio,
+                margin: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: bottomSpacing,
+                  top: topSpacing,
                 ),
-                CheckBoxField(
-                  label: los.plant_costume,
-                  value: bloc.state.plantCostume,
-                  margin: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: bottomSpacing,
-                    top: topSpacing,
-                  ),
-                  underline: false,
-                  onChanged: ({required bool? value}) {
-                    bloc.add(SetPlantCostume(enabled: value ?? false));
-                    setState(() {});
-                  },
+                underline: false,
+                onChanged: ({required bool? value}) {
+                  bloc.add(SetMuteAudio(muteAudio: value ?? false));
+                  setState(() {});
+                },
+              ),
+              CheckBoxField(
+                label: los.plant_costume,
+                value: bloc.state.plantCostume,
+                margin: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: bottomSpacing,
+                  top: topSpacing,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: bottomSpacing,
-                    top: topSpacing,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        los.filter_quality,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                underline: false,
+                onChanged: ({required bool? value}) {
+                  bloc.add(SetPlantCostume(enabled: value ?? false));
+                  setState(() {});
+                },
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: bottomSpacing,
+                  top: topSpacing,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      los.filter_quality,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      const Spacer(),
-                      SizedBox(
-                        width: 100,
-                        child: DropdownButton<FilterQuality>(
-                          value: bloc.state.filterQuality,
-                          isExpanded: true,
-                          focusColor: Colors.transparent,
-                          underline: DecoratedBox(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                  width: 0.8,
-                                ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: 100,
+                      child: DropdownButton<FilterQuality>(
+                        value: bloc.state.filterQuality,
+                        isExpanded: true,
+                        focusColor: Colors.transparent,
+                        underline: DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                width: 0.8,
                               ),
                             ),
                           ),
-                          items:
-                              FilterQuality.values
-                                  .map(
-                                    (e) => DropdownMenuItem<FilterQuality>(
-                                      value: e,
-                                      child: Text(
-                                        e.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: true,
+                        ),
+                        items:
+                            FilterQuality.values
+                                .map(
+                                  (e) => DropdownMenuItem<FilterQuality>(
+                                    value: e,
+                                    child: Text(
+                                      e.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
                                       ),
                                     ),
-                                  )
-                                  .toList(),
-                          onChanged: (value) {
-                            bloc.add(SetFilterQuality(filterQuality: value!));
-                            setState(() {});
-                          },
-                        ),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          bloc.add(SetFilterQuality(filterQuality: value!));
+                          setState(() {});
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
       actions: [
         TextButton(
-          child: Text(los.submit),
+          child: Text(los.okay),
           onPressed: () {
-            // returnValue = true;
             Navigator.of(context).pop(true);
           },
         ),

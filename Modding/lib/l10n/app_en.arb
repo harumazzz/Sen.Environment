@@ -33,7 +33,7 @@
 	"js_execute": "JS Execute",
 	"js_execute_description": "Run built-in JS",
 	"animation_viewer": "Animation Viewer",
-	"animation_viewer_description": "Through Animation Viewer, view actual animation that will be performed",
+	"animation_viewer_description": "Preview actual animation that will be performed",
 	"toolchain_is_invalid": "Toolchain is invalid",
 	"user_provided": "User Provided",
 	"execute_again": "Execute again?",
@@ -452,5 +452,7 @@
 	"close": "Close",
 	"close_all_tabs": "Close all tabs",
 	"close_tabs_to_the_left": "Close tabs to the left",
-	"close_tabs_to_the_right": "Close tabs to the right"
+	"close_tabs_to_the_right": "Close tabs to the right",
+	"reload_map_resources": "Reload map resources",
+	"sen_is_listening": "Sen is listening"
 }

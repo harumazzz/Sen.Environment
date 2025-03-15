@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../extension/context.dart';
-import '../../extension/platform.dart';
+import '../../service/ui_helper.dart';
 
 class LevelMaker extends StatelessWidget {
   const LevelMaker({super.key});
@@ -8,10 +8,7 @@ class LevelMaker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        forceMaterialTransparency: CurrentPlatform.isDesktop,
-        title: Text(context.los.level_maker),
-      ),
+      appBar: UIHelper.appBarOr(AppBar(title: Text(context.los.level_maker))),
     );
   }
 }

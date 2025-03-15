@@ -60,9 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _closeTab(int index) {
-    _tabs.removeAt(index);
-    _tabIndex = 0;
-    setState(() {});
+    return _closeTabByIndex(index);
   }
 
   Widget _buildDesktopLayout(BuildContext context, List<Item> items) {
@@ -139,7 +137,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _closeTabByIndex(int index) {
     _tabs.removeAt(index);
     setState(() {
-      if (_tabIndex >= _tabs.length) {
+      if (_tabIndex >= _tabs.length + 1) {
+        _tabIndex = _tabs.length;
+      }
+      if (_tabs.isEmpty) {
         _tabIndex = 0;
       }
     });
@@ -153,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _closeTabsToLeft(int index) {
-    if (index == _tabIndex) {
+    if (index <= _tabIndex) {
       _tabIndex = 0;
     }
     _tabs.removeRange(0, index);
@@ -161,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _closeTabsToRight(int index) {
-    if (index == _tabIndex) {
+    if (index <= _tabIndex) {
       _tabIndex = 0;
     }
     _tabs.removeRange(index + 1, _tabs.length);

@@ -17,15 +17,18 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
     on<SaveConfiguration>(_onSaveConfiguration);
   }
 
-  void _onLoadConfiguration(
+  Future<void> _onLoadConfiguration(
     LoadConfiguration event,
     Emitter<BackupSettingState> emit,
-  ) {
+  ) async {
     try {
       emit(const ConfigurationLoading());
       final source = '${event.toolChain}/Script/Executor/Configuration';
       final sourceFiles =
-          FileHelper.readDirectory(source: source, recursive: false)
+          (await FileHelper.readDirectoryAsync(
+                source: source,
+                recursive: false,
+              ))
               .where(
                 (e) => RegExp(r'(.+)\.json$', caseSensitive: false).hasMatch(e),
               )
@@ -34,7 +37,7 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
       Map<String, dynamic> configuration = {};
       for (final e in sourceFiles) {
         configuration[p.basenameWithoutExtension(e)] = converter.jsonDecode(
-          FileHelper.readFile(source: e),
+          await FileHelper.readFileAsync(source: e),
         );
       }
 
@@ -56,7 +59,7 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
       if (e.value is Map<String, dynamic> &&
           (e.value as Map<String, dynamic>).isNotEmpty) {
         final destination = '$configuration/${e.key}.json';
-        final current = FileHelper.readJson(source: destination);
+        final current = await FileHelper.readJsonAsync(source: destination);
         for (final key in e.value.config.keys) {
           if (current.containsKey(key)) {
             current[key] = e.value.config[key];
@@ -79,7 +82,7 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
       return;
     }
     event.initialDirectoryCubit.setDirectoryOfFile(source: source);
-    final configuration = FileHelper.readJson(source: source);
+    final configuration = await FileHelper.readJsonAsync(source: source);
     for (final e in configuration!.entries) {
       configuration![e.key] = e.value;
     }

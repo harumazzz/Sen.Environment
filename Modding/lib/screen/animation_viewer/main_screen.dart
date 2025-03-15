@@ -1,13 +1,16 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
 import '../../bloc/selected_label_bloc/selected_label_bloc.dart';
 import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../extension/context.dart';
 import '../../extension/platform.dart';
+import '../../widget/collapsible_floating_button.dart';
 import 'animation_screen.dart';
 import 'label_info.dart';
 import 'label_screen.dart';
@@ -18,53 +21,10 @@ import '../../i18n/app_localizations.dart';
 import '../../service/ui_helper.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({
-    super.key,
-    required this.initialDirectoryCubit,
-    required this.selectedImageBloc,
-    required this.selectedSpriteBloc,
-    required this.selectedLabelBloc,
-  });
-
-  final InitialDirectoryCubit initialDirectoryCubit;
-
-  final SelectedImageBloc selectedImageBloc;
-
-  final SelectedSpriteBloc selectedSpriteBloc;
-
-  final SelectedLabelBloc selectedLabelBloc;
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(
-      DiagnosticsProperty<InitialDirectoryCubit>(
-        'initialDirectoryCubit',
-        initialDirectoryCubit,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<SelectedImageBloc>(
-        'selectedImageBloc',
-        selectedImageBloc,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<SelectedSpriteBloc>(
-        'selectedSpriteBloc',
-        selectedSpriteBloc,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<SelectedLabelBloc>(
-        'selectedLabelBloc',
-        selectedLabelBloc,
-      ),
-    );
-  }
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
@@ -131,16 +91,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 color: theme.colorScheme.primary,
               ),
               onPressed: () async {
+                void setDirectory(String directory) =>
+                    BlocProvider.of<InitialDirectoryCubit>(
+                      context,
+                    ).setDirectoryOfDirectory(source: directory);
                 final directory = await FileHelper.uploadDirectory(
                   initialDirectory:
-                      widget.initialDirectoryCubit.state.initialDirectory,
+                      BlocProvider.of<InitialDirectoryCubit>(
+                        context,
+                      ).state.initialDirectory,
                 );
                 if (directory != null) {
                   _controller.text = directory;
                   _mediaDirectory = directory;
-                  widget.initialDirectoryCubit.setDirectoryOfDirectory(
-                    source: directory,
-                  );
+                  setDirectory(directory);
                 }
               },
             ),
@@ -159,10 +123,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              _visualHelper.loadImageSource(_controller.text);
+            onPressed: () async {
+              pop() => Navigator.of(context).pop();
+              await _visualHelper.loadImageSource(_controller.text);
               _visualHelper.hasMedia = true;
-              Navigator.of(context).pop();
+              pop();
             },
             child: Text(los.okay),
           ),
@@ -184,13 +149,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _image.add(image.path);
       _media.add('${image.path}.png');
     }
-    widget.selectedImageBloc.add(
+    context.read<SelectedImageBloc>().add(
       SelectedImageAllocateEvent(size: _visualHelper.animation.image.length),
     );
     for (final sprite in _visualHelper.animation.sprite) {
       _sprite.add(sprite.name);
     }
-    widget.selectedSpriteBloc.add(
+    context.read<SelectedSpriteBloc>().add(
       SelectedSpriteAllocateEvent(size: _visualHelper.animation.sprite.length),
     );
     var labelName = 'main';
@@ -268,23 +233,24 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _onUploadFile() async {
-    void resetImageEvent() =>
-        widget.selectedImageBloc.add(const SelectedImageResetEvent());
-    void resetSpriteEvent() =>
-        widget.selectedSpriteBloc.add(const SelectedSpriteResetEvent());
-    void resetLabelEvent() =>
-        widget.selectedLabelBloc.add(const ResetLabelEvent());
+    void resetState() {
+      context.read<SelectedLabelBloc>().add(const ResetLabelEvent());
+      context.read<SelectedSpriteBloc>().add(const SelectedSpriteResetEvent());
+      context.read<SelectedImageBloc>().add(const SelectedImageResetEvent());
+    }
+
     _animationController.stop();
+    void setFile(String file) =>
+        context.read<InitialDirectoryCubit>().setDirectoryOfFile(source: file);
     final file = await FileHelper.uploadFile(
-      initialDirectory: widget.initialDirectoryCubit.state.initialDirectory,
+      initialDirectory:
+          context.read<InitialDirectoryCubit>().state.initialDirectory,
     );
     if (file != null) {
       try {
-        widget.initialDirectoryCubit.setDirectoryOfFile(source: file);
+        setFile(file);
         _animationFile = file;
-        resetLabelEvent();
-        resetSpriteEvent();
-        resetImageEvent();
+        resetState();
         _resetAnimation();
         await _visualHelper.loadAnimation(file);
         _visualHelper.hasAnimation = true;
@@ -308,7 +274,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _onDragFile(String file) async {
+  Future<void> _onDragFile(String file) async {
     await _visualHelper.loadAnimation(file);
     _visualHelper.hasAnimation = true;
     await _onUploadMedia();
@@ -318,32 +284,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void _updateScreens() {
-    final mediaScreen = MediaScreen(
-      staticController: _staticController,
-      visualHelper: _visualHelper,
-      sprite: _sprite,
-      image: _image,
-      media: _media,
-    );
-    final labelScreen = LabelScreen(label: _label);
     _screen = <Widget>[
       AnimationScreen(
         key: ValueKey(_visualHelper.hasAnimation),
         controller: _screenshotController,
         visualHelper: _visualHelper,
-        selectedLabelBloc: widget.selectedLabelBloc,
         onUploadFile: _onUploadFile,
         onDragFile: _onDragFile,
         hasFile: false,
-        mediaScreen: mediaScreen,
         matrix: _matrix,
         transformationController: _transformationController,
         animationController: _animationController,
         mediaDirectory: _mediaDirectory,
         sourceFile: _animationFile,
       ),
-      labelScreen,
-      mediaScreen,
+      LabelScreen(label: _label),
+      MediaScreen(
+        staticController: _staticController,
+        visualHelper: _visualHelper,
+        sprite: _sprite,
+        image: _image,
+        media: _media,
+      ),
     ];
   }
 
@@ -431,25 +393,45 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     await showScreenShot(result);
   }
 
+  Widget _buildFloatingActionButton() {
+    return CollapsibleFloatingActionButton(
+      items: [
+        CollapsibleFloatingActionButtonItem(
+          icon: Symbols.file_upload,
+          tooltip: context.los.upload_file,
+          onPressed: _onUploadFile,
+        ),
+        CollapsibleFloatingActionButtonItem(
+          icon: Symbols.screenshot,
+          tooltip: context.los.take_screenshot,
+          onPressed: _takeScreenshot,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        forceMaterialTransparency: CurrentPlatform.isDesktop,
-        title: Text(los.animation_viewer),
-        actions: [
-          IconButton(
-            onPressed: _takeScreenshot,
-            icon: const Icon(Symbols.screenshot),
-          ),
-          IconButton(
-            onPressed: _onUploadFile,
-            icon: const Icon(Symbols.file_upload),
-          ),
-        ],
+      appBar: UIHelper.appBarOr(
+        AppBar(
+          forceMaterialTransparency: CurrentPlatform.isDesktop,
+          title: Text(los.animation_viewer),
+          actions: [
+            IconButton(
+              onPressed: _takeScreenshot,
+              icon: const Icon(Symbols.screenshot),
+            ),
+            IconButton(
+              onPressed: _onUploadFile,
+              icon: const Icon(Symbols.file_upload),
+            ),
+          ],
+        ),
       ),
       body: _buildUI(),
+      floatingActionButton: UIHelper.widgetOr(_buildFloatingActionButton()),
       bottomNavigationBar: _navigationBar(),
     );
   }

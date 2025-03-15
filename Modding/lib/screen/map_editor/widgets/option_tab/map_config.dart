@@ -304,6 +304,14 @@ class MapConfigTab extends StatelessWidget {
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 softWrap: false,
+                                                style: Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.copyWith(
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.onSurface,
+                                                ),
                                               ),
                                             ),
                                           )

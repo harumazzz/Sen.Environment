@@ -33,7 +33,7 @@
 	"js_execute": "Выполнение скриптов JS",
 	"js_execute_description": "Выполните один из встроенных скриптов JS",
 	"animation_viewer": "Просмотр анимаций",
-	"animation_viewer_description": "Здесь вы можете посмотреть анимации выбрав нужный файл",
+	"animation_viewer_description": "Здесь вы можете посмотреть анимации",
 	"toolchain_is_invalid": "Неверно указана папка приложения",
 	"user_provided": "Предоставлено пользователем",
 	"execute_again": "Повторить выполнение?",

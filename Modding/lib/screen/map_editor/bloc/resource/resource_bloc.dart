@@ -315,7 +315,7 @@ class ResourceBloc extends Bloc<ResourceEvent, ResourceState> {
       clear: true,
       enableCostume: settingBloc.state.plantCostume,
     );
-    for (final e in FileHelper.readDirectory(
+    for (final e in await FileHelper.readDirectoryAsync(
       source: loadPath,
       recursive: false,
     )) {

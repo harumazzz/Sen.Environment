@@ -65,7 +65,7 @@ class VisualAnimation {
     Iterable<String>? spriteDisable,
   }) async {
     final animation = model.SexyAnimation.fromJson(
-      FileHelper.readJson(source: animationPath),
+      await FileHelper.readJsonAsync(source: animationPath),
     );
     await process(animation, mediaPath, spriteDisable: spriteDisable);
     return;
@@ -178,15 +178,15 @@ class VisualAnimation {
     });
 
     final stream = ResizeImage(
-      MemoryImage(FileHelper.readBuffer(source: imagePath)),
+      MemoryImage(await FileHelper.readBufferAsync(source: imagePath)),
       width: image.dimension.width,
       height: image.dimension.height,
     ).resolve(const ImageConfiguration())..addListener(listener);
-    _imageList.add((
-        await completer.future,
-        VisualFrame.transformMatrixFromVariant(image.transform),
-      ),
+    final data = (
+      await completer.future,
+      VisualFrame.transformMatrixFromVariant(image.transform),
     );
+    _imageList.add(data);
     stream.removeListener(listener);
     return;
   }

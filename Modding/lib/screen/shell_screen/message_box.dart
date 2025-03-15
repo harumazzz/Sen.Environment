@@ -5,6 +5,8 @@ import 'package:screenshot/screenshot.dart';
 import '../../bloc/add_option_bloc/add_option_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
+import '../../extension/context.dart';
+import 'idle_screen.dart';
 import 'message_card.dart';
 import 'shimmer_card.dart';
 
@@ -48,6 +50,13 @@ class _MessageBoxState extends State<MessageBox> {
         }
       },
       builder: (context, state) {
+        if (state is LaunchStatusInitial) {
+          return IdleScreen(
+            color: Colors.cyan.withValues(alpha: 0.6),
+            text: context.los.sen_is_listening,
+            child: Image.asset('assets/images/logo.png'),
+          );
+        }
         return state is LaunchStatusLoading
             ? _buildShimmer()
             : _MessageList(scrollController: _scrollController);

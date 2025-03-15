@@ -42,17 +42,17 @@ class VisualHelper {
   Future<void> loadAnimation(String path) async {
     dispose();
     animation = model.SexyAnimation.fromJson(
-      await FileHelper.readJson(source: path),
+      await FileHelper.readJsonAsync(source: path),
     );
     return;
   }
 
-  void loadImageSource(String directory) {
+  Future<void> loadImageSource(String directory) async {
     for (final image in animation.image) {
       final file = '$directory/${image.path}.png';
       var source = null as MemoryImage?;
       if (FileHelper.isFile(file)) {
-        source = MemoryImage(FileHelper.readBuffer(source: file));
+        source = MemoryImage(await FileHelper.readBufferAsync(source: file));
       }
       imageSource.add(source);
     }

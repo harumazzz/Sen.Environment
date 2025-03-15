@@ -33,7 +33,7 @@
 	"js_execute": "Thực thi JS",
 	"js_execute_description": "Chạy JS được xây dựng sẵn",
 	"animation_viewer": "Animation Viewer",
-	"animation_viewer_description": "Thông qua Animation Viewer, xem hoạt ảnh thực tế sẽ được thực hiện",
+	"animation_viewer_description": "Thông qua Animation Viewer, xem hoạt ảnh thực tế",
 	"toolchain_is_invalid": "Bộ công cụ không hợp lệ",
 	"user_provided": "Người dùng cung cấp",
 	"execute_again": "Thực thi lại?",

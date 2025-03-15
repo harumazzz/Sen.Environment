@@ -56,17 +56,20 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     return;
   }
 
-  void _configToolDone(ToolConfigSubmitted event, Emitter<ToolBarState> emit) {
+  Future<void> _configToolDone(
+    ToolConfigSubmitted event,
+    Emitter<ToolBarState> emit,
+  ) async {
     final settingPath = '${cubit.state.settingPath}/config.json';
     final config = cubit.state.configModel;
     config.setting.playSingleFrame = settingBloc.state.playSingleFrame;
     config.setting.muteAudio = settingBloc.state.muteAudio;
     config.setting.filterQuality = settingBloc.state.filterQuality;
-    final json = FileHelper.readJson(source: settingPath);
+    final json = await FileHelper.readJsonAsync(source: settingPath);
     json['setting'] = ConfigSetting.toJson(config.setting);
     FileHelper.writeJson(source: settingPath, data: json);
     if (!settingBloc.state.muteAudio) {
-      cubit.state.editorResource.switchResourceSound.resume();
+      await cubit.state.editorResource.switchResourceSound.resume();
     }
     initBloc.add(ShowSnackBarEvent(text: los.config_saved));
     return;
@@ -130,7 +133,9 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
       return;
     }
     try {
-      final worldMap = WorldMap.fromJson(FileHelper.readJson(source: path));
+      final worldMap = WorldMap.fromJson(
+        await FileHelper.readJsonAsync(source: path),
+      );
       event.stageBloc.add(
         LoadWorldEvent(
           worldData: worldMap.list.first,
@@ -140,7 +145,11 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
         ),
       );
     } catch (ex) {
-      initBloc.add(ShowSnackBarEvent(text: los.failed_to_load_worldmap));
+      initBloc.add(
+        ShowSnackBarEvent(
+          text: '${los.failed_to_load_worldmap}: ${ex.toString()}',
+        ),
+      );
     }
   }
 

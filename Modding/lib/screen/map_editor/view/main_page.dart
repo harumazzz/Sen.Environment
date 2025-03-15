@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../../../extension/context.dart';
+import '../../../extension/platform.dart';
 import '../bloc/autosave/autosave_bloc.dart';
 import '../bloc/canvas/canvas_bloc.dart';
 import '../bloc/history/history_bloc.dart';
@@ -205,7 +204,8 @@ class MainPageChild extends StatelessWidget {
             ),
           );
         }
-        if (state.alertDialogEnable[AlertDialogShowType.clear]!) {
+        if (state.alertDialogEnable[AlertDialogShowType.clear] != null &&
+            state.alertDialogEnable[AlertDialogShowType.clear]!) {
           final done = await showDialog<bool>(
             context: context,
             builder: (context) {
@@ -270,7 +270,7 @@ class MainPageChild extends StatelessWidget {
         }
       },
       child:
-          (Platform.isAndroid || Platform.isIOS)
+          (CurrentPlatform.isMobile)
               ? const MobileScreen()
               : const DesktopScreen(),
     );

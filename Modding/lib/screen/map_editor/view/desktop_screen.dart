@@ -37,7 +37,6 @@ class DesktopScreen extends StatelessWidget {
         buttonSize: 45,
         pointerSize: 0,
         tooltipTextStyle: const TextStyle(inherit: false),
-        // tooltipCanvasAlignment: Alignment.bottomCenter,
         overlayColor: Colors.transparent,
       ),
       child: Row(

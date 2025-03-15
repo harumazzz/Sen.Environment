@@ -7,7 +7,6 @@ import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
 import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../extension/context.dart';
 import 'interaction_bar.dart';
@@ -166,14 +165,13 @@ class ShellScreen extends StatelessWidget {
                     }
                   },
                   child: Scaffold(
-                    appBar: AppBar(
-                      forceMaterialTransparency: CurrentPlatform.isDesktop,
-                      title: Text(context.los.shell),
+                    appBar: UIHelper.appBarOr(
+                      AppBar(title: Text(context.los.shell)),
                     ),
                     body: BlocListener<AddOptionBloc, AddOptionState>(
-                      listener: (context, state) async {
-                        if (state is ExportLogState) {
-                          await _showLog(context, state.value);
+                      listener: (context, optionState) async {
+                        if (optionState is ExportLogState) {
+                          await _showLog(context, optionState.value);
                         }
                       },
                       child: const MessageBox(),

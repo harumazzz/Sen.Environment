@@ -10,6 +10,7 @@ import '../cubit/navigation_cubit/navigation_cubit.dart';
 import '../constant/build_distribution.dart';
 import 'home_screen/home_screen.dart';
 import 'miscellaneous/miscellaneous_screen.dart';
+import 'navigation_destination.dart';
 import 'setting_screen/setting_screen.dart';
 import 'shell_screen/shell_screen.dart';
 import '../service/android_helper.dart';
@@ -75,99 +76,6 @@ class RootScreen extends StatelessWidget {
     });
   }
 
-  List<Widget> _buildNavigationRail(
-    BuildContext context,
-    NavigationState state,
-  ) {
-    final los = context.los;
-    final theme = Theme.of(context);
-    return [
-      Container(
-        margin: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: theme.shadowColor.withValues(alpha: 0.1),
-              blurRadius: 12,
-              spreadRadius: 3,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32.0),
-          child: NavigationRailTheme(
-            data: NavigationRailThemeData(
-              backgroundColor: Colors.transparent,
-              indicatorColor: theme.colorScheme.primaryContainer,
-              indicatorShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              selectedIconTheme: IconThemeData(
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
-              selectedLabelTextStyle: TextStyle(
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
-              unselectedIconTheme: IconThemeData(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              unselectedLabelTextStyle: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            child: NavigationRail(
-              selectedIndex: state.selectedIndex,
-              onDestinationSelected:
-                  context.read<NavigationCubit>().changeIndex,
-              labelType: NavigationRailLabelType.all,
-              useIndicator: true,
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Image.asset('assets/images/logo.png', height: 48),
-              ),
-              destinations: [
-                _buildDestination(
-                  context,
-                  icon: Symbols.home,
-                  selectedIcon: Symbols.home_filled,
-                  label: los.home,
-                ),
-                _buildDestination(
-                  context,
-                  icon: Symbols.package,
-                  selectedIcon: Symbols.package_sharp,
-                  label: los.task,
-                ),
-                _buildDestination(
-                  context,
-                  icon: Symbols.settings,
-                  selectedIcon: Symbols.settings_sharp,
-                  label: los.settings,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  NavigationRailDestination _buildDestination(
-    BuildContext context, {
-    required IconData icon,
-    required IconData selectedIcon,
-    required String label,
-  }) {
-    return NavigationRailDestination(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
-      icon: Icon(icon, size: 24.0),
-      selectedIcon: Icon(selectedIcon, size: 24.0),
-      label: Text(label, overflow: TextOverflow.ellipsis),
-    );
-  }
-
   Widget _buildNavigationBar(BuildContext context, NavigationState state) {
     final los = context.los;
     return NavigationBar(
@@ -231,7 +139,7 @@ class RootScreen extends StatelessWidget {
                 body: Row(
                   children: [
                     if (CurrentPlatform.isDesktop)
-                      ..._buildNavigationRail(context, state),
+                      CollapsibleNavigationRail(state: state),
                     _buildTransition(state),
                   ],
                 ),

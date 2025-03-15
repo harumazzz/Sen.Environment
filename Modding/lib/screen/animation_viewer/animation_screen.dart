@@ -12,7 +12,6 @@ import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import 'control_panel.dart';
-import 'media_screen.dart';
 import 'visual_helper.dart';
 import '../../i18n/app_localizations.dart';
 import '../../service/file_helper.dart';
@@ -24,10 +23,8 @@ class AnimationScreen extends StatefulWidget {
     required this.hasFile,
     required this.onUploadFile,
     required this.onDragFile,
-    required this.mediaScreen,
     required this.animationController,
     required this.visualHelper,
-    required this.selectedLabelBloc,
     required this.controller,
     required this.matrix,
     required this.transformationController,
@@ -43,17 +40,13 @@ class AnimationScreen extends StatefulWidget {
 
   final Future<void> Function() onUploadFile;
 
-  final void Function(String value) onDragFile;
-
-  final MediaScreen mediaScreen;
+  final Future<void> Function(String value) onDragFile;
 
   final Matrix4? matrix;
 
   final AnimationController animationController;
 
   final VisualHelper visualHelper;
-
-  final SelectedLabelBloc selectedLabelBloc;
 
   final ScreenshotController controller;
 
@@ -89,12 +82,6 @@ class AnimationScreen extends StatefulWidget {
     );
     properties.add(
       DiagnosticsProperty<VisualHelper>('visualHelper', visualHelper),
-    );
-    properties.add(
-      DiagnosticsProperty<SelectedLabelBloc>(
-        'selectedLabelBloc',
-        selectedLabelBloc,
-      ),
     );
     properties.add(
       DiagnosticsProperty<ScreenshotController>('controller', controller),
@@ -169,10 +156,10 @@ class _AnimationScreenState extends State<AnimationScreen> {
           _dragging = false;
         });
       },
-      onDragDone: (details) {
+      onDragDone: (details) async {
         if (details.files.isNotEmpty) {
           final file = details.files.first;
-          widget.onDragFile(file.path);
+          await widget.onDragFile(file.path);
           if (widget.visualHelper.hasAnimation) {
             widget.visualHelper.workingFrameRate =
                 widget.visualHelper.animation.frameRate.toDouble();
@@ -185,7 +172,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
 
   void _loadWorkingSprite(int index) {
     final labelInfo =
-        widget.visualHelper.labelInfo[widget.selectedLabelBloc.state.label]!;
+        widget.visualHelper.labelInfo[BlocProvider.of<SelectedLabelBloc>(
+          context,
+        ).state.label]!;
     final duration =
         ((labelInfo.endIndex - labelInfo.startIndex) /
                 widget.visualHelper.workingFrameRate *

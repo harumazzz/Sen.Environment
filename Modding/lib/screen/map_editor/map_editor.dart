@@ -7,6 +7,7 @@ import '../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubi
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
+import '../../widget/collapsible_floating_button.dart';
 import 'bloc/init_bloc/init_bloc.dart';
 import 'view/main_page.dart';
 import '../../service/ui_helper.dart';
@@ -61,10 +62,37 @@ class MapEditor extends StatelessWidget {
         );
   }
 
+  Widget _buildFloatingActionButton({
+    required BuildContext context,
+    required VoidCallback screenshot,
+  }) {
+    return CollapsibleFloatingActionButton(
+      items: [
+        CollapsibleFloatingActionButtonItem(
+          icon: Symbols.screenshot,
+          tooltip: context.los.take_screenshot,
+          onPressed: screenshot,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onScreenshot({
+    required BuildContext context,
+    required Future<Uint8List?> Function()? takeShoot,
+  }) async {
+    if (takeShoot != null) {
+      final imageBytes = await takeShoot();
+      if (imageBytes != null && context.mounted) {
+        await UIHelper.showScreenshotDialog(context, imageBytes);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = context.los;
-    Future<Uint8List?> Function()? takeShoot;
+    var takeShoot = null as Future<Uint8List?> Function()?;
     return BlocProvider<InitBloc>(
       create: (_) => InitBloc(),
       child: BlocListener<InitBloc, InitState>(
@@ -72,23 +100,21 @@ class MapEditor extends StatelessWidget {
           takeShoot = state.takeShoot;
         },
         child: Scaffold(
-          appBar: AppBar(
-            forceMaterialTransparency: CurrentPlatform.isDesktop,
-            title: Text(los.map_editor),
-            leading: _buildLeading(context),
-            actions: [
-              IconButton(
-                onPressed: () async {
-                  if (takeShoot != null) {
-                    final imageBytes = await takeShoot!();
-                    if (imageBytes != null && context.mounted) {
-                      await UIHelper.showScreenshotDialog(context, imageBytes);
-                    }
-                  }
-                },
-                icon: const Icon(Symbols.screenshot),
-              ),
-            ],
+          appBar: UIHelper.appBarOr(
+            AppBar(
+              title: Text(los.map_editor),
+              leading: _buildLeading(context),
+              actions: [
+                IconButton(
+                  onPressed:
+                      () async => await _onScreenshot(
+                        context: context,
+                        takeShoot: takeShoot,
+                      ),
+                  icon: const Icon(Symbols.screenshot),
+                ),
+              ],
+            ),
           ),
           body: BlocBuilder<
             MapEditorConfigurationCubit,
@@ -100,10 +126,13 @@ class MapEditor extends StatelessWidget {
               if (status == AppConfigurationStatus.initial) {
                 final resourceLocation =
                     context.read<SettingsCubit>().state.mapEditorResource;
-                context.read<MapEditorConfigurationCubit>().load(
-                  context.los,
-                  resourceLocation,
-                );
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  spawn() async => await context
+                      .read<MapEditorConfigurationCubit>()
+                      .load(context.los, resourceLocation);
+                  await Future.delayed(Duration.zero);
+                  await spawn();
+                });
               }
               if (status == AppConfigurationStatus.success) {
                 return Background(
@@ -115,9 +144,21 @@ class MapEditor extends StatelessWidget {
               } else if (status == AppConfigurationStatus.failed) {
                 return Background(
                   child: Center(
-                    child: Text(
-                      '${los.loading_error}: ${state.errorSnapShot}',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 8.0,
+                      children: [
+                        Text(
+                          '${los.loading_error}: ${state.errorSnapShot}',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<MapEditorConfigurationCubit>().reset();
+                          },
+                          child: Text(los.reload_map_resources),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -138,6 +179,16 @@ class MapEditor extends StatelessWidget {
                 ),
               );
             },
+          ),
+          floatingActionButton: UIHelper.widgetOr(
+            _buildFloatingActionButton(
+              context: context,
+              screenshot:
+                  () async => await _onScreenshot(
+                    context: context,
+                    takeShoot: takeShoot,
+                  ),
+            ),
           ),
         ),
       ),
