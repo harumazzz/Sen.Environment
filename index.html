@@ -67,12 +67,9 @@
 	<script>
 		let params = new URLSearchParams(window.location.search);
 		let redirectPath = params.get('redirect');
-
 		if (redirectPath !== null) {
 			window.history.replaceState({}, '', redirectPath);
 		}
-
-
 	</script>
 </body>
 
