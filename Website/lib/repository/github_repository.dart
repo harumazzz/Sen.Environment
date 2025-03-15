@@ -1,10 +1,9 @@
-import 'package:website/api/github_api.dart';
-import 'package:website/model/github.dart';
+import '../api/github_api.dart';
+import '../model/github.dart';
 
 class GithubRepository {
-  final GithubApi _githubApi;
-
   const GithubRepository(this._githubApi);
+  final GithubApi _githubApi;
 
   Future<GitHub> getRelease() async {
     return await _githubApi.getRelease();

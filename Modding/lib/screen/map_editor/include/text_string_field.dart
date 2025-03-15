@@ -29,8 +29,9 @@ class TextStringField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        contentPadding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
+        contentPadding: const EdgeInsets.fromLTRB(12.0, 4.0, 8.0, 12.0),
         floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: const OutlineInputBorder(),
       ),
       autovalidateMode: autovalidateMode,
       validator: validator,

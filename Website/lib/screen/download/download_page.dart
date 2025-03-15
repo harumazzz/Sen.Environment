@@ -1,11 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/model/github.dart';
-import 'package:website/repository/github_repository.dart';
-import 'package:website/screen/download/thankyou_page.dart';
-import 'package:website/screen/footer/footer_widget.dart';
-import 'package:website/service/download_helper.dart';
-import 'package:website/service_locator/service_locator.dart';
+import 'package:go_router/go_router.dart';
+import '../../extension/context.dart';
+import '../../model/github.dart';
+import '../../repository/github_repository.dart';
+import '../footer/footer_widget.dart';
+import '../../service/download_helper.dart';
+import '../../service_locator/service_locator.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key, required this.onNavigate});
@@ -13,9 +14,21 @@ class DownloadPage extends StatefulWidget {
 
   @override
   State<DownloadPage> createState() => _DownloadPageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
+    );
+  }
 }
 
-class _DownloadPageState extends State<DownloadPage> {
+class _DownloadPageState extends State<DownloadPage>
+    with AutomaticKeepAliveClientMixin {
   late Future<GitHub> _future;
   late int _totalDownloadCount;
 
@@ -27,14 +40,17 @@ class _DownloadPageState extends State<DownloadPage> {
   }
 
   void _calculateTotalDownloadCount(GitHub response) {
-    if (_totalDownloadCount != 0) return;
-    for (var e in response.assets!) {
+    if (_totalDownloadCount != 0) {
+      return;
+    }
+    for (final e in response.assets!) {
       _totalDownloadCount += e.downloadCount!;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
@@ -51,7 +67,6 @@ class _DownloadPageState extends State<DownloadPage> {
 
           return SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(
@@ -66,7 +81,6 @@ class _DownloadPageState extends State<DownloadPage> {
                       if (isSmallScreen)
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 24.0,
                           children: [
                             _buildWindowsInstallation(isSmallScreen),
@@ -213,7 +227,6 @@ class _DownloadPageState extends State<DownloadPage> {
     required bool isSmallScreen,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 16.0,
       children: [
         Image.asset(
@@ -230,15 +243,15 @@ class _DownloadPageState extends State<DownloadPage> {
             ),
           ),
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder:
-                    (context) => ThankYouPage(
-                      link: link,
-                      isWindows: isWindows,
-                      onNavigate: widget.onNavigate,
-                    ),
-              ),
+            context.go(
+              '/download/success',
+              extra: <String, dynamic>{
+                'isWindows': isWindows,
+                'link': link,
+                'onNavigate': (int index) {
+                  context.go(['/', '/download', '/changelog', '/about'][index]);
+                },
+              },
             );
             DownloadHelper.downloadFile(link);
           },
@@ -283,4 +296,7 @@ class _DownloadPageState extends State<DownloadPage> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

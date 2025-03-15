@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:website/model/changelog.dart';
-import 'package:website/repository/changelog_repository.dart';
-import 'package:website/screen/changelog/changelog_card.dart';
-import 'package:website/screen/footer/footer_widget.dart';
-import 'package:website/service_locator/service_locator.dart';
+import '../../model/changelog.dart';
+import '../../repository/changelog_repository.dart';
+import 'changelog_card.dart';
+import '../footer/footer_widget.dart';
+import '../../service_locator/service_locator.dart';
 
 class ChangelogPage extends StatefulWidget {
   const ChangelogPage({super.key, required this.onNavigate});
@@ -12,9 +13,21 @@ class ChangelogPage extends StatefulWidget {
 
   @override
   State<ChangelogPage> createState() => _ChangelogPageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
+    );
+  }
 }
 
-class _ChangelogPageState extends State<ChangelogPage> {
+class _ChangelogPageState extends State<ChangelogPage>
+    with AutomaticKeepAliveClientMixin {
   late Future<List<Changelog>> _future;
 
   @override
@@ -35,8 +48,8 @@ class _ChangelogPageState extends State<ChangelogPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
       child: Column(
         children: [
           Padding(
@@ -66,4 +79,7 @@ class _ChangelogPageState extends State<ChangelogPage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

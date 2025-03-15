@@ -27,8 +27,8 @@ class MediaScreen extends StatelessWidget {
 
   final AnimationController staticController;
 
-  Widget _buildTab({required IconData icon, required String label}) {
-    return Tab(icon: Icon(icon, size: 22), text: label);
+  Widget _buildTab({required Widget icon, required String label}) {
+    return Tab(icon: icon, text: label);
   }
 
   @override
@@ -58,9 +58,27 @@ class MediaScreen extends StatelessWidget {
               dividerColor: Colors.transparent,
               unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
               tabs: <Widget>[
-                _buildTab(icon: Symbols.folder, label: los.media),
-                _buildTab(icon: Symbols.image, label: los.image),
-                _buildTab(icon: Symbols.animation, label: los.sprite),
+                _buildTab(
+                  icon: Badge(
+                    label: Text('${media.length}'),
+                    child: const Icon(Symbols.folder, size: 22),
+                  ),
+                  label: los.media,
+                ),
+                _buildTab(
+                  icon: Badge(
+                    label: Text('${image.length}'),
+                    child: const Icon(Symbols.image, size: 22),
+                  ),
+                  label: los.image,
+                ),
+                _buildTab(
+                  icon: Badge(
+                    label: Text('${sprite.length}'),
+                    child: const Icon(Symbols.animation, size: 22),
+                  ),
+                  label: los.sprite,
+                ),
               ],
             ),
           ),

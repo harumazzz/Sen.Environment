@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../../../../extension/context.dart';
 import '../../../../extension/platform.dart';
@@ -80,23 +81,6 @@ class EditorSettingWidget extends StatelessWidget {
 
 class EditorSettingState extends StatelessWidget {
   const EditorSettingState({super.key});
-
-  String _backgroundString(BorderBackground background, AppLocalizations los) {
-    switch (background) {
-      case BorderBackground.color:
-        {
-          return los.color;
-        }
-      case BorderBackground.timeSpace:
-        {
-          return los.time_space;
-        }
-      case BorderBackground.senLogo:
-        {
-          return los.sui_logo;
-        }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -278,56 +262,7 @@ class EditorSettingState extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    SizedBox(
-                      width: 130,
-                      child: DropdownButton<BorderBackground>(
-                        value: state.boundBackground,
-                        isExpanded: true,
-                        focusColor: Colors.transparent,
-
-                        underline: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                width: 0.8,
-                              ),
-                            ),
-                          ),
-                        ),
-                        items:
-                            BorderBackground.values
-                                .map(
-                                  (e) => DropdownMenuItem<BorderBackground>(
-                                    value: e,
-                                    child: Text(
-                                      _backgroundString(e, context.los),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge?.copyWith(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          final background = value ?? BorderBackground.color;
-                          context.read<SettingBloc>().add(
-                            SetBoundBackground(background: background),
-                          );
-                        },
-                      ),
-                    ),
+                    const SizedBox(width: 130, child: _CustomAnchor()),
                   ],
                 ),
               ),
@@ -336,5 +271,127 @@ class EditorSettingState extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _CustomAnchor extends StatefulWidget {
+  const _CustomAnchor();
+
+  @override
+  __CustomAnchorState createState() => __CustomAnchorState();
+}
+
+class __CustomAnchorState extends State<_CustomAnchor> {
+  late BorderBackground _selectedBackground;
+  late FocusNode _focusNode;
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _selectedBackground = context.read<SettingBloc>().state.boundBackground;
+    _controller = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.text = _backgroundString(_selectedBackground, context.los);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraint) {
+        return MenuAnchor(
+          crossAxisUnconstrained: false,
+          alignmentOffset: const Offset(0, -48),
+          childFocusNode: _focusNode,
+          style: MenuStyle(
+            minimumSize: WidgetStatePropertyAll(
+              Size(constraint.maxWidth + 8, 0),
+            ),
+            maximumSize: WidgetStatePropertyAll(
+              Size(constraint.maxWidth + 8, double.infinity),
+            ),
+          ),
+          menuChildren: [
+            ...BorderBackground.values.map((e) {
+              return MenuItemButton(
+                onPressed: () {
+                  _selectBackground(e);
+                  _focusNode.unfocus();
+                },
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: constraint.maxWidth - 16,
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    visualDensity: VisualDensity.standard,
+                    title: Text(
+                      _backgroundString(e, context.los),
+                      overflow: TextOverflow.clip,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+          builder: (context, controller, child) {
+            return TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              keyboardType: TextInputType.none,
+              inputFormatters: const [],
+              readOnly: true,
+              decoration: InputDecoration(
+                filled: false,
+                border: const UnderlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Symbols.arrow_drop_down),
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                ),
+              ),
+              onTapOutside: (e) {
+                _focusNode.unfocus();
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _selectBackground(BorderBackground background) {
+    setState(() {
+      _selectedBackground = background;
+      _controller.text = _backgroundString(background, context.los);
+    });
+    context.read<SettingBloc>().add(SetBoundBackground(background: background));
+  }
+
+  String _backgroundString(BorderBackground background, AppLocalizations los) {
+    switch (background) {
+      case BorderBackground.color:
+        return los.color;
+      case BorderBackground.timeSpace:
+        return los.time_space;
+      case BorderBackground.senLogo:
+        return los.sui_logo;
+    }
   }
 }

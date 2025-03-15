@@ -454,5 +454,8 @@
 	"close_tabs_to_the_left": "Close tabs to the left",
 	"close_tabs_to_the_right": "Close tabs to the right",
 	"reload_map_resources": "Reload map resources",
-	"sen_is_listening": "Sen is listening"
+	"sen_is_listening": "Sen is listening",
+	"copied_to_clipboard": "Copied to clipboard!",
+	"copy_json": "Copy JSON",
+	"level_tutorial": "Level Tutorial"
 }

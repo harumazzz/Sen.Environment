@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:website/model/changelog.dart';
+import '../model/changelog.dart';
 
 class ChangelogApi {
   const ChangelogApi();

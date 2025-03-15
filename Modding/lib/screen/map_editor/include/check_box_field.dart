@@ -31,10 +31,11 @@ class CheckBoxField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final acitveColor =
+    final colorScheme = Theme.of(context).colorScheme;
+    final activeColor =
         !isDesktopPlatform && Theme.of(context).brightness == Brightness.light
-            ? Theme.of(context).colorScheme.inversePrimary
-            : Theme.of(context).colorScheme.primaryFixedDim;
+            ? colorScheme.inversePrimary
+            : colorScheme.primaryFixedDim;
     return Container(
       width: width ?? double.infinity,
       height: height,
@@ -44,7 +45,7 @@ class CheckBoxField extends StatelessWidget {
               ? BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                     width: 0.8,
                   ),
                 ),
@@ -56,15 +57,19 @@ class CheckBoxField extends StatelessWidget {
             label,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const Spacer(),
           Checkbox(
             value: value,
-            activeColor: acitveColor,
             onChanged:
-                onChanged != null ? (value) => onChanged!(value: value) : null,
+                onChanged != null ? (val) => onChanged!(value: val) : null,
+            activeColor: activeColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            side: BorderSide(color: colorScheme.outline, width: 1.5),
           ),
         ],
       ),

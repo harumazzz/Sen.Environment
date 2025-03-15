@@ -65,9 +65,7 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
           controller: _resourceLocationController,
           decoration: InputDecoration(
             labelText: los.resource_location,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
+            border: const OutlineInputBorder(),
             suffixIcon: Tooltip(
               message: los.upload_directory,
               child: IconButton(

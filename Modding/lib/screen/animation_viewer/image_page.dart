@@ -72,6 +72,7 @@ class ImagePage extends StatelessWidget {
                     SelectedImageToggleEvent(index: index),
                   );
                 },
+                side: BorderSide(color: theme.colorScheme.outline, width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

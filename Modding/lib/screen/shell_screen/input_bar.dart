@@ -90,7 +90,7 @@ class _InputBarState extends State<InputBar> {
             controller: _controller,
             decoration: InputDecoration(
               border: InputBorder.none,
-              hintText: '${context.los.input_value}...',
+              labelText: '${context.los.input_value}...',
               suffixIcon: PopupMenuButton<String>(
                 initialValue: '',
                 elevation: 4.0,

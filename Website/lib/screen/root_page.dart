@@ -1,76 +1,38 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/screen/about/about_page.dart';
-import 'package:website/screen/changelog/changelog_page.dart';
-import 'package:website/screen/download/download_page.dart';
-import 'package:website/screen/home/home_page.dart';
+import 'package:go_router/go_router.dart';
+import '../extension/context.dart';
 
-class RootPage extends StatefulWidget {
-  const RootPage({super.key});
+class RootPage extends StatelessWidget {
+  const RootPage({
+    super.key,
+    required this.child,
+    required this.selectedIndex,
+    required this.onNavigate,
+  });
+  final Widget child;
 
-  @override
-  State<RootPage> createState() => _RootPageState();
-}
+  final int selectedIndex;
 
-class _RootPageState extends State<RootPage> {
-  late int _selectedIndex;
-
-  late final PageStorageBucket _bucket;
-
-  @override
-  void initState() {
-    _selectedIndex = 0;
-    _bucket = PageStorageBucket();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final void Function(int index) onNavigate;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.los.download_page)),
-      body: PageStorage(
-        bucket: _bucket,
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: <Widget>[
-            HomePage(
-              key: const PageStorageKey('home'),
-              onNavigate: _onItemTapped,
-            ),
-            DownloadPage(
-              key: const PageStorageKey('download'),
-              onNavigate: _onItemTapped,
-            ),
-            ChangelogPage(
-              key: const PageStorageKey('changelog'),
-              onNavigate: _onItemTapped,
-            ),
-            AboutPage(
-              key: const PageStorageKey('about'),
-              onNavigate: _onItemTapped,
-            ),
-          ],
-        ),
-      ),
-      drawer: AppDrawer(
-        onNavigate: _onItemTapped,
-        selectedIndex: _selectedIndex,
+      body: child, // Only the body changes!
+      drawer: AppDrawer(selectedIndex: selectedIndex, onNavigate: onNavigate),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('selectedIndex', selectedIndex));
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
       ),
     );
   }
@@ -84,104 +46,60 @@ class AppDrawer extends StatelessWidget {
   });
 
   final void Function(int index) onNavigate;
-
   final int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkTheme ? Colors.grey[850] : Colors.pink[100];
-    final textColor = isDarkTheme ? Colors.white : Colors.black;
-    final subtitleColor = isDarkTheme ? Colors.grey[300] : Colors.grey[700];
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          _buildDrawerHeader(
-            context,
-            backgroundColor,
-            textColor,
-            subtitleColor,
-          ),
-          _buildMenuItem(context.los.home, 0, context),
-          _buildMenuItem(context.los.download, 1, context),
-          _buildMenuItem(context.los.changelog, 2, context),
-          _buildMenuItem(context.los.about, 3, context),
+          _buildDrawerHeader(context),
+          _buildMenuItem(context.los.home, 0, context, '/'),
+          _buildMenuItem(context.los.download, 1, context, '/download'),
+          _buildMenuItem(context.los.changelog, 2, context, '/changelog'),
+          _buildMenuItem(context.los.about, 3, context, '/about'),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerHeader(
+  Widget _buildDrawerHeader(BuildContext context) {
+    return const DrawerHeader(
+      decoration: BoxDecoration(color: Colors.blue),
+      child: Text(
+        'Sen: Environment',
+        style: TextStyle(fontSize: 22.0, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(
+    String title,
+    int index,
     BuildContext context,
-    Color? backgroundColor,
-    Color? textColor,
-    Color? subtitleColor,
+    String route,
   ) {
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withValues(alpha: 0.5)
-                    : Colors.grey.withValues(alpha: 0.3),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          spacing: 12.0,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              spacing: 12.0,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12.0),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Text(
-                  'Sen: Environment',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    fontSize: 22.0,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              context.los.make_your_own_mod_with_sen,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: subtitleColor),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(String title, int index, BuildContext context) {
     return ListTile(
       title: Text(title),
       selected: selectedIndex == index,
       onTap: () {
         onNavigate(index);
-        Navigator.of(context).pop();
+        context.go(route);
+        Navigator.of(context).pop(); // Close drawer
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
+    );
+    properties.add(IntProperty('selectedIndex', selectedIndex));
   }
 }

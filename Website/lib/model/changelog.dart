@@ -2,11 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class Changelog extends Equatable {
-  final String? version;
-  final DateTime? date;
-  final List<String>? specialThanks;
-  final List<String>? updateChanges;
-
   const Changelog({
     this.date,
     this.version,
@@ -32,6 +27,10 @@ class Changelog extends Equatable {
               : null,
     );
   }
+  final String? version;
+  final DateTime? date;
+  final List<String>? specialThanks;
+  final List<String>? updateChanges;
 
   @override
   List<Object?> get props => [version, date, specialThanks, updateChanges];

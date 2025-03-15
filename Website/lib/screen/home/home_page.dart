@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/screen/footer/footer_widget.dart';
-import 'package:website/service/url_helper.dart';
+import '../../extension/context.dart';
+import '../footer/footer_widget.dart';
+import '../../service/url_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.onNavigate});
@@ -11,6 +12,17 @@ class HomePage extends StatefulWidget {
 
   @override
   State<HomePage> createState() => _HomePageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
+    );
+  }
 }
 
 class _HomePageState extends State<HomePage> {
@@ -292,13 +304,11 @@ class _HomePageState extends State<HomePage> {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
               spacing: 16.0,
               children: [
                 _displayLogo(MediaQuery.of(context).size.width < 600),

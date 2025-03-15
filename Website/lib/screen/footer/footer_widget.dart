@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:website/extension/context.dart';
+import '../../extension/context.dart';
 
 class FooterWidget extends StatelessWidget {
   const FooterWidget({super.key, required this.onNavigate});
@@ -51,7 +52,6 @@ class FooterWidget extends StatelessWidget {
         height: 120,
         child: CarouselView.weighted(
           flexWeights: const <int>[1, 4, 1],
-          scrollDirection: Axis.horizontal,
           children: childList(120),
         ),
       );
@@ -80,7 +80,6 @@ class FooterWidget extends StatelessWidget {
               : Colors.grey[200],
       padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         spacing: 16.0,
         children: [
           _supported(context),
@@ -160,6 +159,17 @@ class FooterWidget extends StatelessWidget {
     return TextButton(
       onPressed: index != null ? () => onNavigate(index) : () {},
       child: Text(text),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
     );
   }
 }

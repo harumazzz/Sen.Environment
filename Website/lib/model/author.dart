@@ -1,26 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class Author extends Equatable {
-  final String? login;
-  final int? id;
-  final String? nodeId;
-  final String? avatarUrl;
-  final String? gravatarId;
-  final String? url;
-  final String? htmlUrl;
-  final String? followersUrl;
-  final String? followingUrl;
-  final String? gistsUrl;
-  final String? starredUrl;
-  final String? subscriptionsUrl;
-  final String? organizationsUrl;
-  final String? reposUrl;
-  final String? eventsUrl;
-  final String? receivedEventsUrl;
-  final String? type;
-  final String? userViewType;
-  final bool? siteAdmin;
-
   const Author({
     this.login,
     this.id,
@@ -66,6 +46,25 @@ class Author extends Equatable {
       siteAdmin: json['site_admin'],
     );
   }
+  final String? login;
+  final int? id;
+  final String? nodeId;
+  final String? avatarUrl;
+  final String? gravatarId;
+  final String? url;
+  final String? htmlUrl;
+  final String? followersUrl;
+  final String? followingUrl;
+  final String? gistsUrl;
+  final String? starredUrl;
+  final String? subscriptionsUrl;
+  final String? organizationsUrl;
+  final String? reposUrl;
+  final String? eventsUrl;
+  final String? receivedEventsUrl;
+  final String? type;
+  final String? userViewType;
+  final bool? siteAdmin;
 
   @override
   List<Object?> get props => [

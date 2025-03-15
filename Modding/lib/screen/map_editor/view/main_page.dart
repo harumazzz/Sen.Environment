@@ -200,7 +200,10 @@ class MainPageChild extends StatelessWidget {
               content: Text(state.text!),
               width: 400,
               behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 2),
+              duration: const Duration(milliseconds: 1500),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
             ),
           );
         }

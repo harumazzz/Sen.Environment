@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../../../../extension/context.dart';
 import '../../../../extension/platform.dart';
 import '../../bloc/setting/setting_bloc.dart';
@@ -98,48 +99,11 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
                     ),
                     const Spacer(),
                     SizedBox(
-                      width: 100,
-                      child: DropdownButton<FilterQuality>(
+                      width: 120.0,
+                      child: _FilterQualityMenu(
                         value: bloc.state.filterQuality,
-                        isExpanded: true,
-                        focusColor: Colors.transparent,
-                        underline: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                width: 0.8,
-                              ),
-                            ),
-                          ),
-                        ),
-                        items:
-                            FilterQuality.values
-                                .map(
-                                  (e) => DropdownMenuItem<FilterQuality>(
-                                    value: e,
-                                    child: Text(
-                                      e.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge?.copyWith(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
                         onChanged: (value) {
-                          bloc.add(SetFilterQuality(filterQuality: value!));
+                          bloc.add(SetFilterQuality(filterQuality: value));
                           setState(() {});
                         },
                       ),
@@ -159,6 +123,131 @@ class _ConfigSettingState extends State<ConfigSettingWidget> {
           },
         ),
       ],
+    );
+  }
+}
+
+class _FilterQualityMenu extends StatefulWidget {
+  const _FilterQualityMenu({required this.value, required this.onChanged});
+  final FilterQuality value;
+  final void Function(FilterQuality) onChanged;
+
+  @override
+  State<_FilterQualityMenu> createState() => __FilterQualityMenuState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(FilterQuality p1)>.has(
+        'onChanged',
+        onChanged,
+      ),
+    );
+    properties.add(EnumProperty<FilterQuality>('value', value));
+  }
+}
+
+class __FilterQualityMenuState extends State<_FilterQualityMenu> {
+  late final FocusNode _focusNode;
+  late final TextEditingController _controller;
+  late FilterQuality _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _selectedValue = widget.value;
+    _controller = TextEditingController(text: _selectedValue.name);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _selectItem(FilterQuality value) {
+    setState(() {
+      _selectedValue = value;
+      _controller.text = value.name;
+    });
+    widget.onChanged(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraint) {
+        return MenuAnchor(
+          style: MenuStyle(
+            minimumSize: WidgetStatePropertyAll(Size(constraint.maxWidth, 0)),
+            maximumSize: WidgetStatePropertyAll(
+              Size(constraint.maxWidth, double.infinity),
+            ),
+            elevation: WidgetStateProperty.all(4.0),
+          ),
+          crossAxisUnconstrained: false,
+          alignmentOffset: const Offset(0, 8),
+          menuChildren: [
+            ...FilterQuality.values.map((e) {
+              return MenuItemButton(
+                onPressed: () {
+                  _selectItem(e);
+                  _focusNode.unfocus();
+                },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  title: Text(
+                    e.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    softWrap: true,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+          builder: (context, controller, child) {
+            return TextField(
+              focusNode: _focusNode,
+              readOnly: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    width: 0.8,
+                  ),
+                ),
+                suffixIcon: Icon(
+                  Symbols.arrow_drop_down,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              controller: _controller,
+              onTap: () {
+                if (controller.isOpen) {
+                  controller.close();
+                } else {
+                  controller.open();
+                }
+              },
+              onTapOutside: (event) {
+                _focusNode.unfocus();
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

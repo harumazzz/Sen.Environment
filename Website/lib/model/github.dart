@@ -1,27 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:website/model/assets.dart';
-import 'package:website/model/author.dart';
+import 'assets.dart';
+import 'author.dart';
 
 class GitHub extends Equatable {
-  final String? url;
-  final String? assetsUrl;
-  final String? uploadUrl;
-  final String? htmlUrl;
-  final int? id;
-  final Author? author;
-  final String? nodeId;
-  final String? tagName;
-  final String? targetCommitish;
-  final String? name;
-  final bool? draft;
-  final bool? prerelease;
-  final String? createdAt;
-  final String? publishedAt;
-  final List<Assets>? assets;
-  final String? tarballUrl;
-  final String? zipballUrl;
-  final String? body;
-
   const GitHub({
     this.url,
     this.assetsUrl,
@@ -68,6 +49,24 @@ class GitHub extends Equatable {
       body: json['body'],
     );
   }
+  final String? url;
+  final String? assetsUrl;
+  final String? uploadUrl;
+  final String? htmlUrl;
+  final int? id;
+  final Author? author;
+  final String? nodeId;
+  final String? tagName;
+  final String? targetCommitish;
+  final String? name;
+  final bool? draft;
+  final bool? prerelease;
+  final String? createdAt;
+  final String? publishedAt;
+  final List<Assets>? assets;
+  final String? tarballUrl;
+  final String? zipballUrl;
+  final String? body;
 
   @override
   List<Object?> get props => [

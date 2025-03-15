@@ -1,6 +1,6 @@
-import 'package:website/model/github.dart';
+import '../model/github.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:website/service_locator/service_locator.dart';
+import '../service_locator/service_locator.dart';
 
 class GithubApi {
   const GithubApi();

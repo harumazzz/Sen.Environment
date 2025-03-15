@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:website/i18n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 
 extension BuildContextExtension on BuildContext {
   AppLocalizations get los => AppLocalizations.of(this)!;

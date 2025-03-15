@@ -591,7 +591,7 @@ class EventConfigTab extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: DropdownButtonField<WorldMapEventTutorial>(
-                            label: 'Level Tutorial',
+                            label: context.los.level_tutorial,
                             value:
                                 event.worldMapTutorial ??
                                 WorldMapEventTutorial.none,

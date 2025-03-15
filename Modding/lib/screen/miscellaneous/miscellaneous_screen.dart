@@ -120,9 +120,17 @@ class MiscellaneousScreen extends StatelessWidget {
                   content: los.script_has_been_downloaded,
                 );
               } else if (state is ScriptDownloadFailed) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.error)));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.error),
+                    width: 400,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(milliseconds: 1500),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                );
               }
             },
             child:

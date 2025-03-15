@@ -176,10 +176,12 @@ class NumberTextField extends StatelessWidget {
         isDense: true,
         labelText: label,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        contentPadding: const EdgeInsets.fromLTRB(12.0, 4.0, 8.0, 12.0),
         suffixIconConstraints: BoxConstraints(
           maxHeight: arrowsHeight,
           maxWidth: arrowsWidth,
         ),
+        border: const OutlineInputBorder(),
         suffixIcon: TextFieldPaddingFix(
           child:
               useChangeButton

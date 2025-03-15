@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import '../extension/context.dart';
 import '../service/ui_helper.dart';
 
 class JsonViewer extends StatelessWidget {
@@ -33,11 +34,19 @@ class JsonViewer extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Symbols.content_copy, size: 20),
-                  tooltip: 'Copy JSON',
+                  tooltip: context.los.copy_json,
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: message));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copied to clipboard!')),
+                      SnackBar(
+                        content: Text(context.los.copied_to_clipboard),
+                        width: 400,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(milliseconds: 1500),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
                     );
                   },
                 ),

@@ -81,6 +81,7 @@ class SpritePage extends StatelessWidget {
             ),
             trailing: Checkbox.adaptive(
               value: context.watch<SelectedSpriteBloc>().state.value[index],
+              side: BorderSide(color: theme.colorScheme.outline, width: 1.5),
               onChanged: (_) {
                 context.read<SelectedSpriteBloc>().add(
                   SelectedSpriteToggleEvent(index: index),

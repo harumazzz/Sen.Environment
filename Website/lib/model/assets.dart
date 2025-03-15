@@ -1,21 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:website/model/author.dart';
+import 'author.dart';
 
 class Assets extends Equatable {
-  final String? url;
-  final int? id;
-  final String? nodeId;
-  final String? name;
-  final String? label;
-  final Author? uploader;
-  final String? contentType;
-  final String? state;
-  final int? size;
-  final int? downloadCount;
-  final String? createdAt;
-  final String? updatedAt;
-  final String? browserDownloadUrl;
-
   const Assets({
     this.url,
     this.id,
@@ -50,6 +36,19 @@ class Assets extends Equatable {
       browserDownloadUrl: json['browser_download_url'],
     );
   }
+  final String? url;
+  final int? id;
+  final String? nodeId;
+  final String? name;
+  final String? label;
+  final Author? uploader;
+  final String? contentType;
+  final String? state;
+  final int? size;
+  final int? downloadCount;
+  final String? createdAt;
+  final String? updatedAt;
+  final String? browserDownloadUrl;
 
   @override
   List<Object?> get props => [

@@ -169,7 +169,15 @@ class _SettingScreenState extends State<SettingScreen> {
             title: Text(los.toolchain),
             content: Row(
               children: [
-                Expanded(child: TextField(controller: _controller)),
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      labelText: los.toolchain,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
                 Tooltip(
                   message: los.upload_directory,
                   child: IconButton(

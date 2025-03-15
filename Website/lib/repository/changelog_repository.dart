@@ -1,10 +1,9 @@
-import 'package:website/api/changelog_api.dart';
-import 'package:website/model/changelog.dart';
+import '../api/changelog_api.dart';
+import '../model/changelog.dart';
 
 class ChangelogRepository {
-  final ChangelogApi _changelogApi;
-
   const ChangelogRepository(this._changelogApi);
+  final ChangelogApi _changelogApi;
 
   Future<List<Changelog>> getChangelog() async {
     return await _changelogApi.getChangelog();

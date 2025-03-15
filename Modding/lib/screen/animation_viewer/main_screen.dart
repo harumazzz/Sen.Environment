@@ -84,7 +84,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         content: TextField(
           controller: _controller,
           decoration: InputDecoration(
-            hintText: los.upload_directory,
+            labelText: los.upload_directory,
             suffixIcon: IconButton(
               icon: Icon(
                 Symbols.drive_folder_upload,
@@ -109,11 +109,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               },
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
               borderSide: BorderSide(color: theme.colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: theme.colorScheme.primary,
                 width: 2.0,

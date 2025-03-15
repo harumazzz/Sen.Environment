@@ -1,11 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/model/changelog.dart';
+import '../../extension/context.dart';
+import '../../model/changelog.dart';
 
 class ChangelogCard extends StatelessWidget {
-  final Changelog changelog;
-
   const ChangelogCard({super.key, required this.changelog});
+  final Changelog changelog;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,6 @@ class ChangelogCard extends StatelessWidget {
     Color textColor,
   ) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 12.0,
       children: [
         Container(
@@ -118,7 +117,9 @@ class ChangelogCard extends StatelessWidget {
     Color textColor,
     bool isSmallScreen,
   ) {
-    if (items == null || items.isEmpty) return const SizedBox.shrink();
+    if (items == null || items.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,5 +137,11 @@ class ChangelogCard extends StatelessWidget {
             );
           }).toList(),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Changelog>('changelog', changelog));
   }
 }

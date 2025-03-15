@@ -21,6 +21,9 @@ dependencies:
     equatable: ^2.0.7
     flutter_localizations:
         sdk: flutter
+    go_router: ^14.8.1
+    flutter_web_plugins:
+        sdk: flutter
 
 dev_dependencies:
     flutter_test:

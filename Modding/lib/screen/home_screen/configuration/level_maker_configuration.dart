@@ -63,9 +63,7 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
           controller: _resourceLocationController,
           decoration: InputDecoration(
             labelText: los.resource_location,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
+            border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               onPressed: _onUploadDirectory,
               icon: Tooltip(

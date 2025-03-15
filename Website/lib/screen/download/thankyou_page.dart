@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hyperlink/hyperlink.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/screen/footer/footer_widget.dart';
-import 'package:website/service/download_helper.dart';
+import '../../extension/context.dart';
+import '../footer/footer_widget.dart';
+import '../../service/download_helper.dart';
 
 class ThankYouPage extends StatelessWidget {
   const ThankYouPage({
@@ -19,27 +20,24 @@ class ThankYouPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      appBar: AppBar(title: Text(context.los.download_page)),
-      body: Center(
-        child: SingleChildScrollView(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmallScreen = constraints.maxWidth < 600;
+    return Center(
+      child: SingleChildScrollView(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmallScreen = constraints.maxWidth < 600;
 
-              return Padding(
-                padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
-                child: Column(
-                  spacing: 32.0,
-                  children: [
-                    _buildTitle(context),
-                    _buildDownloadCard(context, isDarkTheme, isSmallScreen),
-                    FooterWidget(onNavigate: onNavigate),
-                  ],
-                ),
-              );
-            },
-          ),
+            return Padding(
+              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
+              child: Column(
+                spacing: 32.0,
+                children: [
+                  _buildTitle(context),
+                  _buildDownloadCard(context, isDarkTheme, isSmallScreen),
+                  FooterWidget(onNavigate: onNavigate),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -169,6 +167,19 @@ class ThankYouPage extends StatelessWidget {
       child: Text(
         context.los.having_download_problem,
         style: TextStyle(color: linkColor, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('isWindows', isWindows));
+    properties.add(StringProperty('link', link));
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
       ),
     );
   }

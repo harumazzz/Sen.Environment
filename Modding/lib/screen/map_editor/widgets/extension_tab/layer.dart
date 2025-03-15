@@ -188,7 +188,10 @@ class TreeTile extends StatelessWidget {
                   child: TextFormField(
                     controller: textEditing,
                     style: Theme.of(context).textTheme.titleSmall,
-                    decoration: const InputDecoration(border: InputBorder.none),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.fromLTRB(12.0, 4.0, 0.0, 12.0),
+                    ),
                     autovalidateMode: AutovalidateMode.always,
                     onFieldSubmitted: (value) {
                       if (!context.read<LayerBloc>().isVaildLayerName(value)) {

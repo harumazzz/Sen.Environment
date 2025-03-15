@@ -7,6 +7,8 @@ class DownloadHelper {
     final anchor = web.document.createElement('a') as web.HTMLAnchorElement;
     anchor.href = url;
     anchor.download = url;
+    anchor.style.display = 'none';
     anchor.click();
+    anchor.remove();
   }
 }

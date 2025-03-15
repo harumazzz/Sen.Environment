@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:website/extension/context.dart';
-import 'package:website/screen/footer/footer_widget.dart';
+import '../../extension/context.dart';
+import '../footer/footer_widget.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key, required this.onNavigate});
@@ -78,16 +79,21 @@ class AboutPage extends StatelessWidget {
                 _infoCard(
                   icon: Symbols.code,
                   title: context.los.technology,
-                  content: _detailedBulletPoints([
-                    {
-                      'title': 'CMake',
-                      'description': context.los.cmake_description,
-                    },
-                    {
-                      'title': 'Flutter',
-                      'description': context.los.flutter_description,
-                    },
-                  ], isDarkTheme),
+                  content: _detailedBulletPoints(
+                    (() {
+                      return [
+                        {
+                          'title': 'CMake',
+                          'description': context.los.cmake_description,
+                        },
+                        {
+                          'title': 'Flutter',
+                          'description': context.los.flutter_description,
+                        },
+                      ];
+                    })(),
+                    isDarkTheme,
+                  ),
                   isSmallScreen: isSmallScreen,
                 ),
               ],
@@ -160,11 +166,7 @@ class AboutPage extends StatelessWidget {
           spacing: 12.0,
           children: children,
         )
-        : Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 12.0,
-          children: children,
-        );
+        : Row(spacing: 12.0, children: children);
   }
 
   Widget _infoCard({
@@ -269,6 +271,17 @@ class AboutPage extends StatelessWidget {
               ),
             );
           }).toList(),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has(
+        'onNavigate',
+        onNavigate,
+      ),
     );
   }
 }
