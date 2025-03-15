@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<!--
+
+<head>
+	<!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
 
@@ -14,36 +15,44 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-		<base href="/Sen.Environment/" />
+	<base href="/Sen.Environment/" />
 
-		<meta charset="UTF-8" />
-		<meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-		<meta
-			name="description"
-			content="Sen installation page, this is the first page that will be displayed when you install the app."
-		/>
+	<meta charset="UTF-8" />
+	<meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+	<meta name="description"
+		content="Sen installation page, this is the first page that will be displayed when you install the app." />
 
-		<!-- iOS meta tags & icons -->
-		<meta name="mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-		<meta name="apple-mobile-web-app-title" content="Sen: Installation Page" />
-		<link rel="apple-touch-icon" href="icons/Icon-192.png" />
+	<!-- iOS meta tags & icons -->
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta name="apple-mobile-web-app-title" content="Sen: Installation Page" />
+	<link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
-		<!-- Favicon -->
-		<link rel="icon" type="image/png" href="favicon.png" />
+	<!-- Favicon -->
+	<link rel="icon" type="image/png" href="favicon.png" />
 
-		<title>Sen: Installation page</title>
-		<link rel="manifest" href="manifest.json" />
-		<link rel="stylesheet" href="styles.css" />
-		<script src="script.js" async></script>
-	</head>
-	<body>
-		<div id="splash-screen">
-			<img id="splash-logo" src="icons/Icon-192.png" alt="Loading..." />
-			<div id="loading-spinner"></div>
-			<p id="loading-text">Haruma is cooking, please wait...</p>
-		</div>
+	<title>Sen: Installation page</title>
+	<link rel="manifest" href="manifest.json" />
+	<link rel="stylesheet" href="styles.css" />
+	<script src="script.js" async></script>
+</head>
 
-		<script src="flutter_bootstrap.js" async></script>
-	</body>
+<body>
+	<div id="splash-screen">
+		<img id="splash-logo" src="icons/Icon-192.png" alt="Loading..." />
+		<div id="loading-spinner"></div>
+		<p id="loading-text">Haruma is cooking, please wait...</p>
+	</div>
+
+	<script src="flutter_bootstrap.js" async></script>
+	<script>
+		let params = new URLSearchParams(window.location.search);
+		let redirectPath = params.get('redirect');
+
+		if (redirectPath) {
+			window.history.replaceState({}, '', redirectPath);
+		}
+	</script>
+</body>
+
 </html>
