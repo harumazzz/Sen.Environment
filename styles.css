@@ -6,7 +6,8 @@ body {
 	align-items: center;
 	height: 100vh;
 	width: 100vw;
-	background-color: #fffafb;
+	background-color: #262626;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #splash-screen {
@@ -16,14 +17,188 @@ body {
 	justify-content: center;
 	width: 100%;
 	height: 100%;
-	transition: opacity 0.5s ease-out;
+	position: relative;
 }
 
 #splash-logo {
-	width: 20vw;
-	max-width: 100px;
+	width: 120px;
 	height: auto;
-	margin-bottom: 15px;
+	filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+	position: relative;
+	z-index: 1;
+}
+
+#loading-text {
+	font-size: 1.1rem;
+	font-weight: 500;
+	color: #e0e0e0;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: baseline;
+	position: absolute;
+	bottom: 50px;
+	left: 50%;
+	transform: translateX(-50%);
+	overflow: hidden;
+	flex-direction: row;
+}
+
+#loading-text::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 50%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: shimmer 1.8s infinite linear;
+	mask-image: linear-gradient(90deg, transparent, black, transparent);
+}
+
+@keyframes shimmer {
+	100% {
+		left: 200%;
+	}
+}
+
+#ellipsis {
+	display: flex;
+	gap: 4px;
+	margin-left: 0.5em;
+	align-items: baseline;
+}
+
+#ellipsis span {
+	width: 5px;
+	height: 5px;
+	background-color: #e0e0e0;
+	border-radius: 50%;
+	animation: listening 1.3s infinite ease-in-out;
+}
+
+#ellipsis span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+#ellipsis span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes listening {
+
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.5;
+	}
+
+	50% {
+		transform: scale(1.4);
+		opacity: 1;
+	}
+}
+
+#pumping-circle {
+	position: absolute;
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	background: radial-gradient(circle, #546e7a, #37474f);
+	box-shadow: 0 0 20px rgba(84, 110, 122, 0.5);
+	animation: pulse 2.2s infinite ease-in-out;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 0;
+}
+
+@keyframes pulse {
+
+	0%,
+	100% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(1.1);
+	}
+}
+
+.wave {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	background: transparent;
+	box-shadow: 0 0 25px rgba(84, 110, 122, 0.4);
+	opacity: 0;
+	animation: waveAnimation 1.5s linear infinite;
+}
+
+.wave:nth-child(2) {
+	animation-delay: 0.15s;
+}
+
+.wave:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+.wave:nth-child(4) {
+	animation-delay: 0.45s;
+}
+
+.wave:nth-child(5) {
+	animation-delay: 0.6s;
+}
+
+.wave:nth-child(6) {
+	animation-delay: 0.75s;
+}
+
+.wave:nth-child(7) {
+	animation-delay: 0.9s;
+}
+
+.wave:nth-child(8) {
+	animation-delay: 1.05s;
+}
+
+.wave:nth-child(9) {
+	animation-delay: 1.2s;
+}
+
+.wave:nth-child(10) {
+	animation-delay: 1.35s;
+}
+
+.wave:nth-child(11) {
+	animation-delay: 1.5s;
+}
+
+@keyframes waveAnimation {
+	0% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(1);
+	}
+
+	50% {
+		opacity: 0.7;
+		transform: translate(-50%, -50%) scale(1.3);
+	}
+
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(1.6);
+	}
+}
+
+svg {
+	position: absolute;
+	width: 0;
+	height: 0;
 }
 
 #loading-spinner {
@@ -38,30 +213,44 @@ body {
 	border-bottom: 4px solid #db7093;
 	animation: spin 1s linear infinite;
 	box-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+	position: absolute;
+	bottom: 50px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: none;
 }
+
 @keyframes spin {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	100% {
 		transform: rotate(360deg);
 	}
 }
 
-#loading-text {
-	margin-top: 12px;
-	font-family: 'Arial', sans-serif;
-	font-size: 1rem;
-	font-weight: bold;
-	color: #0c0509;
-	animation: fadeBlink 1.5s infinite alternate;
-}
 
-@keyframes fadeBlink {
-	0% {
-		opacity: 1;
+@media (max-width: 600px) {
+	#loading-text {
+		display: none;
 	}
-	100% {
-		opacity: 0.6;
+
+	#loading-spinner {
+		display: block;
+	}
+
+	#splash-logo {
+		width: 100px;
+	}
+
+	#pumping-circle {
+		width: 160px;
+		height: 160px;
+	}
+
+	.wave {
+		width: 160px;
+		height: 160px;
 	}
 }

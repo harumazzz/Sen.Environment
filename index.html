@@ -39,19 +39,40 @@
 
 <body>
 	<div id="splash-screen">
-		<img id="splash-logo" src="icons/Icon-192.png" alt="Loading..." />
-		<div id="loading-spinner"></div>
-		<p id="loading-text">Haruma is cooking, please wait...</p>
+		<div id="pumping-circle">
+			<svg>
+				<defs>
+					<filter id="waveDistortion">
+						<feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="4" result="turbulence">
+							<animate attributeName="baseFrequency" values="0.02 0.05; 0.04 0.08; 0.025 0.06; 0.02 0.05"
+								dur="1.5s" repeatCount="indefinite" />
+						</feTurbulence>
+						<feDisplacementMap in="SourceGraphic" in2="turbulence" scale="10">
+							<animate attributeName="scale" values="5; 15; 10; 5" dur="1.5s" repeatCount="indefinite" />
+						</feDisplacementMap>
+					</filter>
+				</defs>
+			</svg>
+			<div class="wave"></div>
+			<div class="wave"></div>
+			<div class="wave"></div>
+		</div>
+		<img id="splash-logo" src="icons/Icon-192.png" alt="Loading...">
+		<p id="loading-text">Haruma is cooking, please wait <span
+				id="ellipsis"><span></span><span></span><span></span></span></p>
+		<div id="loading-spinner">
+		</div>
 	</div>
-
 	<script src="flutter_bootstrap.js" async></script>
 	<script>
 		let params = new URLSearchParams(window.location.search);
 		let redirectPath = params.get('redirect');
 
-		if (redirectPath) {
+		if (redirectPath !== null) {
 			window.history.replaceState({}, '', redirectPath);
 		}
+
+
 	</script>
 </body>
 
