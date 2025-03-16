@@ -24,7 +24,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
   late List<TabItem> _tabs;
   late int _tabIndex;
 
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final items = _buildItems(context);
     if (CurrentPlatform.isDesktop) {
       return _buildDesktopLayout(context, items);
@@ -59,8 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
-  void _closeTab(int index) {
-    return _closeTabByIndex(index);
+  Future<void> _closeTab(int index) async {
+    return await _closeTabByIndex(index);
   }
 
   Widget _buildDesktopLayout(BuildContext context, List<Item> items) {
@@ -134,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _closeTabByIndex(int index) {
+  Future<void> _closeTabByIndex(int index) async {
     _tabs.removeAt(index);
     setState(() {
       if (_tabIndex >= _tabs.length + 1) {
@@ -452,4 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

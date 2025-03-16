@@ -89,7 +89,7 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.haruma.sen.modding" "\0"
+            VALUE "CompanyName", "com.haruma.sen.environment" "\0"
             VALUE "FileDescription", "Sen" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "Sen" "\0"

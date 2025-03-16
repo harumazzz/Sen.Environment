@@ -412,7 +412,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: UIHelper.appBarOr(
+      appBar: UIHelper.ofMobile(
         AppBar(
           forceMaterialTransparency: CurrentPlatform.isDesktop,
           title: Text(los.animation_viewer),
@@ -429,7 +429,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
       ),
       body: _buildUI(),
-      floatingActionButton: UIHelper.widgetOr(_buildFloatingActionButton()),
+      floatingActionButton: UIHelper.ofMobile(_buildFloatingActionButton()),
       bottomNavigationBar: _navigationBar(),
     );
   }

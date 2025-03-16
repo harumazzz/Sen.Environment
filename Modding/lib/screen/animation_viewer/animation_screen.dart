@@ -288,8 +288,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
       children: [
         mainScreen,
         if (CurrentPlatform.isDesktop) _buildRegularPath(),
-        _buildBasicInformation(),
-        _buildControlInformation(),
+        if (CurrentPlatform.isDesktop) _buildBasicInformation(),
+        if (CurrentPlatform.isDesktop) _buildControlInformation(),
       ],
     );
   }

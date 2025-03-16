@@ -35,9 +35,9 @@ class IdleScreen extends StatefulWidget {
 class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _childController;
-  late AnimationController _textController;
+  late AnimationController _shimmerController;
   late Animation<double> _pulseAnimation;
-  late Animation<double> _textAnimation;
+  late Animation<double> _shimmerAnimation;
   final List<double> _circleScales = [0.5, 1.0, 1.5, 2.0];
 
   @override
@@ -57,14 +57,13 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
       lowerBound: 0.9,
       upperBound: 1.1,
     )..repeat(reverse: true);
-    _textController = AnimationController(
+    _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
-    _textAnimation = Tween<double>(
-      begin: 0.3,
-      end: 1.0,
-    ).animate(_textController);
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+    _shimmerAnimation = Tween<double>(begin: -2, end: 2).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
     Timer.periodic(const Duration(milliseconds: 600), (timer) {
       if (mounted) {
         setState(() {
@@ -78,19 +77,19 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
   void dispose() {
     _pulseController.dispose();
     _childController.dispose();
-    _textController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
-  Widget _buildPulse(double scale, int delay) {
+  Widget _buildPulse(double scale, int delay, double maxSize) {
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
         return Transform.scale(
           scale: scale * widget.scaleFactor + _pulseAnimation.value * 0.8,
           child: Container(
-            width: widget.size * 0.8,
-            height: widget.size * 0.8,
+            width: maxSize * 0.8,
+            height: maxSize * 0.8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: widget.color.withValues(alpha: 0.15),
@@ -103,21 +102,23 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    double maxSize = (screenWidth < 400) ? screenWidth * 0.4 : widget.size;
+    double adjustedTextSize = (screenWidth < 400) ? 14.0 : 16.0;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: 10.0,
         children: [
           Stack(
             alignment: Alignment.center,
             children: [
               for (var i = 0; i < _circleScales.length; i++)
-                _buildPulse(_circleScales[i], i * 150),
+                _buildPulse(_circleScales[i], i * 150, maxSize),
               ScaleTransition(
                 scale: _childController,
                 child: Container(
-                  width: widget.size,
-                  height: widget.size,
+                  width: maxSize,
+                  height: maxSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: widget.color, width: 3),
@@ -127,24 +128,41 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          FadeTransition(
-            opacity: _textAnimation,
+          const SizedBox(height: 10),
+          AnimatedBuilder(
+            animation: _shimmerAnimation,
+            builder: (context, child) {
+              return ShaderMask(
+                shaderCallback: (bounds) {
+                  return LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.2),
+                      Colors.white.withValues(alpha: 0.8),
+                      Colors.white.withValues(alpha: 0.2),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                    begin: Alignment(_shimmerAnimation.value, 0),
+                    end: Alignment(_shimmerAnimation.value + 1.5, 0),
+                  ).createShader(bounds);
+                },
+                child: child,
+              );
+            },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              spacing: 4.0,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   widget.text,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: adjustedTextSize,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 LoadingAnimationWidget.waveDots(
                   color: Theme.of(context).colorScheme.secondary,
-                  size: 16.0,
+                  size: adjustedTextSize,
                 ),
               ],
             ),

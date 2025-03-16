@@ -100,7 +100,7 @@ class MapEditor extends StatelessWidget {
           takeShoot = state.takeShoot;
         },
         child: Scaffold(
-          appBar: UIHelper.appBarOr(
+          appBar: UIHelper.ofMobile(
             AppBar(
               title: Text(los.map_editor),
               leading: _buildLeading(context),
@@ -180,7 +180,7 @@ class MapEditor extends StatelessWidget {
               );
             },
           ),
-          floatingActionButton: UIHelper.widgetOr(
+          floatingActionButton: UIHelper.ofDesktop(
             _buildFloatingActionButton(
               context: context,
               screenshot:

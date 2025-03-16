@@ -122,8 +122,12 @@ class MiscellaneousScreen extends StatelessWidget {
               } else if (state is ScriptDownloadFailed) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.error),
-                    width: 400,
+                    content: Text(
+                      state.error,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                    ),
+                    width: UIHelper.ofDesktop(400),
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(milliseconds: 1500),
                     shape: RoundedRectangleBorder(

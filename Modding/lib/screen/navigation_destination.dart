@@ -1,14 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../cubit/navigation_cubit/navigation_cubit.dart';
 import '../extension/context.dart';
 
 class CollapsibleNavigationRail extends StatefulWidget {
-  const CollapsibleNavigationRail({super.key, required this.state});
-  final NavigationState state;
+  const CollapsibleNavigationRail({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelect,
+  });
+
+  final int selectedIndex;
+
+  final void Function(int index) onSelect;
 
   @override
   State<CollapsibleNavigationRail> createState() =>
@@ -17,12 +22,22 @@ class CollapsibleNavigationRail extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<NavigationState>('state', state));
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has('onSelect', onSelect),
+    );
+    properties.add(IntProperty('selectedIndex', selectedIndex));
   }
 }
 
-class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail> {
-  bool _isExpanded = false;
+class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
+    with AutomaticKeepAliveClientMixin {
+  late bool _isExpanded;
+
+  @override
+  void initState() {
+    _isExpanded = false;
+    super.initState();
+  }
 
   void _toggleNavigationRail() {
     setState(() {
@@ -32,6 +47,7 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.all(8.0),
@@ -61,9 +77,8 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail> {
                   ),
                   child: NavigationRail(
                     extended: _isExpanded,
-                    selectedIndex: widget.state.selectedIndex,
-                    onDestinationSelected:
-                        context.read<NavigationCubit>().changeIndex,
+                    selectedIndex: widget.selectedIndex,
+                    onDestinationSelected: widget.onSelect,
                     labelType:
                         _isExpanded
                             ? NavigationRailLabelType.none
@@ -138,4 +153,7 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

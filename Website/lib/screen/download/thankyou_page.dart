@@ -25,17 +25,21 @@ class ThankYouPage extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isSmallScreen = constraints.maxWidth < 600;
-
-            return Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
-              child: Column(
-                spacing: 32.0,
-                children: [
-                  _buildTitle(context),
-                  _buildDownloadCard(context, isDarkTheme, isSmallScreen),
-                  FooterWidget(onNavigate: onNavigate),
-                ],
-              ),
+            return Column(
+              spacing: 32.0,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
+                  child: Column(
+                    spacing: 32.0,
+                    children: [
+                      _buildTitle(context),
+                      _buildDownloadCard(context, isDarkTheme, isSmallScreen),
+                    ],
+                  ),
+                ),
+                FooterWidget(onNavigate: onNavigate),
+              ],
             );
           },
         ),

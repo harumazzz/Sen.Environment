@@ -4,17 +4,19 @@ import '../../bridge/client.dart';
 import '../../bridge/launcher.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/platform.dart';
+import '../../screen/home_screen/tab_item.dart';
 import '../../service/file_helper.dart';
 
 part 'launch_status_event.dart';
 part 'launch_status_state.dart';
 
 class LaunchStatusBloc extends Bloc<LaunchStatusEvent, LaunchStatusState> {
-  LaunchStatusBloc() : super(const LaunchStatusInitial()) {
+  LaunchStatusBloc({this.tab}) : super(const LaunchStatusInitial()) {
     on<LaunchStatusBegin>(_start);
     on<LaunchStatusComplete>(_finish);
     on<LaunchStatusSleep>(_sleep);
   }
+  final TabItem? tab;
 
   Future<void> _start(
     LaunchStatusBegin event,

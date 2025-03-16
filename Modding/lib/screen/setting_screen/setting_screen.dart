@@ -22,13 +22,15 @@ class SettingScreen extends StatefulWidget {
   State<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends State<SettingScreen> {
-  bool _hasPermission = false;
+class _SettingScreenState extends State<SettingScreen>
+    with AutomaticKeepAliveClientMixin {
+  late bool _hasPermission;
   late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
+    _hasPermission = false;
     _controller = TextEditingController();
     _initializeSettings();
   }
@@ -82,6 +84,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final los = AppLocalizations.of(context)!;
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
@@ -296,4 +299,7 @@ class _SettingScreenState extends State<SettingScreen> {
     }
     return translator;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

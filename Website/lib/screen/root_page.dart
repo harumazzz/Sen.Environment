@@ -20,7 +20,7 @@ class RootPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.los.download_page)),
-      body: child, // Only the body changes!
+      body: child,
       drawer: AppDrawer(selectedIndex: selectedIndex, onNavigate: onNavigate),
     );
   }
@@ -65,11 +65,25 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context) {
-    return const DrawerHeader(
-      decoration: BoxDecoration(color: Colors.blue),
-      child: Text(
-        'Sen: Environment',
-        style: TextStyle(fontSize: 22.0, color: Colors.white),
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return DrawerHeader(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors:
+              isDarkMode
+                  ? const [Color(0xFF393E46), Color(0xFF222831)]
+                  : const [Color(0xFFFFE4E1), Color(0xFFFFB6C1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10.0,
+        children: [
+          Image.asset('assets/images/logo.png', height: 80, width: 80),
+          const Text('Sen: Environment', style: TextStyle(fontSize: 22.0)),
+        ],
       ),
     );
   }
@@ -86,7 +100,7 @@ class AppDrawer extends StatelessWidget {
       onTap: () {
         onNavigate(index);
         context.go(route);
-        Navigator.of(context).pop(); // Close drawer
+        Navigator.of(context).pop();
       },
     );
   }

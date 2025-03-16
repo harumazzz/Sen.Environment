@@ -5,6 +5,7 @@ import 'package:screenshot/screenshot.dart';
 import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../../../extension/context.dart';
 import '../../../extension/platform.dart';
+import '../../../service/ui_helper.dart';
 import '../bloc/autosave/autosave_bloc.dart';
 import '../bloc/canvas/canvas_bloc.dart';
 import '../bloc/history/history_bloc.dart';
@@ -197,10 +198,14 @@ class MainPageChild extends StatelessWidget {
         if (state.text != null && state.text != 'null') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.text!),
-              width: 400,
+              content: Text(
+                state.text!,
+                softWrap: true,
+                overflow: TextOverflow.visible,
+              ),
               behavior: SnackBarBehavior.floating,
               duration: const Duration(milliseconds: 1500),
+              width: UIHelper.ofDesktop(400),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),

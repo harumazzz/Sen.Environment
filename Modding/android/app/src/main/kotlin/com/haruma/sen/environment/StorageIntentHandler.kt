@@ -13,6 +13,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
+import java.io.File
 
 class StorageIntentHandler(private val activity: Activity) {
 
@@ -73,7 +74,7 @@ class StorageIntentHandler(private val activity: Activity) {
             putExtra(DocumentsContract.EXTRA_INITIAL_URI, getInitialUri(initialDirectory))
         }
         activity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
-        return (continuation.receive() as? Uri)?.toString()
+        return (continuation.receive() as? Uri)?.let { this.resolveUri(it) }
     }
 
     private suspend fun pickSaveFileFromDocument(
@@ -85,7 +86,7 @@ class StorageIntentHandler(private val activity: Activity) {
             putExtra(Intent.EXTRA_LOCAL_ONLY, true)
         }
         activity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
-        return (continuation.receive() as? Uri)?.toString()
+        return (continuation.receive() as? Uri)?.let { this.resolveUri(it) }
     }
 
     private suspend fun pickDirectoryFromDocument(
@@ -96,7 +97,7 @@ class StorageIntentHandler(private val activity: Activity) {
             putExtra(DocumentsContract.EXTRA_INITIAL_URI, getInitialUri(initialDirectory))
         }
         activity.startActivityForResult(intent, REQUEST_PICK_STORAGE_ITEM)
-        return (continuation.receive() as? Uri)?.toString()
+        return (continuation.receive() as? Uri)?.let { this.resolveUri(it) }
     }
 
     private suspend fun requestStoragePermission(
@@ -136,5 +137,69 @@ class StorageIntentHandler(private val activity: Activity) {
             ""
         }
         return Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode(safeDirectory)}")
+    }
+
+    public suspend fun resolveUri(uri: Uri): String? {
+        var result: String? = null
+        val provider = uri.authority
+        var path = uri.path?.let { Uri.decode(it) }
+        when (provider) {
+            // AOSP DocumentsUI
+            "com.android.externalstorage.documents" -> {
+                // /document/primary:<path-relative-external-storage>
+                if (path?.startsWith("/document/primary:") == true) {
+                    result = path.substring("/document/primary:".length)
+                    result = "${queryExternalStoragePath()}${if (result.isNullOrEmpty()) "" else "/$result"}"
+                }
+                // /tree/primary:<path-relative-external-storage>
+                if (path?.startsWith("/tree/primary:") == true) {
+                    result = path.substring("/tree/primary:".length)
+                    result = "${queryExternalStoragePath()}${if (result.isNullOrEmpty()) "" else "/$result"}"
+                }
+            }
+            // Material Files
+            "me.zhanghai.android.files.file_provider" -> {
+                path = Uri.decode(path ?: "")
+                // /file://<path-absolute>
+                if (path?.startsWith("/file://") == true) {
+                    result = Uri.parse(path.substring(1)).path
+                }
+            }
+            // Root Explorer
+            "com.speedsoftware.rootexplorer.fileprovider" -> {
+                // /root/<path-relative-root>
+                if (path?.startsWith("/root/") == true) {
+                    result = path.substring("/root".length)
+                }
+            }
+            // Solid Explorer
+            "pl.solidexplorer2.files" -> {
+                result = path
+            }
+            // MT Manager
+            "bin.mt.plus.fp" -> {
+                result = path
+            }
+            // NMM
+            "in.mfile.files" -> {
+                result = path
+            }
+            else -> {
+                if (path != null && path.startsWith("/") && exist(path)) {
+                    result = path
+                }
+            }
+        }
+
+        return result
+    }
+
+    private fun queryExternalStoragePath(): String {
+        return Environment.getExternalStorageDirectory().absolutePath
+    }
+
+    private fun exist(path: String): Boolean {
+        val file = File(path)
+        return file.exists()
     }
 }

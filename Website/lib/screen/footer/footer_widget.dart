@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../extension/context.dart';
+import '../../service/url_helper.dart';
 
 class FooterWidget extends StatelessWidget {
   const FooterWidget({super.key, required this.onNavigate});
@@ -105,10 +106,22 @@ class FooterWidget extends StatelessWidget {
                     context,
                     title: context.los.resources,
                     links: [
-                      _buildNavLink(context.los.documentation),
-                      _buildNavLink(context.los.support),
-                      _buildNavLink(context.los.community_forum),
-                      _buildNavLink(context.los.faq),
+                      _buildNavigatorLink(
+                        context.los.documentation,
+                        'https://github.com/harumazzz/Sen.Environment',
+                      ),
+                      _buildNavigatorLink(
+                        context.los.support,
+                        'https://discord.gg/C2Xr2kaBYJ',
+                      ),
+                      _buildNavigatorLink(
+                        context.los.community_forum,
+                        'https://discord.com/invite/pvz',
+                      ),
+                      _buildNavigatorLink(
+                        context.los.faq,
+                        'https://github.com/harumazzz/Sen.Environment/issues',
+                      ),
                     ],
                   ),
                 ],
@@ -119,12 +132,18 @@ class FooterWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                icon: const Icon(Symbols.youtube_searched_for),
-                onPressed: () {},
+                icon: const Icon(Symbols.youtube_activity),
+                onPressed: () async {
+                  await UrlHelper.launch(
+                    link: 'https://www.youtube.com/@harumavn',
+                  );
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.discord_outlined),
-                onPressed: () {},
+                onPressed: () async {
+                  await UrlHelper.launch(link: 'https://discord.gg/C2Xr2kaBYJ');
+                },
               ),
             ],
           ),
@@ -158,6 +177,14 @@ class FooterWidget extends StatelessWidget {
   Widget _buildNavLink(String text, [int? index]) {
     return TextButton(
       onPressed: index != null ? () => onNavigate(index) : () {},
+      child: Text(text),
+    );
+  }
+
+  Widget _buildNavigatorLink(String text, [String? link]) {
+    return TextButton(
+      onPressed:
+          link != null ? () async => await UrlHelper.launch(link: link) : () {},
       child: Text(text),
     );
   }

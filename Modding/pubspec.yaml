@@ -9,7 +9,6 @@ dependencies:
         sdk: flutter
     window_manager: ^0.4.3
     desktop_drop: ^0.5.0
-    local_notifier: ^0.1.6
     nil: ^1.1.1
     matrix4_transform: ^4.0.1
     pie_menu: ^3.2.7
@@ -20,7 +19,6 @@ dependencies:
     screenshot: ^3.0.0
     flutter_fancy_tree_view: ^1.6.0
     ffi: ^2.1.4
-    flutter_local_notifications: ^18.0.1
     path: ^1.9.1
     flutter_native_splash: ^2.4.5
     drop_down_search_field: ^1.1.2+2
@@ -44,6 +42,7 @@ dependencies:
     nested: ^1.0.0
     audioplayers: ^6.4.0
     material_symbols_icons: ^4.2810.1
+    flutter_local_notifications: ^19.0.0
 dev_dependencies:
     flutter_test:
         sdk: flutter
@@ -63,7 +62,6 @@ flutter:
     generate: true
     assets:
         - assets/
-        - assets/icon/
         - assets/images/
         - assets/images/translator/
     fonts:

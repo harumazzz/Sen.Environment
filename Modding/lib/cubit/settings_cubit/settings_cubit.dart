@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../extension/platform.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constant/localization.dart' as k_locale;
+import '../../service/android_helper.dart';
 
 part 'settings_state.dart';
 
@@ -67,6 +68,12 @@ class SettingsCubit extends Cubit<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('requestedPermission', requestedPermission);
     emit(state.copyWith(requestedPermission: requestedPermission));
+  }
+
+  Future<void> checkAndroidPermission() async {
+    return await setRequestedPermission(
+      requestedPermission: await AndroidHelper.checkStoragePermission(),
+    );
   }
 
   Future<void> setRunAsLauncher({required bool value}) async {

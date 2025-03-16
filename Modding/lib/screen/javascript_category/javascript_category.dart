@@ -52,7 +52,7 @@ class JavaScriptCategory extends StatelessWidget {
       },
       child: HotkeyBuilder(
         child: Scaffold(
-          appBar: UIHelper.appBarOr(AppBar(title: Text(los.js_execute))),
+          appBar: UIHelper.ofMobile(AppBar(title: Text(los.js_execute))),
           body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: BlocConsumer<LoadScriptBloc, LoadScriptState>(

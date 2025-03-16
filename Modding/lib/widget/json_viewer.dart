@@ -39,8 +39,12 @@ class JsonViewer extends StatelessWidget {
                     Clipboard.setData(ClipboardData(text: message));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(context.los.copied_to_clipboard),
-                        width: 400,
+                        content: Text(
+                          context.los.copied_to_clipboard,
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                        ),
+                        width: UIHelper.ofDesktop(400),
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(milliseconds: 1500),
                         shape: RoundedRectangleBorder(

@@ -273,17 +273,17 @@ class UIHelper {
         : (context.isDarkMode ? Colors.grey[850]! : Colors.white);
   }
 
-  static AppBar? appBarOr(AppBar appbar) {
+  static T? ofDesktop<T>(T value) {
     if (CurrentPlatform.isDesktop) {
-      return null;
+      return value;
     }
-    return appbar;
+    return null;
   }
 
-  static Widget? widgetOr(Widget widget) {
+  static T? ofMobile<T>(T value) {
     if (CurrentPlatform.isMobile) {
-      return null;
+      return value;
     }
-    return widget;
+    return null;
   }
 }

@@ -22,6 +22,7 @@ Future<void> main(List<String> arguments) async {
     await windowManager.focus();
   }
   await NotificationHelper.initialize();
+  await NotificationHelper.push('Sen', 'Hi');
   if (CurrentPlatform.isAndroid) {
     AndroidHelper.initialize();
   }

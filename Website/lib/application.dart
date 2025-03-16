@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'i18n/app_localizations.dart';
 import 'screen/about/about_page.dart';
@@ -157,12 +156,7 @@ class Application extends StatelessWidget {
             useMaterial3: true,
             dialogTheme: DialogTheme(backgroundColor: Colors.grey.shade900),
           ),
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: _getInitialLocale(),
           routerConfig: _router,
