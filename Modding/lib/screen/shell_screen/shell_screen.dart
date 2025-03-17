@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -10,7 +9,6 @@ import '../../bloc/message_bloc/message_bloc.dart';
 import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../../i18n/app_localizations.dart';
 import '../../extension/context.dart';
-import '../home_screen/tab_item.dart';
 import 'interaction_bar.dart';
 import 'message_box.dart';
 import '../../service/file_helper.dart';
@@ -18,9 +16,7 @@ import '../../service/ui_helper.dart';
 import '../../widget/hotkey.dart';
 
 class ShellScreen extends StatelessWidget {
-  const ShellScreen({super.key, this.tab});
-
-  final TabItem? tab;
+  const ShellScreen({super.key});
 
   Widget _buildStackButton(BuildContext context) {
     return BlocBuilder<ErrorTracebackBloc, ErrorTracebackState>(
@@ -144,9 +140,7 @@ class ShellScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MessageBloc>(create: (context) => MessageBloc()),
-        BlocProvider<LaunchStatusBloc>(
-          create: (context) => LaunchStatusBloc(tab: tab),
-        ),
+        BlocProvider<LaunchStatusBloc>(create: (context) => LaunchStatusBloc()),
         BlocProvider<InteractionBloc>(create: (context) => InteractionBloc()),
         BlocProvider<ErrorTracebackBloc>(
           create: (context) => ErrorTracebackBloc(),
@@ -192,11 +186,5 @@ class ShellScreen extends StatelessWidget {
         },
       ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<TabItem>('tab', tab));
   }
 }

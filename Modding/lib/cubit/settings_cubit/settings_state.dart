@@ -13,13 +13,14 @@ class SettingsState extends Equatable {
     required this.shellLaunchImmediately,
     required this.jsShowConfirmDialog,
     required this.jsRunAsLauncher,
+    required this.showAnimationViewerLabel,
   });
 
   factory SettingsState.initialize() {
     return SettingsState(
       theme: 'system',
       locale: currentLocale(),
-      sendNotification: false,
+      sendNotification: true,
       toolChain: '',
       isValid: false,
       requestedPermission: false,
@@ -28,6 +29,7 @@ class SettingsState extends Equatable {
       shellLaunchImmediately: false,
       jsRunAsLauncher: false,
       jsShowConfirmDialog: true,
+      showAnimationViewerLabel: true,
     );
   }
   final String theme;
@@ -41,6 +43,7 @@ class SettingsState extends Equatable {
   final bool shellLaunchImmediately;
   final bool jsShowConfirmDialog;
   final bool jsRunAsLauncher;
+  final bool showAnimationViewerLabel;
 
   static String currentLocale() {
     final locale = CurrentPlatform.locale;
@@ -62,6 +65,7 @@ class SettingsState extends Equatable {
     bool? shellLaunchImmediately,
     bool? jsRunAsLauncher,
     bool? jsShowConfirmDialog,
+    bool? showAnimationViewerLabel,
   }) {
     return SettingsState(
       theme: theme ?? this.theme,
@@ -76,6 +80,8 @@ class SettingsState extends Equatable {
           shellLaunchImmediately ?? this.shellLaunchImmediately,
       jsRunAsLauncher: jsRunAsLauncher ?? this.jsRunAsLauncher,
       jsShowConfirmDialog: jsShowConfirmDialog ?? this.jsShowConfirmDialog,
+      showAnimationViewerLabel:
+          showAnimationViewerLabel ?? this.showAnimationViewerLabel,
     );
   }
 
@@ -92,6 +98,7 @@ class SettingsState extends Equatable {
     shellLaunchImmediately,
     jsRunAsLauncher,
     jsShowConfirmDialog,
+    showAnimationViewerLabel,
   ];
 
   ThemeMode get themeData {

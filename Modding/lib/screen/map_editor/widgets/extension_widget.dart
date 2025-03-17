@@ -18,7 +18,7 @@ class ExtensionWidget extends StatelessWidget {
       builder: (context, state) {
         final extension = state.extension;
         if (isDesktopPlatform) {
-          final isLowScreenHeight = MediaQuery.of(context).size.height < 965;
+          final isLowScreenHeight = MediaQuery.sizeOf(context).height < 965;
           if (isLowScreenHeight &&
               extension[ExtensionType.history]! &&
               extension[ExtensionType.layer]!) {

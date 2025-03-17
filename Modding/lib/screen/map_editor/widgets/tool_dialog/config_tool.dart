@@ -214,6 +214,9 @@ class __FilterQualityMenuState extends State<_FilterQualityMenu> {
           ],
           builder: (context, controller, child) {
             return TextField(
+              minLines: 1,
+              maxLines: null,
+              keyboardType: TextInputType.none,
               focusNode: _focusNode,
               readOnly: true,
               decoration: InputDecoration(

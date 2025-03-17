@@ -12,6 +12,8 @@ class LocaleOptionList extends StatelessWidget {
       'vi': context.los.vi,
       'es': context.los.es,
       'ru': context.los.ru,
+      'fr': context.los.fr,
+      'de': context.los.de,
     };
   }
 

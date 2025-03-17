@@ -17,7 +17,7 @@ class SectionView extends StatelessWidget {
     final selectedColor = Theme.of(context).colorScheme.secondaryContainer;
     final buttonColor = Theme.of(context).colorScheme.surfaceBright;
     final minizeColor = Theme.of(context).colorScheme.surfaceContainerHighest;
-    final isLowScreenWidth = MediaQuery.of(context).size.width < 1340;
+    final isLowScreenWidth = MediaQuery.sizeOf(context).width < 1340;
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
       buildWhen:
@@ -127,7 +127,7 @@ class SectionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     final toolWidth =
-        isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
+        isDesktopPlatform ? 45.0 : MediaQuery.sizeOf(context).width / 9;
     return Tooltip(
       message: '${item.description}.',
       waitDuration: const Duration(seconds: 1),
@@ -267,7 +267,7 @@ class ExtensionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     final toolWidth =
-        isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
+        isDesktopPlatform ? 45.0 : MediaQuery.sizeOf(context).width / 9;
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),

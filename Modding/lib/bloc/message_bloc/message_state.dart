@@ -53,3 +53,25 @@ final class MessageScrollState extends MessageState {
     return MessageScrollState(messages: messages ?? this.messages);
   }
 }
+
+final class MessageRegisterContextMenuState extends MessageState {
+  const MessageRegisterContextMenuState({
+    required super.messages,
+    required this.options,
+  });
+
+  final List<SelectOption> options;
+
+  MessageRegisterContextMenuState copyWith({
+    List<Message>? messages,
+    List<SelectOption>? options,
+  }) {
+    return MessageRegisterContextMenuState(
+      messages: messages ?? this.messages,
+      options: options ?? this.options,
+    );
+  }
+
+  @override
+  List<Object?> get props => [...super.props, options];
+}

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -142,7 +140,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   Widget _dragAndDropWidget(Widget data) {
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (CurrentPlatform.isAndroid || CurrentPlatform.isIOS) {
       return data;
     }
     return DropTarget(
@@ -229,7 +227,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
       child: Tooltip(
         message: context.los.open,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.18,
+          width: MediaQuery.sizeOf(context).width * 0.18,
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,

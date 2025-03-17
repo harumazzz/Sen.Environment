@@ -47,7 +47,7 @@ namespace Sen::Kernel::Interface {
     ) -> void
     {
         message.reset(new Message{
-            .value = new uint8_t[size],
+            .value = Allocator<uint8_t>::allocate(size),
             .size = size,
         });
     }
@@ -57,7 +57,7 @@ namespace Sen::Kernel::Interface {
         const size_t& size
     ) -> void
     {
-        message->value = new uint8_t[size];
+        message->value = Allocator<uint8_t>::allocate(size);
         message->size = size;
     }
 

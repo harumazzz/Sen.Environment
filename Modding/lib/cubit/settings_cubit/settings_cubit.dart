@@ -19,7 +19,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       state.copyWith(
         theme: prefs.getString('theme') ?? 'system',
         locale: prefs.getString('locale') ?? 'en',
-        sendNotification: prefs.getBool('sendNotification') ?? false,
+        sendNotification: prefs.getBool('sendNotification') ?? true,
         toolChain: prefs.getString('toolchain') ?? '',
         isValid: prefs.getBool('isValid') ?? false,
         requestedPermission: prefs.getBool('requestedPermission') ?? false,
@@ -28,6 +28,8 @@ class SettingsCubit extends Cubit<SettingsState> {
         levelMakerResource: prefs.getString('levelMakerResource') ?? '',
         mapEditorResource: prefs.getString('mapEditorResource') ?? '',
         shellLaunchImmediately: prefs.getBool('shellLaunchImmediately') ?? true,
+        showAnimationViewerLabel:
+            prefs.getBool('showAnimationViewerLabel') ?? true,
       ),
     );
   }
@@ -104,5 +106,11 @@ class SettingsCubit extends Cubit<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('mapEditorResource', value);
     emit(state.copyWith(mapEditorResource: value));
+  }
+
+  Future<void> setShowAnimationViewerLabel({required bool value}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showAnimationViewerLabel', value);
+    emit(state.copyWith(showAnimationViewerLabel: value));
   }
 }

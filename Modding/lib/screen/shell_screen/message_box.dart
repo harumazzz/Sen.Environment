@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../bloc/add_option_bloc/add_option_bloc.dart';
+import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
 import '../../extension/context.dart';
+import '../../model/select_option.dart';
 import 'idle_screen.dart';
 import 'message_card.dart';
 import 'shimmer_card.dart';
@@ -52,6 +54,7 @@ class _MessageBoxState extends State<MessageBox> {
       builder: (context, state) {
         if (state is LaunchStatusInitial) {
           return IdleScreen(
+            scaleFactor: 1.25,
             color: Colors.cyan.withValues(alpha: 0.6),
             text: context.los.sen_is_listening,
             child: Image.asset('assets/images/logo.png'),
@@ -92,18 +95,64 @@ class _MessageList extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        return Screenshot(
-          controller: context.read<AddOptionBloc>().screenshotController,
-          child: ListView.builder(
-            itemCount: state.size,
-            controller: scrollController,
-            itemBuilder: (context, index) {
-              return MessageCard(message: state[index]);
-            },
+        return _asWrappable(
+          context: context,
+          state: state,
+          child: Screenshot(
+            controller: context.read<AddOptionBloc>().screenshotController,
+            child: ListView.builder(
+              itemCount: state.size,
+              controller: scrollController,
+              itemBuilder: (context, index) {
+                return MessageCard(message: state[index]);
+              },
+            ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _showContextMenu(
+    BuildContext context,
+    TapDownDetails details,
+    List<SelectOption> option,
+  ) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        details.globalPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        ...option.map(
+          (e) => PopupMenuItem(
+            onTap: () {
+              context.read<InteractionBloc>().add(
+                EnumerationSelectCompleteEvent(value: e.option),
+              );
+            },
+            child: Text(e.title),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _asWrappable({
+    required BuildContext context,
+    required Widget child,
+    required MessageState state,
+  }) {
+    if (state is MessageRegisterContextMenuState) {
+      return GestureDetector(
+        onSecondaryTapDown:
+            (details) => _showContextMenu(context, details, state.options),
+        child: child,
+      );
+    }
+    return child;
   }
 
   @override

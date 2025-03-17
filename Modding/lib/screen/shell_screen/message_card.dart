@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
 import '../../model/message.dart';
+import '../../service/file_helper.dart';
+import 'package:path/path.dart' as p;
 
 class MessageCard extends StatelessWidget {
   const MessageCard({super.key, required this.message});
@@ -48,6 +54,34 @@ class MessageCard extends StatelessWidget {
                           style: theme.textTheme.bodySmall!.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
+                          contextMenuBuilder: (context, editableTextState) {
+                            final List<ContextMenuButtonItem> buttonItems =
+                                editableTextState.contextMenuButtonItems;
+                            if (CurrentPlatform.isDesktop) {
+                              final current = message.subtitle!;
+                              if (FileSystemEntity.typeSync(current) !=
+                                  FileSystemEntityType.notFound) {
+                                buttonItems.add(
+                                  ContextMenuButtonItem(
+                                    label: context.los.open,
+                                    onPressed: () async {
+                                      if (FileHelper.isFile(current)) {
+                                        await FileHelper.revealFile(
+                                          p.dirname(current),
+                                        );
+                                      } else {
+                                        await FileHelper.revealFile(current);
+                                      }
+                                    },
+                                  ),
+                                );
+                              }
+                            }
+                            return AdaptiveTextSelectionToolbar.buttonItems(
+                              anchors: editableTextState.contextMenuAnchors,
+                              buttonItems: buttonItems,
+                            );
+                          },
                         ),
                       ),
                   ],

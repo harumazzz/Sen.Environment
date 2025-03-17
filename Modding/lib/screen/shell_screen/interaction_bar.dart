@@ -165,6 +165,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
   ) async {
     _completer = Completer<String?>();
     _option = UIHelper.makeEnumerationOption(selectedOptions);
+    context.read<MessageBloc>().add(RegisterContextMenu(options: _option!));
     context.read<InteractionBloc>().add(
       EnumerationSelectEvent(completer: _completer),
     );
@@ -215,11 +216,8 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
         await _onInputBoolean(result);
         break;
       case 'input_enumeration':
-        await _onSelectEnumeration([
-            ...arguments.take(0),
-            ...arguments.skip(1),
-          ], result,
-        );
+        final enumerations = [...arguments.take(0), ...arguments.skip(1)];
+        await _onSelectEnumeration(enumerations, result);
         break;
       case 'display_stack':
         _onDisplayStack(arguments[1], arguments[2]);

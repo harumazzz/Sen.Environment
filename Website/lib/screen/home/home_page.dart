@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage> {
       child: Padding(
         padding: EdgeInsets.symmetric(
           vertical: 12.0,
-          horizontal: MediaQuery.of(context).size.width < 350 ? 8.0 : 16.0,
+          horizontal: MediaQuery.sizeOf(context).width < 350 ? 8.0 : 16.0,
         ),
         child: Row(
           spacing: 10.0,
@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDisplayPreviewImage(BuildContext context) {
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.sizeOf(context).width < 600) {
       return Image.asset(
         Theme.of(context).brightness == Brightness.dark
             ? 'assets/images/dark/phone.jpg'
@@ -199,7 +199,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _descriptionImage(BuildContext context) {
-    if (MediaQuery.of(context).size.width > 600) {
+    if (MediaQuery.sizeOf(context).width > 600) {
       return Image.asset('assets/images/terminal.png', fit: BoxFit.cover);
     }
     return Image.asset('assets/images/phone_view.jpg', fit: BoxFit.cover);
@@ -311,7 +311,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 16.0,
               children: [
-                _displayLogo(MediaQuery.of(context).size.width < 600),
+                _displayLogo(MediaQuery.sizeOf(context).width < 600),
                 _introduceText(context),
                 _displayText(context),
                 _buttonRow(),

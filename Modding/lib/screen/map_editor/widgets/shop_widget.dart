@@ -11,7 +11,7 @@ class ShopWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLowScreenWidth = MediaQuery.of(context).size.width < 1540;
+    final isLowScreenWidth = MediaQuery.sizeOf(context).width < 1540;
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     return BlocBuilder<SectionBloc, SectionState>(
       buildWhen:

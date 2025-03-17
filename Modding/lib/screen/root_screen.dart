@@ -20,12 +20,6 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _destinations = [
-    HomeScreen(),
-    MiscellaneousScreen(),
-    SettingScreen(),
-  ];
-
   void _onDestinationSelected(int index) {
     setState(() {
       _selectedIndex = index;
@@ -86,7 +80,11 @@ class _RootScreenState extends State<RootScreen> {
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: _destinations,
+                children: [
+                  const HomeScreen(),
+                  const MiscellaneousScreen(),
+                  if (_selectedIndex == 2) const SettingScreen(),
+                ],
               ),
             ),
           ],

@@ -24,7 +24,7 @@ namespace Sen::Shell {
     ) -> void
     {
         message.reset(new Message{
-            .value = new uint8_t[size],
+            .value = reinterpret_cast<uint8_t*>(std::malloc(size * sizeof(uint8_t))),
             .size = size,
         });
     }

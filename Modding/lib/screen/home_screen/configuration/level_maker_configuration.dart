@@ -60,6 +60,9 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
       children: <Widget>[
         const SizedBox(height: 10.0),
         TextField(
+          minLines: 1,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
           controller: _resourceLocationController,
           decoration: InputDecoration(
             labelText: los.resource_location,

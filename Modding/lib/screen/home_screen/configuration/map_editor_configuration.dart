@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../extension/context.dart';
 import '../../../service/file_helper.dart';
 import '../../../i18n/app_localizations.dart';
 
@@ -62,6 +63,9 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
       children: [
         const SizedBox.shrink(),
         TextField(
+          minLines: 1,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
           controller: _resourceLocationController,
           decoration: InputDecoration(
             labelText: los.resource_location,
@@ -81,14 +85,14 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
           ),
           onChanged: _onChangeSetting,
         ),
-        ElevatedButton(
+        ActionChip.elevated(
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest
+              .withValues(alpha: context.isDarkMode ? 0.84 : 0.12),
+          avatar: const Icon(Symbols.refresh),
+          label: Text(los.reload_map_resources),
           onPressed: () {
             context.read<MapEditorConfigurationCubit>().reset();
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Text(los.reload_map_resources),
-          ),
         ),
       ],
     );

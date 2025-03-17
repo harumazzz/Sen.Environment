@@ -43,7 +43,8 @@ class MiscellaneousTaskBloc
         source,
       );
       await FileHelper.unzipFile(source, '$destination/Script');
-      FileHelper.removeFile(source);
+      await Future.delayed(const Duration(milliseconds: 300));
+      await FileHelper.removeFileAsync(source);
       await event.settingsCubit.setToolChain(destination);
       await event.settingsCubit.setIsValid(isValid: true);
       emit(const ScriptDownloaded());

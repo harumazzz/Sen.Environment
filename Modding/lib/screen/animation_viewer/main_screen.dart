@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,6 +81,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: UIHelper.buildDialog(
         title: Text(los.upload_media, style: theme.textTheme.bodyLarge),
         content: TextField(
+          minLines: 1,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
           controller: _controller,
           decoration: InputDecoration(
             labelText: los.upload_directory,
@@ -336,7 +338,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildUI() {
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (CurrentPlatform.isAndroid || CurrentPlatform.isIOS) {
       return _screen[_selectedIndex];
     } else {
       return Padding(
@@ -408,29 +410,53 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> _showContextMenu(TapDownDetails details) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        details.globalPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          onTap: _takeScreenshot,
+          child: Text(context.los.take_screenshot),
+        ),
+        PopupMenuItem(
+          onTap: _onUploadFile,
+          child: Text(context.los.upload_file),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: UIHelper.ofMobile(
-        AppBar(
-          forceMaterialTransparency: CurrentPlatform.isDesktop,
-          title: Text(los.animation_viewer),
-          actions: [
-            IconButton(
-              onPressed: _takeScreenshot,
-              icon: const Icon(Symbols.screenshot),
-            ),
-            IconButton(
-              onPressed: _onUploadFile,
-              icon: const Icon(Symbols.file_upload),
-            ),
-          ],
+    return GestureDetector(
+      onSecondaryTapDown: _showContextMenu,
+      child: Scaffold(
+        appBar: UIHelper.ofMobile(
+          AppBar(
+            forceMaterialTransparency: CurrentPlatform.isDesktop,
+            title: Text(los.animation_viewer),
+            actions: [
+              IconButton(
+                onPressed: _takeScreenshot,
+                icon: const Icon(Symbols.screenshot),
+              ),
+              IconButton(
+                onPressed: _onUploadFile,
+                icon: const Icon(Symbols.file_upload),
+              ),
+            ],
+          ),
         ),
+        body: _buildUI(),
+        floatingActionButton: UIHelper.ofDesktop(_buildFloatingActionButton()),
+        bottomNavigationBar: _navigationBar(),
       ),
-      body: _buildUI(),
-      floatingActionButton: UIHelper.ofMobile(_buildFloatingActionButton()),
-      bottomNavigationBar: _navigationBar(),
     );
   }
 }

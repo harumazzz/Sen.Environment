@@ -48,7 +48,7 @@ class FooterWidget extends StatelessWidget {
         ),
       ),
     ];
-    if (MediaQuery.of(context).size.width < 600) {
+    if (MediaQuery.sizeOf(context).width < 600) {
       return SizedBox(
         height: 120,
         child: CarouselView.weighted(

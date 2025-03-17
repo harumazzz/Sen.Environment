@@ -16,3 +16,12 @@ final class AddMessage extends MessageEvent {
 final class ClearMessage extends MessageEvent {
   const ClearMessage();
 }
+
+final class RegisterContextMenu extends MessageEvent {
+  const RegisterContextMenu({required this.options});
+
+  final List<SelectOption> options;
+
+  @override
+  List<Object?> get props => [options];
+}

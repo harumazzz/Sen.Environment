@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../constant/translators.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../model/translator.dart';
 import 'locale_option_list.dart';
@@ -22,8 +21,7 @@ class SettingScreen extends StatefulWidget {
   State<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends State<SettingScreen>
-    with AutomaticKeepAliveClientMixin {
+class _SettingScreenState extends State<SettingScreen> {
   late bool _hasPermission;
   late TextEditingController _controller;
 
@@ -32,7 +30,13 @@ class _SettingScreenState extends State<SettingScreen>
     super.initState();
     _hasPermission = false;
     _controller = TextEditingController();
-    _initializeSettings();
+    _controller.addListener(() async {
+      await context.read<SettingsCubit>().setToolChain(_controller.text);
+      await _onCheckValidator();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _initializeSettings();
+    });
   }
 
   Future<void> _initializeSettings() async {
@@ -48,7 +52,7 @@ class _SettingScreenState extends State<SettingScreen>
   }
 
   Future<bool> _checkDefaultPermission() async {
-    return Platform.isAndroid
+    return CurrentPlatform.isAndroid
         ? await AndroidHelper.checkStoragePermission()
         : true;
   }
@@ -68,6 +72,8 @@ class _SettingScreenState extends State<SettingScreen>
       'vi': localization.vi,
       'es': localization.es,
       'ru': localization.ru,
+      'fr': localization.fr,
+      'de': localization.de,
     };
     return data[key] ?? key;
   }
@@ -84,7 +90,6 @@ class _SettingScreenState extends State<SettingScreen>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final los = AppLocalizations.of(context)!;
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
@@ -153,7 +158,7 @@ class _SettingScreenState extends State<SettingScreen>
                       state.toolChain.isEmpty
                           ? los.not_specified
                           : state.toolChain,
-                  onTap: !Platform.isAndroid ? _onChangeToolChain : null,
+                  onTap: !CurrentPlatform.isAndroid ? _onChangeToolChain : null,
                 ),
               ]),
             ],
@@ -174,6 +179,9 @@ class _SettingScreenState extends State<SettingScreen>
               children: [
                 Expanded(
                   child: TextField(
+                    minLines: 1,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                     controller: _controller,
                     decoration: InputDecoration(
                       labelText: los.toolchain,
@@ -197,7 +205,7 @@ class _SettingScreenState extends State<SettingScreen>
                       }
                       _controller.text = directory;
                       await setDirectory();
-                      _onCheckValidator();
+                      await _onCheckValidator();
                     },
                     icon: const Icon(Symbols.drive_folder_upload),
                   ),
@@ -216,7 +224,7 @@ class _SettingScreenState extends State<SettingScreen>
         await BlocProvider.of<SettingsCubit>(
           context,
         ).setToolChain(_controller.text);
-        _onCheckValidator();
+        await _onCheckValidator();
         _onClose();
       },
       child: Text(los.okay),
@@ -227,7 +235,7 @@ class _SettingScreenState extends State<SettingScreen>
     Navigator.of(context).pop();
   }
 
-  void _onCheckValidator() async {
+  Future<void> _onCheckValidator() async {
     if (BlocProvider.of<SettingsCubit>(context).state.toolChain.isNotEmpty) {
       final state =
           _existKernel(
@@ -243,16 +251,16 @@ class _SettingScreenState extends State<SettingScreen>
   }
 
   bool _existKernel(String path) {
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       return true;
     }
-    if (Platform.isWindows) {
+    if (CurrentPlatform.isWindows) {
       return FileHelper.isFile('$path/Kernel.dll');
     }
-    if (Platform.isLinux) {
+    if (CurrentPlatform.isLinux) {
       return FileHelper.isFile('$path/libKernel.so');
     }
-    if (Platform.isIOS || Platform.isMacOS) {
+    if (CurrentPlatform.isIOS || CurrentPlatform.isMacOS) {
       return FileHelper.isFile('$path/libKernel.dylib');
     }
     return false;
@@ -261,9 +269,9 @@ class _SettingScreenState extends State<SettingScreen>
   Widget _buildSection(String title, List<Widget> children) {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -299,7 +307,4 @@ class _SettingScreenState extends State<SettingScreen>
     }
     return translator;
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

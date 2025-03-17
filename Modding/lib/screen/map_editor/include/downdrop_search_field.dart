@@ -35,6 +35,9 @@ class DowndropSearchField extends StatelessWidget {
     final controller = TextEditingController(text: value);
     return DropDownSearchFormField(
       textFieldConfiguration: TextFieldConfiguration(
+        minLines: 1,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),

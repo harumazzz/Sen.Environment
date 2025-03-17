@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../../cubit/settings_cubit/settings_cubit.dart';
 import 'image_page.dart';
 import 'media_page.dart';
 import 'sprite_page.dart';
@@ -35,6 +37,8 @@ class MediaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final canShowLabel =
+        context.read<SettingsCubit>().state.showAnimationViewerLabel;
     return DefaultTabController(
       length: 3,
       child: Column(
@@ -60,6 +64,7 @@ class MediaScreen extends StatelessWidget {
               tabs: <Widget>[
                 _buildTab(
                   icon: Badge(
+                    isLabelVisible: media.isNotEmpty && canShowLabel,
                     label: Text('${media.length}'),
                     child: const Icon(Symbols.folder, size: 22),
                   ),
@@ -67,6 +72,7 @@ class MediaScreen extends StatelessWidget {
                 ),
                 _buildTab(
                   icon: Badge(
+                    isLabelVisible: image.isNotEmpty && canShowLabel,
                     label: Text('${image.length}'),
                     child: const Icon(Symbols.image, size: 22),
                   ),
@@ -74,6 +80,7 @@ class MediaScreen extends StatelessWidget {
                 ),
                 _buildTab(
                   icon: Badge(
+                    isLabelVisible: sprite.isNotEmpty && canShowLabel,
                     label: Text('${sprite.length}'),
                     child: const Icon(Symbols.animation, size: 22),
                   ),

@@ -37,6 +37,31 @@ class JavaScriptCategory extends StatelessWidget {
     );
   }
 
+  Future<void> _showContextMenu(
+    TapDownDetails details,
+    BuildContext context,
+  ) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        details.globalPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          onTap: () {
+            BlocProvider.of<LoadScriptBloc>(
+              context,
+            ).add(ReloadScripts(localizations: AppLocalizations.of(context)!));
+            ContextMenuController.removeAny();
+          },
+          child: Text(context.los.reload_script),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
@@ -64,25 +89,30 @@ class JavaScriptCategory extends StatelessWidget {
               builder: (context, state) {
                 if (state is LoadScriptLoaded) {
                   final data = state.filteredData;
-                  return Column(
-                    children: [
-                      const SearchScript(),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: data.length,
-                          itemBuilder: (context, index) {
-                            final script = data[index];
-                            return JavaScriptCard(
-                              item: script,
-                              toolChain:
-                                  BlocProvider.of<SettingsCubit>(
-                                    context,
-                                  ).state.toolChain,
-                            );
-                          },
+                  return GestureDetector(
+                    onSecondaryTapDown:
+                        (details) async =>
+                            await _showContextMenu(details, context),
+                    child: Column(
+                      children: [
+                        const SearchScript(),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: data.length,
+                            itemBuilder: (context, index) {
+                              final script = data[index];
+                              return JavaScriptCard(
+                                item: script,
+                                toolChain:
+                                    BlocProvider.of<SettingsCubit>(
+                                      context,
+                                    ).state.toolChain,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 } else if (state is LoadScriptFailed) {
                   return _buildErrorScreen(context);

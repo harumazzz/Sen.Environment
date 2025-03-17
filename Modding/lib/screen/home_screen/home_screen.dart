@@ -5,10 +5,12 @@ import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../model/item.dart';
 import '../animation_viewer/animation_viewer.dart';
+import 'configuration/animation_viewer_configuration.dart';
 import 'configuration/javascript_category_configuration.dart';
 import 'configuration/level_maker_configuration.dart';
 import 'configuration/map_editor_configuration.dart';
 import 'configuration/shell_configuration.dart';
+import 'custom_tab.dart';
 import 'tab_item.dart';
 import '../javascript_category/javascript_category.dart';
 import '../level_maker/level_maker.dart';
@@ -67,24 +69,33 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildDesktopLayout(BuildContext context, List<Item> items) {
     return DefaultTabController(
+      animationDuration: const Duration(milliseconds: 300),
       length: _tabs.length + 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TabBar(
+            splashFactory: NoSplash.splashFactory,
             isScrollable: true,
+            padding: const EdgeInsets.only(left: 8.0),
+            labelPadding: EdgeInsets.zero,
+            indicatorPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            tabAlignment: TabAlignment.start,
             tabs: [
-              _makeTab(
+              CustomTab(
                 title: context.los.home,
                 icon: const Icon(Symbols.home, color: Colors.blueAccent),
+                isSelected: _tabIndex == 0,
               ),
               ...List.generate(_tabs.length, (index) {
-                return _makeTab(
+                return CustomTab(
                   title: _tabs[index].title,
                   icon: _tabs[index].icon,
-                  onPressed: () => _closeTab(index),
+                  onClose: () => _closeTab(index),
                   onSecondaryTapDown:
                       (details) => _showContextMenu(details, index),
+                  isSelected: _tabIndex == index + 1,
                 );
               }),
             ],
@@ -171,37 +182,8 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {});
   }
 
-  Widget _makeTab({
-    required Widget icon,
-    required String title,
-    void Function()? onPressed,
-    void Function(TapDownDetails)? onSecondaryTapDown,
-  }) {
-    return GestureDetector(
-      onSecondaryTapDown: onSecondaryTapDown,
-      child: Tab(
-        child: SizedBox(
-          width: 200.0,
-          height: 50.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 8.0,
-                children: [icon, Text(title)],
-              ),
-              IconButton(icon: const Icon(Symbols.close), onPressed: onPressed),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   int _calculateCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     if (width > 1800) {
       return 7;
     }
@@ -218,8 +200,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   double _calculateChildAspectRatio(BuildContext context, int crossAxisCount) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final screenHeight = MediaQuery.sizeOf(context).height;
     final spacing = 4.0 * (crossAxisCount - 1);
     final availableWidth = (screenWidth - 18 - spacing) / crossAxisCount;
     final estimatedHeight = availableWidth * 1.1;
@@ -382,6 +364,15 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Future<void> _showAnimationViewerSettings(BuildContext context) async {
+    final los = AppLocalizations.of(context)!;
+    await UIHelper.showDetailDialog(
+      context: context,
+      title: Text(los.animation_viewer),
+      content: const AnimationViewerConfiguration(),
+    );
+  }
+
   Future<void> _onLoadLevelMakerConfiguration(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
@@ -433,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen>
         description: los.animation_viewer_description,
         icon: Symbols.animated_images,
         onWidget: () => const AnimationViewer(),
-        onSetting: () async => throw Exception('TODO'),
+        onSetting: () async => await _showAnimationViewerSettings(context),
         color: Colors.green.shade700,
       ),
       Item(

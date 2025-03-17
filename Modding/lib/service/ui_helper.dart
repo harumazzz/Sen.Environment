@@ -88,16 +88,18 @@ class UIHelper {
   static Future<void> showCustomDialog({
     required BuildContext context,
     required Widget child,
+    bool barrierDismissible = true,
   }) async {
     await showDialog(
       context: context,
+      barrierDismissible: barrierDismissible,
       builder:
           (context) => Dialog(
             backgroundColor: Colors.transparent,
             insetPadding: const EdgeInsets.all(16.0),
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.85,
-              height: MediaQuery.of(context).size.height * 0.6,
+              width: MediaQuery.sizeOf(context).width * 0.85,
+              height: MediaQuery.sizeOf(context).height * 0.6,
               child: child,
             ),
           ),

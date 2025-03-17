@@ -12,7 +12,7 @@ class ChangelogCard extends StatelessWidget {
     final theme = Theme.of(context);
     final textColor =
         theme.brightness == Brightness.dark ? Colors.white : Colors.black87;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isSmallScreen = screenWidth < 600;
 
     return Card(

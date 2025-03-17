@@ -104,7 +104,7 @@ class ToolItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
     final toolWidth =
-        isDesktopPlatform ? 45.0 : MediaQuery.of(context).size.width / 9;
+        isDesktopPlatform ? 45.0 : MediaQuery.sizeOf(context).width / 9;
     return Tooltip(
       message: '${item.title}\n${item.description}.',
       waitDuration: const Duration(seconds: 1),

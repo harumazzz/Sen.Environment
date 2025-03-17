@@ -1,11 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../bloc/load_script_bloc/load_script_bloc.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
+import '../../extension/platform.dart';
 import '../shell_screen/shell_screen.dart';
 import '../../i18n/app_localizations.dart';
 import '../../service/ui_helper.dart';
@@ -51,7 +51,7 @@ class JavaScriptCard extends StatelessWidget {
   }
 
   Future<void> _runAsLauncher(BuildContext context) async {
-    if (!Platform.isWindows) {
+    if (!CurrentPlatform.isWindows) {
       return await _runAsShell(context);
     }
     Future<void> showError(Object e) async {
@@ -127,57 +127,90 @@ class JavaScriptCard extends StatelessWidget {
     return await function();
   }
 
+  Future<void> _showContextMenu(
+    TapDownDetails details,
+    BuildContext context,
+  ) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        details.globalPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          onTap: () {
+            _onTap(context);
+            ContextMenuController.removeAny();
+          },
+          child: Text(context.los.play),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cardColor = theme.colorScheme.surfaceContainerHighest;
     final textColor = theme.colorScheme.onSurface;
-    return Card(
-      elevation: 4.0,
-      color: cardColor,
-      surfaceTintColor: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16.0),
-        onTap: () => _onTap(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-          child: Row(
-            children: [
-              Icon(Symbols.javascript, size: 32.0, color: _iconColor(context)),
-              const SizedBox(width: 16.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 4.0,
-                  children: [
-                    Text(
-                      item.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    Text(
-                      item.description,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+    return GestureDetector(
+      onSecondaryTapDown:
+          (details) async => await _showContextMenu(details, context),
+      child: Card(
+        elevation: 4.0,
+        color: cardColor,
+        surfaceTintColor: cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.0),
+          onTap: () => _onTap(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            child: Row(
+              spacing: 16.0,
+              children: [
+                Icon(
+                  Symbols.javascript,
+                  size: 32.0,
+                  color: _iconColor(context),
                 ),
-              ),
-              Tooltip(
-                message: los.js_execute,
-                child: Icon(
-                  Icons.play_arrow_rounded,
-                  size: 28,
-                  color: theme.colorScheme.primary,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4.0,
+                    children: [
+                      Text(
+                        item.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      Text(
+                        item.description,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16.0),
-            ],
+                Tooltip(
+                  message: los.js_execute,
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    size: 28,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+              ],
+            ),
           ),
         ),
       ),

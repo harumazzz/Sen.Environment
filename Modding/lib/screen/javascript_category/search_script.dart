@@ -39,6 +39,9 @@ class _SearchScriptState extends State<SearchScript> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(
+        minLines: 1,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
         controller: _searchController,
         decoration: InputDecoration(
           labelText: '${context.los.input_value}...',

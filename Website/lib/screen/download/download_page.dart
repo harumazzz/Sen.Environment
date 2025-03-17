@@ -51,7 +51,7 @@ class _DownloadPageState extends State<DownloadPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isSmallScreen = screenWidth < 600;
 
     return FutureBuilder(

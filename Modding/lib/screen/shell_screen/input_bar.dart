@@ -86,8 +86,43 @@ class _InputBarState extends State<InputBar> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: TextField(
+            minLines: 1,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
             focusNode: _focusNode,
             controller: _controller,
+            contextMenuBuilder: (context, editableTextState) {
+              final List<ContextMenuButtonItem> buttonItems =
+                  editableTextState.contextMenuButtonItems;
+              buttonItems.addAll([
+                ContextMenuButtonItem(
+                  onPressed: () async {
+                    await _onAttach('pick_file');
+                    ContextMenuController.removeAny();
+                  },
+                  label: context.los.upload_file,
+                ),
+                ContextMenuButtonItem(
+                  onPressed: () async {
+                    await _onAttach('pick_directory');
+                    ContextMenuController.removeAny();
+                  },
+                  label: context.los.upload_directory,
+                ),
+                ContextMenuButtonItem(
+                  onPressed: () async {
+                    await _onAttach('save_file');
+                    ContextMenuController.removeAny();
+                  },
+                  label: context.los.save_file,
+                ),
+              ]);
+
+              return AdaptiveTextSelectionToolbar.buttonItems(
+                anchors: editableTextState.contextMenuAnchors,
+                buttonItems: buttonItems,
+              );
+            },
             decoration: InputDecoration(
               border: InputBorder.none,
               labelText: '${context.los.input_value}...',

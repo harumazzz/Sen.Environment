@@ -82,6 +82,8 @@ class _DropdownButtonFieldState<T> extends State<DropdownButtonField<T>> {
           ],
           builder: (context, controller, child) {
             return TextField(
+              minLines: 1,
+              maxLines: null,
               focusNode: _focusNode,
               readOnly: true,
               decoration: InputDecoration(

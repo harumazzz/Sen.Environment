@@ -42,14 +42,14 @@ class FileHelper {
     String? initialDirectory,
   }) async {
     var outputFile = null as String?;
-    if (CurrentPlatform.isDesktop || Platform.isIOS) {
+    if (CurrentPlatform.isDesktop || CurrentPlatform.isIOS) {
       outputFile =
           (await file_selector.getSaveLocation(
             suggestedName: suggestedName,
             initialDirectory: initialDirectory,
           ))?.path;
     }
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       outputFile = await AndroidHelper.saveFileFromDocument();
     }
     return outputFile != null ? p.absolute(outputFile) : null;
@@ -121,7 +121,7 @@ class FileHelper {
 
   static Future<String?> uploadDirectory({String? initialDirectory}) async {
     var directory = null as String?;
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       directory = await AndroidHelper.pickDirectoryFromDocument(
         initialDirectory,
       );
@@ -137,7 +137,7 @@ class FileHelper {
   }
 
   static Future<String?> uploadFile({String? initialDirectory}) async {
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       return await AndroidHelper.pickFileFromDocument(initialDirectory);
     }
     return await _uploadFilePicker(initialDirectory);
@@ -156,13 +156,13 @@ class FileHelper {
   }
 
   static Future<String> getWorkingDirectory() async {
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       return (await path_provider.getExternalStorageDirectory())!.path;
     }
-    if (Platform.isIOS) {
+    if (CurrentPlatform.isIOS) {
       return (await path_provider.getApplicationDocumentsDirectory()).path;
     }
-    if (Platform.isWindows) {
+    if (CurrentPlatform.isWindows) {
       return p.absolute(
         (await path_provider.getApplicationSupportDirectory()).path,
       );
@@ -182,26 +182,36 @@ class FileHelper {
     return File(source).deleteSync();
   }
 
+  static Future<void> removeFileAsync(String source) async {
+    await File(source).delete(recursive: true);
+    return;
+  }
+
   static Future<void> unzipFile(String source, String destination) async {
     final inputStream = InputFileStream(source);
-    final archive = ZipDecoder().decodeStream(inputStream);
-    final symbolicLinks = [];
-    for (final file in archive) {
-      if (file.isSymbolicLink) {
-        symbolicLinks.add(file);
-        continue;
+    try {
+      final archive = ZipDecoder().decodeStream(inputStream);
+      final symbolicLinks = [];
+      for (final file in archive.files) {
+        if (file.isSymbolicLink) {
+          symbolicLinks.add(file);
+          continue;
+        }
+        final filePath = '$destination/${file.name}';
+        if (file.isFile) {
+          final outputStream = OutputFileStream(filePath);
+          file.writeContent(outputStream);
+          await outputStream.close();
+        } else {
+          await Directory(filePath).create(recursive: true);
+        }
       }
-      if (file.isFile) {
-        final outputStream = OutputFileStream('$destination/${file.name}');
-        file.writeContent(outputStream);
-        outputStream.closeSync();
-      } else {
-        Directory('$destination/${file.name}').createSync(recursive: true);
+      for (final entity in symbolicLinks) {
+        final link = Link('$destination/${entity.fullPathName}');
+        await link.create(entity.symbolicLink!, recursive: true);
       }
-    }
-    for (final entity in symbolicLinks) {
-      final link = Link('$destination/${entity.fullPathName}');
-      link.createSync(entity.symbolicLink!, recursive: true);
+    } finally {
+      await inputStream.close();
     }
   }
 
@@ -214,16 +224,18 @@ class FileHelper {
   }
 
   static Future<void> revealFile(String path) async {
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    if (CurrentPlatform.isWindows ||
+        CurrentPlatform.isMacOS ||
+        CurrentPlatform.isLinux) {
       await launchUrl(Uri.file(path), mode: LaunchMode.externalApplication);
     }
-    if (Platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       final fileUri = Uri.file(path);
       if (await canLaunchUrl(fileUri)) {
         await launchUrl(fileUri, mode: LaunchMode.externalApplication);
       }
     }
-    if (Platform.isIOS) {
+    if (CurrentPlatform.isIOS) {
       await launchUrl(
         Uri.file(path).replace(scheme: 'shareddocuments'),
         mode: LaunchMode.externalApplication,

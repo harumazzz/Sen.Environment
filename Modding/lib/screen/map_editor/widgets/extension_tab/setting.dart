@@ -349,6 +349,8 @@ class __CustomAnchorState extends State<_CustomAnchor> {
             return TextField(
               controller: _controller,
               focusNode: _focusNode,
+              minLines: 1,
+              maxLines: null,
               keyboardType: TextInputType.none,
               inputFormatters: const [],
               readOnly: true,
