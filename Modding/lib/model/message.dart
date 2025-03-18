@@ -15,20 +15,29 @@ class Message extends Equatable {
   final String? subtitle;
   final String? color;
 
+  String get validTitle => title.replaceAll(RegExp(r':(?=\s*$)'), '');
+
   Color exchangeColor(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return switch (color) {
-      'red' => Colors.red,
-      'green' => Colors.green,
-      'yellow' => Colors.yellow,
-      'cyan' => Colors.cyan,
-      'default' => _getColorBasedOnTheme(context),
-      _ => _getColorBasedOnTheme(context),
+      'red' => isDark ? scheme.error : scheme.errorContainer,
+      'green' => isDark ? Colors.teal.shade500 : Colors.lightGreen.shade400,
+      'yellow' => isDark ? Colors.amber.shade400 : Colors.amber.shade800,
+      'cyan' => isDark ? Colors.lightBlue.shade300 : Colors.cyan.shade400,
+      'blue' => isDark ? scheme.primaryContainer : scheme.primary,
+      _ => _getColorBasedOnTheme(theme, isDark),
     };
   }
 
-  Color _getColorBasedOnTheme(BuildContext context) {
-    return Theme.of(context).colorScheme.secondaryContainer;
+  Color _getColorBasedOnTheme(ThemeData theme, bool isDark) {
+    return isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : theme.colorScheme.secondaryContainer;
   }
+
+  bool get hasMessage => subtitle != null && subtitle!.isNotEmpty;
 
   @override
   List<Object?> get props => [title, subtitle, color];

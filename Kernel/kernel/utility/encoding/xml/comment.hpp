@@ -4,36 +4,36 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
-    struct Comment {
+    // struct Comment {
 
-    protected:
+    // protected:
 
-        String m_value{};
+    //     String m_value{};
 
-    public:
+    // public:
 
-        auto has_value (
-        ) const -> bool {
-            return !thiz.m_value.empty();
-        }
+    //     auto has_value (
+    //     ) const -> bool {
+    //         return !thiz.m_value.empty();
+    //     }
 
-        auto value (
-        ) -> String& {
-            return thiz.m_value;
-        }
+    //     auto value (
+    //     ) -> String& {
+    //         return thiz.m_value;
+    //     }
 
-        auto value (
-            const String& value
-        ) -> void {
-            thiz.m_value = value;
-        }
+    //     auto value (
+    //         const String& value
+    //     ) -> void {
+    //         thiz.m_value = value;
+    //     }
 
-        auto value (
-            String&& value
-        ) -> void {
-            thiz.m_value.assign(value);
-        }
+    //     auto value (
+    //         String&& value
+    //     ) -> void {
+    //         thiz.m_value.assign(value);
+    //     }
 
-    };
+    // };
 
 }

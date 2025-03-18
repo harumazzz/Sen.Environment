@@ -8,9 +8,7 @@ class ChangelogApi {
     final ref = FirebaseFirestore.instance.collection('changelog');
     final snapshot = await ref.orderBy('date', descending: true).get();
     final List<Changelog> result = [];
-    for (final child in snapshot.docs) {
-      result.add(Changelog.fromJson(child.data()));
-    }
+    result.addAll(snapshot.docs.map((e) => Changelog.fromJson(e.data())));
     return result;
   }
 }

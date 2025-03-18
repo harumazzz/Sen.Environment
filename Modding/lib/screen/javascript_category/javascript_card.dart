@@ -23,12 +23,6 @@ class JavaScriptCard extends StatelessWidget {
 
   final String toolChain;
 
-  Color? _iconColor(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.yellowAccent.withValues(alpha: 0.8)
-        : Theme.of(context).colorScheme.primary;
-  }
-
   List<String> _makeArguments() {
     return [
       '-method',
@@ -105,8 +99,16 @@ class JavaScriptCard extends StatelessWidget {
       await UIHelper.showFlutterDialog(
         context: context,
         child: UIHelper.buildDialog(
-          title: Text(los.confirmation),
-          content: Text(los.do_you_wish_to_run(item.name)),
+          title: Text(
+            los.confirmation,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          content: Text(
+            los.do_you_wish_to_run(item.name),
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -152,7 +154,6 @@ class JavaScriptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final los = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cardColor = theme.colorScheme.surfaceContainerHighest;
     final textColor = theme.colorScheme.onSurface;
@@ -160,59 +161,79 @@ class JavaScriptCard extends StatelessWidget {
       onSecondaryTapDown:
           (details) async => await _showContextMenu(details, context),
       child: Card(
-        elevation: 4.0,
+        elevation: 4,
         color: cardColor,
         surfaceTintColor: cardColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(20.0),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(20.0),
           onTap: () => _onTap(context),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 16.0,
+            ),
             child: Row(
-              spacing: 16.0,
               children: [
-                Icon(
-                  Symbols.javascript,
-                  size: 32.0,
-                  color: _iconColor(context),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 4.0,
-                    children: [
-                      Text(
-                        item.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                      ),
-                      Text(
-                        item.description,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Tooltip(
-                  message: los.js_execute,
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    size: 28,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
+                _buildLeadingIcon(context),
                 const SizedBox(width: 16.0),
+                Expanded(child: _buildTextContent(theme, textColor)),
+                _buildActionIcon(theme, context),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLeadingIcon(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Symbols.javascript,
+        size: 32.0,
+        color: Theme.of(context).colorScheme.onPrimaryContainer,
+      ),
+    );
+  }
+
+  Widget _buildTextContent(ThemeData theme, Color textColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          item.name,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          item.description,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionIcon(ThemeData theme, BuildContext context) {
+    return Tooltip(
+      message: context.los.js_execute,
+      child: IconButton(
+        icon: const Icon(Icons.play_arrow_rounded),
+        iconSize: 28,
+        color: theme.colorScheme.primary,
+        onPressed: () => _onTap(context),
       ),
     );
   }

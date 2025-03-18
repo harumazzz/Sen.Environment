@@ -13,10 +13,14 @@ class SearchScript extends StatefulWidget {
 
 class _SearchScriptState extends State<SearchScript> {
   late TextEditingController _searchController;
+  late bool _isFocused;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     _searchController = TextEditingController();
+    _focusNode = FocusNode();
+    _isFocused = false;
     super.initState();
     _searchController.addListener(() {
       BlocProvider.of<LoadScriptBloc>(context).add(
@@ -25,30 +29,57 @@ class _SearchScriptState extends State<SearchScript> {
           localizations: context.los,
         ),
       );
+      if (_searchController.text.isNotEmpty) {
+        _isFocused = true;
+        setState(() {});
+      }
     });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        minLines: 1,
-        maxLines: null,
-        keyboardType: TextInputType.multiline,
-        controller: _searchController,
-        decoration: InputDecoration(
-          labelText: '${context.los.input_value}...',
-          prefixIcon: const Icon(Symbols.search),
-          border: const OutlineInputBorder(),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: SearchBar(
+              focusNode: _focusNode,
+              controller: _searchController,
+              leading: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Symbols.search),
+              ),
+              hintText: 'Search for scripts...',
+              onTap: () => setState(() => _isFocused = true),
+              onChanged: (value) {
+                BlocProvider.of<LoadScriptBloc>(
+                  context,
+                ).add(SearchScripts(query: value, localizations: context.los));
+              },
+              trailing: [
+                if (_isFocused)
+                  IconButton(
+                    icon: const Icon(Symbols.close),
+                    onPressed: () {
+                      _searchController.clear();
+                      _focusNode.unfocus();
+                      setState(() => _isFocused = false);
+                    },
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

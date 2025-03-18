@@ -7,31 +7,31 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
-    using XMLDocument = pugi::xml_document;
+    // using XMLDocument = pugi::xml_document;
 
-    using XMLNode = pugi::xml_node;
+    // using XMLNode = pugi::xml_node;
 
-    using XMLAttribute = pugi::xml_attribute;
+    // using XMLAttribute = pugi::xml_attribute;
 
-    using XMLText = pugi::xml_text;
+    // using XMLText = pugi::xml_text;
 
-    using XMLWriter = pugi::xml_writer;
+    // using XMLWriter = pugi::xml_writer;
 
-    using XMLWriterStream = pugi::xml_writer_stream;
+    // using XMLWriterStream = pugi::xml_writer_stream;
 
-    struct Node;
+    // struct Node;
 
-    struct Comment;
+    // struct Comment;
 
-    struct Text;
+    // struct Text;
 
-    struct Element;
+    // struct Element;
 
-    enum class Type : u8 {
-        Element,
-        Text,
-        Comment,
-        Unknown,
-    };
+    // enum class Type : u8 {
+    //     Element,
+    //     Text,
+    //     Comment,
+    //     Unknown,
+    // };
 
 }

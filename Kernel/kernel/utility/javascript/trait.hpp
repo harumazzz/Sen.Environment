@@ -5,7 +5,7 @@
 
 namespace Sen::Kernel::Javascript {
 
-    template <typename T> requires is_numeric_v<T> && !is_boolean_v<T>
+    template <typename T> requires is_numeric_v<T> && (!is_boolean_v<T>)
     struct Trait<T> {
 
         static auto from_value(

@@ -65,65 +65,70 @@ class JavaScriptCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
-    return BlocProvider<LoadScriptBloc>(
-      create: (context) {
-        final bloc = LoadScriptBloc(
-          settingsCubit: BlocProvider.of<SettingsCubit>(context),
-        );
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          bloc.add(LoadScripts(localizations: los));
-        });
-        return bloc;
-      },
+
+    return BlocProvider(
+      create:
+          (context) =>
+              LoadScriptBloc(settingsCubit: context.read<SettingsCubit>())
+                ..add(LoadScripts(localizations: los)),
       child: HotkeyBuilder(
         child: Scaffold(
-          appBar: UIHelper.ofMobile(AppBar(title: Text(los.js_execute))),
-          body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: BlocConsumer<LoadScriptBloc, LoadScriptState>(
-              listener: (context, state) {
-                if (state is LoadScriptFailed) {
-                  _showErrorDialog(context, state.message);
-                }
-              },
-              builder: (context, state) {
-                if (state is LoadScriptLoaded) {
-                  final data = state.filteredData;
-                  return GestureDetector(
-                    onSecondaryTapDown:
-                        (details) async =>
-                            await _showContextMenu(details, context),
-                    child: Column(
-                      children: [
-                        const SearchScript(),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: data.length,
-                            itemBuilder: (context, index) {
-                              final script = data[index];
-                              return JavaScriptCard(
-                                item: script,
-                                toolChain:
-                                    BlocProvider.of<SettingsCubit>(
-                                      context,
-                                    ).state.toolChain,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+          body: UIHelper.applyScrollView(
+            builder: (context, innerBoxIsScrolled) {
+              return UIHelper.buildAppBar(
+                context,
+                innerBoxIsScrolled,
+                title: Text(
+                  los.js_execute,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: BlocConsumer<LoadScriptBloc, LoadScriptState>(
+                listener: (context, state) {
+                  if (state is LoadScriptFailed) {
+                    _showErrorDialog(context, state.message);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is LoadScriptLoaded) {
+                    return _buildScriptList(context, state.filteredData);
+                  } else if (state is LoadScriptFailed) {
+                    return _buildErrorScreen(context);
+                  }
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(),
                   );
-                } else if (state is LoadScriptFailed) {
-                  return _buildErrorScreen(context);
-                }
-                return const Center(
-                  child: CircularProgressIndicator.adaptive(),
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScriptList(BuildContext context, List<Script> data) {
+    return GestureDetector(
+      onSecondaryTapDown:
+          (details) async => await _showContextMenu(details, context),
+      child: Column(
+        children: [
+          const SearchScript(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                return JavaScriptCard(
+                  item: data[index],
+                  toolChain: context.read<SettingsCubit>().state.toolChain,
                 );
               },
             ),
           ),
-        ),
+        ],
       ),
     );
   }

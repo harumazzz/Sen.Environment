@@ -4,43 +4,43 @@
 
 namespace Sen::Kernel::Encoding::XML {
 
-    struct Text {
+    // struct Text {
 
-    protected:
+    // protected:
 
-        String m_value{};
+    //     String m_value{};
 
-        bool m_cdata{false};
+    //     bool m_cdata{false};
 
-    public:
+    // public:
 
-        auto is_empty (
-        ) const -> bool {
-            return thiz.m_value.empty();
-        }
+    //     auto is_empty (
+    //     ) const -> bool {
+    //         return thiz.m_value.empty();
+    //     }
 
-        auto set_cdata(
-            const bool cdata
-        ) -> void {
-            thiz.m_cdata = cdata;
-        }
+    //     auto set_cdata(
+    //         const bool cdata
+    //     ) -> void {
+    //         thiz.m_cdata = cdata;
+    //     }
 
-        auto is_cdata (
-        ) const -> bool {
-            return thiz.m_cdata;
-        }
+    //     auto is_cdata (
+    //     ) const -> bool {
+    //         return thiz.m_cdata;
+    //     }
 
-        auto value(
-        ) -> String& {
-            return thiz.m_value;
-        }
+    //     auto value(
+    //     ) -> String& {
+    //         return thiz.m_value;
+    //     }
 
-        auto value (
-            String&& value
-        ) -> void {
-            thiz.m_value.assign(value);
-        }
+    //     auto value (
+    //         String&& value
+    //     ) -> void {
+    //         thiz.m_value.assign(value);
+    //     }
 
-    };
+    // };
 
 }

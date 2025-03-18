@@ -1,165 +1,154 @@
 #pragma once
 
+#include "kernel/utility/encoding/xml/common.hpp"
 #include "kernel/utility/encoding/xml/text.hpp"
 #include "kernel/utility/encoding/xml/comment.hpp"
-#include "kernel/utility/encoding/xml/element.hpp"
 
 namespace Sen::Kernel::Encoding::XML {
 
-    struct Node {
+    // struct Node {
 
-    private:
+    // private:
 
-        using Text = Text;
+    //     using Text = Text;
 
-        using Comment = Comment;
+    //     using Comment = Comment;
 
-        using Element = Element;
+    //     using Element = Element;
 
-        using Type = Type;
+    //     using Type = Type;
 
-    protected:
+    // protected:
 
-        std::variant<Text, Element, Comment> m_value{};
+    //     std::variant<Text, Element, Comment> m_value{};
 
-        Type m_type{Type::Unknown};
+    //     Type m_type{Type::Unknown};
 
-    public:
+    // public:
 
-        Node(
-        ) = default;
+    //     Node(
+    //     ) = default;
 
-        Node (
-            const Node& other
-        ) = delete;
+    //     Node (
+    //         const Node& other
+    //     ) = delete;
 
-        Node (
-            Node && other
-        ) noexcept : m_type{other.m_type} {
-            thiz.m_value.swap(other.m_value);
-            other.m_type = Type::Unknown;
-        }
+    //     Node (
+    //         Node && other
+    //     ) noexcept : m_type{other.m_type} {
+    //         thiz.m_value.swap(other.m_value);
+    //         other.m_type = Type::Unknown;
+    //     }
 
-        ~Node(
-        ) = default;
+    //     ~Node(
+    //     ) = default;
 
-        auto operator =(
-            const Node& other
-        ) -> Node& = delete;
+    //     auto operator =(
+    //         const Node& other
+    //     ) -> Node& = delete;
 
-        auto operator = (
-            Node&& other
-        ) noexcept -> Node& {
-            thiz.m_value.swap(other.m_value);
-            thiz.m_type = other.m_type;
-            other.m_type = Type::Unknown;
-            return thiz;
-        }
+    //     auto operator = (
+    //         Node&& other
+    //     ) noexcept -> Node& {
+    //         thiz.m_value.swap(other.m_value);
+    //         thiz.m_type = other.m_type;
+    //         other.m_type = Type::Unknown;
+    //         return thiz;
+    //     }
 
-    protected:
+    // protected:
 
-        template <typename T> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
-        auto is (
-        ) const -> bool {
-            return std::holds_alternative<T>(thiz.m_value);
-        }
+    //     template <typename T> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
+    //     auto is (
+    //     ) const -> bool {
+    //         return std::holds_alternative<T>(thiz.m_value);
+    //     }
 
-    public:
+    // public:
 
-        auto is_comment (
-        ) const -> bool {
-            return thiz.is<Comment>();
-        }
+    //     auto is_comment (
+    //     ) const -> bool {
+    //         return thiz.is<Comment>();
+    //     }
 
-        auto is_element (
-        ) const -> bool {
-            return thiz.is<Element>();
-        }
+    //     auto is_element (
+    //     ) const -> bool {
+    //         return thiz.is<Element>();
+    //     }
 
-        auto is_text (
-        ) const -> bool {
-            return thiz.is<Text>();
-        }
+    //     auto is_text (
+    //     ) const -> bool {
+    //         return thiz.is<Text>();
+    //     }
 
-    protected:
+    // protected:
 
-        template <typename T, typename... Args> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
-        auto set (
-            Args&&... args
-        ) -> void {
-            thiz.m_value.emplace<T>(std::forward<Args>(args)...);
-        }
+    //     template <typename T, typename... Args> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
+    //     auto set (
+    //         Args&&... args
+    //     ) -> void {
+    //         thiz.m_value.emplace<T>(std::forward<Args>(args)...);
+    //     }
 
-    public:
+    // public:
 
-        template <typename... Args>
-        auto set_element (
-            Args... args
-        ) -> void {
-            thiz.m_type = Type::Element;
-            return thiz.set<Element>(std::forward<Args>(args)...);
-        }
+    //     template <typename... Args>
+    //     auto set_element (
+    //         Args... args
+    //     ) -> void {
+    //         thiz.m_type = Type::Element;
+    //         return thiz.set<Element>(std::forward<Args>(args)...);
+    //     }
 
-        template <typename... Args>
-        auto set_comment (
-            Args... args
-        ) -> void {
-            thiz.m_type = Type::Comment;
-            return thiz.set<Comment>(std::forward<Args>(args)...);
-        }
+    //     template <typename... Args>
+    //     auto set_comment (
+    //         Args... args
+    //     ) -> void {
+    //         thiz.m_type = Type::Comment;
+    //         return thiz.set<Comment>(std::forward<Args>(args)...);
+    //     }
 
-        template <typename... Args>
-        auto set_text (
-            Args... args
-        ) -> void {
-            thiz.m_type = Type::Text;
-            return thiz.set<Text>(std::forward<Args>(args)...);
-        }
+    //     template <typename... Args>
+    //     auto set_text (
+    //         Args... args
+    //     ) -> void {
+    //         thiz.m_type = Type::Text;
+    //         return thiz.set<Text>(std::forward<Args>(args)...);
+    //     }
 
-    protected:
+    // protected:
 
-        template <typename T> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
-        auto get (
-        ) -> T& {
-            return std::get<T>(thiz.m_value);
-        }
+    //     template <typename T> requires std::is_same_v<Text, T> or std::is_same_v<Comment, T> or std::is_same_v<Element, T>
+    //     auto get (
+    //     ) -> T& {
+    //         return std::get<T>(thiz.m_value);
+    //     }
 
-    public:
+    // public:
 
-        auto get_comment (
-        ) -> Comment& {
-            assert_conditional(thiz.is_comment(), "Expected an comment node, but the current node is not", "get_comment");
-            return thiz.get<Comment>();
-        }
+    //     auto get_comment (
+    //     ) -> Comment& {
+    //         assert_conditional(thiz.is_comment(), "Expected an comment node, but the current node is not", "get_comment");
+    //         return thiz.get<Comment>();
+    //     }
 
-        auto get_element (
-        ) -> Element& {
-            assert_conditional(thiz.is_comment(), "Expected an element node, but the current node is not", "get_element");
-            return thiz.get<Element>();
-        }
+    //     auto get_element (
+    //     ) -> Element& {
+    //         assert_conditional(thiz.is_comment(), "Expected an element node, but the current node is not", "get_element");
+    //         return thiz.get<Element>();
+    //     }
 
-        auto get_text (
-        ) -> Text& {
-            assert_conditional(thiz.is_comment(), "Expected an text node, but the current node is not", "get_text");
-            return thiz.get<Text>();
-        }
+    //     auto get_text (
+    //     ) -> Text& {
+    //         assert_conditional(thiz.is_comment(), "Expected an text node, but the current node is not", "get_text");
+    //         return thiz.get<Text>();
+    //     }
 
-        auto get_type (
-        ) const -> Type {
-            return thiz.m_type;
-        }
+    //     auto get_type (
+    //     ) const -> Type {
+    //         return thiz.m_type;
+    //     }
 
-    };
-
-    inline auto Element::find_child_by_name(
-        const String& name
-    ) -> std::optional<std::reference_wrapper<Node>> {
-        for (auto& m_node : thiz.m_child) {
-            if (m_node.is_element() && m_node.get_element().name() == name) {
-                return m_node;
-            }
-        }
-        return std::nullopt;
-    }
+    // };
 
 }

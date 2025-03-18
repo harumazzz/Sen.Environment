@@ -437,7 +437,7 @@
 	"increase_scale_y": "Augmenter l'échelle Y",
 	"flip": "Retourner",
 	"cut": "Couper",
-	"loading_map_resources": "Chargement des ressources de la carte, veuillez patienter...",
+	"loading_map_resources": "Chargement des ressources de la carte, veuillez patienter",
 	"input_value": "Saisissez une valeur",
 	"select_an_option": "Sélectionner une option...",
 	"attach": "Attacher",

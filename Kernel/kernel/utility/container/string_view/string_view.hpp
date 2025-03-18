@@ -354,7 +354,7 @@ namespace Sen::Kernel {
         	auto convert = std::wstring_convert<std::codecvt_utf8<wchar_t>>{};
         	auto wstr = convert.from_bytes(thiz.value, thiz.value + thiz._size);
         	auto destination = CArray<wchar_t>{wstr.size()};
-        	std::memcpy(destination.begin(), wstr.begin(), wstr.size() * sizeof(wchar_t));
+        	std::memcpy(destination.begin(), wstr.data(), wstr.size() * sizeof(wchar_t));
         	return destination;
 		#endif
         }

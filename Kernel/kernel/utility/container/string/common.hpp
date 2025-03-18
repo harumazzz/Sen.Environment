@@ -273,7 +273,7 @@ namespace Sen::Kernel {
 
     }
 
-    #ifdef WINDOWS
+    #if WINDOWS
     inline auto u16_to_u8(
         const std::u16string_view& u16
     ) -> std::string

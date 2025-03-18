@@ -78,51 +78,74 @@ class _InputBarState extends State<InputBar> {
     }
   }
 
+  Widget _buildContextMenu(
+    BuildContext context,
+    EditableTextState editableTextState,
+  ) {
+    final List<ContextMenuButtonItem> buttonItems =
+        editableTextState.contextMenuButtonItems;
+    buttonItems.addAll([
+      ContextMenuButtonItem(
+        onPressed: () async {
+          await _onAttach('pick_file');
+          ContextMenuController.removeAny();
+        },
+        label: context.los.upload_file,
+      ),
+      ContextMenuButtonItem(
+        onPressed: () async {
+          await _onAttach('pick_directory');
+          ContextMenuController.removeAny();
+        },
+        label: context.los.upload_directory,
+      ),
+      ContextMenuButtonItem(
+        onPressed: () async {
+          await _onAttach('save_file');
+          ContextMenuController.removeAny();
+        },
+        label: context.los.save_file,
+      ),
+    ]);
+
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: editableTextState.contextMenuAnchors,
+      buttonItems: buttonItems,
+    );
+  }
+
+  List<PopupMenuEntry<String>> _buildOptionList(BuildContext context) {
+    return <PopupMenuEntry<String>>[
+      PopupMenuItem<String>(
+        value: 'pick_file',
+        child: Text(context.los.upload_file),
+      ),
+      PopupMenuItem<String>(
+        value: 'pick_directory',
+        child: Text(context.los.upload_directory),
+      ),
+      PopupMenuItem<String>(
+        value: 'save_file',
+        child: Text(context.los.save_file),
+      ),
+    ];
+  }
+
   Widget _buildTextField() {
     return Expanded(
       child: Card(
-        surfaceTintColor: Theme.of(context).colorScheme.surface,
-        elevation: 4.0,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.sizeOf(context).width > 800 ? 8.0 : 4.0,
+            vertical: MediaQuery.sizeOf(context).width > 800 ? 8.0 : 4.0,
+          ),
           child: TextField(
             minLines: 1,
             maxLines: null,
             keyboardType: TextInputType.multiline,
             focusNode: _focusNode,
             controller: _controller,
-            contextMenuBuilder: (context, editableTextState) {
-              final List<ContextMenuButtonItem> buttonItems =
-                  editableTextState.contextMenuButtonItems;
-              buttonItems.addAll([
-                ContextMenuButtonItem(
-                  onPressed: () async {
-                    await _onAttach('pick_file');
-                    ContextMenuController.removeAny();
-                  },
-                  label: context.los.upload_file,
-                ),
-                ContextMenuButtonItem(
-                  onPressed: () async {
-                    await _onAttach('pick_directory');
-                    ContextMenuController.removeAny();
-                  },
-                  label: context.los.upload_directory,
-                ),
-                ContextMenuButtonItem(
-                  onPressed: () async {
-                    await _onAttach('save_file');
-                    ContextMenuController.removeAny();
-                  },
-                  label: context.los.save_file,
-                ),
-              ]);
-
-              return AdaptiveTextSelectionToolbar.buttonItems(
-                anchors: editableTextState.contextMenuAnchors,
-                buttonItems: buttonItems,
-              );
-            },
+            contextMenuBuilder: _buildContextMenu,
             decoration: InputDecoration(
               border: InputBorder.none,
               labelText: '${context.los.input_value}...',
@@ -132,21 +155,7 @@ class _InputBarState extends State<InputBar> {
                 icon: const Icon(Symbols.attach_file, size: 24.0),
                 tooltip: context.los.attach,
                 onSelected: _onAttach,
-                itemBuilder:
-                    (BuildContext context) => <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: 'pick_file',
-                        child: Text(context.los.upload_file),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'pick_directory',
-                        child: Text(context.los.upload_directory),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'save_file',
-                        child: Text(context.los.save_file),
-                      ),
-                    ],
+                itemBuilder: _buildOptionList,
               ),
               contentPadding: const EdgeInsets.only(
                 left: 8.0,
@@ -184,65 +193,71 @@ class _InputBarState extends State<InputBar> {
       child: DropTarget(
         onDragDone: (details) {
           if (details.files.isNotEmpty) {
-            final file = details.files.first;
-            _controller.text = file.path;
+            _controller.text = details.files.first.path;
           }
         },
         child: KeyboardListener(
           focusNode: _keyboardNode,
           onKeyEvent: (event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.enter) {
-                _onSend();
-              }
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.enter) {
+              _onSend();
             }
           },
           child: Row(
             spacing: 10.0,
             children: [
-              Container(
-                height: 46.0,
-                width: 46.0,
-                margin: const EdgeInsets.only(left: 8.0),
-                child: PopupMenuButton<String>(
-                  key: _popupMenuKey,
-                  tooltip: context.los.add,
-                  itemBuilder:
-                      (context) => [
-                        PopupMenuItem(
-                          value: 'export_log',
-                          child: Text(context.los.export_log),
-                        ),
-                        PopupMenuItem(
-                          value: 'screen_shot',
-                          child: Text(context.los.take_screenshot),
-                        ),
-                      ],
-                  onSelected: _onAdd,
-                  child: FloatingActionButton(
-                    heroTag: 'display-btn',
-                    onPressed: _onDisplayOption,
-                    child: const Icon(Symbols.add),
-                  ),
-                ),
-              ),
+              _buildPopupMenuButton(),
               _buildTextField(),
-              Container(
-                height: 46.0,
-                width: 46.0,
-                margin: const EdgeInsets.only(right: 8.0),
-                child: Tooltip(
-                  message: context.los.submit,
-                  child: FloatingActionButton(
-                    heroTag: 'send-btn',
-                    elevation: 4.0,
-                    onPressed: _onSend,
-                    child: const Icon(Symbols.send),
-                  ),
-                ),
-              ),
+              _buildActionButton(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPopupMenuButton() {
+    return Container(
+      height: 46.0,
+      width: 46.0,
+      margin: const EdgeInsets.only(left: 8.0),
+      child: PopupMenuButton<String>(
+        key: _popupMenuKey,
+        tooltip: context.los.add,
+        itemBuilder:
+            (context) => [
+              PopupMenuItem(
+                value: 'export_log',
+                child: Text(context.los.export_log),
+              ),
+              PopupMenuItem(
+                value: 'screen_shot',
+                child: Text(context.los.take_screenshot),
+              ),
+            ],
+        onSelected: _onAdd,
+        child: FloatingActionButton(
+          heroTag: 'display-btn',
+          onPressed: _onDisplayOption,
+          child: const Icon(Symbols.add),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton() {
+    return Container(
+      height: 46.0,
+      width: 46.0,
+      margin: const EdgeInsets.only(right: 8.0),
+      child: Tooltip(
+        message: context.los.submit,
+        child: FloatingActionButton(
+          heroTag: 'send-btn',
+          elevation: 4.0,
+          onPressed: _onSend,
+          child: const Icon(Symbols.send),
         ),
       ),
     );

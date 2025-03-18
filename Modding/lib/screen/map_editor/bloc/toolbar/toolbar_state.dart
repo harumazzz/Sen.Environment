@@ -16,7 +16,7 @@ final class ToolBarState extends Equatable {
   const ToolBarState({required this.toolStatus});
   factory ToolBarState.initailize() {
     return ToolBarState(
-      toolStatus: HashMap.from({
+      toolStatus: HashMap.of({
         ToolType.openFile: false,
         ToolType.saveFile: false,
         ToolType.rectangleTool: false,

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "./detail/mappedfile_common.hpp"
+#include "mappedfile_common.hpp"
 #include <errno.h>
 #include <exception>
 #include <fcntl.h>

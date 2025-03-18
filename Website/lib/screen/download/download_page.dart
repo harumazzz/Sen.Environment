@@ -6,7 +6,8 @@ import '../../model/github.dart';
 import '../../repository/github_repository.dart';
 import '../footer/footer_widget.dart';
 import '../../service/download_helper.dart';
-import '../../service_locator/service_locator.dart';
+import '../../service/service_locator.dart';
+import 'download_error.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key, required this.onNavigate});
@@ -60,7 +61,7 @@ class _DownloadPageState extends State<DownloadPage>
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator.adaptive());
         } else if (snapshot.hasError) {
-          return Center(child: Text(snapshot.error.toString()));
+          return const DownloadError();
         } else if (snapshot.hasData) {
           final data = snapshot.data!;
           _calculateTotalDownloadCount(data);

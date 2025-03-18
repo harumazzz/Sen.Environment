@@ -59,6 +59,7 @@ class AppDrawer extends StatelessWidget {
           _buildMenuItem(context.los.download, 1, context, '/download'),
           _buildMenuItem(context.los.changelog, 2, context, '/changelog'),
           _buildMenuItem(context.los.about, 3, context, '/about'),
+          _buildMenuItem(context.los.extension, 4, context, '/extension'),
         ],
       ),
     );

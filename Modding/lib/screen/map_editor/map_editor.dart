@@ -7,8 +7,10 @@ import '../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubi
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
+import '../../widget/background.dart';
 import '../../widget/collapsible_floating_button.dart';
 import 'bloc/init_bloc/init_bloc.dart';
+import 'loading_screen.dart';
 import 'view/main_page.dart';
 import '../../service/ui_helper.dart';
 
@@ -89,9 +91,58 @@ class MapEditor extends StatelessWidget {
     }
   }
 
+  PreferredSizeWidget? _buildAppBar(
+    BuildContext context,
+    MapEditorConfigurationState state,
+    Future<Uint8List?> Function()? takeShoot,
+  ) {
+    return UIHelper.ofMobile(
+      AppBar(
+        title: Text(
+          context.los.map_editor,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        leading: _buildLeading(context),
+        actions: [
+          IconButton(
+            onPressed:
+                () async =>
+                    await _onScreenshot(context: context, takeShoot: takeShoot),
+            icon: const Icon(Symbols.screenshot),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFailedState(
+    BuildContext context,
+    MapEditorConfigurationState state,
+  ) {
+    return Background(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 8.0,
+          children: [
+            Text(
+              '${context.los.loading_error}: ${state.errorSnapShot}',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<MapEditorConfigurationCubit>().reset();
+              },
+              child: Text(context.los.reload_map_resources),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final los = context.los;
     var takeShoot = null as Future<Uint8List?> Function()?;
     return BlocProvider<InitBloc>(
       create: (_) => InitBloc(),
@@ -99,122 +150,53 @@ class MapEditor extends StatelessWidget {
         listener: (context, state) {
           takeShoot = state.takeShoot;
         },
-        child: Scaffold(
-          appBar: UIHelper.ofMobile(
-            AppBar(
-              title: Text(los.map_editor),
-              leading: _buildLeading(context),
-              actions: [
-                IconButton(
-                  onPressed:
+        child: BlocBuilder<
+          MapEditorConfigurationCubit,
+          MapEditorConfigurationState
+        >(
+          buildWhen: (prev, state) => prev.status != state.status,
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (state.status == AppConfigurationStatus.initial) {
+                final resourceLocation =
+                    context.read<SettingsCubit>().state.mapEditorResource;
+                spawn() async => await context
+                    .read<MapEditorConfigurationCubit>()
+                    .load(context.los, resourceLocation);
+                await Future.delayed(Duration.zero);
+                await spawn();
+              }
+            });
+            return Scaffold(
+              appBar: _buildAppBar(context, state, takeShoot),
+              body: Builder(
+                builder: (context) {
+                  if (state.status == AppConfigurationStatus.success) {
+                    return Background(
+                      child: MainPage(
+                        mapEditorConfigurationCubit:
+                            context.read<MapEditorConfigurationCubit>(),
+                      ),
+                    );
+                  } else if (state.status == AppConfigurationStatus.failed) {
+                    return _buildFailedState(context, state);
+                  }
+                  return const LoadingScreen();
+                },
+              ),
+              floatingActionButton: UIHelper.ofDesktop(
+                _buildFloatingActionButton(
+                  context: context,
+                  screenshot:
                       () async => await _onScreenshot(
                         context: context,
                         takeShoot: takeShoot,
                       ),
-                  icon: const Icon(Symbols.screenshot),
                 ),
-              ],
-            ),
-          ),
-          body: BlocBuilder<
-            MapEditorConfigurationCubit,
-            MapEditorConfigurationState
-          >(
-            buildWhen: (prev, state) => prev.status != state.status,
-            builder: (context, state) {
-              final status = state.status;
-              if (status == AppConfigurationStatus.initial) {
-                final resourceLocation =
-                    context.read<SettingsCubit>().state.mapEditorResource;
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  spawn() async => await context
-                      .read<MapEditorConfigurationCubit>()
-                      .load(context.los, resourceLocation);
-                  await Future.delayed(Duration.zero);
-                  await spawn();
-                });
-              }
-              if (status == AppConfigurationStatus.success) {
-                return Background(
-                  child: MainPage(
-                    mapEditorConfigurationCubit:
-                        context.read<MapEditorConfigurationCubit>(),
-                  ),
-                );
-              } else if (status == AppConfigurationStatus.failed) {
-                return Background(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 8.0,
-                      children: [
-                        Text(
-                          '${los.loading_error}: ${state.errorSnapShot}',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<MapEditorConfigurationCubit>().reset();
-                          },
-                          child: Text(los.reload_map_resources),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              return Background(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 16.0,
-                    children: [
-                      const CircularProgressIndicator.adaptive(),
-                      Text(
-                        los.loading_map_resources,
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          floatingActionButton: UIHelper.ofDesktop(
-            _buildFloatingActionButton(
-              context: context,
-              screenshot:
-                  () async => await _onScreenshot(
-                    context: context,
-                    takeShoot: takeShoot,
-                  ),
-            ),
-          ),
+              ),
+            );
+          },
         ),
-      ),
-    );
-  }
-}
-
-class Background extends StatelessWidget {
-  const Background({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final topColor = Theme.of(context).canvasColor;
-    final bottomColor = Theme.of(context).colorScheme.surfaceContainerLow;
-    return SizedBox.expand(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [topColor, bottomColor],
-          ),
-        ),
-        child: child,
       ),
     );
   }

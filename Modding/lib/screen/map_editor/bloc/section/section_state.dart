@@ -11,13 +11,13 @@ final class SectionState extends Equatable {
   SectionState({
     this.section = SectionType.select,
     this.navigator = NavigationType.tool,
-  }) : sectionMinize = HashMap.from({
+  }) : sectionMinize = HashMap.of({
          SectionType.select: false,
          SectionType.image: false,
          SectionType.animation: false,
          SectionType.event: false,
        }),
-       extension = HashMap.from({
+       extension = HashMap.of({
          ExtensionType.layer: false,
          ExtensionType.history: false,
          ExtensionType.setting: false,

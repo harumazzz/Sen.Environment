@@ -16,24 +16,29 @@ class ThemeOptionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themes = themeOf(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ...themes.entries.map(
-          (entry) => RadioListTile<String>(
-            title: Text(entry.value),
-            value: entry.key,
-            groupValue: context.watch<SettingsCubit>().state.theme,
-            onChanged: (String? theme) async {
-              if (theme == null) {
-                return;
-              }
-              await context.read<SettingsCubit>().setTheme(theme);
-            },
+    final themes = themeOf(context).entries.toList();
+    final currentTheme = context.watch<SettingsCubit>().state.theme;
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: themes.length,
+      itemBuilder: (context, index) {
+        final entry = themes[index];
+        return RadioListTile<String>(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            entry.value,
+            style: Theme.of(context).textTheme.labelLarge,
           ),
-        ),
-      ],
+          value: entry.key,
+          groupValue: currentTheme,
+          onChanged: (String? theme) async {
+            if (theme == null) {
+              return;
+            }
+            await context.read<SettingsCubit>().setTheme(theme);
+          },
+        );
+      },
     );
   }
 }

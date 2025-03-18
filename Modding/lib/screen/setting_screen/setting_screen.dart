@@ -6,6 +6,7 @@ import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../model/translator.dart';
+import '../../widget/material_dialog.dart';
 import 'locale_option_list.dart';
 import 'notification_option_list.dart';
 import 'theme_option_list.dart';
@@ -60,7 +61,12 @@ class _SettingScreenState extends State<SettingScreen> {
   Future<void> _showDialog(Widget content, String title) async {
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(title),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: content,
     );
   }
@@ -173,8 +179,13 @@ class _SettingScreenState extends State<SettingScreen> {
     await showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text(los.toolchain),
+          (context) => MaterialDialog(
+            title: Text(
+              los.toolchain,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
             content: Row(
               children: [
                 Expanded(

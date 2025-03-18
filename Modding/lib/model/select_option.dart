@@ -9,6 +9,10 @@ class SelectOption extends Equatable {
   @override
   List<Object?> get props => [option, title];
 
+  String get regularOption {
+    return '$option. $title';
+  }
+
   @override
   String toString() {
     return title;

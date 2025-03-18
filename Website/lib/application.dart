@@ -5,6 +5,7 @@ import 'screen/about/about_page.dart';
 import 'screen/changelog/changelog_page.dart';
 import 'screen/download/download_page.dart';
 import 'screen/download/thankyou_page.dart';
+import 'screen/extension/extension_screen.dart';
 import 'screen/home/home_page.dart';
 import 'screen/root_page.dart';
 import 'dart:ui' as ui;
@@ -33,6 +34,8 @@ class Application extends StatelessWidget {
         return 2;
       case '/about':
         return 3;
+      case '/extension':
+        return 4;
       default:
         return 0;
     }
@@ -40,6 +43,12 @@ class Application extends StatelessWidget {
 
   static final GoRouter _router = GoRouter(
     initialLocation: '/',
+    redirect: (context, state) {
+      if (state.matchedLocation.isEmpty) {
+        return '/';
+      }
+      return null;
+    },
     routes: [
       ShellRoute(
         builder: (context, state, child) {
@@ -99,6 +108,15 @@ class Application extends StatelessWidget {
                   },
                 ),
           ),
+          GoRoute(
+            path: '/extension',
+            builder:
+                (context, state) => ExtensionsPage(
+                  onNavigate: (index) {
+                    GoRouter.of(context).go(_getPath(index));
+                  },
+                ),
+          ),
         ],
       ),
     ],
@@ -114,6 +132,8 @@ class Application extends StatelessWidget {
         return '/changelog';
       case 3:
         return '/about';
+      case 4:
+        return '/extension';
       default:
         return '/';
     }

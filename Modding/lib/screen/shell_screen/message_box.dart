@@ -6,7 +6,6 @@ import '../../bloc/add_option_bloc/add_option_bloc.dart';
 import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
-import '../../extension/context.dart';
 import '../../model/select_option.dart';
 import 'idle_screen.dart';
 import 'message_card.dart';
@@ -53,12 +52,7 @@ class _MessageBoxState extends State<MessageBox> {
       },
       builder: (context, state) {
         if (state is LaunchStatusInitial) {
-          return IdleScreen(
-            scaleFactor: 1.25,
-            color: Colors.cyan.withValues(alpha: 0.6),
-            text: context.los.sen_is_listening,
-            child: Image.asset('assets/images/logo.png'),
-          );
+          return const IdleScreen();
         }
         return state is LaunchStatusLoading
             ? _buildShimmer()

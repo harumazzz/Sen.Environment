@@ -1,5 +1,5 @@
-import 'package:drop_down_list/drop_down_list.dart';
-import 'package:drop_down_list/model/selected_list_item.dart';
+// ignore_for_file: avoid_positional_boolean_parameters
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../extension/platform.dart';
@@ -8,57 +8,11 @@ import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../extension/context.dart';
+import '../widget/material_dialog.dart';
 import 'file_helper.dart';
 
 class UIHelper {
   const UIHelper._();
-
-  static void showDropDownModal<T>({
-    required BuildContext context,
-    required List<SelectedListItem<T>> data,
-    required String title,
-    void Function(List<SelectedListItem<T>>)? onTap,
-  }) {
-    DropDownState<T>(
-      dropDown: DropDown<T>(
-        bottomSheetTitle: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-        ),
-        data: data,
-        onSelected: onTap,
-        searchHintText: context.los.input_value,
-      ),
-    ).showModal(context);
-  }
-
-  static List<SelectedListItem<T>> makeSelectedItems<T>({
-    required List<T> data,
-    required SelectedListItem<T> Function(T data) transformation,
-  }) {
-    final result = <SelectedListItem<T>>[];
-    for (final e in data) {
-      result.add(transformation(e));
-    }
-    return result;
-  }
-
-  static List<SelectedListItem<T>> makeDefaultItems<T>({
-    required List<T> data,
-  }) {
-    return makeSelectedItems<T>(
-      data: data,
-      transformation: (e) => SelectedListItem<T>(data: e),
-    );
-  }
-
-  static List<T> toItemList<T>(List<SelectedListItem<T>> selectedItems) {
-    final result = <T>[];
-    for (final item in selectedItems) {
-      result.add(item.data);
-    }
-    return result;
-  }
 
   static List<SelectOption> makeEnumerationOption(List<String> arguments) {
     final destination = <SelectOption>[];
@@ -122,7 +76,7 @@ class UIHelper {
     required Widget content,
     required List<Widget> actions,
   }) {
-    return AlertDialog(title: title, content: content, actions: actions);
+    return MaterialDialog(title: title, content: content, actions: actions);
   }
 
   static Future<void> showSimpleDialog({
@@ -132,7 +86,12 @@ class UIHelper {
   }) async {
     return await showDetailDialog(
       context: context,
-      title: Text(title),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
       content: Text(content, overflow: TextOverflow.ellipsis, maxLines: 4),
     );
   }
@@ -287,5 +246,75 @@ class UIHelper {
       return value;
     }
     return null;
+  }
+
+  static Widget buildTrailingReturn(BuildContext context) {
+    return Tooltip(
+      message: context.los.back,
+      child: IconButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        icon: const Icon(Symbols.arrow_back),
+      ),
+    );
+  }
+
+  static List<Widget> buildAppBar(
+    BuildContext context,
+    bool innerBoxIsScrolled, {
+    Widget? leading,
+    Widget? title,
+    List<Widget>? actions,
+  }) {
+    final hasLeading =
+        leading != null || Navigator.of(context).canPop() ? true : false;
+    return <Widget>[
+      SliverAppBar(
+        pinned: true,
+        expandedHeight: kToolbarHeight + 50,
+        backgroundColor: Theme.of(context).cardColor,
+        centerTitle: false,
+        leading: leading,
+        actions: actions,
+        flexibleSpace: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final isCollapsed = constraints.maxHeight <= kToolbarHeight + 32;
+            return Container(
+              decoration: BoxDecoration(
+                color:
+                    !isCollapsed
+                        ? Colors.transparent
+                        : () {
+                          if (context.isDarkMode) {
+                            return Colors.grey.shade900;
+                          }
+                          return Theme.of(context).colorScheme.primaryContainer
+                              .withValues(alpha: 0.48);
+                        }(),
+              ),
+              child: FlexibleSpaceBar(
+                titlePadding: EdgeInsets.only(
+                  left: isCollapsed && hasLeading ? 48.0 : 20.0,
+                  bottom: 12.0,
+                ),
+                expandedTitleScale: 1.3,
+                title: title,
+              ),
+            );
+          },
+        ),
+      ),
+    ];
+  }
+
+  static Widget applyScrollView({
+    required List<Widget> Function(BuildContext, bool) builder,
+    required Widget child,
+  }) {
+    if (CurrentPlatform.isDesktop) {
+      return child;
+    }
+    return NestedScrollView(headerSliverBuilder: builder, body: child);
   }
 }

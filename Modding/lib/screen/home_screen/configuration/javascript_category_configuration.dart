@@ -19,7 +19,6 @@ class JavaScriptCategoryConfiguration extends StatelessWidget {
   Widget build(BuildContext context) {
     final los = AppLocalizations.of(context)!;
     final settingsState = context.watch<SettingsCubit>().state;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       spacing: 8.0,
@@ -30,16 +29,18 @@ class JavaScriptCategoryConfiguration extends StatelessWidget {
             los.show_confirm_dialog,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           subtitle: Text(
             los.show_confirm_dialog_description,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium,
           ),
           value: settingsState.jsShowConfirmDialog,
           onChanged: (value) => _onChangeDialog(value, context),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(16.0),
           ),
         ),
         if (CurrentPlatform.isWindows)
@@ -49,16 +50,18 @@ class JavaScriptCategoryConfiguration extends StatelessWidget {
               los.run_as_launcher,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             subtitle: Text(
               los.run_as_launcher_description,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium,
             ),
             value: settingsState.jsRunAsLauncher,
             onChanged: (value) => _onChangeLauncher(value, context),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(16.0),
             ),
           ),
       ],

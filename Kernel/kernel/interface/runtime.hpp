@@ -103,34 +103,6 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_member_function_by_proxy<&ReadMemoryStream::z64>("z64"_s);
         }
         {
-            auto s_WriteMemoryStream = s_Kernel.add_class<WriteMemoryStream>("WriteMemoryStream"_s);
-            s_WriteMemoryStream.add_constructor_by_proxy<&Detail::make_constructor<WriteMemoryStream, Uint8Array&>>()
-            .add_member_function_by_proxy<&WriteMemoryStream::size>("size"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::resize>("resize"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::has_space>("has_space"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::set_position>("set_position"_s)
-            .add_member_function_by_proxy<static_cast<void (WriteMemoryStream::*)(const StringView&)>(&WriteMemoryStream::string)>("string"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::boolean>("boolean"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::bytes>("bytes"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::current_position>("current_position"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::f32>("f32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::f64>("f64"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::i8>("i8"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::u8>("u8"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::i16>("i16"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::u16>("u16"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::i32>("i32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::u32>("u32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::i64>("i64"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::u64>("u64"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::string_null_terminator>("string_null_terminator"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::string_v32>("string_v32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::v32>("v32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::v64>("v64"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::z32>("z32"_s)
-            .add_member_function_by_proxy<&WriteMemoryStream::z64>("z64"_s);
-        }
-        {
             auto s_OperatingSystem = s_Kernel.add_space("OperatingSystem"_s);
             s_OperatingSystem.add_function_by_proxy<&API::OperatingSystem::current>("current"_s);
         }
@@ -205,10 +177,10 @@ namespace Sen::Kernel::Interface::Runtime {
             .add_function_by_proxy<&Support::PopCap::ResourceStreamBundle::Pack::process_fs>("pack_fs"_s);
         }
         {
-            auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
-            s_ReAnimation.add_function_by_proxy<&Support::PopCap::ReAnimation::Decode::process_fs>("decode_fs"_s)
-            .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s)
-            .add_function_by_proxy<&Support::PopCap::ReAnimation::ToXML::process_fs>("to_xml"_s);
+            // auto s_ReAnimation = s_PopCap.add_space("ReAnimation"_s);
+            // s_ReAnimation.add_function_by_proxy<&Support::PopCap::ReAnimation::Decode::process_fs>("decode_fs"_s)
+            // .add_function_by_proxy<&Support::PopCap::ReAnimation::Encode::process_fs>("encode_fs"_s)
+            // .add_function_by_proxy<&Support::PopCap::ReAnimation::ToXML::process_fs>("to_xml"_s);
         }
         {
             auto s_TextTable = s_PopCap.add_space("TextTable"_s);

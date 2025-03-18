@@ -12,7 +12,7 @@ namespace Sen::Kernel::Compression::Zip {
 
         static auto on_extract(
             void *arg,
-            unsigned long long offset,
+            uint64_t offset,
             const void *data,
             size_t size
         ) -> size_t

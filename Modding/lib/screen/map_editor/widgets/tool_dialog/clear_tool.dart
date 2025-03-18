@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../extension/context.dart';
+import '../../../../widget/material_dialog.dart';
 
 class ClearToolWidget extends StatefulWidget {
   const ClearToolWidget({super.key});
@@ -12,10 +13,9 @@ class _ClearToolState extends State<ClearToolWidget> {
   @override
   Widget build(BuildContext context) {
     final los = context.los;
-    return AlertDialog(
+    return MaterialDialog(
       title: Text(los.confirm_delete),
       content: Text(los.confirm_delete_description),
-      backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
       actions: [
         TextButton(
           child: Text(los.cancel),

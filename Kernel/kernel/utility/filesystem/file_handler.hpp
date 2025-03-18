@@ -9,7 +9,7 @@ namespace Sen::Kernel::FileSystem {
 
     struct FileHandler;
 
-    inline auto open (
+    inline auto open_file (
         const StringView& source,
         const StringView& mode
     ) -> FileHandler;
@@ -138,30 +138,30 @@ namespace Sen::Kernel::FileSystem {
         auto move_to_end (
 
         ) const -> void {
-            #ifdef WINDOWS
+            #if WINDOWS
             _fseeki64(thiz.value, 0, SEEK_END);
             #else
-            std::fseeko(value, 0, SEEK_END);
+            fseeko(value, 0, SEEK_END);
             #endif
         }
 
         auto move_to_begin (
 
         ) const -> void {
-            #ifdef WINDOWS
+            #if WINDOWS
             _fseeki64(thiz.value, 0, SEEK_SET);
             #else
-            std::fseeko(value, 0, SEEK_SET);
+            fseeko(value, 0, SEEK_SET);
             #endif
         }
 
         auto tell (
 
         ) const -> usize {
-            #ifdef WINDOWS
+            #if WINDOWS
             return static_cast<usize>(_ftelli64(thiz.value));
             #else
-            return static_cast<usize>(std::ftello(value));
+            return static_cast<usize>(ftello(value));
             #endif
         }
 
@@ -176,7 +176,7 @@ namespace Sen::Kernel::FileSystem {
 
     };
 
-    inline auto open (
+    inline auto open_file (
         const StringView& source,
         const StringView& mode
     ) -> FileHandler {
@@ -204,14 +204,14 @@ namespace Sen::Kernel::FileSystem {
     inline auto open_read (
         const StringView& source
     ) -> FileHandler {
-        auto file = open(source, Detail::read_mode);
+        auto file = open_file(source, Detail::read_mode);
         return file;
     }
 
     inline auto open_write (
         const StringView& source
     ) -> FileHandler {
-        auto file = open(source, Detail::write_mode);
+        auto file = open_file(source, Detail::write_mode);
         return file;
     }
 

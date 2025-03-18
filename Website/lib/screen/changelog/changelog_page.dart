@@ -4,7 +4,7 @@ import '../../model/changelog.dart';
 import '../../repository/changelog_repository.dart';
 import 'changelog_card.dart';
 import '../footer/footer_widget.dart';
-import '../../service_locator/service_locator.dart';
+import '../../service/service_locator.dart';
 
 class ChangelogPage extends StatefulWidget {
   const ChangelogPage({super.key, required this.onNavigate});

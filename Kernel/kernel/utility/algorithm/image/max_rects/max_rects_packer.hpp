@@ -15,8 +15,6 @@ namespace Sen::Kernel::Image::MaxRects {
         template <typename T>
         using List = CList<T>;
 
-        using Node = ExtendedImage;
-
     protected:
 
         u32 width;

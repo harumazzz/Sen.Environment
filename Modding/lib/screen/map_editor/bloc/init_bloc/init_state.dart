@@ -14,7 +14,7 @@ final class InitState extends Equatable {
   factory InitState.initailize() {
     return InitState(
       status: InitailizeStatus.initailize,
-      alertDialogEnable: HashMap.from({
+      alertDialogEnable: HashMap.of({
         AlertDialogShowType.clear: false,
         AlertDialogShowType.config: false,
         AlertDialogShowType.shortcut: false,

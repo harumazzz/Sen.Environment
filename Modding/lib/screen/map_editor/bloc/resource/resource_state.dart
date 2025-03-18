@@ -12,8 +12,6 @@ final class ResourceState extends Equatable {
   ResourceState({this.status = ResourceStateStatus.finished})
     : islandImage = HashMap(),
       islandAnimation = HashMap(),
-      //  eventImage = HashMap(),
-      //  eventAnimation = HashMap(),
       eventShop = {},
       eventNodeName = HashMap(),
       rasterizedInAnimation = HashMap(),
@@ -25,10 +23,6 @@ final class ResourceState extends Equatable {
   final HashMap<int, VisualImage?> islandImage;
 
   final HashMap<int, VisualAnimation?> islandAnimation;
-
-  // final HashMap<EventNodeType, VisualImage> eventImage;
-
-  //  final HashMap<EventNodeType, VisualAnimation> eventAnimation;
 
   final Map<EventNodeType, Widget> eventShop;
 

@@ -114,16 +114,22 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
                 FileSystem::write_file_s<true, true>(destination, data);
             }
             if constexpr (to == Type::json_map) {
-                auto data = MapLawnStrings{
-                    .version = 1,
-                    .objects = make_list<ObjectEntry<true>>(ObjectEntry<true>{
-                        .aliases = make_list<String>("LawnStringsData"_s),
-                        .objclass = "LawnStringsData"_s,
-                        .objdata = ObjectData{
-                            .LocStringValues = LinearMap<String, String>{},
-                        },
-                    })
-                };
+                auto data = [&] () -> LawnStrings<true> {
+                    return LawnStrings<true>{
+                        1,
+                        make_list<ObjectEntry<true>>([] () -> ObjectEntry<true> {
+                            return ObjectEntry<true>{
+                                make_list<String>("LawnStringsData"_s),
+                                "LawnStringsData"_s,
+                                [&]() -> ObjectData {
+                                    return ObjectData {
+                                        LinearMap<String, String>{}
+                                    };
+                                }(),
+                            };
+                        }()),
+                    };
+                }();
                 auto& LocStringValues = data.objects[0].objdata.LocStringValues;
                 for (auto index = 0_size; index < result.size(); index += 2) {
                     LocStringValues.append(std::make_pair(result[index], result[index + 1]));
@@ -131,16 +137,22 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
                 FileSystem::write_json(destination, data);
             }
             if constexpr (to == Type::json_array) {
-                auto data = ListLawnStrings{
-                    .version = 1,
-                    .objects = make_list<ObjectEntry<false>>(ObjectEntry<false>{
-                        .aliases = make_list<String>("LawnStringsData"_s),
-                        .objclass = "LawnStringsData"_s,
-                        .objdata = ObjectList {
-                            .LocStringValues = std::move(result),
-                        },
-                    })
-                };
+                auto data = [&]() -> LawnStrings<false> {
+                    return LawnStrings<false> {
+                        1,
+                        make_list<ObjectEntry<false>>([&]() -> ObjectEntry<false> {
+                            return ObjectEntry<false>{
+                                make_list<String>("LawnStringsData"_s),
+                                "LawnStringsData"_s,
+                                [&]() -> ObjectList {
+                                    return ObjectList{
+                                        std::move(result),
+                                    };
+                                }(),
+                            };
+                        }()),
+                    };
+                }();                
                 FileSystem::write_json(destination, data);
             }
         }

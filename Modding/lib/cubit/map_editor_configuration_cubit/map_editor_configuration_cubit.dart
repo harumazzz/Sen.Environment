@@ -48,6 +48,15 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     return ConfigModel.fromJson(await FileHelper.readJsonAsync(source: path));
   }
 
+  static const sounds = [
+    'grab2.mp3',
+    'shell_hit.mp3',
+    'smb2_throw.mp3',
+    'level_select.mp3',
+    'smash.mp3',
+    'has_item.mp3',
+  ];
+
   Future<EditorResource> _loadEditorResource(
     AppLocalizations los,
     String path,
@@ -84,15 +93,6 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     late AudioPlayer switchResourceSound;
     Future<void> loadSounds(String path) async {
       try {
-        final sounds = [
-          'grab2.mp3',
-          'shell_hit.mp3',
-          'smb2_throw.mp3',
-          'level_select.mp3',
-          'smash.mp3',
-          'has_item.mp3',
-        ];
-
         final players = List.generate(sounds.length, (_) => AudioPlayer());
 
         await Future.wait(
@@ -172,6 +172,10 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     }
   }
 
+  bool isReady() {
+    return state.status == AppConfigurationStatus.success;
+  }
+
   Future<VisualAnimation?> loadPlantVisualAnimation(
     String path,
     String plantType, {
@@ -200,6 +204,64 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       return null;
     }
   }
+
+  static const imagePaths = [
+    (
+      type: ImageCommonType.missingArtPiece,
+      path: 'alwaysloaded/missing_artpiece.png',
+    ),
+    (type: ImageCommonType.readySeedBank, path: 'packet/ready.png'),
+    (type: ImageCommonType.readyPacket, path: 'packet/sunflower.png'),
+    (type: ImageCommonType.spaceSpiral, path: 'alwaysloaded/space_spiral.png'),
+    (type: ImageCommonType.spaceDust, path: 'alwaysloaded/space_dust.png'),
+    (type: ImageCommonType.freePinata, path: 'pinata/pinata_free_spine.png'),
+    (
+      type: ImageCommonType.freePinataOpen,
+      path: 'pinata/pinatas_dust_spine_free.png',
+    ),
+    (
+      type: ImageCommonType.buttonHudBackNormal,
+      path: 'common/buttons_hud_back_normal.png',
+    ),
+    (
+      type: ImageCommonType.buttonHudBackSelected,
+      path: 'common/buttons_hud_back_selected.png',
+    ),
+    (type: ImageCommonType.keygateFlag, path: 'common/keygate_flag.png'),
+    (type: ImageCommonType.infoIcon, path: 'common/info_icon.png'),
+    (type: ImageCommonType.sprout, path: 'common/sprout.png'),
+    (type: ImageCommonType.doodad, path: 'common/doodad1.png'),
+    (type: ImageCommonType.pathNode, path: 'common/grass_light.png'),
+  ];
+
+  static const animationPaths = [
+    (type: AnimationCommonType.giftBox, path: 'common/giftbox_world_map'),
+    (type: AnimationCommonType.levelNode, path: 'common/level_node'),
+    (
+      type: AnimationCommonType.levelNodeGargantuar,
+      path: 'common/level_node_gargantuar',
+    ),
+    (
+      type: AnimationCommonType.levelNodeMinigame,
+      path: 'common/level_node_minigame',
+    ),
+    (type: AnimationCommonType.mapPath, path: 'common/map_path'),
+    (type: AnimationCommonType.yetiIcon, path: 'common/yeti_icon'),
+    (
+      type: AnimationCommonType.zombossNodeHologram,
+      path: 'common/zomboss_node_hologram',
+    ),
+    (
+      type: AnimationCommonType.missingArtPieceAnimation,
+      path: 'alwaysloaded/missing_artpiece',
+    ),
+    (type: AnimationCommonType.stargate, path: 'common/stargate'),
+    (type: AnimationCommonType.sodRoll, path: 'common/sod_roll'),
+    (
+      type: AnimationCommonType.collectedUpgradeEffect,
+      path: 'common/collected_upgrade_effect',
+    ),
+  ];
 
   Future<GameResource> _loadGameResource(
     AppLocalizations los,
@@ -237,50 +299,16 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
       return anim;
     }
 
-    final imagePaths = {
-      ImageCommonType.missingArtPiece: 'alwaysloaded/missing_artpiece.png',
-      ImageCommonType.readySeedBank: 'packet/ready.png',
-      ImageCommonType.readyPacket: 'packet/sunflower.png',
-      ImageCommonType.spaceSpiral: 'alwaysloaded/space_spiral.png',
-      ImageCommonType.spaceDust: 'alwaysloaded/space_dust.png',
-      ImageCommonType.freePinata: 'pinata/pinata_free_spine.png',
-      ImageCommonType.freePinataOpen: 'pinata/pinatas_dust_spine_free.png',
-      ImageCommonType.buttonHudBackNormal: 'common/buttons_hud_back_normal.png',
-      ImageCommonType.buttonHudBackSelected:
-          'common/buttons_hud_back_selected.png',
-      ImageCommonType.keygateFlag: 'common/keygate_flag.png',
-      ImageCommonType.infoIcon: 'common/info_icon.png',
-      ImageCommonType.sprout: 'common/sprout.png',
-      ImageCommonType.doodad: 'common/doodad1.png',
-      ImageCommonType.pathNode: 'common/grass_light.png',
-    };
-
-    final animationPaths = {
-      AnimationCommonType.giftBox: 'common/giftbox_world_map',
-      AnimationCommonType.levelNode: 'common/level_node',
-      AnimationCommonType.levelNodeGargantuar: 'common/level_node_gargantuar',
-      AnimationCommonType.levelNodeMinigame: 'common/level_node_minigame',
-      AnimationCommonType.mapPath: 'common/map_path',
-      AnimationCommonType.yetiIcon: 'common/yeti_icon',
-      AnimationCommonType.zombossNodeHologram: 'common/zomboss_node_hologram',
-      AnimationCommonType.missingArtPieceAnimation:
-          'alwaysloaded/missing_artpiece',
-      AnimationCommonType.stargate: 'common/stargate',
-      AnimationCommonType.sodRoll: 'common/sod_roll',
-      AnimationCommonType.collectedUpgradeEffect:
-          'common/collected_upgrade_effect',
-    };
-
-    for (final entry in imagePaths.entries) {
-      commonImage[entry.key] = await loadImage(
-        entry.value,
+    for (final entry in imagePaths) {
+      commonImage[entry.type] = await loadImage(
+        entry.path,
         los.cannot_load_missing_artpiece,
       );
     }
 
-    for (final entry in animationPaths.entries) {
-      commonAnimation[entry.key] = await loadAnimation(
-        entry.value,
+    for (final entry in animationPaths) {
+      commonAnimation[entry.type] = await loadAnimation(
+        entry.path,
         los.cannot_load_map_path,
       );
     }
@@ -328,7 +356,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   }
 
   HashMap<ToolType, Item> _initailizeTool(AppLocalizations los) {
-    final toolItem = HashMap<ToolType, Item>.from({
+    final toolItem = HashMap<ToolType, Item>.of({
       ToolType.openFile: Item(
         title: '${los.open} (Ctrl + O)',
         description: los.open_description,
@@ -379,7 +407,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   }
 
   HashMap<SectionType, Item> _initailizeSection(AppLocalizations los) {
-    final sectionItem = HashMap<SectionType, Item>.from({
+    final sectionItem = HashMap<SectionType, Item>.of({
       SectionType.select: Item(
         title: los.select,
         description: los.section_description,
@@ -405,7 +433,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   }
 
   HashMap<ExtensionType, Item> _initailizeExtension(AppLocalizations los) {
-    final extensionItem = HashMap<ExtensionType, Item>.from({
+    final extensionItem = HashMap<ExtensionType, Item>.of({
       ExtensionType.layer: Item(
         title: los.layer,
         description: los.layer_description,
@@ -431,7 +459,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   }
 
   HashMap<NavigationType, Item> _initailizeNavigation(AppLocalizations los) {
-    final navigationItem = HashMap<NavigationType, Item>.from({
+    final navigationItem = HashMap<NavigationType, Item>.of({
       NavigationType.tool: Item(
         title: los.tool,
         description: los.tool_description,
@@ -452,7 +480,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
   }
 
   HashMap<ActionType, String> _initlActionTypeString(AppLocalizations los) {
-    final actionTypeLocalization = HashMap<ActionType, String>.from({
+    final actionTypeLocalization = HashMap<ActionType, String>.of({
       ActionType.islandChangeID: los.island_change_id,
       ActionType.islandScale: los.island_scale,
       ActionType.islandChangeLayer: los.island_change_layer,

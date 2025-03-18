@@ -118,7 +118,7 @@ namespace Sen::Shell {
         Pointer<Message> message
     ) -> void {
         if (message != nullptr) {
-            delete[] message->value;
+            std::free(message->value);
             message->value = nullptr;
             message->size = 0;
             delete message;

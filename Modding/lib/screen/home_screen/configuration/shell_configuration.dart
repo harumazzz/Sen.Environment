@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import '../../../cubit/settings_cubit/settings_cubit.dart';
 import '../../../i18n/app_localizations.dart';
 
@@ -23,9 +22,8 @@ class ShellConfiguration extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
+        SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Symbols.launch),
           title: Text(
             los.run_immediately,
             style: Theme.of(context).textTheme.titleMedium,
@@ -34,14 +32,12 @@ class ShellConfiguration extends StatelessWidget {
           ),
           subtitle: Text(
             los.run_immediately_description,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.labelMedium,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: Switch.adaptive(
-            value: context.watch<SettingsCubit>().state.shellLaunchImmediately,
-            onChanged: (value) => _onChange(value, context),
-          ),
+          value: context.watch<SettingsCubit>().state.shellLaunchImmediately,
+          onChanged: (value) => _onChange(value, context),
         ),
       ],
     );

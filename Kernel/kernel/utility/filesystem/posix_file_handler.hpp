@@ -36,8 +36,8 @@ namespace Sen::Kernel::FileSystem {
 
     public:
         explicit PosixFileReader(const StringView& path) {
-            thiz.fd = open(path.begin(), Detail::$O_RDONLY);
-            assert(thiz.fd != -1, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "PosixFileReader");
+            thiz.fd = open(path.cbegin(), Detail::$O_RDONLY);
+            assert_not_null(thiz.fd != -1, fmt::format("{}: {}", Language::get("cannot_read_file"), path.view()), "PosixFileReader");
         }
 
         ~PosixFileReader() {
@@ -97,8 +97,8 @@ namespace Sen::Kernel::FileSystem {
 
     public:
         explicit PosixFileWriter(const StringView& path) {
-            thiz.fd = open(path.begin(), Detail::$O_WRONLY | Detail::$O_CREAT | Detail::$O_TRUNC, Detail::$DEFAULT_OPEN);
-            assert_conditional(thiz.fd != -1 , fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "PosixFileWriter");
+            thiz.fd = open(path.cbegin(), Detail::$O_WRONLY | Detail::$O_CREAT | Detail::$O_TRUNC, Detail::$DEFAULT_OPEN);
+            assert_not_null(thiz.fd != -1 , fmt::format("{}: {}", Language::get("write_file_error"), path.view()), "PosixFileWriter");
         }
 
         ~PosixFileWriter(

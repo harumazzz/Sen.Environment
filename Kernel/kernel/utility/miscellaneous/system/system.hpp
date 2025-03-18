@@ -23,7 +23,7 @@ namespace Sen::Kernel {
 			#if WINDOWS
 			_wsystem(utf8_to_utf16(command).data());
 			#else
-			std::system(command.data());
+			std::system(command.cbegin());
 			#endif
 		}
 
@@ -34,7 +34,7 @@ namespace Sen::Kernel {
 			#if WINDOWS
 			return _wgetenv(utf8_to_utf16(str).data());
 			#else
-			return std::getenv(str.data());
+			return std::getenv(str.cbegin());
 			#endif
 		}
 
@@ -115,7 +115,7 @@ namespace Sen::Kernel {
 			#else
 				auto buffer = std::array<char, 128>{};
 				auto result = String{};
-				auto pipe = std::unique_ptr<FILE, decltype(&pclose)>(popen(command.data(), "r"), pclose);
+				auto pipe = std::unique_ptr<FILE, decltype(&pclose)>(popen(command.cbegin(), "r"), pclose);
 				if (pipe == nullptr) {
 					throw RuntimeException("open process failed", std::source_location::current(), "execute");
 				}

@@ -61,12 +61,12 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 10.0,
       children: [
-        const SizedBox.shrink(),
         TextField(
           minLines: 1,
           maxLines: null,
           keyboardType: TextInputType.multiline,
           controller: _resourceLocationController,
+          style: Theme.of(context).textTheme.labelLarge,
           decoration: InputDecoration(
             labelText: los.resource_location,
             border: const OutlineInputBorder(),

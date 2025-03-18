@@ -1,8 +1,10 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import '../api/changelog_api.dart';
+import '../api/extension_api.dart';
 import '../api/github_api.dart';
 import '../repository/changelog_repository.dart';
+import '../repository/extension_repository.dart';
 import '../repository/github_repository.dart';
 import 'package:dio/dio.dart' as dio;
 
@@ -19,10 +21,6 @@ class ServiceLocator {
   }
 
   void registerSingleton() {
-    registerIfNot<GithubRepository>(const GithubRepository(GithubApi()));
-    registerIfNot<ChangelogRepository>(
-      const ChangelogRepository(ChangelogApi()),
-    );
     registerIfNot(
       dio.Dio(
         dio.BaseOptions(
@@ -31,6 +29,13 @@ class ServiceLocator {
           receiveTimeout: const Duration(seconds: 60),
         ),
       ),
+    );
+    registerIfNot<GithubRepository>(const GithubRepository(GithubApi()));
+    registerIfNot<ChangelogRepository>(
+      const ChangelogRepository(ChangelogApi()),
+    );
+    registerIfNot<ExtensionRepository>(
+      ExtensionRepository(const ExtensionApi()),
     );
   }
 

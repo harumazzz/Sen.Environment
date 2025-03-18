@@ -31,6 +31,9 @@ class Application extends StatelessWidget {
         content: Text(
           context.los.android_storage_access_permission_required,
           overflow: TextOverflow.visible,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         actions: [
           TextButton(
@@ -156,7 +159,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     super.dispose();
   }
 
-  Widget _buildTitle(BuildContext context) {
+  Widget _buildTitle() {
     return Text(
       context.los.setup_toolchain,
       style: Theme.of(
@@ -167,7 +170,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildDescription(BuildContext context) {
+  Widget _buildDescription() {
     return ListView(
       shrinkWrap: true,
       children: [
@@ -176,14 +179,14 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
-        if (CurrentPlatform.isMobile) _buildMobileInstructions(context),
-        if (CurrentPlatform.isDesktop) _buildDesktopInstructions(context),
-        _buildAdditionalModules(context),
+        if (CurrentPlatform.isMobile) _buildMobileInstructions(),
+        if (CurrentPlatform.isDesktop) _buildDesktopInstructions(),
+        _buildAdditionalModules(),
       ],
     );
   }
 
-  Widget _buildMobileInstructions(BuildContext context) {
+  Widget _buildMobileInstructions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -214,7 +217,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildDesktopInstructions(BuildContext context) {
+  Widget _buildDesktopInstructions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -227,12 +230,12 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
           context.los.setup_toolchain_desktop,
           context.los.setup_toolchain_desktop_01,
           context.los.setup_toolchain_desktop_02,
-        ].map((text) => _buildBulletPoint(text, context)),
+        ].map(_buildBulletPoint),
       ],
     );
   }
 
-  Widget _buildBulletPoint(String text, BuildContext context) {
+  Widget _buildBulletPoint(String text) {
     return Row(
       children: [
         Icon(
@@ -253,7 +256,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildAdditionalModules(BuildContext context) {
+  Widget _buildAdditionalModules() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children:
@@ -278,15 +281,12 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildToolchainInput(
-    BuildContext context,
-    TextEditingController controller,
-  ) {
+  Widget _buildToolchainInput() {
     return Row(
       children: [
         Expanded(
           child: TextField(
-            controller: controller,
+            controller: _controller,
             decoration: InputDecoration(
               labelText: context.los.toolchain,
               border: const OutlineInputBorder(),
@@ -306,7 +306,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
 
               final directory = await FileHelper.uploadDirectory();
               if (directory != null) {
-                controller.text = directory;
+                _controller.text = directory;
                 await setToolchain(directory);
               }
             },
@@ -317,7 +317,7 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildDownloadButton(BuildContext context) {
+  Widget _buildDownloadButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -335,14 +335,14 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
     );
   }
 
-  Widget _buildLoading(BuildContext context) {
+  Widget _buildLoading() {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [CircularProgressIndicator()],
     );
   }
 
-  Widget _buildSubmitButton(BuildContext context) {
+  Widget _buildSubmitButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -422,17 +422,16 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTitle(context),
+                  _buildTitle(),
                   const SizedBox(height: 12),
-                  Expanded(child: _buildDescription(context)),
+                  Expanded(child: _buildDescription()),
                   const SizedBox(height: 12),
-                  if (CurrentPlatform.isDesktop)
-                    _buildToolchainInput(context, _controller),
+                  if (CurrentPlatform.isDesktop) _buildToolchainInput(),
                   const SizedBox(height: 16),
                   if (CurrentPlatform.isMobile && state is! DownloadingScript)
-                    _buildDownloadButton(context),
-                  if (state is DownloadingScript) _buildLoading(context),
-                  if (CurrentPlatform.isDesktop) _buildSubmitButton(context),
+                    _buildDownloadButton(),
+                  if (state is DownloadingScript) _buildLoading(),
+                  if (CurrentPlatform.isDesktop) _buildSubmitButton(),
                 ],
               ),
             ),

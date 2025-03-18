@@ -33,7 +33,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle {
         bool composite;
         Map<String, SubgroupInformation> subgroup;
 
-        constexpr explicit GroupInformation( ) = default;
+        explicit GroupInformation( ) = default;
 
         ~GroupInformation( ) = default;
     };
@@ -43,7 +43,7 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle {
         u32 texture_extend_version;
         Map<String, GroupInformation> group;
 
-        constexpr explicit BundleStructure( ) = default;
+        explicit BundleStructure( ) = default;
 
         ~BundleStructure( ) = default;
     };

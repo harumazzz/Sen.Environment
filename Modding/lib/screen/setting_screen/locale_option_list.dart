@@ -25,7 +25,11 @@ class LocaleOptionList extends StatelessWidget {
       children: [
         ...locales.entries.map(
           (entry) => RadioListTile<String>(
-            title: Text(entry.value),
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              entry.value,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             value: entry.key,
             groupValue: context.watch<SettingsCubit>().state.locale,
             onChanged: (String? theme) async {

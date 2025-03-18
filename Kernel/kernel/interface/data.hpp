@@ -125,7 +125,7 @@ namespace Sen::Kernel::Interface {
         Pointer<Message> message
     ) -> void {
         if (message != nullptr) {
-            delete[] message->value;
+            Allocator<uint8_t>::deallocate(message->value);
             message->value = nullptr;
             message->size = 0;
             delete message;

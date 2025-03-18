@@ -22,13 +22,21 @@ class NotificationOptionList extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         RadioListTile<bool>(
-          title: Text(context.los.enable),
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            context.los.enable,
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
           value: true,
           groupValue: isEnabled,
           onChanged: (value) => _onNotificationChanged(context, value),
         ),
         RadioListTile<bool>(
-          title: Text(context.los.disable),
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            context.los.disable,
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
           value: false,
           groupValue: isEnabled,
           onChanged: (value) => _onNotificationChanged(context, value),

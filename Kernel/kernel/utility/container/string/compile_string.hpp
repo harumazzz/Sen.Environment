@@ -51,7 +51,7 @@ namespace Sen::Kernel {
 			std::copy_n(s.data(), N, this->elems);
 		}
 
-		template <auto... Ni> requires std::is_same_v<type_of(Ni)..., size_t>
+		template <auto... Ni> 
 		constexpr void _copy(const CompileTimeString<Ni>(&... input))
 		{
 			auto pos = elems;

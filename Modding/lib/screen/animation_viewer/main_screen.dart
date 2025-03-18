@@ -79,7 +79,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     await UIHelper.showFlutterDialog(
       context: context,
       child: UIHelper.buildDialog(
-        title: Text(los.upload_media, style: theme.textTheme.bodyLarge),
+        title: Text(
+          los.upload_media,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         content: TextField(
           minLines: 1,
           maxLines: null,
@@ -184,45 +189,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _onErrorDialog(String message, StackTrace stack) async {
+  Future<void> _onErrorDialog(String message, StackTrace stack) async {
     final los = AppLocalizations.of(context)!;
-    await showDialog(
+    await UIHelper.showSimpleDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(los.invalid_request),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await showDialog(
-                    context: context,
-                    builder:
-                        (context) => AlertDialog(
-                          title: Text(message),
-                          content: Text(stack.toString()),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(los.okay),
-                            ),
-                          ],
-                        ),
-                  );
-                },
-                child: Text(los.detail),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(los.okay),
-              ),
-            ],
-          ),
+      title: los.invalid_request,
+      content: message,
     );
   }
 
@@ -269,7 +241,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _loadMedia();
         setState(_updateScreens);
       } catch (e, s) {
-        _onErrorDialog(e.toString(), s);
+        await _onErrorDialog(e.toString(), s);
       }
     }
   }
@@ -439,8 +411,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: Scaffold(
         appBar: UIHelper.ofMobile(
           AppBar(
-            forceMaterialTransparency: CurrentPlatform.isDesktop,
-            title: Text(los.animation_viewer),
+            title: Text(
+              los.animation_viewer,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             actions: [
               IconButton(
                 onPressed: _takeScreenshot,

@@ -201,7 +201,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                         exchange_value(stream, value, value_type, string_index);
                     }
                     const auto end_byte = stream.u8();
-                    assert_conditional(end_byte == static_cast<u8>(RtonType::array_end), fmt::format("{} 0x{:02x}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_rton_array_end"), end_byte, Kernel::Language::get("offset"), stream.current_position(), "exchange_value")); //TODO: add locale.
+                    assert_conditional(end_byte == static_cast<u8>(RtonType::array_end), fmt::format("{} 0x{:02x}. {}: 0x{:02x}", Kernel::Language::get("popcap.rton.decode.invalid_rton_array_end"), end_byte, Kernel::Language::get("offset"), stream.current_position()), "exchange_value");
                     value.end_array();
                     break;
                 }

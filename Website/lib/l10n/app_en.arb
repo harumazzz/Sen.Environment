@@ -51,5 +51,11 @@
   "update_changes": "Update changes",
   "version": "Version",
   "why_sen": "Why Sen?",
-  "technology": "Technology"
+  "technology": "Technology",
+  "network_restriction": "Network Restriction",
+  "extension": "Extension",
+  "extension_title": "Sen's Extension",
+  "extension_description": "Here are some extensions that recommended by Haruma to help you use Sen simpler.",
+  "author": "Author",
+  "download_success": "Download success!"
 }

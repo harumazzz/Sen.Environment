@@ -359,7 +359,12 @@ class _HomeScreenState extends State<HomeScreen>
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(los.js_settings),
+      title: Text(
+        los.js_settings,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: const JavaScriptCategoryConfiguration(),
     );
   }
@@ -368,7 +373,12 @@ class _HomeScreenState extends State<HomeScreen>
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(los.animation_viewer),
+      title: Text(
+        los.animation_viewer,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: const AnimationViewerConfiguration(),
     );
   }
@@ -377,7 +387,12 @@ class _HomeScreenState extends State<HomeScreen>
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(los.level_maker),
+      title: Text(
+        los.level_maker,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: const LevelMakerConfiguration(),
     );
   }
@@ -386,7 +401,12 @@ class _HomeScreenState extends State<HomeScreen>
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(los.map_editor),
+      title: Text(
+        los.map_editor,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: const MapEditorConfiguration(),
     );
   }
@@ -395,7 +415,12 @@ class _HomeScreenState extends State<HomeScreen>
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
-      title: Text(los.shell_configuration),
+      title: Text(
+        los.shell_configuration,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       content: const ShellConfiguration(),
     );
   }

@@ -33,10 +33,35 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
 
     struct ObjectData {
         LinearMap<String, String> LocStringValues;
+
+        explicit ObjectData() = default;    
+
+        template <typename T>
+        explicit ObjectData(T&& locValues)
+            : LocStringValues{std::forward<T>(locValues)} {}       
+
+        ObjectData(const ObjectData&) = default;  
+
+        ObjectData(ObjectData&&) noexcept = default;  
+
+        ObjectData& operator=(const ObjectData&) = default;     
+
+        ObjectData& operator=(ObjectData&&) noexcept = default; 
+
+        ~ObjectData() = default;    
     };
 
     struct ObjectList {
         List<String> LocStringValues;
+        explicit ObjectList() = default;
+        template <typename T>
+        explicit ObjectList(T&& locValues)
+            : LocStringValues{std::forward<T>(locValues)} {}
+        ObjectList(const ObjectList&) = default;
+        ObjectList(ObjectList&&) noexcept = default;
+        ObjectList& operator=(const ObjectList&) = default;
+        ObjectList& operator=(ObjectList&&) noexcept = default;
+        ~ObjectList() = default;
     };
 
     template <auto is_map> requires std::is_same_v<type_of<is_map>, bool>
@@ -47,6 +72,17 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
         List<String> aliases;
         String objclass;
         ObjectData objdata;
+        explicit ObjectEntry() = default;
+        template <typename A, typename B, typename C>
+        explicit ObjectEntry(A&& al, B&& cls, C&& data)
+        : aliases{std::forward<A>(al)},
+          objclass{std::forward<B>(cls)},
+          objdata{std::forward<C>(data)} {}
+        ObjectEntry(const ObjectEntry&) = default;
+        ObjectEntry(ObjectEntry&&) noexcept = default;
+        ObjectEntry& operator=(const ObjectEntry&) = default;
+        ObjectEntry& operator=(ObjectEntry&&) noexcept = default;
+        ~ObjectEntry() = default;
     };
 
     template <>
@@ -54,12 +90,33 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
         List<String> aliases;
         String objclass;
         ObjectList objdata;
+        explicit ObjectEntry() = default;
+        template <typename A, typename B, typename C>
+        explicit ObjectEntry(A&& al, B&& cls, C&& data)
+        : aliases{std::forward<A>(al)},
+          objclass{std::forward<B>(cls)},
+          objdata{std::forward<C>(data)} {}
+        ObjectEntry(const ObjectEntry&) = default;
+        ObjectEntry(ObjectEntry&&) noexcept = default;
+        ObjectEntry& operator=(const ObjectEntry&) = default;
+        ObjectEntry& operator=(ObjectEntry&&) noexcept = default;
+        ~ObjectEntry() = default;
     };
     
     template <auto is_map> requires std::is_same_v<type_of<is_map>, bool>
     struct LawnStrings {
         u32 version;
         List<ObjectEntry<is_map>> objects;
+        explicit LawnStrings() = default;
+        template <typename T, typename U>
+        explicit LawnStrings(T&& ver, U&& objs)
+        : version{std::forward<T>(ver)},
+          objects{std::forward<U>(objs)} {}
+        LawnStrings(const LawnStrings&) = default;
+        LawnStrings(LawnStrings&&) noexcept = default;
+        LawnStrings& operator=(const LawnStrings&) = default;
+        LawnStrings& operator=(LawnStrings&&) noexcept = default;
+        ~LawnStrings() = default;
     };
 
     using MapLawnStrings = LawnStrings<true>;

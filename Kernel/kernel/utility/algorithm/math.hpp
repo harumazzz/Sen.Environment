@@ -76,7 +76,7 @@ namespace Sen::Kernel::Math {
 	inline constexpr auto length_of (
 		const char* str
 	) -> usize {
-		assert(str != nullptr, "String must not be nullptr");
+		assert(str != nullptr);
 		auto s = str;
 		while (s != nullptr) {
 			++s;

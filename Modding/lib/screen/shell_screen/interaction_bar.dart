@@ -16,6 +16,7 @@ import '../../model/select_option.dart';
 import 'boolean_bar.dart';
 import 'empty_bar.dart';
 import 'enumeration_bar.dart';
+import 'enumeration_page.dart';
 import 'idle_bar.dart';
 import 'input_bar.dart';
 import 'loading_bar.dart';
@@ -36,6 +37,11 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.read<SettingsCubit>().state.shellLaunchImmediately) {
+        _onLaunch(context);
+      }
+    });
   }
 
   @override
@@ -143,17 +149,23 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     }
   }
 
-  void _onEnumerationSelect() {
-    Message messageOf({required bool Function(Message) test}) =>
-        context.read<MessageBloc>().state.lastWhere(test);
-    UIHelper.showDropDownModal<SelectOption>(
+  Future<void> _onEnumerationSelect() async {
+    String messageOf({required bool Function(Message) test}) =>
+        context.read<MessageBloc>().state.lastWhere(test).subtitle!;
+    await showModalBottomSheet(
       context: context,
-      title: messageOf(test: (message) => message.subtitle != null).subtitle!,
-      data: UIHelper.makeDefaultItems<SelectOption>(data: _option!),
-      onTap: (selectedItems) async {
-        final result = UIHelper.toItemList<SelectOption>(selectedItems);
-        context.read<InteractionBloc>().add(
-          EnumerationSelectCompleteEvent(value: result[0].option),
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<InteractionBloc>(),
+          child: EnumerationPage(
+            title: messageOf(test: (message) => message.subtitle != null),
+            options: _option,
+            onSelected: (selectedOption) {
+              context.read<InteractionBloc>().add(
+                EnumerationSelectCompleteEvent(value: selectedOption.option),
+              );
+            },
+          ),
         );
       },
     );
@@ -169,7 +181,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     context.read<InteractionBloc>().add(
       EnumerationSelectEvent(completer: _completer),
     );
-    _onEnumerationSelect();
+    await _onEnumerationSelect();
     final result = await _completer.future;
     if (result != null) {
       destination.add(result);

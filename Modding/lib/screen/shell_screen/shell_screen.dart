@@ -9,6 +9,7 @@ import '../../bloc/message_bloc/message_bloc.dart';
 import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../../i18n/app_localizations.dart';
 import '../../extension/context.dart';
+import '../../widget/material_dialog.dart';
 import 'interaction_bar.dart';
 import 'message_box.dart';
 import '../../service/file_helper.dart';
@@ -31,7 +32,12 @@ class ShellScreen extends StatelessWidget {
             final stack = state.message.subtitle!.split('\n');
             await UIHelper.showDetailDialog(
               context: context,
-              title: Text(state.message.title),
+              title: Text(
+                state.message.title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -66,9 +72,8 @@ class ShellScreen extends StatelessWidget {
               children: [
                 Text(
                   functionName,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
                     color: Colors.red,
                   ),
                   softWrap: true,
@@ -76,8 +81,8 @@ class ShellScreen extends StatelessWidget {
                 if (filePath.isNotEmpty)
                   Text(
                     filePath,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                     softWrap: true,
@@ -114,7 +119,7 @@ class ShellScreen extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return MaterialDialog(
           title: Text(los.export_log),
           content: Text(value),
           actions: [
@@ -166,17 +171,34 @@ class ShellScreen extends StatelessWidget {
                   },
                   child: Scaffold(
                     appBar: UIHelper.ofMobile(
-                      AppBar(title: Text(context.los.shell)),
+                      AppBar(
+                        title: Text(
+                          context.los.shell,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                    body: BlocListener<AddOptionBloc, AddOptionState>(
-                      listener: (context, optionState) async {
-                        if (optionState is ExportLogState) {
-                          await _showLog(context, optionState.value);
-                        }
-                      },
-                      child: const MessageBox(),
+                    body: Column(
+                      children: [
+                        Expanded(
+                          child: BlocListener<AddOptionBloc, AddOptionState>(
+                            listener: (context, optionState) async {
+                              if (optionState is ExportLogState) {
+                                await _showLog(context, optionState.value);
+                              }
+                            },
+                            child: const MessageBox(),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                            vertical: 4.0,
+                          ),
+                          child: InteractionBar(),
+                        ),
+                      ],
                     ),
-                    bottomNavigationBar: const InteractionBar(),
                     floatingActionButton: _buildStackButton(context),
                   ),
                 ),
