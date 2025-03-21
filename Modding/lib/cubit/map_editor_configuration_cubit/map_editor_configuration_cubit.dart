@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import '../../extension/platform.dart';
 import '../../model/animation.dart';
 import '../../model/item.dart';
 import '../../screen/map_editor/bloc/toolbar/toolbar_bloc.dart';
@@ -21,6 +20,7 @@ import '../../screen/map_editor/models/event_node.dart';
 import '../../screen/map_editor/models/game_resource.dart';
 import '../../service/file_helper.dart';
 import '../../i18n/app_localizations.dart';
+import '../../service/ui_helper.dart';
 
 part 'map_editor_configuration_state.dart';
 
@@ -61,30 +61,33 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     AppLocalizations los,
     String path,
   ) async {
-    final eraseCursor =
-        CurrentPlatform.isDesktop
-            ? await CustomMouseCursor.icon(
-              Symbols.ink_eraser,
-              size: 28,
-              color: Colors.white,
-            )
-            : null;
-    final panCursor =
-        CurrentPlatform.isDesktop
-            ? await CustomMouseCursor.icon(
-              Symbols.pan_tool,
-              size: 28,
-              color: Colors.white,
-            )
-            : null;
-    final multiSelectCursor =
-        CurrentPlatform.isDesktop
-            ? await CustomMouseCursor.icon(
-              Symbols.pan_tool_alt,
-              size: 28,
-              color: Colors.white,
-            )
-            : null;
+    final eraseCursor = await UIHelper.ofDesktop(
+      builder: () async {
+        return await CustomMouseCursor.icon(
+          Symbols.ink_eraser,
+          size: 28,
+          color: Colors.white,
+        );
+      },
+    );
+    final panCursor = await UIHelper.ofDesktop(
+      builder: () async {
+        return await CustomMouseCursor.icon(
+          Symbols.pan_tool,
+          size: 28,
+          color: Colors.white,
+        );
+      },
+    );
+    final multiSelectCursor = await UIHelper.ofDesktop(
+      builder: () async {
+        return await CustomMouseCursor.icon(
+          Symbols.pan_tool_alt,
+          size: 28,
+          color: Colors.white,
+        );
+      },
+    );
     late AudioPlayer pickItemSound;
     late AudioPlayer removeItemSound;
     late AudioPlayer setItemSound;
@@ -118,13 +121,7 @@ class MapEditorConfigurationCubit extends Cubit<MapEditorConfigurationState> {
     }
 
     await loadSounds(path);
-    final senLogo = Image.asset(
-      'assets/images/logo.png',
-      opacity: const AlwaysStoppedAnimation(.5),
-    );
-
     return EditorResource(
-      senLogo: senLogo,
       eraseCursor: eraseCursor,
       panCursor: panCursor,
       multiSelectCursor: multiSelectCursor,

@@ -61,36 +61,49 @@ class _EnumerationPageState extends State<EnumerationPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 12.0,
         children: [
-          Text(widget.title, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            widget.title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
           _SearchEnumeration(onSearch: _filterOptions),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child:
                   _filteredOptions.isEmpty
-                      ? Center(
-                        child: Text(
-                          context.los.script_not_found,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      )
-                      : ListView.separated(
-                        itemCount: _filteredOptions.length,
-                        separatorBuilder: (_, _) => const Divider(height: 4.0),
-                        itemBuilder: (context, index) {
-                          final option = _filteredOptions[index];
-                          return _OptionTile(
-                            option: option,
-                            onTap: () {
-                              widget.onSelected(option);
-                              Navigator.of(context).pop();
-                            },
-                          );
-                        },
-                      ),
+                      ? _buildErrorPage()
+                      : _buildOptionList(),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOptionList() {
+    return ListView.separated(
+      itemCount: _filteredOptions.length,
+      separatorBuilder: (_, _) => const Divider(height: 4.0),
+      itemBuilder: (context, index) {
+        final option = _filteredOptions[index];
+        return _OptionTile(
+          option: option,
+          onTap: () {
+            widget.onSelected(option);
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildErrorPage() {
+    return Center(
+      child: Text(
+        context.los.script_not_found,
+        style: Theme.of(context).textTheme.titleMedium,
       ),
     );
   }

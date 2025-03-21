@@ -288,24 +288,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget? _navigationBar() {
-    final los = AppLocalizations.of(context)!;
-    if (CurrentPlatform.isDesktop) {
-      return null;
-    }
-    return NavigationBar(
-      destinations: <Widget>[
-        NavigationDestination(icon: const Icon(Symbols.home), label: los.home),
-        NavigationDestination(
-          icon: const Icon(Symbols.label),
-          label: los.label,
-        ),
-        NavigationDestination(
-          icon: const Icon(Symbols.image),
-          label: los.media,
-        ),
-      ],
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: _onItemTapped,
+    return UIHelper.ofMobile(
+      builder: () {
+        final los = AppLocalizations.of(context)!;
+        return NavigationBar(
+          destinations: <Widget>[
+            NavigationDestination(
+              icon: const Icon(Symbols.home),
+              label: los.home,
+            ),
+            NavigationDestination(
+              icon: const Icon(Symbols.label),
+              label: los.label,
+            ),
+            NavigationDestination(
+              icon: const Icon(Symbols.image),
+              label: los.media,
+            ),
+          ],
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onItemTapped,
+        );
+      },
     );
   }
 
@@ -410,25 +414,29 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       onSecondaryTapDown: _showContextMenu,
       child: Scaffold(
         appBar: UIHelper.ofMobile(
-          AppBar(
-            title: Text(
-              los.animation_viewer,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            actions: [
-              IconButton(
-                onPressed: _takeScreenshot,
-                icon: const Icon(Symbols.screenshot),
+          builder: () {
+            return AppBar(
+              title: Text(
+                los.animation_viewer,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              IconButton(
-                onPressed: _onUploadFile,
-                icon: const Icon(Symbols.file_upload),
-              ),
-            ],
-          ),
+              actions: [
+                IconButton(
+                  onPressed: _takeScreenshot,
+                  icon: const Icon(Symbols.screenshot),
+                ),
+                IconButton(
+                  onPressed: _onUploadFile,
+                  icon: const Icon(Symbols.file_upload),
+                ),
+              ],
+            );
+          },
         ),
         body: _buildUI(),
-        floatingActionButton: UIHelper.ofDesktop(_buildFloatingActionButton()),
+        floatingActionButton: UIHelper.ofDesktop(
+          builder: _buildFloatingActionButton,
+        ),
         bottomNavigationBar: _navigationBar(),
       ),
     );

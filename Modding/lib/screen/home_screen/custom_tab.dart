@@ -85,6 +85,10 @@ class _CustomTabState extends State<CustomTab> {
                   Text(
                     widget.title,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight:
+                          widget.isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                       color:
                           widget.isSelected
                               ? Theme.of(context).colorScheme.primary
@@ -93,12 +97,10 @@ class _CustomTabState extends State<CustomTab> {
                   ),
                 ],
               ),
-              Tooltip(
-                message: context.los.close,
-                child: IconButton(
-                  onPressed: widget.onClose,
-                  icon: const Icon(Symbols.close),
-                ),
+              IconButton(
+                tooltip: context.los.close,
+                onPressed: widget.onClose,
+                icon: const Icon(Symbols.close),
               ),
             ],
           ),

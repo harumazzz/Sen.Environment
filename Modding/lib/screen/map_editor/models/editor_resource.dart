@@ -1,11 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:custom_mouse_cursor/custom_mouse_cursor.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 
 class EditorResource extends Equatable {
   const EditorResource({
-    required this.senLogo,
     this.eraseCursor,
     this.panCursor,
     this.multiSelectCursor,
@@ -16,8 +14,6 @@ class EditorResource extends Equatable {
     required this.clearMapSound,
     required this.switchResourceSound,
   });
-
-  final Image senLogo;
 
   final CustomMouseCursor? eraseCursor;
 
@@ -40,7 +36,6 @@ class EditorResource extends Equatable {
   @override
   List<Object?> get props {
     return [
-      senLogo,
       eraseCursor,
       panCursor,
       multiSelectCursor,

@@ -69,10 +69,8 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               onPressed: _onUploadDirectory,
-              icon: Tooltip(
-                message: los.upload_directory,
-                child: const Icon(Symbols.folder),
-              ),
+              tooltip: los.upload_directory,
+              icon: const Icon(Symbols.folder),
             ),
           ),
           onChanged: _onChangeSetting,

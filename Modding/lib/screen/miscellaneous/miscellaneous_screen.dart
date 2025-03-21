@@ -127,7 +127,7 @@ class MiscellaneousScreen extends StatelessWidget {
                       softWrap: true,
                       overflow: TextOverflow.visible,
                     ),
-                    width: UIHelper.ofDesktop(400),
+                    width: UIHelper.ofDesktop(builder: () => 400.0),
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(milliseconds: 1500),
                     shape: RoundedRectangleBorder(

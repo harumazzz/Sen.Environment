@@ -12,12 +12,8 @@ import '../../service/ui_helper.dart';
 import '../../service/windows_helper.dart';
 
 @immutable
-class JavaScriptCard extends StatelessWidget {
-  const JavaScriptCard({
-    super.key,
-    required this.item,
-    required this.toolChain,
-  });
+class JsCard extends StatelessWidget {
+  const JsCard({super.key, required this.item, required this.toolChain});
 
   final Script item;
 
@@ -227,14 +223,12 @@ class JavaScriptCard extends StatelessWidget {
   }
 
   Widget _buildActionIcon(ThemeData theme, BuildContext context) {
-    return Tooltip(
-      message: context.los.js_execute,
-      child: IconButton(
-        icon: const Icon(Icons.play_arrow_rounded),
-        iconSize: 28,
-        color: theme.colorScheme.primary,
-        onPressed: () => _onTap(context),
-      ),
+    return IconButton(
+      tooltip: context.los.js_execute,
+      icon: const Icon(Icons.play_arrow_rounded),
+      iconSize: 28,
+      color: theme.colorScheme.primary,
+      onPressed: () => _onTap(context),
     );
   }
 

@@ -165,7 +165,6 @@ class BoxStage extends StatelessWidget {
           childBounceEnabled: false,
           overlayStyle: PieOverlayStyle.around,
           childOpacityOnButtonHover: 1,
-          // tooltipCanvasAlignment: Alignment.bottomCenter,
           overlayColor: Colors.transparent,
           leftClickShowsMenu: !isDesktopPlatform,
           rightClickShowsMenu: isDesktopPlatform,
@@ -236,19 +235,6 @@ class BoxStage extends StatelessWidget {
                 stage,
               ],
             ),
-          );
-        }
-      case BorderBackground.senLogo:
-        {
-          final senLogo =
-              context
-                  .read<MapEditorConfigurationCubit>()
-                  .state
-                  .editorResource
-                  .senLogo;
-          return ColoredBox(
-            color: boxStageColor,
-            child: Stack(fit: StackFit.passthrough, children: [senLogo, stage]),
           );
         }
       default:

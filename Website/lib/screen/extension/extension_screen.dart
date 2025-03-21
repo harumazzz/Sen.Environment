@@ -174,12 +174,10 @@ class _ExtensionsPageState extends State<ExtensionsPage> {
             ),
           ],
         ),
-        trailing: Tooltip(
-          message: context.los.download,
-          child: IconButton(
-            icon: const Icon(Symbols.download, color: Colors.green),
-            onPressed: () => _launchDownload(ext),
-          ),
+        trailing: IconButton(
+          tooltip: context.los.download,
+          icon: const Icon(Symbols.download, color: Colors.green),
+          onPressed: () => _launchDownload(ext),
         ),
       ),
     );

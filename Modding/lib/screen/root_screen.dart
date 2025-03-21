@@ -8,7 +8,7 @@ import '../constant/build_distribution.dart';
 import '../service/ui_helper.dart';
 import 'home_screen/home_screen.dart';
 import 'miscellaneous/miscellaneous_screen.dart';
-import 'navigation_destination.dart';
+import '../widget/collapsible_navigation_rail.dart';
 import 'setting_screen/setting_screen.dart';
 import '../widget/hotkey.dart';
 

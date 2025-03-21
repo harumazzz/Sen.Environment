@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../bloc/add_option_bloc/add_option_bloc.dart';
+import '../../bloc/argument_bloc/argument_bloc.dart';
 import '../../bloc/error_traceback_bloc/error_traceback_bloc.dart';
 import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
@@ -9,6 +10,7 @@ import '../../bloc/message_bloc/message_bloc.dart';
 import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../../i18n/app_localizations.dart';
 import '../../extension/context.dart';
+import '../../widget/error_page.dart';
 import '../../widget/material_dialog.dart';
 import 'interaction_bar.dart';
 import 'message_box.dart';
@@ -29,69 +31,19 @@ class ShellScreen extends StatelessWidget {
           heroTag: 'stacktrace',
           child: const Icon(Symbols.dangerous),
           onPressed: () async {
-            final stack = state.message.subtitle!.split('\n');
             await UIHelper.showDetailDialog(
               context: context,
               title: Text(
-                state.message.title,
+                context.los.error,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...stack.map((e) => _buildStackMessage(context, e)),
-                  ],
-                ),
-              ),
+              content: ErrorPage(errors: state.errors),
             );
           },
         );
       },
-    );
-  }
-
-  Widget _buildStackMessage(BuildContext context, String message) {
-    final match = RegExp(
-      r'(.+?)\s+(.+?)\s+\((.+?)\)',
-    ).firstMatch(message.trim());
-    final functionName = match?.group(2) ?? '';
-    final filePath = match?.group(3) ?? '';
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          const Icon(Symbols.dangerous, size: 24.0, color: Colors.red),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  functionName,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                  softWrap: true,
-                ),
-                if (filePath.isNotEmpty)
-                  Text(
-                    filePath,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    softWrap: true,
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -144,13 +96,12 @@ class ShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<MessageBloc>(create: (context) => MessageBloc()),
-        BlocProvider<LaunchStatusBloc>(create: (context) => LaunchStatusBloc()),
-        BlocProvider<InteractionBloc>(create: (context) => InteractionBloc()),
-        BlocProvider<ErrorTracebackBloc>(
-          create: (context) => ErrorTracebackBloc(),
-        ),
-        BlocProvider<AddOptionBloc>(create: (context) => AddOptionBloc()),
+        BlocProvider<MessageBloc>(create: (_) => MessageBloc()),
+        BlocProvider<LaunchStatusBloc>(create: (_) => LaunchStatusBloc()),
+        BlocProvider<InteractionBloc>(create: (_) => InteractionBloc()),
+        BlocProvider<ErrorTracebackBloc>(create: (_) => ErrorTracebackBloc()),
+        BlocProvider<AddOptionBloc>(create: (_) => AddOptionBloc()),
+        BlocProvider<ArgumentBloc>(create: (_) => ArgumentBloc()),
       ],
       child: Builder(
         builder: (context) {
@@ -160,8 +111,7 @@ class ShellScreen extends StatelessWidget {
                 child: PopScope(
                   canPop: !state.isRunning,
                   onPopInvokedWithResult: (didPop, result) async {
-                    final canPop = !state.isRunning;
-                    if (!canPop) {
+                    if (state.isRunning) {
                       await UIHelper.showSimpleDialog(
                         context: context,
                         title: context.los.invalid_request,
@@ -170,35 +120,8 @@ class ShellScreen extends StatelessWidget {
                     }
                   },
                   child: Scaffold(
-                    appBar: UIHelper.ofMobile(
-                      AppBar(
-                        title: Text(
-                          context.los.shell,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                    body: Column(
-                      children: [
-                        Expanded(
-                          child: BlocListener<AddOptionBloc, AddOptionState>(
-                            listener: (context, optionState) async {
-                              if (optionState is ExportLogState) {
-                                await _showLog(context, optionState.value);
-                              }
-                            },
-                            child: const MessageBox(),
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                            vertical: 4.0,
-                          ),
-                          child: InteractionBar(),
-                        ),
-                      ],
-                    ),
+                    appBar: _buildAppBar(context),
+                    body: _buildBody(),
                     floatingActionButton: _buildStackButton(context),
                   ),
                 ),
@@ -207,6 +130,39 @@ class ShellScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  PreferredSizeWidget? _buildAppBar(BuildContext context) {
+    return UIHelper.ofMobile(
+      builder:
+          () => AppBar(
+            title: Text(
+              context.los.shell,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+    );
+  }
+
+  Widget _buildBody() {
+    return Column(
+      children: [
+        Expanded(
+          child: BlocListener<AddOptionBloc, AddOptionState>(
+            listener: (context, state) async {
+              if (state is ExportLogState) {
+                await _showLog(context, state.value);
+              }
+            },
+            child: const MessageBox(),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+          child: InteractionBar(),
+        ),
+      ],
     );
   }
 }

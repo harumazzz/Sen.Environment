@@ -56,9 +56,9 @@ class LabelScreen extends StatelessWidget {
         itemCount: label.length,
         itemBuilder:
             (context, index) => GestureDetector(
-              onSecondaryTapDown:
-                  (details) async =>
-                      await _showContextMenu(details, context, index),
+              onSecondaryTapDown: (details) async {
+                return await _showContextMenu(details, context, index);
+              },
               child: Card(
                 elevation: 4.0,
                 shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.2),
@@ -81,15 +81,13 @@ class LabelScreen extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 4,
                   ),
-                  trailing: Tooltip(
-                    message: label[index],
-                    child: IconButton(
-                      icon: Icon(
-                        Symbols.play_arrow,
-                        color: theme.colorScheme.secondary,
-                      ),
-                      onPressed: () => _onPlay(context, index),
+                  trailing: IconButton(
+                    tooltip: label[index],
+                    icon: Icon(
+                      Symbols.play_arrow,
+                      color: theme.colorScheme.secondary,
                     ),
+                    onPressed: () => _onPlay(context, index),
                   ),
                   tileColor: theme.colorScheme.surfaceContainerHighest,
                   shape: RoundedRectangleBorder(

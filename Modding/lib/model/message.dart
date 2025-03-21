@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class Message extends Equatable {
   const Message({required this.title, this.color, this.subtitle});
@@ -26,8 +27,17 @@ class Message extends Equatable {
       'green' => isDark ? Colors.teal.shade500 : Colors.lightGreen.shade400,
       'yellow' => isDark ? Colors.amber.shade400 : Colors.amber.shade800,
       'cyan' => isDark ? Colors.lightBlue.shade300 : Colors.cyan.shade400,
-      'blue' => isDark ? scheme.primaryContainer : scheme.primary,
       _ => _getColorBasedOnTheme(theme, isDark),
+    };
+  }
+
+  IconData get icon {
+    return switch (color) {
+      'red' => Symbols.cancel,
+      'green' => Symbols.check_circle,
+      'yellow' => Symbols.error,
+      'cyan' => Symbols.add_circle,
+      _ => Symbols.terminal,
     };
   }
 

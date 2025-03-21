@@ -42,6 +42,7 @@ dependencies:
     audioplayers: ^6.4.0
     material_symbols_icons: ^4.2810.1
     flutter_local_notifications: ^19.0.0
+    collection: ^1.19.1
 dev_dependencies:
     flutter_test:
         sdk: flutter

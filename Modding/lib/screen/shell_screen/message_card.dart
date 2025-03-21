@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:path/path.dart' as p;
 
 import '../../extension/color.dart';
@@ -17,6 +16,7 @@ class MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = _getCardColor(context);
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -25,7 +25,7 @@ class MessageCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),
-        color: _getCardColor(context),
+        color: color,
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
@@ -44,9 +44,9 @@ class MessageCard extends StatelessWidget {
 
   Widget _buildIcon(ThemeData theme) {
     return Icon(
-      Symbols.terminal,
+      message.icon,
       size: 32.0,
-      color: theme.colorScheme.onPrimaryContainer,
+      color: theme.colorScheme.onSurfaceVariant,
     );
   }
 

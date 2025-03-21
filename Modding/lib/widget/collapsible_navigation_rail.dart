@@ -12,7 +12,6 @@ class CollapsibleNavigationRail extends StatefulWidget {
   });
 
   final int selectedIndex;
-
   final void Function(int index) onSelect;
 
   @override
@@ -22,9 +21,7 @@ class CollapsibleNavigationRail extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      ObjectFlagProperty<void Function(int index)>.has('onSelect', onSelect),
-    );
+    properties.add(ObjectFlagProperty.has('onSelect', onSelect));
     properties.add(IntProperty('selectedIndex', selectedIndex));
   }
 }
@@ -57,16 +54,16 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width: _isExpanded ? 168 : 82,
+              width: _isExpanded ? 168.0 : 82.0,
               curve: Curves.easeInOut,
               child: Material(
-                elevation: 2,
+                elevation: 2.0,
                 child: NavigationRailTheme(
                   data: NavigationRailThemeData(
                     backgroundColor: theme.colorScheme.surfaceContainerLow,
                     indicatorColor: theme.colorScheme.primaryContainer,
                     indicatorShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.0),
                     ),
                     selectedIconTheme: IconThemeData(
                       color: theme.colorScheme.onPrimaryContainer,
@@ -85,35 +82,19 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
                             : NavigationRailLabelType.all,
                     useIndicator: true,
                     leading: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Image.asset('assets/images/logo.png', height: 48),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 48.0,
+                      ),
                     ),
-                    destinations: [
-                      _buildDestination(
-                        context,
-                        icon: Symbols.home,
-                        selectedIcon: Symbols.home_filled,
-                        title: context.los.home,
-                      ),
-                      _buildDestination(
-                        context,
-                        icon: Symbols.package,
-                        selectedIcon: Symbols.package_sharp,
-                        title: context.los.task,
-                      ),
-                      _buildDestination(
-                        context,
-                        icon: Symbols.settings,
-                        selectedIcon: Symbols.settings_sharp,
-                        title: context.los.settings,
-                      ),
-                    ],
+                    destinations: _buildDestinations(),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 8.0),
                         _buildToggleButton(theme),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 16.0),
                       ],
                     ),
                   ),
@@ -126,31 +107,46 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
     );
   }
 
+  List<NavigationRailDestination> _buildDestinations() {
+    return [
+      _buildDestination(Symbols.home, Symbols.home_filled, context.los.home),
+      _buildDestination(
+        Symbols.package,
+        Symbols.package_sharp,
+        context.los.task,
+      ),
+      _buildDestination(
+        Symbols.settings,
+        Symbols.settings_sharp,
+        context.los.settings,
+      ),
+    ];
+  }
+
+  NavigationRailDestination _buildDestination(
+    IconData icon,
+    IconData selectedIcon,
+    String title,
+  ) {
+    return NavigationRailDestination(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      icon: Icon(icon, size: 28.0),
+      selectedIcon: Icon(selectedIcon, size: 28.0),
+      label: AnimatedCrossFade(
+        duration: const Duration(milliseconds: 200),
+        crossFadeState:
+            _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+        firstChild: Text(title, style: const TextStyle(fontSize: 14.0)),
+        secondChild: const SizedBox.shrink(),
+      ),
+    );
+  }
+
   Widget _buildToggleButton(ThemeData theme) {
     return IconButton.filledTonal(
       icon: Icon(_isExpanded ? Icons.chevron_left : Icons.chevron_right),
       color: theme.colorScheme.onSurfaceVariant,
       onPressed: _toggleNavigationRail,
-    );
-  }
-
-  NavigationRailDestination _buildDestination(
-    BuildContext context, {
-    required IconData icon,
-    required IconData selectedIcon,
-    required String title,
-  }) {
-    return NavigationRailDestination(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      icon: Icon(icon, size: 28),
-      selectedIcon: Icon(selectedIcon, size: 28),
-      label: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 200),
-        crossFadeState:
-            _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-        firstChild: Text(title, style: const TextStyle(fontSize: 14)),
-        secondChild: const SizedBox.shrink(),
-      ),
     );
   }
 

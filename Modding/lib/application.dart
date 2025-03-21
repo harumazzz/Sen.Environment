@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,7 +21,9 @@ import 'service/file_helper.dart';
 import 'service/ui_helper.dart';
 
 class Application extends StatelessWidget {
-  const Application({super.key});
+  const Application({super.key, required this.navigatorKey});
+
+  final GlobalKey<NavigatorState> navigatorKey;
 
   Future<void> _showPermissionDialog(BuildContext context) async {
     pop() => Navigator.of(context).pop();
@@ -98,6 +101,7 @@ class Application extends StatelessWidget {
           return DynamicColorBuilder(
             builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
               return MaterialApp(
+                navigatorKey: navigatorKey,
                 debugShowCheckedModeBanner: false,
                 title: BuildDistribution.kApplicationName,
                 theme: MaterialDesign.lightTheme.copyWith(
@@ -126,6 +130,17 @@ class Application extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<GlobalKey<NavigatorState>>(
+        'navigatorKey',
+        navigatorKey,
       ),
     );
   }
@@ -293,25 +308,23 @@ class __SetupToolChainDialogState extends State<_SetupToolChainDialog> {
             ),
           ),
         ),
-        Tooltip(
-          message: context.los.upload_directory,
-          child: IconButton(
-            onPressed: () async {
-              Future<bool> verify() async => await _onCheckValidator(context);
-              Future<void> setToolchain(String directory) async {
-                final cubit = context.read<SettingsCubit>();
-                await cubit.setToolChain(directory);
-                await cubit.setIsValid(isValid: await verify());
-              }
+        IconButton(
+          tooltip: context.los.upload_directory,
+          onPressed: () async {
+            Future<bool> verify() async => await _onCheckValidator(context);
+            Future<void> setToolchain(String directory) async {
+              final cubit = context.read<SettingsCubit>();
+              await cubit.setToolChain(directory);
+              await cubit.setIsValid(isValid: await verify());
+            }
 
-              final directory = await FileHelper.uploadDirectory();
-              if (directory != null) {
-                _controller.text = directory;
-                await setToolchain(directory);
-              }
-            },
-            icon: const Icon(Symbols.drive_folder_upload),
-          ),
+            final directory = await FileHelper.uploadDirectory();
+            if (directory != null) {
+              _controller.text = directory;
+              await setToolchain(directory);
+            }
+          },
+          icon: const Icon(Symbols.drive_folder_upload),
         ),
       ],
     );

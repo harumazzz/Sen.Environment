@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/argument_bloc/argument_bloc.dart';
 import '../../bloc/error_traceback_bloc/error_traceback_bloc.dart';
 import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
@@ -80,7 +81,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
       LaunchStatusBegin(
         client: this,
         setting: context.read<SettingsCubit>(),
-        arguments: const [],
+        arguments: context.read<ArgumentBloc>().state.value,
       ),
     );
   }

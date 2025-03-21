@@ -114,16 +114,14 @@ class _CollapsibleFloatingActionButtonState
             opacity: _fadeAnimation,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
-              child: Tooltip(
-                message: widget.items[i].tooltip,
-                child: FloatingActionButton(
-                  mini: true,
-                  onPressed: () {
-                    widget.items[i].onPressed();
-                    _toggle();
-                  },
-                  child: Icon(widget.items[i].icon),
-                ),
+              child: FloatingActionButton(
+                tooltip: widget.items[i].tooltip,
+                mini: true,
+                onPressed: () {
+                  widget.items[i].onPressed();
+                  _toggle();
+                },
+                child: Icon(widget.items[i].icon),
               ),
             ),
           ),

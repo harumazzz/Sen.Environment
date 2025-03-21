@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 
-enum BorderBackground { color, timeSpace, senLogo }
+enum BorderBackground { color, timeSpace }
 
 class ConfigSetting {
   ConfigSetting({

@@ -475,5 +475,6 @@
 	"level_maker_setup": "For Level Maker, click on the Settings logo on the card. Please provide it the path to the Level Maker resources, the resources is downloadable on the official website.",
 	"setup_ending": "Happy Gaming! May Sen guides you to a successful mod.",
 	"congratulation": "Congratulation",
-	"congratulation_description": "You have setup Sen successfully! For any bugs report, updates, helps, please consider joining my server. Happy Modding!"
+	"congratulation_description": "You have setup Sen successfully! For any bugs report, updates, helps, please consider joining my server. Happy Modding!",
+	"argument_has_been_cleared": "Argument has been cleared"
 }

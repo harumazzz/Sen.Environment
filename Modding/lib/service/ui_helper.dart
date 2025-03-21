@@ -234,29 +234,27 @@ class UIHelper {
         : (context.isDarkMode ? Colors.grey[850]! : Colors.white);
   }
 
-  static T? ofDesktop<T>(T value) {
+  static T? ofDesktop<T>({required T Function() builder}) {
     if (CurrentPlatform.isDesktop) {
-      return value;
+      return builder();
     }
     return null;
   }
 
-  static T? ofMobile<T>(T value) {
+  static T? ofMobile<T>({required T Function() builder}) {
     if (CurrentPlatform.isMobile) {
-      return value;
+      return builder();
     }
     return null;
   }
 
   static Widget buildTrailingReturn(BuildContext context) {
-    return Tooltip(
-      message: context.los.back,
-      child: IconButton(
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-        icon: const Icon(Symbols.arrow_back),
-      ),
+    return IconButton(
+      tooltip: context.los.back,
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+      icon: const Icon(Symbols.arrow_back),
     );
   }
 

@@ -8,7 +8,7 @@ part 'error_traceback_state.dart';
 
 class ErrorTracebackBloc
     extends Bloc<ErrorTracebackEvent, ErrorTracebackState> {
-  ErrorTracebackBloc() : super(const ErrorTracebackInitial()) {
+  ErrorTracebackBloc() : super(const ErrorTracebackInitial(errors: [])) {
     on<ErrorTracebackMessageEvent>(_onError);
     on<ErrorTracebackClearEvent>(_onClear);
   }
@@ -17,13 +17,13 @@ class ErrorTracebackBloc
     ErrorTracebackMessageEvent event,
     Emitter<ErrorTracebackState> emit,
   ) {
-    emit(ErrorTracebackMessage(message: event.message));
+    emit(ErrorTracebackMessage(errors: [...state.errors, event.message]));
   }
 
   void _onClear(
     ErrorTracebackClearEvent event,
     Emitter<ErrorTracebackState> emit,
   ) {
-    emit(const ErrorTracebackNone());
+    emit(const ErrorTracebackNone(errors: []));
   }
 }

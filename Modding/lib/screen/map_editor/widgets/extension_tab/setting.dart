@@ -392,8 +392,6 @@ class __CustomAnchorState extends State<_CustomAnchor> {
         return los.color;
       case BorderBackground.timeSpace:
         return los.time_space;
-      case BorderBackground.senLogo:
-        return los.sui_logo;
     }
   }
 }

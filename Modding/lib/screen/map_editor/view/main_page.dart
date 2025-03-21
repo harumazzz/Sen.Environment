@@ -205,7 +205,7 @@ class MainPageChild extends StatelessWidget {
               ),
               behavior: SnackBarBehavior.floating,
               duration: const Duration(milliseconds: 1500),
-              width: UIHelper.ofDesktop(400),
+              width: UIHelper.ofDesktop(builder: () => 400.0),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),

@@ -12,7 +12,7 @@ import 'configuration/map_editor_configuration.dart';
 import 'configuration/shell_configuration.dart';
 import 'custom_tab.dart';
 import 'tab_item.dart';
-import '../javascript_category/javascript_category.dart';
+import '../js_execute/js_execute.dart';
 import '../level_maker/level_maker.dart';
 import '../map_editor/map_editor.dart';
 import '../shell_screen/shell_screen.dart';
@@ -440,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen>
         title: los.js_execute,
         description: los.js_execute_description,
         icon: Symbols.javascript_rounded,
-        onWidget: () => const JavaScriptCategory(),
+        onWidget: () => const JsExecute(),
         onSetting: () async => await _showJsSettings(context),
         color: Colors.yellow.shade600,
       ),

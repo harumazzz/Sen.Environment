@@ -8,7 +8,15 @@ class LevelMaker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: UIHelper.ofMobile(AppBar(title: Text(context.los.level_maker))),
+      appBar: UIHelper.ofMobile(
+        builder:
+            () => AppBar(
+              title: Text(
+                context.los.level_maker,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+      ),
     );
   }
 }

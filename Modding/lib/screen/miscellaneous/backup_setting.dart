@@ -111,10 +111,9 @@ class BackupSetting extends StatelessWidget {
                               context.read<BackupSettingBloc>().add(
                                 ApplyConfiguration(
                                   toolChain:
-                                      context
-                                          .read<SettingsCubit>()
-                                          .state
-                                          .toolChain,
+                                      BlocProvider.of<SettingsCubit>(
+                                        context,
+                                      ).state.toolChain,
                                 ),
                               );
                             },

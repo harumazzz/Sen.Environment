@@ -2,24 +2,22 @@ part of 'error_traceback_bloc.dart';
 
 @immutable
 sealed class ErrorTracebackState extends Equatable {
-  const ErrorTracebackState();
+  const ErrorTracebackState({required this.errors});
+
+  final List<Message> errors;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [errors];
 }
 
 final class ErrorTracebackInitial extends ErrorTracebackState {
-  const ErrorTracebackInitial();
+  const ErrorTracebackInitial({required super.errors});
 }
 
 final class ErrorTracebackMessage extends ErrorTracebackState {
-  const ErrorTracebackMessage({required this.message});
-  final Message message;
-
-  @override
-  List<Object?> get props => [message];
+  const ErrorTracebackMessage({required super.errors});
 }
 
 final class ErrorTracebackNone extends ErrorTracebackState {
-  const ErrorTracebackNone();
+  const ErrorTracebackNone({required super.errors});
 }

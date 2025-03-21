@@ -70,15 +70,13 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
           decoration: InputDecoration(
             labelText: los.resource_location,
             border: const OutlineInputBorder(),
-            suffixIcon: Tooltip(
-              message: los.upload_directory,
-              child: IconButton(
-                onPressed: _onUploadDirectory,
-                icon: const Icon(Symbols.folder),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
+            suffixIcon: IconButton(
+              onPressed: _onUploadDirectory,
+              tooltip: los.upload_directory,
+              icon: const Icon(Symbols.folder),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
                 ),
               ),
             ),

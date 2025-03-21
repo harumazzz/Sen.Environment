@@ -6,7 +6,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/context.dart';
-import '../../extension/platform.dart';
 import '../../widget/background.dart';
 import '../../widget/collapsible_floating_button.dart';
 import 'bloc/init_bloc/init_bloc.dart';
@@ -41,27 +40,27 @@ class MapEditor extends StatelessWidget {
   }
 
   Widget? _buildLeading(BuildContext context) {
-    return CurrentPlatform.isDesktop
-        ? null
-        : Tooltip(
-          message: context.los.back,
-          child: IconButton(
-            onPressed: () async {
-              final status =
-                  context.read<MapEditorConfigurationCubit>().state.status;
-              if (status == AppConfigurationStatus.success) {
-                if (await _confirmExit(context) ?? false) {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
+    return UIHelper.ofMobile(
+      builder: () {
+        return IconButton(
+          tooltip: context.los.back,
+          onPressed: () async {
+            final status =
+                context.read<MapEditorConfigurationCubit>().state.status;
+            if (status == AppConfigurationStatus.success) {
+              if (await _confirmExit(context) ?? false) {
+                if (context.mounted) {
+                  Navigator.of(context).pop();
                 }
-              } else {
-                Navigator.of(context).pop();
               }
-            },
-            icon: const Icon(Symbols.arrow_back),
-          ),
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
+          icon: const Icon(Symbols.arrow_back),
         );
+      },
+    );
   }
 
   Widget _buildFloatingActionButton({
@@ -97,21 +96,25 @@ class MapEditor extends StatelessWidget {
     Future<Uint8List?> Function()? takeShoot,
   ) {
     return UIHelper.ofMobile(
-      AppBar(
-        title: Text(
-          context.los.map_editor,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        leading: _buildLeading(context),
-        actions: [
-          IconButton(
-            onPressed:
-                () async =>
-                    await _onScreenshot(context: context, takeShoot: takeShoot),
-            icon: const Icon(Symbols.screenshot),
+      builder: () {
+        return AppBar(
+          title: Text(
+            context.los.map_editor,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-        ],
-      ),
+          leading: _buildLeading(context),
+          actions: [
+            IconButton(
+              onPressed:
+                  () async => await _onScreenshot(
+                    context: context,
+                    takeShoot: takeShoot,
+                  ),
+              icon: const Icon(Symbols.screenshot),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -185,14 +188,16 @@ class MapEditor extends StatelessWidget {
                 },
               ),
               floatingActionButton: UIHelper.ofDesktop(
-                _buildFloatingActionButton(
-                  context: context,
-                  screenshot:
-                      () async => await _onScreenshot(
-                        context: context,
-                        takeShoot: takeShoot,
-                      ),
-                ),
+                builder: () {
+                  return _buildFloatingActionButton(
+                    context: context,
+                    screenshot:
+                        () async => await _onScreenshot(
+                          context: context,
+                          takeShoot: takeShoot,
+                        ),
+                  );
+                },
               ),
             );
           },

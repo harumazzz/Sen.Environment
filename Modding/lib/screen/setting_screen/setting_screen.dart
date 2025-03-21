@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../constant/translators.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../model/translator.dart';
@@ -200,26 +201,24 @@ class _SettingScreenState extends State<SettingScreen> {
                     ),
                   ),
                 ),
-                Tooltip(
-                  message: los.upload_directory,
-                  child: IconButton(
-                    onPressed: () async {
-                      Future<void> setDirectory() async {
-                        await BlocProvider.of<SettingsCubit>(
-                          context,
-                        ).setToolChain(_controller.text);
-                      }
+                IconButton(
+                  tooltip: los.upload_directory,
+                  onPressed: () async {
+                    Future<void> setDirectory() async {
+                      await BlocProvider.of<SettingsCubit>(
+                        context,
+                      ).setToolChain(_controller.text);
+                    }
 
-                      final directory = await FileHelper.uploadDirectory();
-                      if (directory == null) {
-                        return;
-                      }
-                      _controller.text = directory;
-                      await setDirectory();
-                      await _onCheckValidator();
-                    },
-                    icon: const Icon(Symbols.drive_folder_upload),
-                  ),
+                    final directory = await FileHelper.uploadDirectory();
+                    if (directory == null) {
+                      return;
+                    }
+                    _controller.text = directory;
+                    await setDirectory();
+                    await _onCheckValidator();
+                  },
+                  icon: const Icon(Symbols.drive_folder_upload),
                 ),
               ],
             ),
@@ -285,8 +284,15 @@ class _SettingScreenState extends State<SettingScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 4.0,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
             const Divider(),
             ...children,
           ],
@@ -299,14 +305,25 @@ class _SettingScreenState extends State<SettingScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
-    VoidCallback? onTap,
+    void Function()? onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      leading: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.primary,
+        size: 28,
+      ),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color:
+              context.isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+        ),
+      ),
       trailing:
-          onTap != null ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
+          onTap != null ? const Icon(Symbols.arrow_forward, size: 16) : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       onTap: onTap,
     );
   }

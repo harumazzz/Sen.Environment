@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/load_script_bloc/load_script_bloc.dart';
 import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../extension/context.dart';
-import 'javascript_card.dart';
+import 'js_card.dart';
 import '../../i18n/app_localizations.dart';
 import 'search_script.dart';
 import '../../service/ui_helper.dart';
 import '../../widget/hotkey.dart';
 
-class JavaScriptCategory extends StatelessWidget {
-  const JavaScriptCategory({super.key});
+class JsExecute extends StatelessWidget {
+  const JsExecute({super.key});
 
   void _showErrorDialog(BuildContext context, String message) async {
     final los = AppLocalizations.of(context)!;
@@ -121,7 +121,7 @@ class JavaScriptCategory extends StatelessWidget {
             child: ListView.builder(
               itemCount: data.length,
               itemBuilder: (context, index) {
-                return JavaScriptCard(
+                return JsCard(
                   item: data[index],
                   toolChain: context.read<SettingsCubit>().state.toolChain,
                 );
