@@ -85,7 +85,7 @@ class _AttachmentPageState extends State<AttachmentPage> {
           ),
         ),
       ),
-      title: Text(
+      title: SelectableText(
         value,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
           color: Theme.of(context).colorScheme.onPrimaryContainer,

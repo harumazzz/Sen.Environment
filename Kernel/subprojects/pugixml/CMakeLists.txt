@@ -34,5 +34,13 @@ else()
   add_compile_options(-finput-charset=UTF-8)
 endif()
 
+if (UNIX)
+    add_compile_options(-fPIC)
+    add_compile_options(_GNU_SOURCE)
+    add_compile_options(-fvisibility=hidden)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

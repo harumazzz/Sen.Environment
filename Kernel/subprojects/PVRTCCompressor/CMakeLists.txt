@@ -20,23 +20,23 @@ endif ()
 add_library(
 	${PROJECT_NAME} STATIC
 	./AlphaBitmap.h
-./Bitmap.h
-./BitScale.cpp
-./BitScale.h
-./BitUtility.h
-./ColorRgba.h
-./Interval.h
-        ./MortonTable.cpp
-./MortonTable.h
-./Point2.h
-./PvrTcDecoder.cpp
-./PvrTcDecoder.h
-./PvrTcEncoder.cpp
-./PvrTcEncoder.h
-./PvrTcPacket.cpp
-./PvrTcPacket.h
-./RgbaBitmap.h
-./RgbBitmap.h
+  ./Bitmap.h
+  ./BitScale.cpp
+  ./BitScale.h
+  ./BitUtility.h
+  ./ColorRgba.h
+  ./Interval.h
+  ./MortonTable.cpp
+  ./MortonTable.h
+  ./Point2.h
+  ./PvrTcDecoder.cpp
+  ./PvrTcDecoder.h
+  ./PvrTcEncoder.cpp
+  ./PvrTcEncoder.h
+  ./PvrTcPacket.cpp
+  ./PvrTcPacket.h
+  ./RgbaBitmap.h
+  ./RgbBitmap.h
 )
 
 # UTF8 Support

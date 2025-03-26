@@ -9,18 +9,18 @@ project(
 add_library(
 	${PROJECT_NAME} INTERFACE
 	./allocator.hpp
-./allocator_concepts.hpp
-./allocator_construction.hpp
-./header.hpp
-./mappedfile.hpp
-./offset_ptr.hpp
-./offset_span.hpp
-./pmr_allocator.hpp
-./pmr_writer.hpp
-./writer.hpp
-./detail/mappedfile_common.hpp
-./detail/mappedfile_linux.hpp
-./detail/mappedfile_windows.hpp
+  ./allocator_concepts.hpp
+  ./allocator_construction.hpp
+  ./header.hpp
+  ./mappedfile.hpp
+  ./offset_ptr.hpp
+  ./offset_span.hpp
+  ./pmr_allocator.hpp
+  ./pmr_writer.hpp
+  ./writer.hpp
+  ./detail/mappedfile_common.hpp
+  ./detail/mappedfile_linux.hpp
+  ./detail/mappedfile_windows.hpp
 )
 
 # Set Kind
@@ -43,5 +43,15 @@ if (MSVC)
 else ()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif ()
+
+if (UNIX)
+    add_compile_options(-fPIC)
+    add_compile_options(_GNU_SOURCE)
+    add_compile_options(-fvisibility=hidden)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
+endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)

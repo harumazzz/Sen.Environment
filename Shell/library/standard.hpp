@@ -24,6 +24,7 @@
 #include <cstring>
 #include <exception>
 #include <span>
+#include <functional>
 
 
 namespace Sen::Shell {

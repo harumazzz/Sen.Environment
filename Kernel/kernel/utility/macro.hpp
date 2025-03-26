@@ -24,9 +24,17 @@
 
 #define debug_json(arg) std::cout << arg << '\n' << std::flush;
 
-#define WINDOWS _WIN32
+#ifdef _WIN32
+#define WINDOWS 1
+#else
+#define WINDOWS 0
+#endif
 
-#define LINUX __linux__
+#ifdef __linux__
+#define LINUX 1
+#else
+#define LINUX 0
+#endif
 
 #define ANDROID __ANDROID__
 
@@ -34,7 +42,11 @@
 
 #define IPHONE TARGET_OS_IPHONE
 
-#define MACINTOSH __MACH__
+#ifdef __MACH__
+#define MACINTOSH 1
+#else
+#define MACINTOSH 0
+#endif
 
 #if WINDOWS
 #define M_EXPORT_API extern "C" __declspec(dllexport)

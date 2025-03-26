@@ -28,7 +28,7 @@ namespace Sen::Kernel {
 			const std::size_t& size
 		) noexcept : Base{const_cast<char*>(data), size} {}
 
-		constexpr StringView(
+		StringView(
 			const char* data
 		) noexcept : StringView{data, std::strlen(data)} {}
 

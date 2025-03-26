@@ -1,8 +1,22 @@
 #pragma once
 
-#define WINDOWS _WIN32
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
-#define LINUX __linux__
+#ifdef _WIN32
+	#define WINDOWS 1
+#else
+	#define WINDOWS 0
+#endif
+
+#ifdef __linux__
+#define LINUX 1
+#else
+#define LINUX 0
+#endif
 
 #define ANDROID __ANDROID__
 
@@ -10,12 +24,10 @@
 
 #define IPHONE TARGET_OS_IPHONE
 
-#define MACINTOSH __MACH__
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
+#ifdef __MACH__
+#define MACINTOSH 1
 #else
-#include <dlfcn.h>
+#define MACINTOSH 0
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)

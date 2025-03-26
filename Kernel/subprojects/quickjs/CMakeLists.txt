@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 project(
     quickjs
     VERSION 0.9.0
@@ -127,8 +129,10 @@ if (WIN32)
     target_compile_options(${PROJECT_NAME} PRIVATE /wd4005)
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX)
     add_compile_options(-fPIC)
+    add_compile_options(_GNU_SOURCE)
+    add_compile_options(-fvisibility=hidden)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
 endif()
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)

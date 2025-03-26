@@ -8,6 +8,10 @@ sealed class ArgumentState extends Equatable {
 
   @override
   List<Object?> get props => [value];
+
+  int get size => value.length;
+
+  bool get isValid => value.isNotEmpty;
 }
 
 final class ArgumentInitial extends ArgumentState {

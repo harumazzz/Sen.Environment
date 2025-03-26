@@ -46,7 +46,7 @@ class IdleBar extends StatelessWidget {
   Widget _buildIconButton({
     required IconData icon,
     required String tooltip,
-    required VoidCallback onPressed,
+    required void Function() onPressed,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -79,10 +79,19 @@ class IdleBar extends StatelessWidget {
       child: Row(
         spacing: 12.0,
         children: [
-          _buildIconButton(
-            icon: Symbols.attachment,
-            tooltip: context.los.attach,
-            onPressed: () async => await _onAttach(context),
+          BlocBuilder<ArgumentBloc, ArgumentState>(
+            buildWhen: (previous, current) => previous != current,
+            builder: (context, state) {
+              return Badge(
+                label: Text(state.size.toString()),
+                isLabelVisible: state.isValid,
+                child: _buildIconButton(
+                  icon: Symbols.attachment,
+                  tooltip: context.los.attach,
+                  onPressed: () async => await _onAttach(context),
+                ),
+              );
+            },
           ),
           _buildIconButton(
             icon: Symbols.clear,

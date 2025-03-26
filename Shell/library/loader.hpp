@@ -61,7 +61,7 @@ namespace Sen::Shell {
             address = dlsym(thiz.handle, name.data());
             #endif
             assert_conditional(address != nullptr, "Address not found");
-            return static_cast<Symbol>(address);
+            return reinterpret_cast<Symbol>(address);
         }
 
 

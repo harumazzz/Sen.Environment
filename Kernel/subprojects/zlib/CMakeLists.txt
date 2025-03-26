@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.20)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 project(
 	zlib
 	VERSION 1.3.1
@@ -99,6 +101,14 @@ if(MSVC)
   add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 else()
   add_compile_options(-finput-charset=UTF-8)
+endif()
+
+if (UNIX)
+    add_compile_options(-fPIC)
+    add_compile_options(_GNU_SOURCE)
+    add_compile_options(-fvisibility=hidden)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
 endif()
 
 set_target_properties(zlib PROPERTIES POSITION_INDEPENDENT_CODE ON)

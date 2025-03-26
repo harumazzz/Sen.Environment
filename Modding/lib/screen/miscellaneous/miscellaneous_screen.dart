@@ -8,6 +8,7 @@ import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import 'backup_setting.dart';
 import '../../service/ui_helper.dart';
+import 'register_context_menu.dart';
 
 class MiscellaneousScreen extends StatelessWidget {
   const MiscellaneousScreen({super.key});
@@ -168,7 +169,11 @@ class MiscellaneousScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: [_buildBackupCard(context), _buildDownloadCard(context)],
+            children: [
+              _buildBackupCard(context),
+              _buildDownloadCard(context),
+              _buildContextMenuCard(context),
+            ],
           ),
         ],
       ),
@@ -212,6 +217,58 @@ class MiscellaneousScreen extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => _onBackup(context),
               label: Text(los.backup_configuration),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContextMenuCard(BuildContext context) {
+    final los = context.los;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              spacing: 10.0,
+              children: [
+                Icon(
+                  Symbols.terminal,
+                  size: 28,
+                  color: Colors.lightBlueAccent.withValues(alpha: 0.8),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4.0,
+                  children: [
+                    Text(
+                      'Context Menu Register',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      'Register legacy context menu',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const RegisterContextMenu();
+                    },
+                  ),
+                );
+              },
+              label: Text('Register'),
             ),
           ],
         ),

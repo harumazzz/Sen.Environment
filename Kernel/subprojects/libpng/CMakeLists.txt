@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.20)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 project(
 	libpng
 	VERSION 1.6.46
@@ -51,4 +53,10 @@ if (ANDROID)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC PNG_ARM_NEON_OPT=0)
 endif()
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if (UNIX)
+    add_compile_options(-fPIC)
+    add_compile_options(_GNU_SOURCE)
+    add_compile_options(-fvisibility=hidden)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
+endif()

@@ -3,7 +3,7 @@
 project(Shell LANGUAGES CXX)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    add_compile_options(-std=c++23 -fmodules-ts -fPIC -fvisibility=hidden)
+    add_compile_options(-fPIC -fvisibility=hidden)
 endif()
 
 if(MSVC)
@@ -95,12 +95,14 @@ endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /std:c++latest)
 endif()
+
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++23)
 
 

@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 cd ./
 mkdir ./build
 cd ./build
