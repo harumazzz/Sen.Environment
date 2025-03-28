@@ -250,16 +250,6 @@ class UIHelper {
     return null;
   }
 
-  static Widget buildTrailingReturn(BuildContext context) {
-    return IconButton(
-      tooltip: context.los.back,
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-      icon: const Icon(Symbols.arrow_back),
-    );
-  }
-
   static List<Widget> buildAppBar(
     BuildContext context,
     bool innerBoxIsScrolled, {

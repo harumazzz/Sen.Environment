@@ -226,27 +226,15 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
               ],
             ),
-            actions: [_toolChainValidator()],
+            actions: [
+              CustomToolchainValidator(
+                controller: _controller,
+                onCheckValidator: _onCheckValidator,
+                onClose: () => Navigator.of(context).pop(),
+              ),
+            ],
           ),
     );
-  }
-
-  Widget _toolChainValidator() {
-    final los = AppLocalizations.of(context)!;
-    return TextButton(
-      onPressed: () async {
-        BlocProvider.of<SettingsBloc>(
-          context,
-        ).add(SetToolChain(_controller.text));
-        await _onCheckValidator();
-        _onClose();
-      },
-      child: Text(los.okay),
-    );
-  }
-
-  void _onClose() {
-    Navigator.of(context).pop();
   }
 
   Future<void> _onCheckValidator() async {
@@ -313,6 +301,51 @@ class _SettingScreenState extends State<SettingScreen> {
       throw Exception('Unknown translator of locale: $name');
     }
     return translator;
+  }
+}
+
+class CustomToolchainValidator extends StatelessWidget {
+  const CustomToolchainValidator({
+    super.key,
+    required this.onClose,
+    required this.onCheckValidator,
+    required this.controller,
+  });
+
+  final void Function() onClose;
+
+  final TextEditingController controller;
+
+  final Future<void> Function() onCheckValidator;
+
+  @override
+  Widget build(BuildContext context) {
+    final los = AppLocalizations.of(context)!;
+    return TextButton(
+      onPressed: () async {
+        BlocProvider.of<SettingsBloc>(
+          context,
+        ).add(SetToolChain(controller.text));
+        await onCheckValidator();
+        onClose();
+      },
+      child: Text(los.okay),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<void Function()>.has('onClose', onClose));
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has(
+        'onCheckValidator',
+        onCheckValidator,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<TextEditingController>('controller', controller),
+    );
   }
 }
 

@@ -139,7 +139,7 @@ class StorageIntentHandler(private val activity: Activity) {
         return Uri.parse("content://com.android.externalstorage.documents/document/primary%3A${Uri.encode(safeDirectory)}")
     }
 
-    public suspend fun resolveUri(uri: Uri): String? {
+    public fun resolveUri(uri: Uri): String? {
         var result: String? = null
         val provider = uri.authority
         var path = uri.path?.let { Uri.decode(it) }

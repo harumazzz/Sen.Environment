@@ -42,7 +42,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         sendNotification: prefs.getBool('sendNotification') ?? true,
         toolChain: prefs.getString('toolchain') ?? '',
         isValid: prefs.getBool('isValid') ?? false,
-        requestedPermission: prefs.getBool('requestedPermission') ?? false,
+        requestedPermission: prefs.getBool('requestedPermission') ?? true,
         jsRunAsLauncher: prefs.getBool('jsRunAsLauncher') ?? false,
         jsShowConfirmDialog: prefs.getBool('jsShowConfirmDialog') ?? true,
         levelMakerResource: prefs.getString('levelMakerResource') ?? '',

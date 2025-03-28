@@ -23,7 +23,7 @@ class SettingsState extends Equatable {
       sendNotification: true,
       toolChain: '',
       isValid: false,
-      requestedPermission: false,
+      requestedPermission: true,
       mapEditorResource: '',
       levelMakerResource: '',
       shellLaunchImmediately: false,

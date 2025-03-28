@@ -5,6 +5,7 @@ import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
 import '../../model/item.dart';
+import '../../service/android_helper.dart';
 import '../animation_viewer/animation_viewer.dart';
 import 'configuration/animation_viewer_configuration.dart';
 import 'configuration/javascript_category_configuration.dart';
@@ -12,6 +13,7 @@ import 'configuration/level_maker_configuration.dart';
 import 'configuration/map_editor_configuration.dart';
 import 'configuration/shell_configuration.dart';
 import 'custom_tab.dart';
+import 'menu_picker.dart';
 import 'tab_item.dart';
 import '../js_execute/js_execute.dart';
 import '../level_maker/level_maker.dart';
@@ -37,6 +39,43 @@ class _HomeScreenState extends State<HomeScreen>
     _tabIndex = 0;
     _tabs = [];
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (CurrentPlatform.isAndroid && AndroidHelper.has()) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await UIHelper.showDetailDialog(
+            context: context,
+            title: Text(
+              '${context.los.argument_got}: ${AndroidHelper.arguments}',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            content: ModernContextMenu(
+              onSelect: (selected) {
+                print("Selected: $selected");
+              },
+              items: [
+                MenuItem(
+                  title: "PopCap Texture",
+                  subItems: [
+                    MenuItem(title: "Encode/RGBA8888"),
+                    MenuItem(title: "Encode/RGB_ETC1_A8"),
+                    MenuItem(title: "Encode/RGB_PVRTC_A8"),
+                  ],
+                ),
+                MenuItem(
+                  title: "Image Util",
+                  subItems: [
+                    MenuItem(title: "Scale"),
+                    MenuItem(title: "Downscale"),
+                  ],
+                ),
+              ],
+            ),
+          );
+        });
+      }
+    });
   }
 
   @override

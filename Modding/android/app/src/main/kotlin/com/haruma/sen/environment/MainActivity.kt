@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
+import android.net.Uri
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -39,6 +40,9 @@ class MainActivity : FlutterActivity() {
     ): Unit {
         super.onCreate(savedInstanceState)
         this.requestNotificationPermission()
+        CoroutineScope(Dispatchers.Main).launch {
+            this@MainActivity.handleIncomingIntent(intent)
+        }
     }
 
     override fun onActivityResult(
@@ -49,6 +53,22 @@ class MainActivity : FlutterActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         storageIntentHandler.handleActivityResult(requestCode, data)
     }
+
+    private suspend fun handleIncomingIntent(intent: Intent?) {
+        if (intent?.action?.contains("com.haruma.sen.environment") == true) {
+            val resources = intent.getParcelableArrayListExtra<Uri>("resources")
+            this.handleReceivedResources(resources)
+        }
+    }
+
+    private fun handleReceivedResources(resources: List<Uri>?) {
+        val result = resources?.map { uri ->
+            this.storageIntentHandler.resolveUri(uri)
+        } ?: emptyList()
+        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, this.channel)
+            .invokeMethod("onResourcesReceived", result)
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int, 

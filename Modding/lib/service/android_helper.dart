@@ -58,4 +58,12 @@ class AndroidHelper {
     final result = await _methodChannel.invokeMethod<String?>('save_file');
     return result;
   }
+
+  static bool has() {
+    return _arguments != null;
+  }
+
+  static void reset() {
+    _arguments = null;
+  }
 }

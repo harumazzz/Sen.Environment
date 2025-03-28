@@ -63,11 +63,12 @@ class Application extends StatelessWidget {
     );
   }
 
-  void _onListen(BuildContext context, SettingsState state) async {
+  Future<void> _onListen(BuildContext context, SettingsState state) async {
     void checkSelfPermission() => BlocProvider.of<SettingsBloc>(
       context,
     ).add(const CheckAndroidPermission());
     Future<void> setupToolChain() async => await _showSetupToolChain(context);
+    checkSelfPermission();
     if (CurrentPlatform.isAndroid && !state.requestedPermission) {
       await _showPermissionDialog(context);
       checkSelfPermission();

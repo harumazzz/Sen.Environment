@@ -37,10 +37,13 @@ class SubActivity : Activity() {
         resource: List<Uri>
     ): Unit {
         if (resource.isNotEmpty()) {
-            val resultIntent = Intent().apply {
-                putExtra("resources", ArrayList(resource))
+            val resultIntent = Intent(this, MainActivity::class.java).apply {
+                putParcelableArrayListExtra("resources", ArrayList(resource))
+                action = "com.haruma.sen.environment.FORWARD"
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
             setResult(RESULT_OK, resultIntent)
+            startActivity(resultIntent)
         } else {
             setResult(RESULT_CANCELED)
         }

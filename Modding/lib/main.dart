@@ -24,13 +24,13 @@ Future<void> main(List<String> arguments) async {
     await windowManager.focus();
   }
   await NotificationHelper.initialize();
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   if (CurrentPlatform.isAndroid) {
     AndroidHelper.initialize();
   }
   if (CurrentPlatform.isWindows) {
     WindowsHelper.initialize();
   }
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   DeveloperHelper.addDebugDetach(
     builder: () {
       onHandleException({required String message, required StackTrace? stack}) {

@@ -319,51 +319,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildUI() {
-    if (CurrentPlatform.isAndroid || CurrentPlatform.isIOS) {
-      return _screen[_selectedIndex];
-    } else {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Flexible(
-              flex: 4,
-              child: Container(
-                margin: const EdgeInsets.only(left: 8.0, bottom: 8.0),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).shadowColor.withValues(alpha: 0.1),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _screen[1],
-                ),
-              ),
-            ),
-            Flexible(flex: 12, child: _screen[0]),
-            Flexible(
-              flex: 4,
-              child: Container(
-                margin: const EdgeInsets.only(left: 12.0, bottom: 12.0),
-                child: _screen[2],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   void _takeScreenshot() async {
     showScreenShot(Uint8List? value) async {
       if (value != null) {
@@ -422,7 +377,53 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             );
           },
         ),
-        body: _buildUI(),
+        body:
+            CurrentPlatform.isMobile
+                ? _screen[_selectedIndex]
+                : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 4,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(
+                                  context,
+                                ).shadowColor.withValues(alpha: 0.1),
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: _screen[1],
+                          ),
+                        ),
+                      ),
+                      Flexible(flex: 12, child: _screen[0]),
+                      Flexible(
+                        flex: 4,
+                        child: Container(
+                          margin: const EdgeInsets.only(
+                            left: 12.0,
+                            bottom: 12.0,
+                          ),
+                          child: _screen[2],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         floatingActionButton: UIHelper.ofDesktop(
           builder: () {
             return CustomFloatingAction(
