@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "deps/tinyfiledialogs/tinyfiledialogs.h"
+#include "subprojects/tinyfiledialogs/tinyfiledialogs.h"
 #include "library/string.hpp"
 
 #if WINDOWS
@@ -139,7 +139,7 @@ namespace Sen::Shell {
 		auto target = std::optional<std::string>{};
 		#if WINDOWS
 		auto state_h = HRESULT{};
-		auto _ = CoInitialize(nullptr);
+		CoInitialize(nullptr);
 		auto dialog = std::add_pointer_t<IFileDialog>{nullptr};
 		if constexpr (type == StorageType::pick_file || type == StorageType::pick_directory) {
 			state_h = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, __uuidof(*dialog), IID_PPV_ARGS_Helper(&dialog));

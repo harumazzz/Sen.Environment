@@ -1,6 +1,2 @@
-cd ./
-mkdir ./build
-cd ./build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --config Release
-cd ..
+meson setup build --wipe
+meson compile -C build

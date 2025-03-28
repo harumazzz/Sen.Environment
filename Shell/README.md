@@ -6,7 +6,7 @@
 
 ## Development
 
--   [CMake 3.8+](https://cmake.org/)
+-   [Meson 1.7.0+](https://mesonbuild.com/)
 
 -   [Powershell for Windows](https://learn.microsoft.com/en-us/powershell/)
 
@@ -14,22 +14,16 @@
 
 -   [Terminal for Macintosh](https://developer.apple.com/library/archive/documentation/OpenSource/Conceptual/ShellScripting/Introduction/Introduction.html)
 
--   [MSVC 19.38 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
+-   [MSVC 19.42 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
 
--   [Clang 17.0 for Linux](https://llvm.org/)
+-   [Clang 19.0 for Linux](https://llvm.org/)
 
--   [Clang 17.0 for Macintosh](https://llvm.org/)
+-   [Clang 19.0 for Macintosh](https://llvm.org/)
 
--   [Clang 14.0 for Android (NDK r26.1)](https://developer.android.com/ndk/downloads)
+-   [Clang 17.0 for Android (NDK r27c)](https://developer.android.com/ndk/downloads)
 
--   [Clang 17.0 for iPhone](https://llvm.org/)
+-   [Clang 19.0 for iPhone](https://llvm.org/)
 
 ## Dependencies
 
--   [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/): Picking file, directory
-
--   [cpp-httplib](https://github.com/yhirose/cpp-httplib): Provide Internet connection.
-
-# Acknowledgement
-
--   [TwinStar](https://github.com/twinstar6980): The source code of the `pick_path` method has been adapted from the `ShellCLI` source code of this project.
+-   [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/): Picking file, directory.
