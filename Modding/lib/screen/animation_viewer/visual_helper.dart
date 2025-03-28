@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
@@ -141,30 +142,7 @@ class VisualHelper {
   }
 
   bool containSprite(int index) {
-    if (0 <= index && index <= animation.sprite.length) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  Widget visualizeImage(int index) {
-    final image = selectImage(index);
-    return Visibility(
-      visible: context.read<SelectedImageBloc>().state.value[index],
-      child: Transform(
-        transform: transformMatrixFromVariant(image.transform),
-        child:
-            imageSource[index] == null
-                ? Text('Missing ${image.path}')
-                : Image(
-                  image: imageSource[index]!,
-                  width: image.dimension.width.toDouble(),
-                  height: image.dimension.height.toDouble(),
-                  fit: BoxFit.fill,
-                ),
-      ),
-    );
+    return 0 <= index && index <= animation.sprite.length;
   }
 
   Widget visualizeSprite(int index, AnimationController animationController) {
@@ -198,7 +176,12 @@ class VisualHelper {
           animation: subController,
           child:
               !action.sprite
-                  ? visualizeImage(action.resource)
+                  ? VisualImage(
+                    index: action.resource,
+                    onSelect: selectImage,
+                    transform: transformMatrixFromVariant,
+                    imageSource: imageSource,
+                  )
                   : visualizeSprite(action.resource, animationController),
           builder: (context, child) {
             var index = subController.value;
@@ -279,4 +262,63 @@ class _VisualLayer {
   late List<(Matrix4, ColorFilter)?> property;
   late bool isRemoved;
   late bool isChanged;
+}
+
+class VisualImage extends StatelessWidget {
+  const VisualImage({
+    super.key,
+    required this.transform,
+    required this.imageSource,
+    required this.onSelect,
+    required this.index,
+  });
+
+  final Matrix4 Function(model.Transform transform) transform;
+
+  final List<ImageProvider?> imageSource;
+
+  final model.AnimationImage Function(int index) onSelect;
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = onSelect(index);
+    return Visibility(
+      visible: context.read<SelectedImageBloc>().state.value[index],
+      child: Transform(
+        transform: transform(image.transform),
+        child:
+            imageSource[index] == null
+                ? Text('Missing ${image.path}')
+                : Image(
+                  image: imageSource[index]!,
+                  width: image.dimension.width.toDouble(),
+                  height: image.dimension.height.toDouble(),
+                  fit: BoxFit.fill,
+                ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<ImageProvider<Object>?>('imageSource', imageSource),
+    );
+    properties.add(
+      ObjectFlagProperty<Matrix4 Function(model.Transform transform)>.has(
+        'transform',
+        transform,
+      ),
+    );
+    properties.add(IntProperty('index', index));
+    properties.add(
+      ObjectFlagProperty<model.AnimationImage Function(int index)>.has(
+        'onSelect',
+        onSelect,
+      ),
+    );
+  }
 }

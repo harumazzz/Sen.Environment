@@ -73,37 +73,23 @@ class _EnumerationPageState extends State<EnumerationPage> {
               duration: const Duration(milliseconds: 300),
               child:
                   _filteredOptions.isEmpty
-                      ? _buildErrorPage()
-                      : _buildOptionList(),
+                      ? const _ScriptNotFoundPage()
+                      : _CustomListView(
+                        size: _filteredOptions.length,
+                        builder: (context, index) {
+                          final option = _filteredOptions[index];
+                          return _OptionTile(
+                            option: option,
+                            onTap: () {
+                              widget.onSelected(option);
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                      ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildOptionList() {
-    return ListView.separated(
-      itemCount: _filteredOptions.length,
-      separatorBuilder: (_, _) => const Divider(height: 4.0),
-      itemBuilder: (context, index) {
-        final option = _filteredOptions[index];
-        return _OptionTile(
-          option: option,
-          onTap: () {
-            widget.onSelected(option);
-            Navigator.of(context).pop();
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildErrorPage() {
-    return Center(
-      child: Text(
-        context.los.script_not_found,
-        style: Theme.of(context).textTheme.titleMedium,
       ),
     );
   }
@@ -226,5 +212,48 @@ class _OptionTile extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<SelectOption>('option', option));
     properties.add(ObjectFlagProperty<void Function()>.has('onTap', onTap));
+  }
+}
+
+class _ScriptNotFoundPage extends StatelessWidget {
+  const _ScriptNotFoundPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        context.los.script_not_found,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+    );
+  }
+}
+
+class _CustomListView extends StatelessWidget {
+  const _CustomListView({required this.size, required this.builder});
+
+  final int size;
+
+  final Widget Function(BuildContext context, int index) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: size,
+      separatorBuilder: (_, _) => const Divider(height: 4.0),
+      itemBuilder: builder,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('size', size));
+    properties.add(
+      ObjectFlagProperty<Widget Function(BuildContext context, int index)>.has(
+        'builder',
+        builder,
+      ),
+    );
   }
 }

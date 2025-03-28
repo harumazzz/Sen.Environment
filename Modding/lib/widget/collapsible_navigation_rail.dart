@@ -88,12 +88,46 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
                         height: 48.0,
                       ),
                     ),
-                    destinations: _buildDestinations(),
+                    destinations: [
+                      NavigationRailDestination(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        icon: const Icon(Symbols.home),
+                        selectedIcon: const Icon(Symbols.home_filled),
+                        label: CustomRailLabel(
+                          isExpanded: _isExpanded,
+                          title: context.los.home,
+                          isSelected: widget.selectedIndex == 0,
+                        ),
+                      ),
+                      NavigationRailDestination(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        icon: const Icon(Symbols.package),
+                        selectedIcon: const Icon(Symbols.package_sharp),
+                        label: CustomRailLabel(
+                          isExpanded: _isExpanded,
+                          title: context.los.task,
+                          isSelected: widget.selectedIndex == 1,
+                        ),
+                      ),
+                      NavigationRailDestination(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        icon: const Icon(Symbols.settings),
+                        selectedIcon: const Icon(Symbols.settings_sharp),
+                        label: CustomRailLabel(
+                          isExpanded: _isExpanded,
+                          title: context.los.settings,
+                          isSelected: widget.selectedIndex == 2,
+                        ),
+                      ),
+                    ],
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         const SizedBox(height: 8.0),
-                        _buildToggleButton(theme),
+                        CollapsibleNavigationRailButton(
+                          onPressed: _toggleNavigationRail,
+                          isExpanded: _isExpanded,
+                        ),
                         const SizedBox(height: 16.0),
                       ],
                     ),
@@ -107,49 +141,76 @@ class _CollapsibleNavigationRailState extends State<CollapsibleNavigationRail>
     );
   }
 
-  List<NavigationRailDestination> _buildDestinations() {
-    return [
-      _buildDestination(Symbols.home, Symbols.home_filled, context.los.home),
-      _buildDestination(
-        Symbols.package,
-        Symbols.package_sharp,
-        context.los.task,
-      ),
-      _buildDestination(
-        Symbols.settings,
-        Symbols.settings_sharp,
-        context.los.settings,
-      ),
-    ];
-  }
+  @override
+  bool get wantKeepAlive => true;
+}
 
-  NavigationRailDestination _buildDestination(
-    IconData icon,
-    IconData selectedIcon,
-    String title,
-  ) {
-    return NavigationRailDestination(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      icon: Icon(icon, size: 28.0),
-      selectedIcon: Icon(selectedIcon, size: 28.0),
-      label: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 200),
-        crossFadeState:
-            _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-        firstChild: Text(title, style: const TextStyle(fontSize: 14.0)),
-        secondChild: const SizedBox.shrink(),
-      ),
-    );
-  }
+class CustomRailLabel extends StatelessWidget {
+  const CustomRailLabel({
+    super.key,
+    required this.isExpanded,
+    required this.title,
+    required this.isSelected,
+  });
 
-  Widget _buildToggleButton(ThemeData theme) {
-    return IconButton.filledTonal(
-      icon: Icon(_isExpanded ? Icons.chevron_left : Icons.chevron_right),
-      color: theme.colorScheme.onSurfaceVariant,
-      onPressed: _toggleNavigationRail,
+  final bool isExpanded;
+
+  final String title;
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedCrossFade(
+      duration: const Duration(milliseconds: 200),
+      crossFadeState:
+          isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+      firstChild: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14.0,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      secondChild: const SizedBox.shrink(),
     );
   }
 
   @override
-  bool get wantKeepAlive => true;
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('isExpanded', isExpanded));
+    properties.add(StringProperty('title', title));
+    properties.add(DiagnosticsProperty<bool>('isSelected', isSelected));
+  }
+}
+
+class CollapsibleNavigationRailButton extends StatelessWidget {
+  const CollapsibleNavigationRailButton({
+    super.key,
+    required this.onPressed,
+    required this.isExpanded,
+  });
+
+  final void Function() onPressed;
+  final bool isExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return IconButton.filledTonal(
+      icon: Icon(isExpanded ? Icons.chevron_left : Icons.chevron_right),
+      color: theme.colorScheme.onSurfaceVariant,
+      onPressed: onPressed,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onPressed', onPressed),
+    );
+    properties.add(DiagnosticsProperty<bool>('isExpanded', isExpanded));
+  }
 }

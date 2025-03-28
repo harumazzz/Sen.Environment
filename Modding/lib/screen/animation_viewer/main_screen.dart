@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:screenshot/screenshot.dart';
+import '../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../bloc/selected_image_bloc/selected_image_bloc.dart';
 import '../../bloc/selected_label_bloc/selected_label_bloc.dart';
 import '../../bloc/selected_sprite_bloc/selected_sprite_bloc.dart';
-import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import '../../widget/collapsible_floating_button.dart';
@@ -99,14 +99,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ),
               onPressed: () async {
                 void setDirectory(String directory) =>
-                    BlocProvider.of<InitialDirectoryCubit>(
+                    BlocProvider.of<InitialDirectoryBloc>(
                       context,
-                    ).setDirectoryOfDirectory(source: directory);
+                    ).add(SetDirectoryOfDirectory(source: directory));
+                final state =
+                    BlocProvider.of<InitialDirectoryBloc>(context).state;
                 final directory = await FileHelper.uploadDirectory(
                   initialDirectory:
-                      BlocProvider.of<InitialDirectoryCubit>(
-                        context,
-                      ).state.initialDirectory,
+                      state is InitialDirectoryLoaded
+                          ? state.initialDirectory
+                          : null,
                 );
                 if (directory != null) {
                   _controller.text = directory;
@@ -212,11 +214,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     _animationController.stop();
-    void setFile(String file) =>
-        context.read<InitialDirectoryCubit>().setDirectoryOfFile(source: file);
+    void setFile(String file) => context.read<InitialDirectoryBloc>().add(
+      SetDirectoryOfFile(source: file),
+    );
+    final initialDirectory = () {
+      final state = context.read<InitialDirectoryBloc>().state;
+      return state is InitialDirectoryLoaded ? state.initialDirectory : null;
+    }();
     final file = await FileHelper.uploadFile(
-      initialDirectory:
-          context.read<InitialDirectoryCubit>().state.initialDirectory,
+      initialDirectory: initialDirectory,
     );
     if (file != null) {
       try {
@@ -369,23 +375,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     await showScreenShot(result);
   }
 
-  Widget _buildFloatingActionButton() {
-    return CollapsibleFloatingActionButton(
-      items: [
-        CollapsibleFloatingActionButtonItem(
-          icon: Symbols.file_upload,
-          tooltip: context.los.upload_file,
-          onPressed: _onUploadFile,
-        ),
-        CollapsibleFloatingActionButtonItem(
-          icon: Symbols.screenshot,
-          tooltip: context.los.take_screenshot,
-          onPressed: _takeScreenshot,
-        ),
-      ],
-    );
-  }
-
   Future<void> _showContextMenu(TapDownDetails details) async {
     final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     await showMenu(
@@ -435,10 +424,56 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
         body: _buildUI(),
         floatingActionButton: UIHelper.ofDesktop(
-          builder: _buildFloatingActionButton,
+          builder: () {
+            return CustomFloatingAction(
+              onFileUpload: _onUploadFile,
+              onScreenshot: _takeScreenshot,
+            );
+          },
         ),
         bottomNavigationBar: _navigationBar(),
       ),
+    );
+  }
+}
+
+class CustomFloatingAction extends StatelessWidget {
+  const CustomFloatingAction({
+    super.key,
+    required this.onFileUpload,
+    required this.onScreenshot,
+  });
+
+  final void Function() onFileUpload;
+
+  final void Function() onScreenshot;
+
+  @override
+  Widget build(BuildContext context) {
+    return CollapsibleFloatingActionButton(
+      items: [
+        CollapsibleFloatingActionButtonItem(
+          icon: Symbols.file_upload,
+          tooltip: context.los.upload_file,
+          onPressed: onFileUpload,
+        ),
+        CollapsibleFloatingActionButtonItem(
+          icon: Symbols.screenshot,
+          tooltip: context.los.take_screenshot,
+          onPressed: onScreenshot,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onFileUpload', onFileUpload),
+    );
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onScreenshot', onScreenshot),
     );
   }
 }

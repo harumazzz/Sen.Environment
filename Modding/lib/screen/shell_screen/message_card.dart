@@ -17,7 +17,6 @@ class MessageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getCardColor(context);
-    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
@@ -31,93 +30,19 @@ class MessageCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: Row(
             children: [
-              _buildIcon(theme),
+              Icon(
+                message.icon,
+                size: 32.0,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 8.0),
-              Expanded(child: _buildMessageContent(context, theme)),
+              Expanded(child: MessageContent(message: message)),
               const SizedBox(width: 8.0),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildIcon(ThemeData theme) {
-    return Icon(
-      message.icon,
-      size: 32.0,
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-  }
-
-  Widget _buildMessageContent(BuildContext context, ThemeData theme) {
-    final textColor = theme.colorScheme.onSurface;
-    final isDarkMode = theme.brightness == Brightness.dark;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          message.validTitle,
-          style: theme.textTheme.titleSmall!.copyWith(
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
-        ),
-        if (message.hasMessage)
-          _buildSelectableText(context, theme, isDarkMode),
-      ],
-    );
-  }
-
-  Widget _buildSelectableText(
-    BuildContext context,
-    ThemeData theme,
-    bool isDarkMode,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4.0),
-      child: SelectableText(
-        message.subtitle!,
-        style: theme.textTheme.bodySmall!.copyWith(
-          color:
-              isDarkMode
-                  ? Colors.grey.shade400
-                  : theme.colorScheme.onSurfaceVariant,
-        ),
-        contextMenuBuilder: (context, editableTextState) {
-          return AdaptiveTextSelectionToolbar.buttonItems(
-            anchors: editableTextState.contextMenuAnchors,
-            buttonItems: _getContextMenuItems(context, editableTextState),
-          );
-        },
-      ),
-    );
-  }
-
-  List<ContextMenuButtonItem> _getContextMenuItems(
-    BuildContext context,
-    EditableTextState editableTextState,
-  ) {
-    final buttonItems = editableTextState.contextMenuButtonItems;
-    if (CurrentPlatform.isDesktop) {
-      final current = message.subtitle!;
-      if (FileSystemEntity.typeSync(current) != FileSystemEntityType.notFound) {
-        buttonItems.add(
-          ContextMenuButtonItem(
-            label: context.los.open,
-            onPressed: () async {
-              if (FileHelper.isFile(current)) {
-                await FileHelper.revealFile(p.dirname(current));
-              } else {
-                await FileHelper.revealFile(current);
-              }
-            },
-          ),
-        );
-      }
-    }
-    return buttonItems;
   }
 
   Color _getCardColor(BuildContext context) {
@@ -131,6 +56,100 @@ class MessageCard extends StatelessWidget {
         : baseColor
             .withValues(alpha: 0.85)
             .blendWith(theme.colorScheme.surface, 0.5);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Message>('message', message));
+  }
+}
+
+class MessageContent extends StatelessWidget {
+  const MessageContent({super.key, required this.message});
+  final Message message;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          message.validTitle,
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        if (message.hasMessage) SelectableMessageText(message: message),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Message>('message', message));
+  }
+}
+
+class SelectableMessageText extends StatelessWidget {
+  const SelectableMessageText({required this.message, super.key});
+  final Message message;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: SelectableText(
+        message.subtitle!,
+        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+          color:
+              isDarkMode
+                  ? Colors.grey.shade400
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        contextMenuBuilder: (context, editableTextState) {
+          return AdaptiveTextSelectionToolbar.buttonItems(
+            anchors: editableTextState.contextMenuAnchors,
+            buttonItems: _getContextMenuItems(
+              context,
+              editableTextState,
+              message.subtitle!,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  static List<ContextMenuButtonItem> _getContextMenuItems(
+    BuildContext context,
+    EditableTextState editableTextState,
+    String subtitle,
+  ) {
+    final buttonItems = editableTextState.contextMenuButtonItems;
+    if (CurrentPlatform.isDesktop) {
+      if (FileSystemEntity.typeSync(subtitle) !=
+          FileSystemEntityType.notFound) {
+        buttonItems.add(
+          ContextMenuButtonItem(
+            label: context.los.open,
+            onPressed: () async {
+              if (FileHelper.isFile(subtitle)) {
+                await FileHelper.revealFile(p.dirname(subtitle));
+              } else {
+                await FileHelper.revealFile(subtitle);
+              }
+            },
+          ),
+        );
+      }
+    }
+    return buttonItems;
   }
 
   @override

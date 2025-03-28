@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../bloc/settings_bloc/settings_bloc.dart';
 import '../../../service/file_helper.dart';
 import '../../../i18n/app_localizations.dart';
 
@@ -20,7 +20,7 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
   void initState() {
     super.initState();
     _resourceLocationController = TextEditingController(
-      text: BlocProvider.of<SettingsCubit>(context).state.levelMakerResource,
+      text: BlocProvider.of<SettingsBloc>(context).state.levelMakerResource,
     );
   }
 
@@ -30,9 +30,9 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
     super.dispose();
   }
 
-  Future<void> _onValueChange() async {
+  void _onValueChange() {
     final value = _resourceLocationController.text;
-    await BlocProvider.of<SettingsCubit>(context).setLevelMakerResource(value);
+    BlocProvider.of<SettingsBloc>(context).add(SetLevelMakerResource(value));
   }
 
   void _onChangeSetting(String? value) async {
@@ -40,14 +40,14 @@ class _LevelMakerConfigurationState extends State<LevelMakerConfiguration> {
       return;
     }
     _resourceLocationController.text = value;
-    await _onValueChange();
+    _onValueChange();
   }
 
   void _onUploadDirectory() async {
     final result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
-      await _onValueChange();
+      _onValueChange();
     }
   }
 

@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../../extension/platform.dart';
 import '../../../model/item.dart';
 import '../bloc/item/item_bloc.dart';
@@ -47,15 +47,15 @@ class ToolBarView extends StatelessWidget {
                         stageBloc: stageBloc,
                         itemBloc: context.read<ItemBloc>(),
                         layerBloc: context.read<LayerBloc>(),
-                        initialDirectoryCubit:
-                            BlocProvider.of<InitialDirectoryCubit>(context),
+                        initialDirectoryBloc:
+                            context.read<InitialDirectoryBloc>(),
                       ),
                     ),
                     ToolType.saveFile => toolbarBloc.add(
                       ToolSaveEvent(
                         stageBloc: stageBloc,
-                        initialDirectoryCubit:
-                            context.read<InitialDirectoryCubit>(),
+                        initialDirectoryBloc:
+                            context.read<InitialDirectoryBloc>(),
                         // autosaveBloc: context.read<AutosaveBloc>(),
                       ),
                     ),

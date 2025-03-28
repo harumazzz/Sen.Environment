@@ -11,31 +11,30 @@ class TranslatorPage extends StatelessWidget {
 
   final Translator translator;
 
-  bool _isLink(String value) {
-    final urlRegex = RegExp(
-      r'((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)',
-    );
-    return urlRegex.hasMatch(value);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Stack(
       children: [
-        _buildCard(context, colorScheme, textTheme),
-        _buildCloseButton(context),
+        TranslatorCard(translator: translator),
+        const CloseButtonOverlay(),
       ],
     );
   }
 
-  Widget _buildCard(
-    BuildContext context,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Translator>('translator', translator));
+  }
+}
+
+class TranslatorCard extends StatelessWidget {
+  const TranslatorCard({super.key, required this.translator});
+
+  final Translator translator;
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
@@ -45,12 +44,12 @@ class TranslatorPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildProfileSection(context, colorScheme, textTheme),
+              ProfileSection(translator: translator),
               const SizedBox(height: 16.0),
               const Divider(thickness: 1.0),
               if (translator.discord != null)
-                _buildDiscordTile(textTheme, colorScheme),
-              _buildContactsList(textTheme),
+                DiscordTile(discord: translator.discord!),
+              ContactsList(contacts: translator.contacts),
             ],
           ),
         ),
@@ -58,11 +57,23 @@ class TranslatorPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection(
-    BuildContext context,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Translator>('translator', translator));
+  }
+}
+
+class ProfileSection extends StatelessWidget {
+  const ProfileSection({super.key, required this.translator});
+
+  final Translator translator;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         CircleAvatar(
@@ -88,7 +99,23 @@ class TranslatorPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDiscordTile(TextTheme textTheme, ColorScheme colorScheme) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Translator>('translator', translator));
+  }
+}
+
+class DiscordTile extends StatelessWidget {
+  const DiscordTile({super.key, required this.discord});
+
+  final String discord;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         ListTile(
@@ -98,7 +125,7 @@ class TranslatorPage extends StatelessWidget {
             size: 24,
           ),
           title: SelectableText(
-            translator.discord!,
+            discord,
             style: textTheme.bodyMedium?.copyWith(color: colorScheme.secondary),
           ),
         ),
@@ -107,11 +134,33 @@ class TranslatorPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactsList(TextTheme textTheme) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('discord', discord));
+  }
+}
+
+class ContactsList extends StatelessWidget {
+  const ContactsList({super.key, required this.contacts});
+
+  final List<List<String>> contacts;
+
+  bool _isLink(String value) {
+    final urlRegex = RegExp(
+      r'((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)',
+    );
+    return urlRegex.hasMatch(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...translator.contacts.map((contact) {
+        ...contacts.map((contact) {
           final isLink = _isLink(contact[1]);
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -132,7 +181,18 @@ class TranslatorPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCloseButton(BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<List<String>>('contacts', contacts));
+  }
+}
+
+class CloseButtonOverlay extends StatelessWidget {
+  const CloseButtonOverlay({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return Positioned(
       top: 16,
       right: 16,
@@ -141,11 +201,5 @@ class TranslatorPage extends StatelessWidget {
         onPressed: () => Navigator.of(context).pop(),
       ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Translator>('translator', translator));
   }
 }

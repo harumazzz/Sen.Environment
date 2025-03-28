@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../../../model/worldmap.dart';
 import '../../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
 import '../init_bloc/init_bloc.dart';
@@ -92,8 +92,12 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     ToolSaveEvent event,
     Emitter<ToolBarState> emit,
   ) async {
+    final initialDirectory = () {
+      final state = event.initialDirectoryBloc.state;
+      return state is InitialDirectoryLoaded ? state.initialDirectory : null;
+    }();
     var path = await FileHelper.saveFile(
-      initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
+      initialDirectory: initialDirectory,
       suggestedName: 'worldmap.json',
     );
     if (path != null) {
@@ -126,8 +130,12 @@ class ToolBarBloc extends Bloc<ToolBarEvent, ToolBarState> {
     ToolOpenEvent event,
     Emitter<ToolBarState> emit,
   ) async {
+    final initialDirectory = () {
+      final state = event.initialDirectoryBloc.state;
+      return state is InitialDirectoryLoaded ? state.initialDirectory : null;
+    }();
     final path = await FileHelper.uploadFile(
-      initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
+      initialDirectory: initialDirectory,
     );
     if (path == null) {
       return;

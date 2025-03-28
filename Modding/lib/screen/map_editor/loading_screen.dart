@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../../extension/context.dart';
@@ -40,26 +41,42 @@ class _LoadingScreenState extends State<LoadingScreen>
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 20.0,
           children: [
             CircularProgressIndicator(
               strokeWidth: 4.5,
               strokeAlign: 1.0,
               color: Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(height: 20),
-            _buildShimmerText(context),
+            ShimmerText(
+              controller: _shimmerController,
+              animation: _shimmerAnimation,
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildShimmerText(BuildContext context) {
+class ShimmerText extends StatelessWidget {
+  const ShimmerText({
+    super.key,
+    required this.controller,
+    required this.animation,
+  });
+
+  final AnimationController controller;
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
     final textStyle = Theme.of(
       context,
     ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.bold);
     return AnimatedBuilder(
-      animation: _shimmerController,
+      animation: controller,
       builder: (context, child) {
         return ShaderMask(
           shaderCallback: (Rect bounds) {
@@ -78,8 +95,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                     ).colorScheme.secondary.withValues(alpha: 0.82),
               ],
               stops: const [0.0, 0.5, 1.0],
-              begin: Alignment(_shimmerAnimation.value, 0),
-              end: Alignment(_shimmerAnimation.value + 1.5, 0),
+              begin: Alignment(animation.value, 0),
+              end: Alignment(animation.value + 1.5, 0),
             ).createShader(bounds);
           },
           blendMode: BlendMode.srcIn,
@@ -97,6 +114,17 @@ class _LoadingScreenState extends State<LoadingScreen>
           ),
         );
       },
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<AnimationController>('controller', controller),
+    );
+    properties.add(
+      DiagnosticsProperty<Animation<double>>('animation', animation),
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../bloc/load_script_bloc/load_script_bloc.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import '../shell_screen/shell_screen.dart';
@@ -55,7 +55,15 @@ class JsCard extends StatelessWidget {
     }
 
     String launcher() =>
-        '${context.read<SettingsCubit>().state.toolChain}/Launcher.exe';
+        '${context.read<SettingsBloc>().state.toolChain}/${() {
+          if (CurrentPlatform.isWindows) {
+            return 'Launcher.exe';
+          } else if (CurrentPlatform.isLinux) {
+            return 'Launcher';
+          } else if (CurrentPlatform.isMacOS) {
+            return 'Launcher';
+          }
+        }()}';
     try {
       await WindowsHelper.runLauncher(
         argument: '${launcher()} ${_makeArguments().join(' ')}',
@@ -77,7 +85,7 @@ class JsCard extends StatelessWidget {
   void _onTap(BuildContext context) async {
     if (context.mounted) {
       await _onConfirm(context, () async {
-        if (BlocProvider.of<SettingsCubit>(context).state.jsRunAsLauncher) {
+        if (BlocProvider.of<SettingsBloc>(context).state.jsRunAsLauncher) {
           await _runAsLauncher(context);
         } else {
           await _runAsShell(context);
@@ -91,7 +99,7 @@ class JsCard extends StatelessWidget {
     Future<dynamic> Function() function,
   ) async {
     final los = AppLocalizations.of(context)!;
-    if (BlocProvider.of<SettingsCubit>(context).state.jsShowConfirmDialog) {
+    if (BlocProvider.of<SettingsBloc>(context).state.jsShowConfirmDialog) {
       await UIHelper.showFlutterDialog(
         context: context,
         child: UIHelper.buildDialog(
@@ -152,7 +160,6 @@ class JsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cardColor = theme.colorScheme.surfaceContainerHighest;
-    final textColor = theme.colorScheme.onSurface;
     return GestureDetector(
       onSecondaryTapDown:
           (details) async => await _showContextMenu(details, context),
@@ -173,10 +180,10 @@ class JsCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildLeadingIcon(context),
+                const CustomLeadingIcon(),
                 const SizedBox(width: 16.0),
-                Expanded(child: _buildTextContent(theme, textColor)),
-                _buildActionIcon(theme, context),
+                Expanded(child: CustomTextField(script: item)),
+                CustomActionIcon(onTap: _onTap),
               ],
             ),
           ),
@@ -185,7 +192,19 @@ class JsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLeadingIcon(BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Script>('item', item));
+    properties.add(StringProperty('toolChain', toolChain));
+  }
+}
+
+class CustomLeadingIcon extends StatelessWidget {
+  const CustomLeadingIcon({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -199,43 +218,67 @@ class JsCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTextContent(ThemeData theme, Color textColor) {
+class CustomTextField extends StatelessWidget {
+  const CustomTextField({super.key, required this.script});
+
+  final Script script;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          item.name,
-          style: theme.textTheme.titleMedium?.copyWith(
+          script.name,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: textColor,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4.0),
         Text(
-          item.description,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          script.description,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActionIcon(ThemeData theme, BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Script>('script', script));
+  }
+}
+
+class CustomActionIcon extends StatelessWidget {
+  const CustomActionIcon({super.key, required this.onTap});
+
+  final void Function(BuildContext context) onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return IconButton(
       tooltip: context.los.js_execute,
       icon: const Icon(Icons.play_arrow_rounded),
       iconSize: 28,
-      color: theme.colorScheme.primary,
-      onPressed: () => _onTap(context),
+      color: Theme.of(context).colorScheme.primary,
+      onPressed: () => onTap(context),
     );
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Script>('item', item));
-    properties.add(StringProperty('toolChain', toolChain));
+    properties.add(
+      ObjectFlagProperty<void Function(BuildContext context)>.has(
+        'onTap',
+        onTap,
+      ),
+    );
   }
 }

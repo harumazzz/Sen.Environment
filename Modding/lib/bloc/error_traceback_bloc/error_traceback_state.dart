@@ -8,6 +8,10 @@ sealed class ErrorTracebackState extends Equatable {
 
   @override
   List<Object?> get props => [errors];
+
+  bool get hasError => errors.isNotEmpty;
+
+  int get size => errors.length;
 }
 
 final class ErrorTracebackInitial extends ErrorTracebackState {

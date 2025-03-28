@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../extension/context.dart';
@@ -53,9 +54,36 @@ class _HomeScreenState extends State<HomeScreen>
     super.build(context);
     final items = _buildItems(context);
     if (CurrentPlatform.isDesktop) {
-      return _buildDesktopLayout(context, items);
+      return CustomDesktopLayout(
+        size: _tabs.length,
+        tabIndex: _tabIndex,
+        onChange: (index) {
+          _tabIndex = index;
+          setState(() {});
+        },
+        builder: (index) {
+          return CustomTab(
+            title: _tabs[index].title,
+            icon: _tabs[index].icon,
+            onClose: () => _closeTab(index),
+            onSecondaryTapDown: (details) {
+              return _showContextMenu(details, index);
+            },
+            isSelected: _tabIndex == index + 1,
+          );
+        },
+        body: Expanded(
+          child: IndexedStack(
+            index: _tabIndex,
+            children: [
+              CustomGridLayout(items: items, onTap: _onTap),
+              ..._tabs.map((tab) => tab.widget),
+            ],
+          ),
+        ),
+      );
     }
-    return _buildListView(items);
+    return CustomListLayout(items: items, onTap: _onTap);
   }
 
   void _addTab(String title, Widget icon, Widget widget) {
@@ -65,57 +93,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _closeTab(int index) async {
     return await _closeTabByIndex(index);
-  }
-
-  Widget _buildDesktopLayout(BuildContext context, List<Item> items) {
-    return DefaultTabController(
-      animationDuration: const Duration(milliseconds: 300),
-      length: _tabs.length + 1,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TabBar(
-            splashFactory: NoSplash.splashFactory,
-            isScrollable: true,
-            padding: const EdgeInsets.only(left: 8.0),
-            labelPadding: EdgeInsets.zero,
-            indicatorPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            tabAlignment: TabAlignment.start,
-            tabs: [
-              CustomTab(
-                title: context.los.home,
-                icon: const Icon(Symbols.home, color: Colors.blueAccent),
-                isSelected: _tabIndex == 0,
-              ),
-              ...List.generate(_tabs.length, (index) {
-                return CustomTab(
-                  title: _tabs[index].title,
-                  icon: _tabs[index].icon,
-                  onClose: () => _closeTab(index),
-                  onSecondaryTapDown:
-                      (details) => _showContextMenu(details, index),
-                  isSelected: _tabIndex == index + 1,
-                );
-              }),
-            ],
-            onTap: (index) {
-              _tabIndex = index;
-              setState(() {});
-            },
-          ),
-          Expanded(
-            child: IndexedStack(
-              index: _tabIndex,
-              children: [
-                _buildGridView(context, items),
-                ..._tabs.map((tab) => tab.widget),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showContextMenu(TapDownDetails details, int index) async {
@@ -182,180 +159,21 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {});
   }
 
-  int _calculateCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    if (width > 1800) {
-      return 7;
-    }
-    if (width > 1400) {
-      return 5;
-    }
-    if (width > 1000) {
-      return 4;
-    }
-    if (width > 700) {
-      return 3;
-    }
-    return 2;
-  }
-
-  double _calculateChildAspectRatio(BuildContext context, int crossAxisCount) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    final spacing = 4.0 * (crossAxisCount - 1);
-    final availableWidth = (screenWidth - 18 - spacing) / crossAxisCount;
-    final estimatedHeight = availableWidth * 1.1;
-    final maxHeight = screenHeight * 0.42;
-    final temporaryHeight = estimatedHeight.clamp(130, maxHeight);
-    return availableWidth / temporaryHeight;
-  }
-
-  Widget _buildGridView(BuildContext context, List<Item> items) {
-    final crossAxisCount = _calculateCrossAxisCount(context);
-    return GridView.builder(
-      padding: const EdgeInsets.all(8.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 4.0,
-        mainAxisSpacing: 4.0,
-        childAspectRatio: _calculateChildAspectRatio(context, crossAxisCount),
-      ),
-      itemCount: items.length,
-      itemBuilder: (context, index) => _buildCard(context, items[index]),
-    );
-  }
-
-  Widget _buildListView(List<Item> items) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ListView.builder(
-        padding: const EdgeInsets.only(top: 12.0),
-        itemCount: items.length,
-        itemBuilder: (context, index) => _buildCard(context, items[index]),
-      ),
-    );
-  }
-
-  Widget _buildCard(BuildContext context, Item item) {
-    final isDesktop = CurrentPlatform.isDesktop;
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      child: InkWell(
-        onTap: () {
-          if (isDesktop) {
-            _addTab(
-              item.title,
-              Icon(item.icon, color: item.color),
-              item.onWidget?.call() ?? const SizedBox(),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => item.onWidget?.call()),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(16.0),
-        child: Padding(
-          padding: _paddingOf(),
-          child:
-              isDesktop
-                  ? _buildDesktopCardContent(context, item)
-                  : _buildMobileCardContent(context, item),
-        ),
-      ),
-    );
-  }
-
-  EdgeInsetsGeometry _paddingOf() {
+  void _onTap(Item item) {
     if (CurrentPlatform.isDesktop) {
-      return const EdgeInsets.symmetric(horizontal: 12, vertical: 16);
+      _addTab(
+        item.title,
+        Icon(item.icon, color: item.color),
+        item.onWidget?.call() ?? const SizedBox(),
+      );
+    } else {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => item.onWidget?.call()));
     }
-    return const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0);
   }
 
-  Widget _buildDesktopCardContent(BuildContext context, Item item) {
-    return Column(
-      spacing: 15.0,
-      children: [
-        Align(
-          alignment: Alignment.topRight,
-          child:
-              item.onSetting != null
-                  ? IconButton(
-                    icon: const Icon(Symbols.settings, size: 24.0),
-                    onPressed: item.onSetting,
-                    tooltip: context.los.settings,
-                  )
-                  : const SizedBox.shrink(),
-        ),
-        AnimatedFloating(child: Icon(item.icon, size: 50.0, color: item.color)),
-        Text(
-          item.title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            item.description,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
-            textAlign: TextAlign.center,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileCardContent(BuildContext context, Item item) {
-    final los = context.los;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(item.icon, size: 50.0, color: item.color),
-          const SizedBox(width: 12.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
-                const SizedBox(height: 6.0),
-                Text(
-                  item.description,
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 5,
-                  softWrap: true,
-                ),
-              ],
-            ),
-          ),
-          if (item.onSetting != null) ...[
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Symbols.settings, size: 22),
-              onPressed: item.onSetting,
-              tooltip: los.settings,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showJsSettings(BuildContext context) async {
+  static Future<void> _showJsSettings(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -369,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<void> _showAnimationViewerSettings(BuildContext context) async {
+  static Future<void> _showAnimationViewerSettings(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -383,7 +201,9 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<void> _onLoadLevelMakerConfiguration(BuildContext context) async {
+  static Future<void> _onLoadLevelMakerConfiguration(
+    BuildContext context,
+  ) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -397,7 +217,9 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<void> _onLoadMapEditorConfiguration(BuildContext context) async {
+  static Future<void> _onLoadMapEditorConfiguration(
+    BuildContext context,
+  ) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -411,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<void> _onLoadShellConfiguration(BuildContext context) async {
+  static Future<void> _onLoadShellConfiguration(BuildContext context) async {
     final los = AppLocalizations.of(context)!;
     await UIHelper.showDetailDialog(
       context: context,
@@ -425,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  List<Item> _buildItems(BuildContext context) {
+  static List<Item> _buildItems(BuildContext context) {
     final los = context.los;
     return [
       Item(
@@ -473,4 +295,317 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class CustomDesktopLayout extends StatelessWidget {
+  const CustomDesktopLayout({
+    super.key,
+    required this.size,
+    required this.tabIndex,
+    required this.onChange,
+    required this.builder,
+    required this.body,
+  });
+
+  final int size;
+
+  final int tabIndex;
+
+  final void Function(int index) onChange;
+
+  final Widget Function(int index) builder;
+
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      animationDuration: const Duration(milliseconds: 300),
+      length: size + 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TabBar(
+            splashFactory: NoSplash.splashFactory,
+            isScrollable: true,
+            padding: const EdgeInsets.only(left: 8.0),
+            labelPadding: EdgeInsets.zero,
+            indicatorPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            tabAlignment: TabAlignment.start,
+            tabs: [
+              CustomTab(
+                title: context.los.home,
+                icon: const Icon(Symbols.home, color: Colors.blueAccent),
+                isSelected: tabIndex == 0,
+              ),
+              ...List.generate(size, builder),
+            ],
+            onTap: onChange,
+          ),
+          body,
+        ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('size', size));
+    properties.add(IntProperty('tabIndex', tabIndex));
+    properties.add(
+      ObjectFlagProperty<void Function(int index)>.has('onChange', onChange),
+    );
+    properties.add(
+      ObjectFlagProperty<Widget Function(int index)>.has('builder', builder),
+    );
+  }
+}
+
+class CustomGridLayout extends StatelessWidget {
+  const CustomGridLayout({super.key, required this.items, required this.onTap});
+
+  final void Function(Item item) onTap;
+
+  final List<Item> items;
+
+  int _calculateCrossAxisCount(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width > 1800) {
+      return 7;
+    }
+    if (width > 1400) {
+      return 5;
+    }
+    if (width > 1000) {
+      return 4;
+    }
+    if (width > 700) {
+      return 3;
+    }
+    return 2;
+  }
+
+  double _calculateChildAspectRatio(BuildContext context, int crossAxisCount) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final spacing = 4.0 * (crossAxisCount - 1);
+    final availableWidth = (screenWidth - 18 - spacing) / crossAxisCount;
+    final estimatedHeight = availableWidth * 1.1;
+    final maxHeight = screenHeight * 0.42;
+    final temporaryHeight = estimatedHeight.clamp(130, maxHeight);
+    return availableWidth / temporaryHeight;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final crossAxisCount = _calculateCrossAxisCount(context);
+    return GridView.builder(
+      padding: const EdgeInsets.all(8.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 4.0,
+        mainAxisSpacing: 4.0,
+        childAspectRatio: _calculateChildAspectRatio(context, crossAxisCount),
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return CustomCardDisplay(
+          item: items[index],
+          onTap: () => onTap(items[index]),
+        );
+      },
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Item>('items', items));
+    properties.add(
+      ObjectFlagProperty<void Function(Item item)>.has('onTap', onTap),
+    );
+  }
+}
+
+class CustomListLayout extends StatelessWidget {
+  const CustomListLayout({super.key, required this.items, required this.onTap});
+
+  final List<Item> items;
+
+  final void Function(Item item) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 12.0),
+        itemCount: items.length,
+        itemBuilder:
+            (context, index) => CustomCardDisplay(
+              item: items[index],
+              onTap: () => onTap(items[index]),
+            ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Item>('items', items));
+    properties.add(
+      ObjectFlagProperty<void Function(Item item)?>.has('onTap', onTap),
+    );
+  }
+}
+
+class CustomCardDisplay extends StatelessWidget {
+  const CustomCardDisplay({super.key, required this.item, this.onTap});
+
+  final Item item;
+
+  final void Function()? onTap;
+
+  static EdgeInsetsGeometry _paddingOf() {
+    if (CurrentPlatform.isDesktop) {
+      return const EdgeInsets.symmetric(horizontal: 12, vertical: 16);
+    }
+    return const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.0),
+        child: Padding(
+          padding: _paddingOf(),
+          child:
+              CurrentPlatform.isDesktop
+                  ? DesktopCardContent(item: item)
+                  : MobileCardContent(item: item),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Item>('item', item));
+    properties.add(ObjectFlagProperty<void Function()?>.has('onTap', onTap));
+  }
+}
+
+class DesktopCardContent extends StatelessWidget {
+  const DesktopCardContent({super.key, required this.item});
+
+  final Item item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 15.0,
+      children: [
+        Align(
+          alignment: Alignment.topRight,
+          child:
+              item.onSetting != null
+                  ? IconButton(
+                    icon: const Icon(Symbols.settings, size: 24.0),
+                    onPressed: item.onSetting,
+                    tooltip: context.los.settings,
+                  )
+                  : const SizedBox.shrink(),
+        ),
+        AnimatedFloating(child: Icon(item.icon, size: 50.0, color: item.color)),
+        Text(
+          item.title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            item.description,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Item>('item', item));
+  }
+}
+
+class MobileCardContent extends StatelessWidget {
+  const MobileCardContent({required this.item, super.key});
+
+  final Item item;
+
+  @override
+  Widget build(BuildContext context) {
+    final los = context.los;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(item.icon, size: 50.0, color: item.color),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+                const SizedBox(height: 6.0),
+                Text(
+                  item.description,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 5,
+                  softWrap: true,
+                ),
+              ],
+            ),
+          ),
+          if (item.onSetting != null) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Symbols.settings, size: 22),
+              onPressed: item.onSetting,
+              tooltip: los.settings,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Item>('item', item));
+  }
 }

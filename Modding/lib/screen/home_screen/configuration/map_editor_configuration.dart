@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../bloc/settings_bloc/settings_bloc.dart';
 import '../../../extension/context.dart';
 import '../../../service/file_helper.dart';
 import '../../../i18n/app_localizations.dart';
@@ -21,7 +21,7 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
   void initState() {
     super.initState();
     _resourceLocationController = TextEditingController(
-      text: BlocProvider.of<SettingsCubit>(context).state.mapEditorResource,
+      text: BlocProvider.of<SettingsBloc>(context).state.mapEditorResource,
     );
   }
 
@@ -31,10 +31,10 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
     super.dispose();
   }
 
-  Future<void> _onValueChange() async {
+  void _onValueChange() {
     final value = _resourceLocationController.text;
     context.read<MapEditorConfigurationCubit>().initializeState();
-    await BlocProvider.of<SettingsCubit>(context).setMapEditorResource(value);
+    BlocProvider.of<SettingsBloc>(context).add(SetMapEditorResource(value));
   }
 
   void _onChangeSetting(String? value) async {
@@ -42,14 +42,14 @@ class _MapEditorConfigurationState extends State<MapEditorConfiguration> {
       return;
     }
     _resourceLocationController.text = value;
-    await _onValueChange();
+    _onValueChange();
   }
 
   void _onUploadDirectory() async {
     final result = await FileHelper.uploadDirectory();
     if (result != null) {
       _resourceLocationController.text = result;
-      await _onValueChange();
+      _onValueChange();
     }
   }
 

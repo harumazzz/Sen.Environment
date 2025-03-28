@@ -33,15 +33,6 @@ class _MessageBoxState extends State<MessageBox> {
     super.dispose();
   }
 
-  Widget _buildShimmer() {
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return const ShimmerCard();
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LaunchStatusBloc, LaunchStatusState>(
@@ -55,7 +46,7 @@ class _MessageBoxState extends State<MessageBox> {
           return const IdleScreen();
         }
         return state is LaunchStatusLoading
-            ? _buildShimmer()
+            ? const CustomShimmerLoading()
             : _MessageList(scrollController: _scrollController);
       },
     );
@@ -157,6 +148,20 @@ class _MessageList extends StatelessWidget {
         'scrollController',
         scrollController,
       ),
+    );
+  }
+}
+
+class CustomShimmerLoading extends StatelessWidget {
+  const CustomShimmerLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: 10,
+      itemBuilder: (context, index) {
+        return const ShimmerCard();
+      },
     );
   }
 }

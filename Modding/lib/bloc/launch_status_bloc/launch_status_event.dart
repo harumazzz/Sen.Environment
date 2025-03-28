@@ -15,7 +15,7 @@ final class LaunchStatusBegin extends LaunchStatusEvent {
   });
   final Client client;
 
-  final SettingsCubit setting;
+  final SettingsBloc setting;
 
   final List<String> arguments;
 

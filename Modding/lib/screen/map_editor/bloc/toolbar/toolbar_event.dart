@@ -31,7 +31,7 @@ final class ToolOpenEvent extends ToolBarEvent {
     required this.stageBloc,
     required this.itemBloc,
     required this.layerBloc,
-    required this.initialDirectoryCubit,
+    required this.initialDirectoryBloc,
   });
 
   final StageBloc stageBloc;
@@ -40,32 +40,32 @@ final class ToolOpenEvent extends ToolBarEvent {
 
   final LayerBloc layerBloc;
 
-  final InitialDirectoryCubit initialDirectoryCubit;
+  final InitialDirectoryBloc initialDirectoryBloc;
 
   @override
   List<Object> get props => [
     stageBloc,
     itemBloc,
     layerBloc,
-    initialDirectoryCubit,
+    initialDirectoryBloc,
   ];
 }
 
 final class ToolSaveEvent extends ToolBarEvent {
   const ToolSaveEvent({
     required this.stageBloc,
-    required this.initialDirectoryCubit,
+    required this.initialDirectoryBloc,
     //required this.autosaveBloc,
   });
 
   final StageBloc stageBloc;
 
-  final InitialDirectoryCubit initialDirectoryCubit;
+  final InitialDirectoryBloc initialDirectoryBloc;
 
   //final AutosaveBloc autosaveBloc;
 
   @override
-  List<Object> get props => [stageBloc, initialDirectoryCubit];
+  List<Object> get props => [stageBloc, initialDirectoryBloc];
 }
 
 final class ToolClearEvent extends ToolBarEvent {

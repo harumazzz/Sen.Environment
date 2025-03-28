@@ -1,5 +1,6 @@
-part of 'settings_cubit.dart';
+part of 'settings_bloc.dart';
 
+@immutable
 class SettingsState extends Equatable {
   const SettingsState({
     required this.theme,
@@ -15,11 +16,10 @@ class SettingsState extends Equatable {
     required this.jsRunAsLauncher,
     required this.showAnimationViewerLabel,
   });
-
   factory SettingsState.initialize() {
     return SettingsState(
       theme: 'system',
-      locale: currentLocale(),
+      locale: _currentLocale(),
       sendNotification: true,
       toolChain: '',
       isValid: false,
@@ -45,7 +45,7 @@ class SettingsState extends Equatable {
   final bool jsRunAsLauncher;
   final bool showAnimationViewerLabel;
 
-  static String currentLocale() {
+  static String _currentLocale() {
     final locale = CurrentPlatform.locale;
     if (k_locale.Localization.locales.contains(CurrentPlatform.locale)) {
       return locale;
@@ -102,7 +102,7 @@ class SettingsState extends Equatable {
   ];
 
   ThemeMode get themeData {
-    final Map<String, ThemeMode> exchanger = {
+    final Map<String, ThemeMode> exchanger = <String, ThemeMode>{
       'system': ThemeMode.system,
       'dark': ThemeMode.dark,
       'light': ThemeMode.light,

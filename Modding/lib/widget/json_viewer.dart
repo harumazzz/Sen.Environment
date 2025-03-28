@@ -51,79 +51,17 @@ class _JsonViewerState extends State<JsonViewer> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [_buildHeader(), _buildJsonViewer(), _buildActions()],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(
-            widget.name,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Symbols.copy_all, size: 20),
-          tooltip: context.los.copy_json,
-          onPressed: _copyToClipboard,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildJsonViewer() {
-    return Expanded(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.0),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF252526),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Scrollbar(
-            controller: _verticalController,
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              controller: _verticalController,
-              child: SingleChildScrollView(
-                controller: _horizontalController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: double.maxFinite,
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontFamily: 'GoogleSans',
-                        fontSize: 16,
-                        height: 1.4,
-                        color: Colors.white,
-                      ),
-                      children: _highlightJson(),
-                    ),
-                  ),
-                ),
-              ),
+          children: [
+            CustomHeader(name: widget.name, onCopy: _copyToClipboard),
+            JsonViewArea(
+              verticalController: _verticalController,
+              horizontalController: _horizontalController,
+              highlight: _highlightJson(),
             ),
-          ),
+            const CustomActions(),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [...UIHelper.buildSimpleAction(context: context)],
     );
   }
 
@@ -213,5 +151,130 @@ class _JsonViewerState extends State<JsonViewer> {
     super.debugFillProperties(properties);
     properties.add(StringProperty('name', widget.name));
     properties.add(StringProperty('message', widget.message));
+  }
+}
+
+class CustomHeader extends StatelessWidget {
+  const CustomHeader({super.key, required this.name, required this.onCopy});
+
+  final void Function() onCopy;
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+            softWrap: true,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Symbols.copy_all, size: 20),
+          tooltip: context.los.copy_json,
+          onPressed: onCopy,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<void Function()>.has('onCopy', onCopy));
+    properties.add(StringProperty('name', name));
+  }
+}
+
+class CustomActions extends StatelessWidget {
+  const CustomActions({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [...UIHelper.buildSimpleAction(context: context)],
+    );
+  }
+}
+
+class JsonViewArea extends StatelessWidget {
+  const JsonViewArea({
+    super.key,
+    required this.verticalController,
+    required this.horizontalController,
+    required this.highlight,
+  });
+
+  final ScrollController verticalController;
+
+  final ScrollController horizontalController;
+
+  final List<InlineSpan>? highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF252526),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Scrollbar(
+            controller: verticalController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: verticalController,
+              child: SingleChildScrollView(
+                controller: horizontalController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: double.maxFinite,
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontFamily: 'GoogleSans',
+                        fontSize: 16,
+                        height: 1.4,
+                        color: Colors.white,
+                      ),
+                      children: highlight,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ScrollController>(
+        'verticalController',
+        verticalController,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<ScrollController>(
+        'horizontalController',
+        horizontalController,
+      ),
+    );
+    properties.add(IterableProperty<InlineSpan>('highlight', highlight));
   }
 }

@@ -1,11 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-import '../../bloc/add_option_bloc/add_option_bloc.dart';
 import '../../bloc/argument_bloc/argument_bloc.dart';
-import '../../bloc/message_bloc/message_bloc.dart';
-import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../extension/context.dart';
 import 'package:collection/collection.dart';
 
@@ -40,78 +38,17 @@ class _AttachmentPageState extends State<AttachmentPage> {
     super.dispose();
   }
 
-  Widget _buildAdd() {
-    return IconButton(
-      tooltip: context.los.add,
-      onPressed: () {
-        if (!_formKey.currentState!.validate()) {
-          return;
-        }
-        context.read<ArgumentBloc>().add(
-          AddArgument(value: [_controller.text]),
-        );
-        _controller.clear();
-        _focusNode.unfocus();
-      },
-      icon: const Icon(Symbols.add),
-    );
-  }
-
-  Widget _buildClear() {
-    return IconButton(
-      onPressed: () {
-        _controller.clear();
-        _focusNode.unfocus();
-      },
-      icon: const Icon(Symbols.clear),
-    );
-  }
-
-  Widget _buildListTile(int index, String value) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12.0,
-        vertical: 2.0,
-      ),
-      tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      leading: CircleAvatar(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        child: Text(
-          '${index + 1}',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-        ),
-      ),
-      title: SelectableText(
-        value,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-        ),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Symbols.close),
-        tooltip: context.los.delete,
-        onPressed: () {
-          context.read<ArgumentBloc>().add(RemoveArgument(index: index));
-        },
-      ),
-    );
-  }
-
-  Widget _buildPrefix() {
-    return IconButton(
-      onPressed: _onDisplayOption,
-      icon: const Icon(Symbols.attachment),
-    );
-  }
-
   Future<void> _onAttach(String value) async {
     var result = null as String?;
-    final cubit = BlocProvider.of<InitialDirectoryCubit>(context);
-    final initialDirectory = cubit.state.initialDirectory;
+    final bloc = BlocProvider.of<InitialDirectoryBloc>(context);
+    final initialDirectory = () {
+      final state = bloc.state;
+      if (state is InitialDirectoryLoaded) {
+        return state.initialDirectory;
+      } else {
+        return null;
+      }
+    }();
     switch (value) {
       case 'pick_file':
         result = await FileHelper.uploadFile(
@@ -130,9 +67,9 @@ class _AttachmentPageState extends State<AttachmentPage> {
     if (result != null) {
       _controller.text = result;
       if (value == 'pick_directory') {
-        cubit.setDirectoryOfDirectory(source: result);
+        bloc.add(SetDirectoryOfDirectory(source: result));
       } else {
-        cubit.setDirectoryOfFile(source: result);
+        bloc.add(SetDirectoryOfFile(source: result));
       }
     }
   }
@@ -173,11 +110,101 @@ class _AttachmentPageState extends State<AttachmentPage> {
     );
   }
 
-  Widget _buttonOf({
-    required Widget child,
-    required void Function() onPressed,
-    bool useDivider = true,
-  }) {
+  void _onAddArgument() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<ArgumentBloc>().add(AddArgument(value: [_controller.text]));
+      _controller.clear();
+      _focusNode.unfocus();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ArgumentBloc, ArgumentState>(
+      buildWhen: (previous, current) => previous != current,
+      builder: (context, state) {
+        return Form(
+          key: _formKey,
+          child: Column(
+            spacing: 4.0,
+            children: [
+              Row(
+                spacing: 4.0,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomPrefixButton(onAttach: _onAttach),
+                  CustomTextField(
+                    focusNode: _focusNode,
+                    textEditingController: _controller,
+                    menuBuilder: _buildContextMenu,
+                    onAttach: _onAttach,
+                  ),
+                  AddButton(onAdd: _onAddArgument),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              ...state.value.mapIndexed((index, element) {
+                return CustomListTile(index: index, value: element);
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ClearButton extends StatelessWidget {
+  const ClearButton({super.key, required this.onClear});
+
+  final void Function() onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(onPressed: onClear, icon: const Icon(Symbols.clear));
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<void Function()>.has('onClear', onClear));
+  }
+}
+
+class AddButton extends StatelessWidget {
+  const AddButton({super.key, required this.onAdd});
+
+  final void Function() onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: context.los.add,
+      onPressed: onAdd,
+      icon: const Icon(Symbols.add),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<void Function()>.has('onAdd', onAdd));
+  }
+}
+
+class ButtonTile extends StatelessWidget {
+  const ButtonTile({
+    super.key,
+    required this.child,
+    required this.onPressed,
+    this.useDivider = true,
+  });
+  final Widget child;
+  final void Function() onPressed;
+  final bool useDivider;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -187,48 +214,39 @@ class _AttachmentPageState extends State<AttachmentPage> {
     );
   }
 
-  void _onAdd(String value) {
-    switch (value) {
-      case 'export_log':
-        context.read<AddOptionBloc>().add(
-          ExportLogEvent(messageBloc: context.read<MessageBloc>()),
-        );
-        break;
-      case 'screen_shot':
-        context.read<AddOptionBloc>().add(const CaptureMessageEvent());
-        break;
-    }
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('useDivider', useDivider));
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onPressed', onPressed),
+    );
   }
+}
 
-  Future<void> _onDisplayOption() async {
+class CustomPrefixButton extends StatelessWidget {
+  const CustomPrefixButton({super.key, required this.onAttach});
+
+  final Future<void> Function(String value) onAttach;
+
+  Future<void> _onDisplayOption(BuildContext context) async {
     final options = <({String name, void Function() onTap, bool useDivider})>[
       (
         name: context.los.upload_file,
-        onTap: () async => await _onAttach('pick_file'),
+        onTap: () async => await onAttach('pick_file'),
         useDivider: true,
       ),
       (
         name: context.los.upload_directory,
-        onTap: () async => await _onAttach('pick_directory'),
+        onTap: () async => await onAttach('pick_directory'),
         useDivider: true,
       ),
       (
         name: context.los.save_file,
-        onTap: () async => await _onAttach('save_file'),
+        onTap: () async => await onAttach('save_file'),
         useDivider: true,
-      ),
-      (
-        name: context.los.take_screenshot,
-        onTap: () => _onAdd('screen_shot'),
-        useDivider: true,
-      ),
-      (
-        name: context.los.export_log,
-        onTap: () => _onAdd('export_log'),
-        useDivider: false,
       ),
     ];
-
     await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -240,17 +258,16 @@ class _AttachmentPageState extends State<AttachmentPage> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              ...options.map(
-                (e) => _buttonOf(
+              ...options.map((e) {
+                return ButtonTile(
                   onPressed: () {
-                    pop() => Navigator.of(context).pop();
                     e.onTap();
-                    pop();
+                    Navigator.of(context).pop();
                   },
-                  child: Text(e.name),
                   useDivider: e.useDivider,
-                ),
-              ),
+                  child: Text(e.name),
+                );
+              }),
             ],
           ),
         );
@@ -258,12 +275,52 @@ class _AttachmentPageState extends State<AttachmentPage> {
     );
   }
 
-  Widget _buildTextField() {
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: context.los.attach,
+      onPressed: () async => await _onDisplayOption(context),
+      icon: const Icon(Symbols.attachment),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Future<void> Function(String value)>.has(
+        'onAttach',
+        onAttach,
+      ),
+    );
+  }
+}
+
+class CustomTextField extends StatelessWidget {
+  const CustomTextField({
+    super.key,
+    required this.focusNode,
+    required this.textEditingController,
+    required this.menuBuilder,
+    required this.onAttach,
+  });
+
+  final FocusNode focusNode;
+
+  final TextEditingController textEditingController;
+
+  final Widget Function(BuildContext context, EditableTextState textState)
+  menuBuilder;
+
+  final Future<void> Function(String value) onAttach;
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: TextFormField(
-        focusNode: _focusNode,
-        controller: _controller,
-        contextMenuBuilder: _buildContextMenu,
+        focusNode: focusNode,
+        controller: textEditingController,
+        contextMenuBuilder: menuBuilder,
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return context.los.value_cannot_be_empty;
@@ -280,30 +337,101 @@ class _AttachmentPageState extends State<AttachmentPage> {
             bottom: 8.0,
           ),
           border: const OutlineInputBorder(),
-          suffix: _buildClear(),
-          prefix: _buildPrefix(),
+          suffix: ClearButton(
+            onClear: () {
+              textEditingController.clear();
+              focusNode.unfocus();
+            },
+          ),
         ),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ArgumentBloc, ArgumentState>(
-      buildWhen: (previous, current) => previous != current,
-      builder: (context, state) {
-        return Form(
-          key: _formKey,
-          child: Column(
-            spacing: 4.0,
-            children: [
-              Row(spacing: 4.0, children: [_buildTextField(), _buildAdd()]),
-              const SizedBox(height: 8.0),
-              ...state.value.mapIndexed(_buildListTile),
-            ],
-          ),
-        );
-      },
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<
+        Widget Function(BuildContext context, EditableTextState textState)
+      >.has('menuBuilder', menuBuilder),
     );
+    properties.add(
+      DiagnosticsProperty<TextEditingController>(
+        'textEditingController',
+        textEditingController,
+      ),
+    );
+    properties.add(DiagnosticsProperty<FocusNode>('focusNode', focusNode));
+    properties.add(
+      ObjectFlagProperty<Future<void> Function(String value)>.has(
+        'onAttach',
+        onAttach,
+      ),
+    );
+  }
+}
+
+class CustomListTile extends StatelessWidget {
+  const CustomListTile({super.key, required this.index, required this.value});
+
+  final int index;
+
+  final String value;
+
+  void _onRemove(BuildContext context) {
+    context.read<ArgumentBloc>().add(RemoveArgument(index: index));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey(index),
+      background: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.0),
+          color: Colors.red,
+        ),
+      ),
+      onDismissed: (_) => _onRemove(context),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12.0,
+          vertical: 2.0,
+        ),
+        tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Text(
+            '${index + 1}',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+        title: SelectableText(
+          value,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Symbols.close),
+          tooltip: context.los.delete,
+          onPressed: () => _onRemove(context),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('index', index));
+    properties.add(StringProperty('value', value));
   }
 }

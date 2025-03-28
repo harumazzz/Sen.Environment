@@ -1,16 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../bloc/add_option_bloc/add_option_bloc.dart';
 import '../../bloc/argument_bloc/argument_bloc.dart';
 import '../../bloc/error_traceback_bloc/error_traceback_bloc.dart';
 import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
-import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../i18n/app_localizations.dart';
 import '../../extension/context.dart';
-import '../../widget/error_page.dart';
 import '../../widget/material_dialog.dart';
 import 'interaction_bar.dart';
 import 'message_box.dart';
@@ -21,39 +20,13 @@ import '../../widget/hotkey.dart';
 class ShellScreen extends StatelessWidget {
   const ShellScreen({super.key});
 
-  Widget _buildStackButton(BuildContext context) {
-    return BlocBuilder<ErrorTracebackBloc, ErrorTracebackState>(
-      builder: (context, state) {
-        if (state is! ErrorTracebackMessage) {
-          return const SizedBox.shrink();
-        }
-        return FloatingActionButton(
-          heroTag: 'stacktrace',
-          child: const Icon(Symbols.dangerous),
-          onPressed: () async {
-            await UIHelper.showDetailDialog(
-              context: context,
-              title: Text(
-                context.los.error,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              content: ErrorPage(errors: state.errors),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<void> _onSave(BuildContext context, String value) async {
     void closeDialog() => Navigator.of(context).pop();
     var file = await FileHelper.saveFile(
-      initialDirectory:
-          BlocProvider.of<InitialDirectoryCubit>(
-            context,
-          ).state.initialDirectory,
+      initialDirectory: () {
+        final state = context.read<InitialDirectoryBloc>().state;
+        return state is InitialDirectoryLoaded ? state.initialDirectory : null;
+      }(),
       suggestedName: 'log.json',
     );
     if (file != null) {
@@ -120,9 +93,17 @@ class ShellScreen extends StatelessWidget {
                     }
                   },
                   child: Scaffold(
-                    appBar: _buildAppBar(context),
-                    body: _buildBody(),
-                    floatingActionButton: _buildStackButton(context),
+                    appBar: UIHelper.ofMobile(
+                      builder: () {
+                        return AppBar(
+                          title: Text(
+                            context.los.shell,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        );
+                      },
+                    ),
+                    body: CustomShellBody(onLog: _showLog),
                   ),
                 ),
               );
@@ -132,27 +113,22 @@ class ShellScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  PreferredSizeWidget? _buildAppBar(BuildContext context) {
-    return UIHelper.ofMobile(
-      builder:
-          () => AppBar(
-            title: Text(
-              context.los.shell,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-    );
-  }
+class CustomShellBody extends StatelessWidget {
+  const CustomShellBody({super.key, required this.onLog});
 
-  Widget _buildBody() {
+  final Future<void> Function(BuildContext context, String value) onLog;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Expanded(
           child: BlocListener<AddOptionBloc, AddOptionState>(
             listener: (context, state) async {
               if (state is ExportLogState) {
-                await _showLog(context, state.value);
+                await onLog(context, state.value);
               }
             },
             child: const MessageBox(),
@@ -163,6 +139,16 @@ class ShellScreen extends StatelessWidget {
           child: InteractionBar(),
         ),
       ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<
+        Future<void> Function(BuildContext context, String value)
+      >.has('onLog', onLog),
     );
   }
 }

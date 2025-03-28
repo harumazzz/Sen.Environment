@@ -3,8 +3,8 @@ import 'package:path/path.dart' as p;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
 import '../../service/file_helper.dart';
+import '../initial_directory_bloc/initial_directory_bloc.dart';
 
 part 'backup_setting_event.dart';
 part 'backup_setting_state.dart';
@@ -24,17 +24,16 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
     try {
       emit(const ConfigurationLoading());
       final source = '${event.toolChain}/Script/Executor/Configuration';
-      final sourceFiles =
-          (await FileHelper.readDirectoryAsync(
-                source: source,
-                recursive: false,
-              ))
-              .where(
-                (e) => RegExp(r'(.+)\.json$', caseSensitive: false).hasMatch(e),
-              )
-              .toList();
+      final sourceFiles = [
+        ...(await FileHelper.readDirectoryAsync(
+          source: source,
+          recursive: false,
+        )).where(
+          (e) => RegExp(r'(.+)\.json$', caseSensitive: false).hasMatch(e),
+        ),
+      ];
 
-      Map<String, dynamic> configuration = {};
+      final configuration = <String, dynamic>{};
       for (final e in sourceFiles) {
         configuration[p.basenameWithoutExtension(e)] = converter.jsonDecode(
           await FileHelper.readFileAsync(source: e),
@@ -75,13 +74,17 @@ class BackupSettingBloc extends Bloc<BackupSettingEvent, BackupSettingState> {
     UploadConfiguration event,
     Emitter<BackupSettingState> emit,
   ) async {
+    final bloc = event.initialDirectoryBloc;
+    if (bloc.state is! InitialDirectoryLoaded) {
+      return;
+    }
     final source = await FileHelper.uploadFile(
-      initialDirectory: event.initialDirectoryCubit.state.initialDirectory,
+      initialDirectory: (bloc.state as InitialDirectoryLoaded).initialDirectory,
     );
     if (source == null) {
       return;
     }
-    event.initialDirectoryCubit.setDirectoryOfFile(source: source);
+    bloc.add(SetDirectoryOfFile(source: source));
     final configuration = await FileHelper.readJsonAsync(source: source);
     for (final e in configuration!.entries) {
       configuration![e.key] = e.value;

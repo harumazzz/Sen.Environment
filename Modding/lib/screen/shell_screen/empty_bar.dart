@@ -6,10 +6,25 @@ import '../../bloc/message_bloc/message_bloc.dart';
 class EmptyBar extends StatelessWidget {
   const EmptyBar({super.key});
 
-  Widget _buildLoadingBar({
-    required BuildContext context,
-    required Widget child,
-  }) {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MessageBloc, MessageState>(
+      builder: (context, state) {
+        if (state is MessageClearState) {
+          return const CleaningBar();
+        }
+        return const BusyBar();
+      },
+    );
+  }
+}
+
+class CustomLoadingBar extends StatelessWidget {
+  const CustomLoadingBar({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SizedBox(
@@ -17,45 +32,37 @@ class EmptyBar extends StatelessWidget {
         width: double.infinity,
         child: FloatingActionButton(
           onPressed: null,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 10.0,
-            children: [child],
-          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [child]),
         ),
       ),
     );
   }
+}
 
-  Widget _buildBusyBar(BuildContext context) {
-    return _buildLoadingBar(
-      context: context,
+class BusyBar extends StatelessWidget {
+  const BusyBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomLoadingBar(
       child: LoadingAnimationWidget.progressiveDots(
         color: Theme.of(context).colorScheme.secondary,
         size: 40,
       ),
     );
   }
+}
 
-  Widget _buildCleaningBar(BuildContext context) {
-    return _buildLoadingBar(
-      context: context,
+class CleaningBar extends StatelessWidget {
+  const CleaningBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomLoadingBar(
       child: LoadingAnimationWidget.horizontalRotatingDots(
         color: Theme.of(context).colorScheme.secondary,
         size: 40,
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<MessageBloc, MessageState>(
-      builder: (context, state) {
-        if (state is MessageClearState) {
-          return _buildCleaningBar(context);
-        }
-        return _buildBusyBar(context);
-      },
     );
   }
 }

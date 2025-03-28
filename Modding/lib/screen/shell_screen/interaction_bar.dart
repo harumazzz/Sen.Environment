@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/argument_bloc/argument_bloc.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../bloc/error_traceback_bloc/error_traceback_bloc.dart';
 import '../../bloc/interaction_bloc/interaction_bloc.dart';
 import '../../bloc/launch_status_bloc/launch_status_bloc.dart';
 import '../../bloc/message_bloc/message_bloc.dart';
 import '../../bridge/client.dart';
 import '../../constant/build_distribution.dart';
-import '../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../extension/context.dart';
 import '../../model/message.dart';
 import '../../model/select_option.dart';
@@ -39,7 +39,7 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.read<SettingsCubit>().state.shellLaunchImmediately) {
+      if (context.read<SettingsBloc>().state.shellLaunchImmediately) {
         _onLaunch(context);
       }
     });
@@ -50,37 +50,11 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     super.dispose();
   }
 
-  Widget _buildWrapper({required Widget child}) {
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildInteraction() {
-    return BlocBuilder<InteractionBloc, InteractionState>(
-      builder: (context, state) {
-        if (state is StringInputState) {
-          return const InputBar();
-        }
-        if (state is BooleanInputState) {
-          return const BooleanBar();
-        }
-        if (state is EnumerationSelectState) {
-          return EnumerationBar(onSelect: _onEnumerationSelect);
-        }
-        return const EmptyBar();
-      },
-    );
-  }
-
   void _onLaunch(BuildContext context) {
     context.read<LaunchStatusBloc>().add(
       LaunchStatusBegin(
         client: this,
-        setting: context.read<SettingsCubit>(),
+        setting: context.read<SettingsBloc>(),
         arguments: context.read<ArgumentBloc>().state.value,
       ),
     );
@@ -91,16 +65,32 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     return BlocBuilder<LaunchStatusBloc, LaunchStatusState>(
       builder: (context, state) {
         if (state is LaunchStatusInitial || state is LaunchStatusEnd) {
-          return _buildWrapper(
+          return WrappableOf(
             child: IdleBar(onLaunch: () => _onLaunch(context)),
           );
         }
-        return _buildWrapper(
+        return WrappableOf(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             spacing: 10.0,
-            children: [const LoadingBar(), _buildInteraction()],
+            children: [
+              const LoadingBar(),
+              BlocBuilder<InteractionBloc, InteractionState>(
+                builder: (context, state) {
+                  if (state is StringInputState) {
+                    return const InputBar();
+                  }
+                  if (state is BooleanInputState) {
+                    return const BooleanBar();
+                  }
+                  if (state is EnumerationSelectState) {
+                    return EnumerationBar(onSelect: _onEnumerationSelect);
+                  }
+                  return const EmptyBar();
+                },
+              ),
+            ],
           ),
         );
       },
@@ -206,8 +196,10 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     context.read<InteractionBloc>().add(
       PickLocalStorage(completer: _completer),
     );
-    final initialDirectory =
-        context.read<InitialDirectoryCubit>().state.initialDirectory;
+    final initialDirectory = () {
+      final state = context.read<InitialDirectoryBloc>().state;
+      return state is InitialDirectoryLoaded ? state.initialDirectory : null;
+    }();
     await onPick(initialDirectory: initialDirectory);
     final result = await _completer.future;
     if (result != null) {
@@ -289,5 +281,21 @@ class _InteractionBarState extends State<InteractionBar> implements Client {
     BlocProvider.of<ErrorTracebackBloc>(
       context,
     ).add(const ErrorTracebackClearEvent());
+  }
+}
+
+class WrappableOf extends StatelessWidget {
+  const WrappableOf({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: child,
+      ),
+    );
   }
 }

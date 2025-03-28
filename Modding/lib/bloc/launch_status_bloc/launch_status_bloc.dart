@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../bridge/client.dart';
 import '../../bridge/launcher.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../extension/platform.dart';
 import '../../service/file_helper.dart';
 

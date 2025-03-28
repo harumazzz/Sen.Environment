@@ -28,36 +28,6 @@ class _RootScreenState extends State<RootScreen> {
     });
   }
 
-  Widget _buildNavigationBar(BuildContext context) {
-    final los = context.los;
-    return NavigationBar(
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: _onDestinationSelected,
-      destinations: [
-        NavigationDestination(
-          icon: const Icon(Symbols.home),
-          selectedIcon: const Icon(Symbols.home_filled),
-          label: los.home,
-        ),
-        NavigationDestination(
-          icon: const Icon(Symbols.package),
-          selectedIcon: const Icon(Symbols.package_sharp),
-          label: los.task,
-        ),
-        NavigationDestination(
-          icon: const Icon(Symbols.settings),
-          selectedIcon: const Icon(Symbols.settings_sharp),
-          label: los.settings,
-        ),
-      ],
-    );
-  }
-
-  Widget? _buildBottomNavigationBar(BuildContext context) {
-    return CurrentPlatform.isMobile ? _buildNavigationBar(context) : null;
-  }
-
   @override
   Widget build(BuildContext context) {
     SystemOverlay.apply(Theme.of(context).brightness);
@@ -94,7 +64,14 @@ class _RootScreenState extends State<RootScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: _buildBottomNavigationBar(context),
+        bottomNavigationBar: UIHelper.ofMobile(
+          builder: () {
+            return CustomNavigationBar(
+              selectedIndex: _selectedIndex,
+              onSelected: _onDestinationSelected,
+            );
+          },
+        ),
       ),
     );
   }
@@ -103,5 +80,53 @@ class _RootScreenState extends State<RootScreen> {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(IntProperty('selectedIndex', _selectedIndex));
+  }
+}
+
+class CustomNavigationBar extends StatelessWidget {
+  const CustomNavigationBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final int selectedIndex;
+
+  final void Function(int)? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final los = context.los;
+    return NavigationBar(
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onSelected,
+      destinations: [
+        NavigationDestination(
+          icon: const Icon(Symbols.home),
+          selectedIcon: const Icon(Symbols.home_filled),
+          label: los.home,
+        ),
+        NavigationDestination(
+          icon: const Icon(Symbols.package),
+          selectedIcon: const Icon(Symbols.package_sharp),
+          label: los.task,
+        ),
+        NavigationDestination(
+          icon: const Icon(Symbols.settings),
+          selectedIcon: const Icon(Symbols.settings_sharp),
+          label: los.settings,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('selectedIndex', selectedIndex));
+    properties.add(
+      ObjectFlagProperty<void Function(int p1)?>.has('onSelected', onSelected),
+    );
   }
 }

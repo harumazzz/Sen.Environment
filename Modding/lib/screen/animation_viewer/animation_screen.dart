@@ -490,33 +490,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
     }
   }
 
-  Widget _buildContainer() {
-    return Expanded(
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 6,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withValues(alpha: 0.3)
-                    : Colors.black.withValues(alpha: 0.3),
-            width: 2,
-          ),
-        ),
-        child: _painterOrUpload(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     context.watch<SelectedLabelBloc>();
@@ -525,7 +498,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
     final los = AppLocalizations.of(context)!;
     return Column(
       children: [
-        _buildContainer(),
+        CustomAnimationContainer(child: _painterOrUpload()),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -565,6 +538,40 @@ class _AnimationScreenState extends State<AnimationScreen> {
           },
         ),
       ],
+    );
+  }
+}
+
+class CustomAnimationContainer extends StatelessWidget {
+  const CustomAnimationContainer({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+        child: child,
+      ),
     );
   }
 }

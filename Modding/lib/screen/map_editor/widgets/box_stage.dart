@@ -45,43 +45,6 @@ class BoxStage extends StatelessWidget {
 
   final List<Widget> children;
 
-  Widget _resizeBox(BuildContext context) {
-    final isDesktopPlatform = CurrentPlatform.isDesktop;
-    final safeAdditionalWidth =
-        isDesktopPlatform
-            ? MapConst.safeDesktopAdditionalWidth
-            : MapConst.safeMobileAdditionalWidth;
-    final safeAdditionalHeight =
-        isDesktopPlatform
-            ? MapConst.safeDesktopAdditionalHeight
-            : MapConst.safeMobileAdditionalHeight;
-    final startPositionX = safeAdditionalWidth / 2;
-    final startPositionY = safeAdditionalHeight / 2;
-    final boundingRect = context.read<StageBloc>().state.boundingRect;
-    return RectangleBox(
-      minWidth: MapConst.minBoundingWidth.toDouble(),
-      minHeight: MapConst.minBoundingHeight.toDouble(),
-      boundingRect: Rect.fromLTWH(
-        startPositionX - 4,
-        startPositionY - 4,
-        boundingRect.width.toDouble() + 8,
-        boundingRect.height.toDouble() + 8,
-      ),
-      onScalingEnd: (updateRect) {
-        final newX = boundingRect.x + (updateRect.left - startPositionX);
-        final newY = boundingRect.y + (updateRect.top - startPositionY);
-        final bound = BoundingRect(
-          x: newX.round(),
-          y: newY.round(),
-          width: updateRect.width.round() - 8,
-          height: updateRect.height.round() - 8,
-        );
-        context.read<StageBloc>().add(UpdateBoundingRect(boundingRect: bound));
-        context.read<ItemBloc>().add(const ItemStoreUpdated());
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDesktopPlatform = CurrentPlatform.isDesktop;
@@ -115,7 +78,7 @@ class BoxStage extends StatelessWidget {
                     child: Stack(fit: StackFit.passthrough, children: children),
                   );
                   if (useResizeTool) {
-                    return Stack(children: [child, _resizeBox(context)]);
+                    return Stack(children: [child, const ResizedBox()]);
                   } else {
                     return child;
                   }
@@ -135,7 +98,7 @@ class BoxStage extends StatelessWidget {
                   child: Stack(fit: StackFit.passthrough, children: children),
                 );
                 if (useResizeTool) {
-                  return Stack(children: [child, _resizeBox(context)]);
+                  return Stack(children: [child, const ResizedBox()]);
                 } else {
                   return child;
                 }
@@ -339,5 +302,47 @@ class RotaionWidget extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(DoubleProperty('rotationRate', rotationRate));
     properties.add(DoubleProperty('scale', scale));
+  }
+}
+
+class ResizedBox extends StatelessWidget {
+  const ResizedBox({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDesktopPlatform = CurrentPlatform.isDesktop;
+    final safeAdditionalWidth =
+        isDesktopPlatform
+            ? MapConst.safeDesktopAdditionalWidth
+            : MapConst.safeMobileAdditionalWidth;
+    final safeAdditionalHeight =
+        isDesktopPlatform
+            ? MapConst.safeDesktopAdditionalHeight
+            : MapConst.safeMobileAdditionalHeight;
+    final startPositionX = safeAdditionalWidth / 2;
+    final startPositionY = safeAdditionalHeight / 2;
+    final boundingRect = context.read<StageBloc>().state.boundingRect;
+    return RectangleBox(
+      minWidth: MapConst.minBoundingWidth.toDouble(),
+      minHeight: MapConst.minBoundingHeight.toDouble(),
+      boundingRect: Rect.fromLTWH(
+        startPositionX - 4,
+        startPositionY - 4,
+        boundingRect.width.toDouble() + 8,
+        boundingRect.height.toDouble() + 8,
+      ),
+      onScalingEnd: (updateRect) {
+        final newX = boundingRect.x + (updateRect.left - startPositionX);
+        final newY = boundingRect.y + (updateRect.top - startPositionY);
+        final bound = BoundingRect(
+          x: newX.round(),
+          y: newY.round(),
+          width: updateRect.width.round() - 8,
+          height: updateRect.height.round() - 8,
+        );
+        context.read<StageBloc>().add(UpdateBoundingRect(boundingRect: bound));
+        context.read<ItemBloc>().add(const ItemStoreUpdated());
+      },
+    );
   }
 }

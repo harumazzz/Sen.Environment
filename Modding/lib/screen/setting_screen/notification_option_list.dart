@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../extension/context.dart';
 
 class NotificationOptionList extends StatelessWidget {
@@ -10,14 +10,12 @@ class NotificationOptionList extends StatelessWidget {
     if (value == null) {
       return;
     }
-    await context.read<SettingsCubit>().setNotification(
-      sendNotification: value,
-    );
+    context.read<SettingsBloc>().add(SetNotification(sendNotification: value));
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = context.watch<SettingsCubit>().state.sendNotification;
+    final isEnabled = context.watch<SettingsBloc>().state.sendNotification;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

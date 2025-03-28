@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../service/file_helper.dart';
 import '../../i18n/app_localizations.dart';
 
@@ -9,12 +9,12 @@ part 'load_script_event.dart';
 part 'load_script_state.dart';
 
 class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
-  LoadScriptBloc({required this.settingsCubit}) : super(LoadScriptInitial()) {
+  LoadScriptBloc({required this.settingsBloc}) : super(LoadScriptInitial()) {
     on<LoadScripts>(_loadScript);
     on<ReloadScripts>(_reloadScript);
     on<SearchScripts>(_searchScript);
   }
-  final SettingsCubit settingsCubit;
+  final SettingsBloc settingsBloc;
 
   void _loadScript(LoadScripts event, Emitter<LoadScriptState> emit) async {
     return await _loadScriptFile(event, emit);
@@ -27,7 +27,7 @@ class LoadScriptBloc extends Bloc<LoadScriptEvent, LoadScriptState> {
     emit(LoadScriptLoading());
     try {
       final scriptPath =
-          '${settingsCubit.state.toolChain}/Script/Helper/script.json';
+          '${settingsBloc.state.toolChain}/Script/Helper/script.json';
       if (FileHelper.isFile(scriptPath)) {
         final json = await FileHelper.readJsonAsync(source: scriptPath);
         emit(LoadScriptLoaded.fromJson(json));

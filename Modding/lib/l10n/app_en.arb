@@ -476,5 +476,6 @@
 	"setup_ending": "Happy Gaming! May Sen guides you to a successful mod.",
 	"congratulation": "Congratulation",
 	"congratulation_description": "You have setup Sen successfully! For any bugs report, updates, helps, please consider joining my server. Happy Modding!",
-	"argument_has_been_cleared": "Argument has been cleared"
+	"argument_has_been_cleared": "Argument has been cleared",
+	"no_error_found": "No error found"
 }

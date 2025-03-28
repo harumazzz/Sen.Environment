@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'scale_direction_enum.dart';
 
 const defaultDotColor = Colors.blue;
@@ -104,7 +105,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.topLeft,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -123,7 +124,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.topCenter,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -142,7 +143,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.topRight,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -161,7 +162,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.bottomLeft,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -180,7 +181,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.bottomCenter,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -199,7 +200,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.bottomRight,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -218,7 +219,7 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.centerLeft,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
 
@@ -237,15 +238,11 @@ class ScalableItem extends StatelessWidget {
             },
             child: Container(
               alignment: Alignment.centerRight,
-              child: _buildDot(computedDotColor),
+              child: CustomDot(color: computedDotColor),
             ),
           ),
       ],
     );
-  }
-
-  Widget _buildDot(Color color) {
-    return Icon(Icons.square, size: 25, color: color);
   }
 
   @override
@@ -332,5 +329,22 @@ class ScalableItem extends StatelessWidget {
       ),
     );
     properties.add(DiagnosticsProperty<bool>('isScaling', isScaling));
+  }
+}
+
+class CustomDot extends StatelessWidget {
+  const CustomDot({super.key, required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(Symbols.square, size: 25, color: color);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('color', color));
   }
 }

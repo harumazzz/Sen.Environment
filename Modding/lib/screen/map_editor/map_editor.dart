@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../cubit/map_editor_configuration_cubit/map_editor_configuration_cubit.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../extension/context.dart';
 import '../../widget/background.dart';
 import '../../widget/collapsible_floating_button.dart';
@@ -162,7 +162,7 @@ class MapEditor extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) async {
               if (state.status == AppConfigurationStatus.initial) {
                 final resourceLocation =
-                    context.read<SettingsCubit>().state.mapEditorResource;
+                    context.read<SettingsBloc>().state.mapEditorResource;
                 spawn() async => await context
                     .read<MapEditorConfigurationCubit>()
                     .load(context.los, resourceLocation);

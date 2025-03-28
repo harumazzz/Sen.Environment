@@ -6,7 +6,7 @@ import '../extension/platform.dart';
 import '../model/select_option.dart';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../extension/context.dart';
 import '../widget/material_dialog.dart';
 import 'file_helper.dart';
@@ -129,10 +129,12 @@ class UIHelper {
                 onPressed: () async {
                   void closeDialog() => Navigator.of(context).pop();
                   var file = await FileHelper.saveFile(
-                    initialDirectory:
-                        BlocProvider.of<InitialDirectoryCubit>(
-                          context,
-                        ).state.initialDirectory,
+                    initialDirectory: () {
+                      final state = context.read<InitialDirectoryBloc>().state;
+                      return state is InitialDirectoryLoaded
+                          ? state.initialDirectory
+                          : null;
+                    }(),
                     suggestedName: 'screenshot.png',
                   );
                   if (file != null) {

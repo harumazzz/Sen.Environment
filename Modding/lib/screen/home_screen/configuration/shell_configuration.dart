@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../cubit/settings_cubit/settings_cubit.dart';
+import '../../../bloc/settings_bloc/settings_bloc.dart';
 import '../../../i18n/app_localizations.dart';
 
 class ShellConfiguration extends StatelessWidget {
@@ -10,9 +10,9 @@ class ShellConfiguration extends StatelessWidget {
     if (value == null) {
       return;
     }
-    await BlocProvider.of<SettingsCubit>(
+    BlocProvider.of<SettingsBloc>(
       context,
-    ).setShellLaunchImmediately(value: value);
+    ).add(SetShellLaunchImmediately(value: value));
   }
 
   @override
@@ -36,7 +36,7 @@ class ShellConfiguration extends StatelessWidget {
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
           ),
-          value: context.watch<SettingsCubit>().state.shellLaunchImmediately,
+          value: context.watch<SettingsBloc>().state.shellLaunchImmediately,
           onChanged: (value) => _onChange(value, context),
         ),
       ],

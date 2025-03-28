@@ -26,12 +26,12 @@ class ApplyConfiguration extends BackupSettingEvent {
 class UploadConfiguration extends BackupSettingEvent {
   const UploadConfiguration({
     required this.toolChain,
-    required this.initialDirectoryCubit,
+    required this.initialDirectoryBloc,
   });
   final String toolChain;
-  final InitialDirectoryCubit initialDirectoryCubit;
+  final InitialDirectoryBloc initialDirectoryBloc;
   @override
-  List<Object> get props => [toolChain, initialDirectoryCubit];
+  List<Object> get props => [toolChain, initialDirectoryBloc];
 }
 
 class SaveConfiguration extends BackupSettingEvent {

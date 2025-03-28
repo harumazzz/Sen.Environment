@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../bloc/miscellaneous_task_bloc/miscellaneous_task_bloc.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
+import '../../bloc/settings_bloc/settings_bloc.dart';
 import '../../extension/context.dart';
 import '../../extension/platform.dart';
 import '../../i18n/app_localizations.dart';
@@ -17,92 +18,6 @@ class MiscellaneousScreen extends StatelessWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const BackupSetting()));
-  }
-
-  Widget _backUpConfiguration(BuildContext context) {
-    final los = context.los;
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      elevation: 4,
-      child: ListTile(
-        leading: Icon(
-          Symbols.backup,
-          size: 28,
-          color: Colors.lightBlueAccent.withValues(alpha: 0.8),
-        ),
-        title: Text(
-          los.backup_configuration,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: Text(
-          los.backup_configuration_description,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        onTap: () => _onBackup(context),
-        trailing: const Icon(
-          Symbols.arrow_forward,
-          size: 24.0,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Widget _installScript(BuildContext context) {
-    final los = context.los;
-    isAvailable() =>
-        CurrentPlatform.isAndroid
-            ? const Icon(Symbols.arrow_downward, size: 24.0, color: Colors.grey)
-            : Tooltip(
-              message: context.los.not_specified,
-              child: const Icon(
-                Symbols.dangerous,
-                size: 24.0,
-                color: Colors.red,
-              ),
-            );
-    return BlocBuilder<MiscellaneousTaskBloc, MiscellaneousTaskState>(
-      builder: (context, state) {
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          elevation: 4.0,
-          child: ListTile(
-            leading: Icon(
-              Symbols.download_2,
-              size: 28.0,
-              color: Colors.green.withValues(alpha: 0.8),
-            ),
-            title: Text(
-              los.download_script,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            subtitle: Text(
-              los.download_script_description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            onTap:
-                CurrentPlatform.isAndroid
-                    ? () => BlocProvider.of<MiscellaneousTaskBloc>(context).add(
-                      DownloadScriptRequested(
-                        settingsCubit: context.read<SettingsCubit>(),
-                      ),
-                    )
-                    : null,
-            enabled: CurrentPlatform.isAndroid,
-            trailing:
-                state is DownloadingScript
-                    ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator.adaptive(),
-                    )
-                    : isAvailable(),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -141,27 +56,160 @@ class MiscellaneousScreen extends StatelessWidget {
             child:
                 (() {
                   if (CurrentPlatform.isDesktop) {
-                    return _buildDesktopLayout(context);
+                    return DesktopLayout(onBackup: () => _onBackup(context));
                   }
-                  return _buildMobileLayout(context);
+                  return MobileLayout(onBackup: () => _onBackup(context));
                 })(),
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildMobileLayout(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        spacing: 4.0,
-        children: [_backUpConfiguration(context), _installScript(context)],
+class BackupConfiguration extends StatelessWidget {
+  const BackupConfiguration({super.key, required this.onBackup});
+
+  final void Function() onBackup;
+
+  @override
+  Widget build(BuildContext context) {
+    final los = context.los;
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      elevation: 4,
+      child: ListTile(
+        leading: Icon(
+          Symbols.backup,
+          size: 28,
+          color: Colors.lightBlueAccent.withValues(alpha: 0.8),
+        ),
+        title: Text(
+          los.backup_configuration,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Text(
+          los.backup_configuration_description,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        onTap: onBackup,
+        trailing: const Icon(
+          Symbols.arrow_forward,
+          size: 24.0,
+          color: Colors.grey,
+        ),
       ),
     );
   }
 
-  Widget _buildDesktopLayout(BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onBackup', onBackup),
+    );
+  }
+}
+
+class CustomScriptInstallButton extends StatelessWidget {
+  const CustomScriptInstallButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final los = context.los;
+    return BlocBuilder<MiscellaneousTaskBloc, MiscellaneousTaskState>(
+      builder: (context, state) {
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 4.0,
+          child: ListTile(
+            leading: Icon(
+              Symbols.download_2,
+              size: 28.0,
+              color: Colors.green.withValues(alpha: 0.8),
+            ),
+            title: Text(
+              los.download_script,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              los.download_script_description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            onTap:
+                CurrentPlatform.isAndroid
+                    ? () => BlocProvider.of<MiscellaneousTaskBloc>(context).add(
+                      DownloadScriptRequested(
+                        settingsBloc: context.read<SettingsBloc>(),
+                      ),
+                    )
+                    : null,
+            enabled: CurrentPlatform.isAndroid,
+            trailing:
+                state is DownloadingScript
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator.adaptive(),
+                    )
+                    : const _DownloadableButton(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DownloadableButton extends StatelessWidget {
+  const _DownloadableButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return CurrentPlatform.isMobile
+        ? const Icon(Symbols.arrow_downward, size: 24.0, color: Colors.grey)
+        : Tooltip(
+          message: context.los.not_specified,
+          child: const Icon(Symbols.dangerous, size: 24.0, color: Colors.red),
+        );
+  }
+}
+
+class MobileLayout extends StatelessWidget {
+  const MobileLayout({super.key, required this.onBackup});
+
+  final void Function() onBackup;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        spacing: 4.0,
+        children: [
+          BackupConfiguration(onBackup: onBackup),
+          const CustomScriptInstallButton(),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onBackup', onBackup),
+    );
+  }
+}
+
+class DesktopLayout extends StatelessWidget {
+  const DesktopLayout({super.key, required this.onBackup});
+
+  final void Function() onBackup;
+
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(8.0),
@@ -170,9 +218,9 @@ class MiscellaneousScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBackupCard(context),
-              _buildDownloadCard(context),
-              _buildContextMenuCard(context),
+              CustomDesktopBackupCard(onBackup: onBackup),
+              const CustomDesktopDownloadCard(),
+              const CustomContextMenuRegisterCard(),
             ],
           ),
         ],
@@ -180,7 +228,22 @@ class MiscellaneousScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackupCard(BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onBackup', onBackup),
+    );
+  }
+}
+
+class CustomDesktopBackupCard extends StatelessWidget {
+  const CustomDesktopBackupCard({super.key, required this.onBackup});
+
+  final void Function() onBackup;
+
+  @override
+  Widget build(BuildContext context) {
     final los = context.los;
     return Card(
       elevation: 4,
@@ -215,7 +278,7 @@ class MiscellaneousScreen extends StatelessWidget {
               ],
             ),
             FilledButton.icon(
-              onPressed: () => _onBackup(context),
+              onPressed: onBackup,
               label: Text(los.backup_configuration),
             ),
           ],
@@ -224,8 +287,69 @@ class MiscellaneousScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContextMenuCard(BuildContext context) {
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<void Function()>.has('onBackup', onBackup),
+    );
+  }
+}
+
+class CustomDesktopDownloadCard extends StatelessWidget {
+  const CustomDesktopDownloadCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     final los = context.los;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              spacing: 12.0,
+              children: [
+                Icon(
+                  Symbols.download_2,
+                  size: 28.0,
+                  color: Colors.green.withValues(alpha: 0.8),
+                ),
+                Column(
+                  spacing: 4.0,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      los.download_script,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      los.download_script_description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FilledButton.icon(
+              onPressed: null,
+              label: Text(los.download_script),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomContextMenuRegisterCard extends StatelessWidget {
+  const CustomContextMenuRegisterCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
@@ -268,51 +392,7 @@ class MiscellaneousScreen extends StatelessWidget {
                   ),
                 );
               },
-              label: Text('Register'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDownloadCard(BuildContext context) {
-    final los = context.los;
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              spacing: 12.0,
-              children: [
-                Icon(
-                  Symbols.download_2,
-                  size: 28.0,
-                  color: Colors.green.withValues(alpha: 0.8),
-                ),
-                Column(
-                  spacing: 4.0,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      los.download_script,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      los.download_script_description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            FilledButton.icon(
-              onPressed: null,
-              label: Text(los.download_script),
+              label: const Text('Register'),
             ),
           ],
         ),

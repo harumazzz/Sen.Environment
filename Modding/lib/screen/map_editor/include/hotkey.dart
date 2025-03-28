@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../cubit/initial_directory_cubit/initial_directory_cubit.dart';
+import '../../../bloc/initial_directory_bloc/initial_directory_bloc.dart';
 import '../../../model/worldmap.dart';
 import '../bloc/history/history_bloc.dart';
 import '../bloc/item/item_bloc.dart';
@@ -447,8 +447,7 @@ class Hotkey extends StatelessWidget {
                     stageBloc: context.read<StageBloc>(),
                     itemBloc: context.read<ItemBloc>(),
                     layerBloc: context.read<LayerBloc>(),
-                    initialDirectoryCubit:
-                        context.read<InitialDirectoryCubit>(),
+                    initialDirectoryBloc: context.read<InitialDirectoryBloc>(),
                   ),
                 );
               }
@@ -457,8 +456,7 @@ class Hotkey extends StatelessWidget {
                 toolbarBloc.add(
                   ToolSaveEvent(
                     stageBloc: context.read<StageBloc>(),
-                    initialDirectoryCubit:
-                        context.read<InitialDirectoryCubit>(),
+                    initialDirectoryBloc: context.read<InitialDirectoryBloc>(),
                     // autosaveBloc: context.read<AutosaveBloc>(),
                   ),
                 );

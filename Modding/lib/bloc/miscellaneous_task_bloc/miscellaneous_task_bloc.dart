@@ -3,8 +3,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import '../../constant/build_distribution.dart';
-import '../../cubit/settings_cubit/settings_cubit.dart';
 import '../../service/file_helper.dart';
+import '../settings_bloc/settings_bloc.dart';
 
 part 'miscellaneous_task_event.dart';
 part 'miscellaneous_task_state.dart';
@@ -45,8 +45,8 @@ class MiscellaneousTaskBloc
       await FileHelper.unzipFile(source, '$destination/Script');
       await Future.delayed(const Duration(milliseconds: 300));
       await FileHelper.removeFileAsync(source);
-      await event.settingsCubit.setToolChain(destination);
-      await event.settingsCubit.setIsValid(isValid: true);
+      event.settingsBloc.add(SetToolChain(destination));
+      event.settingsBloc.add(const SetIsValid(isValid: true));
       emit(const ScriptDownloaded());
     } catch (e) {
       emit(ScriptDownloadFailed(error: e.toString()));
