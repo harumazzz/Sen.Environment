@@ -19,9 +19,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup
             return std::ranges::find(compression_list, value) != compression_list.end();
         }
 
-        static constexpr auto contain_version(u32 const& version) -> bool
+        static constexpr auto contain_version(u32 const& value) -> bool
         {
-            return std::ranges::find(version_list, version) != version_list.end();
+            return std::ranges::find(version_list, value) != version_list.end();
         }
 
 

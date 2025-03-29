@@ -72,7 +72,7 @@ namespace Sen::Kernel::FileSystem {
                 thiz.value = other.value;
                 other.value = nullptr;
             }
-            return *this;
+            return thiz;
         }
 
         auto operator = (
@@ -169,9 +169,9 @@ namespace Sen::Kernel::FileSystem {
 
         ) const -> usize {
             thiz.move_to_end();
-            auto value = thiz.tell();
+            auto position = thiz.tell();
             thiz.move_to_begin();
-            return value;
+            return position;
         }
 
     };

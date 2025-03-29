@@ -38,7 +38,7 @@ namespace Sen::Kernel::StringHelper {
         ) -> std::array<char, 256> {
             auto table = std::array<char, 256>{};
             for (auto i = 0; i < 256; ++i) {
-                table[i] = (i >= 'a' && i <= 'z') ? i - 32 : i;
+                table[i] = (i >= 'a' && i <= 'z') ? static_cast<char>(i - 32) : static_cast<char>(i);
             }
             return table;
         }
@@ -47,7 +47,7 @@ namespace Sen::Kernel::StringHelper {
         ) -> std::array<char, 256> {
             auto table = std::array<char, 256>{};
             for (auto i = 0; i < 256; ++i) {
-                table[i] = (i >= 'A' && i <= 'Z') ? i + 32 : i;
+                table[i] = (i >= 'A' && i <= 'Z') ? static_cast<char>(i + 32) : static_cast<char>(i);
             }
             return table;
         }

@@ -804,21 +804,21 @@ namespace Sen::Kernel {
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
-			const std::string_view& value
+			const std::string_view& other
 		) const -> bool {
-    		return thiz.starts_with(value.data(), value.size());
+    		return thiz.starts_with(other.data(), other.size());
     	}
 
     	constexpr auto starts_with (
-			const char* value
+			const char* other
 		) const -> bool {
-    		return thiz.starts_with(value, std::strlen(value));
+    		return thiz.starts_with(other, std::strlen(other));
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
-			const String& value
+			const String& other
 		) const -> bool {
-    		return thiz.starts_with(value.begin(), value.size());
+    		return thiz.starts_with(other.begin(), other.size());
     	}
 
     	constexpr auto ends_with (
@@ -829,15 +829,15 @@ namespace Sen::Kernel {
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
-			const std::string_view& value
+			const std::string_view& other
 		) const -> bool {
-    		return thiz.ends_with(value.data(), value.size());
+    		return thiz.ends_with(other.data(), other.size());
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
-			const String& value
+			const String& other
 		) const -> bool {
-    		return thiz.ends_with(value.begin(), value.size());
+    		return thiz.ends_with(other.begin(), other.size());
     	}
 
     	[[nodiscard]] constexpr auto contains (

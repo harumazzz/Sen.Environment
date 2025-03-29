@@ -67,26 +67,26 @@ namespace Sen::Kernel::Encoding::Image
         ) = default;
 
         auto allocate(
-            const u32& width,
-            const u32& height
+            const u32& new_width,
+            const u32& new_height
         ) -> void
         {
-            thiz.m_color.allocate(height);
+            thiz.m_color.allocate(new_height);
             for (auto& row : thiz.m_color)
             {
-                row.allocate(width);
+                row.allocate(new_width);
             }
-            thiz.width = width;
-            thiz.height = height;
+            thiz.width = new_width;
+            thiz.height = new_height;
         }
 
         auto reallocate(
-            const u32& width,
-            const u32& height
+            const u32& new_width,
+            const u32& new_height
         ) -> void
         {
             thiz.m_color.clear();
-            thiz.allocate(width, height);
+            thiz.allocate(new_width, new_height);
         }
 
         auto operator+(

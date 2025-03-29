@@ -24,18 +24,14 @@
 
 # Technology
 
--   [CMake](https://cmake.org/): Used with both [Kernel](https://github.com/Haruma-VN/Sen.Environment/tree/master/Kernel), [Shell](https://github.com/Haruma-VN/Sen.Environment/tree/master/Shell) and [Launcher](https://github.com/Haruma-VN/Sen.Environment/tree/master/Launcher) to support cross-platform with C++
+-   [Meson](https://mesonbuild.com/): A modern build system for low level of language, it is very simple to use. [Kernel](https://github.com/harumazzz/Sen.Environment/tree/master/Kernel), [Shell](https://github.com/harumazzz/Sen.Environment/tree/master/Shell) to support cross-platform with C++ and [Launcher](https://github.com/harumazzz/Sen.Environment/tree/master/Launcher) which is written in Rust
 
--   [Flutter](https://flutter.dev/): Flutter helps build beautiful applications, which is used with [Modding](https://github.com/Haruma-VN/Sen.Environment/tree/master/Modding)
-
-# Acknowledgement
-
--   [TwinStar](https://github.com/twinstar6980): His project [Twinning](https://github.com/twinstar6980/Twinning) has helped me a lot on making this project.
+-   [Flutter](https://flutter.dev/): Flutter helps build beautiful applications, which is used with [Modding](https://github.com/harumazzz/Sen.Environment/tree/master/Modding)
 
 # How to reach me?
 
 -   My Personal Mail: harumatsx@gmail.com
 
--   Issues of `this project` please refer to: [GitHub Issues](https://github.com/Haruma-VN/Sen.Environment/issues)
+-   Issues of `this project` please refer to: [GitHub Issues](https://github.com/harumazzz/Sen.Environment/issues)
 
--   Pull requests of `this project` please refer to: [GitHub Pull Requests](https://github.com/Haruma-VN/Sen.Environment/pulls)
+-   Pull requests of `this project` please refer to: [GitHub Pull Requests](https://github.com/harumazzz/Sen.Environment/pulls)

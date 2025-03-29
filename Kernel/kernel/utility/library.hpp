@@ -48,7 +48,6 @@
 #include "kernel/subprojects/canvas_ity.hpp"
 #include "kernel/subprojects/compile-time-regular-expressions.hpp"
 #include "kernel/subprojects/parallel-hashmap.hpp"
-#include "kernel/subprojects/thread-pool.hpp"
 #include "kernel/subprojects/mscharconv.hpp"
 #include "kernel/subprojects/jsoncons.hpp"
 #include "kernel/subprojects/pvrtc.hpp"

@@ -30,12 +30,12 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                 break;
             }
             case RtonType::string_unicode: {
-                auto length = stream.v32();
+                stream.v32();
                 content = stream.string_v32();
                 break;
             }
             case RtonType::string_unicode_indexing: {
-                auto length = stream.v32();
+                stream.v32();
                 content = stream.string_v32();
                 string_index[string_index.size() + k_unicode_index] = content;
                 break;
@@ -53,7 +53,7 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                         break;
                     }
                     case RTIDType::uid: {
-                        auto sheet_length = stream.v32();
+                        stream.v32();
                         auto sheet_content = stream.string_v32();
                         auto uid_middle = stream.v32();
                         auto uid_first = stream.v32();
@@ -62,9 +62,9 @@ namespace Sen::Kernel::Support::PopCap::ReflectionObjectNotation
                         break;
                     }
                     case RTIDType::alias: {
-                        auto sheet_length = stream.v32();
+                        stream.v32();
                         auto sheet_content = stream.string_v32();
-                        auto alias_length = stream.v32();
+                        stream.v32();
                         auto alias_content = stream.string_v32();
                         content = StringHelper::make_string(fmt::format(RTIDString::alias, alias_content.data(), sheet_content.data()));
                         break;

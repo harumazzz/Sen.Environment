@@ -21,9 +21,9 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamBundle
 
         static constexpr auto k_string_block_size = 128_size;
 
-        static constexpr auto contain_version(u32 const & version) -> bool
+        static constexpr auto contain_version(u32 const & value) -> bool
         {
-            return std::ranges::find(version_list, version) != version_list.end();
+            return std::ranges::find(version_list, value) != version_list.end();
         }
 
         static constexpr auto get_bpp(const u32 &format) -> u32 { //TODO

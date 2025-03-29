@@ -14,8 +14,6 @@ namespace Sen::Kernel::Compression::Zlib {
             Uint8Array& source,
             Uint8List& destination
         ) -> void {
-            #pragma clang diagnostic push
-            #pragma clang diagnostic ignored "-Wold-style-cast"
             auto actual_window_bits = windows_bits;
             if constexpr (type == Type::deflate) {
                 actual_window_bits = -actual_window_bits;
@@ -70,7 +68,6 @@ namespace Sen::Kernel::Compression::Zlib {
             assert_conditional(state == Subprojects::zlib::$Z_OK, "Failed to compress zlib", "process_whole");
             assert_conditional(z_stream.avail_in == 0, "Failed to compress zlib", "process_whole");
             destination.resize(z_stream.total_out);
-            #pragma clang diagnostic pop
         }
 
         template <auto level = 9, auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, auto memory_level = Subprojects::zlib::$MAX_MEM_LEVEL, auto strategy = Strategy::default_mode> requires is_valid_compress<type, level, windows_bits, memory_level, strategy>

@@ -26,9 +26,8 @@ namespace Sen::Kernel {
 
     public:
 
-        constexpr explicit BaseContainer() {
-
-        }
+        constexpr explicit BaseContainer(
+        ) = default;
 
         constexpr explicit BaseContainer(
             const Pointer<T> value,
@@ -39,7 +38,7 @@ namespace Sen::Kernel {
             const BaseContainer& other
         ) = delete;
 
-        constexpr constexpr BaseContainer(
+        constexpr BaseContainer(
             BaseContainer&& other
         ) noexcept : value{ other.value }, _size{ other._size } {
             other.value = nullptr;

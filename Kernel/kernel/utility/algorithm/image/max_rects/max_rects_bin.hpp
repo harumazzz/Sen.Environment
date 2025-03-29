@@ -91,27 +91,27 @@ namespace Sen::Kernel::Image::MaxRects {
         ) -> MaxRectsBin& = delete;
 
         auto find_node(
-            const u32& width,
-            const u32& height,
+            const u32& new_width,
+            const u32& new_height,
             Node& node
-        ) -> void
+        ) const -> void
         {
             auto score = k_score;
             auto area_fit = double{0};
             for (auto &rect : free_rects)
             {
-                if (rect->width >= width && rect->height >= height)
+                if (rect->width >= new_width && rect->height >= new_height)
                 {
                     if constexpr (option.logic == LOGIC::MAX_AREA) {
-                        area_fit = rect->width * rect->height - width * height;
+                        area_fit = rect->width * rect->height - new_width * new_height;
                     }
                     else {
-                        area_fit = Math::min(rect->width - width, rect->height - height);
+                        area_fit = Math::min(rect->width - new_width, rect->height - new_height);
                     }
                     if (area_fit < score)
                     {
-                        node.width = width;
-                        node.height = height;
+                        node.width = new_width;
+                        node.height = new_height;
                         node.x = rect->x;
                         node.y = rect->y;
                         node.source = rect->source;
@@ -198,8 +198,8 @@ namespace Sen::Kernel::Image::MaxRects {
             auto temporary_height = Math::max(height, node.y + node.height - option.padding + option.border);
             if constexpr (option.pot)
             {
-                temporary_width = Math::pow(2, Math::ceil(Math::log(temporary_width) * k_log_2e));
-                temporary_height = Math::pow(2, Math::ceil(Math::log(temporary_height) * k_log_2e));
+                temporary_width = static_cast<u32>(Math::pow(2.0, Math::ceil(Math::log(temporary_width) * k_log_2e)));
+                temporary_height = static_cast<u32>(Math::pow(2.0, Math::ceil(Math::log(temporary_height) * k_log_2e)));
             }
             if constexpr (option.square)
             {

@@ -24,12 +24,6 @@ namespace Sen::Kernel {
 
     static constexpr auto k_string_empty = ""_sv;
 
-    static auto get_iv_from_key(String const &key) -> String
-    {
-        assert_conditional(key.size() == 32_size, "Key must have 32 characters", "get_iv_from_key");
-        return key.sub(4_size, 28_size);
-    }
-
     template <typename Type> requires std::is_arithmetic_v<Type>
     static constexpr auto value_max() -> Type
     {
@@ -48,38 +42,38 @@ namespace Sen::Kernel {
         return sizeof(Type) * 8_size;
     }
 
-    template <typename Type>
-    static auto compare_value_to_reset(Optional<Type>& data, Type const &value)
-    {
-        if (*data == value)
-        {
-            data.reset();
-        }
-    }
-
-    static auto compare_value_to_reset(Optional<String>& data, std::string_view const value)
-    {
-        if (*data == value)
-        {
-            data.reset();
-        }
-    }
-
-    static auto fourcc_from_integer(u32 const &data, String &value) -> void {
-        value += static_cast<char>(clip_bit(data, 24_size, 8_size));
-        value += static_cast<char>(clip_bit(data, 16_size, 8_size));
-        value += static_cast<char>(clip_bit(data, 8_size, 8_size));
-        value += static_cast<char>(clip_bit(data, 0_size, 8_size));
-        assert_conditional(value.size() == 4_size, "Invalid fourcc siz", "fourcc_from_integer");
-    }
-
-    static auto fourcc_to_integer(u32 &data, String const &value) -> void {
-        data |= static_cast<uint32_t>(value[0] << 0);
-        data |= static_cast<uint32_t>(value[1] << 8);
-        data |= static_cast<uint32_t>(value[2] << 16);
-        data |= static_cast<uint32_t>(value[3] << 24);
-        assert_conditional(value.size() == 4_size, "Invalid fourcc siz", "fourcc_to_integer");
-    }
+    // template <typename Type>
+    // static auto compare_value_to_reset(Optional<Type>& data, Type const &value)
+    // {
+    //     if (*data == value)
+    //     {
+    //         data.reset();
+    //     }
+    // }
+    //
+    // static auto compare_value_to_reset(Optional<String>& data, std::string_view const value)
+    // {
+    //     if (*data == value)
+    //     {
+    //         data.reset();
+    //     }
+    // }
+    //
+    // static auto fourcc_from_integer(u32 const &data, String &value) -> void {
+    //     value += static_cast<char>(clip_bit(data, 24_size, 8_size));
+    //     value += static_cast<char>(clip_bit(data, 16_size, 8_size));
+    //     value += static_cast<char>(clip_bit(data, 8_size, 8_size));
+    //     value += static_cast<char>(clip_bit(data, 0_size, 8_size));
+    //     assert_conditional(value.size() == 4_size, "Invalid fourcc siz", "fourcc_from_integer");
+    // }
+    //
+    // static auto fourcc_to_integer(u32 &data, String const &value) -> void {
+    //     data |= static_cast<uint32_t>(value[0] << 0);
+    //     data |= static_cast<uint32_t>(value[1] << 8);
+    //     data |= static_cast<uint32_t>(value[2] << 16);
+    //     data |= static_cast<uint32_t>(value[3] << 24);
+    //     assert_conditional(value.size() == 4_size, "Invalid fourcc siz", "fourcc_to_integer");
+    // }
 
 
     template <typename Type> requires is_integer<Type>

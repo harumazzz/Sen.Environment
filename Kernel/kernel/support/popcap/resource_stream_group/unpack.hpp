@@ -95,17 +95,17 @@ namespace Sen::Kernel::Support::PopCap::ResourceStreamGroup {
             exchange_null_block(stream, 5_size);
             compiled_map_decode(&exchange_packet_resource, stream, model.resource);
             if constexpr (std::is_same_v<DestType, StringView>) {
-                auto pool = BS::thread_pool{};
-                pool.detach_loop(k_begin_index, model.resource.size(),
-                [&](const usize &i) {
-                    if (auto const &resource = model.resource[i]; std::holds_alternative<TextureResource>(resource)) {
-                        exchange_write(std::get<TextureResource>(resource), general_view_store.view(), texture_view_store.view(), destination);
-                    }
-                    else {
-                        exchange_write(std::get<GeneralResource>(resource), general_view_store.view(), texture_view_store.view(), destination);
-                    }
-                });
-                pool.wait();
+                // auto pool = BS::thread_pool{};
+                // pool.detach_loop(k_begin_index, model.resource.size(),
+                // [&](const usize &i) {
+                //     if (auto const &resource = model.resource[i]; std::holds_alternative<TextureResource>(resource)) {
+                //         exchange_write(std::get<TextureResource>(resource), general_view_store.view(), texture_view_store.view(), destination);
+                //     }
+                //     else {
+                //         exchange_write(std::get<GeneralResource>(resource), general_view_store.view(), texture_view_store.view(), destination);
+                //     }
+                // });
+                // pool.wait();
             }
         }
 

@@ -1,9 +1,7 @@
 #pragma once
 
-#include <version>
-
 namespace Sen::Kernel {
 
-	inline auto constexpr version = 13_size;
+	inline auto constexpr version = size_t{13};
 
 }

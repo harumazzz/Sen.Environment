@@ -52,7 +52,7 @@ namespace Sen::Kernel::Compression::Zip {
             auto count = static_cast<usize>(Subprojects::zip::zip_entries_total(zip));
             destination.reserve(count);
             for (auto index : Range{count}) {
-                auto entry = Subprojects::zip::zip_entry_openbyindex(zip, index);
+                Subprojects::zip::zip_entry_openbyindex(zip, index);
                 auto name = Subprojects::zip::zip_entry_name(zip);
                 auto size = Subprojects::zip::zip_entry_size(zip);
                 destination.emplace(String{name, static_cast<usize>(size)}, make_value(zip, size));

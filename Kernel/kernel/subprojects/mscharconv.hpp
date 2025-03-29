@@ -1,11 +1,6 @@
 #pragma once
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-
 #include "subprojects/mscharconv/include/msstl/charconv.hpp"
-
-#pragma clang diagnostic pop
 
 namespace Sen::Kernel::Subprojects::mscharconv {
 

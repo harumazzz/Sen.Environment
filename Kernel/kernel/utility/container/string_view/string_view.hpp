@@ -58,7 +58,7 @@ namespace Sen::Kernel {
         }
 
         constexpr auto operator ==(const StringView& other) const noexcept -> bool {
-            return this->size() == other.size() && std::memcmp(this->begin(), other.begin(), this->size()) == 0;
+            return thiz.size() == other.size() && std::memcmp(thiz.begin(), other.begin(), thiz.size()) == 0;
         }
 
         constexpr auto operator!=(const StringView& other) const noexcept -> bool {
@@ -81,17 +81,17 @@ namespace Sen::Kernel {
             return !(thiz < other);
         }
 
-        constexpr auto remove_prefix(const usize& n) noexcept -> void {
-            assert_conditional(n <= this->size(), "Accessed index is larger than the size of the array", "remove_prefix");
+        constexpr auto remove_prefix(const usize& n) -> void {
+            assert_conditional(n <= thiz.size(), "Accessed index is larger than the size of the array", "remove_prefix");
             thiz = StringView{thiz.data() + n, thiz.size() - n};
         }
 
-        constexpr auto remove_suffix(const usize& n) noexcept -> void {
+        constexpr auto remove_suffix(const usize& n) -> void {
             assert_conditional(n <= thiz.size(), "Accessed index is larger than the size of the array", "remove_suffix");
             thiz = StringView{thiz.data(), thiz.size() - n};
         }
 
-        constexpr auto trim(
+        [[nodiscard]] constexpr auto trim(
         ) const noexcept -> StringView {
             auto start = 0_size;
             auto end = thiz.size();
@@ -104,7 +104,7 @@ namespace Sen::Kernel {
             return StringView{thiz.begin() + start, end - start};
         }
 
-        inline auto to_string(
+        [[nodiscard]] inline auto to_string(
         ) const -> BasicString {
             return BasicString{thiz.begin(), thiz.size()};
         }
@@ -196,27 +196,27 @@ namespace Sen::Kernel {
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
-			const std::string_view& value
+			const std::string_view& other
 		) const -> bool {
-    		return thiz.starts_with(value.data(), value.size());
+    		return thiz.starts_with(other.data(), other.size());
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
-			const StringView& value
+			const StringView& other
 		) const -> bool {
-        	return thiz.starts_with(value.begin(), value.size());
+        	return thiz.starts_with(other.begin(), other.size());
         }
 
     	constexpr auto starts_with (
-			const char* value
+			const char* other
 		) const -> bool {
-    		return thiz.starts_with(value, std::strlen(value));
+    		return thiz.starts_with(other, std::strlen(other));
     	}
 
     	[[nodiscard]] constexpr auto starts_with (
-			const String& value
+			const String& other
 		) const -> bool {
-    		return thiz.starts_with(value.begin(), value.size());
+    		return thiz.starts_with(other.begin(), other.size());
     	}
 
     	constexpr auto ends_with (
@@ -227,21 +227,21 @@ namespace Sen::Kernel {
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
-			const std::string_view& value
+			const std::string_view& other
 		) const -> bool {
-    		return thiz.ends_with(value.data(), value.size());
+    		return thiz.ends_with(other.data(), other.size());
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
-			const String& value
+			const String& other
 		) const -> bool {
-    		return thiz.ends_with(value.begin(), value.size());
+    		return thiz.ends_with(other.begin(), other.size());
     	}
 
     	[[nodiscard]] constexpr auto ends_with (
-			const StringView& value
+			const StringView& other
 		) const -> bool {
-        	return thiz.ends_with(value.begin(), value.size());
+        	return thiz.ends_with(other.begin(), other.size());
         }
 
     	[[nodiscard]] constexpr auto contains (

@@ -116,7 +116,7 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
             if constexpr (to == Type::json_map) {
                 auto data = [&] () -> LawnStrings<true> {
                     return LawnStrings<true>{
-                        1,
+                        static_cast<u32>(1),
                         make_list<ObjectEntry<true>>([] () -> ObjectEntry<true> {
                             return ObjectEntry<true>{
                                 make_list<String>("LawnStringsData"_s),
@@ -139,7 +139,7 @@ namespace Sen::Kernel::Support::PopCap::TextTable {
             if constexpr (to == Type::json_array) {
                 auto data = [&]() -> LawnStrings<false> {
                     return LawnStrings<false> {
-                        1,
+                        static_cast<u32>(1),
                         make_list<ObjectEntry<false>>([&]() -> ObjectEntry<false> {
                             return ObjectEntry<false>{
                                 make_list<String>("LawnStringsData"_s),

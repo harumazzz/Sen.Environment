@@ -14,8 +14,6 @@ namespace Sen::Kernel::Compression::Zlib {
             const Source& source,
             Destination& destination
         ) -> void {
-            #pragma clang diagnostic push
-            #pragma clang diagnostic ignored "-Wold-style-cast"
             auto actual_window_bits = windows_bits;
             if constexpr (format == Type::deflate) {
                 actual_window_bits = -actual_window_bits;
@@ -33,8 +31,6 @@ namespace Sen::Kernel::Compression::Zlib {
                 avail_out = destination.capacity();
             }
             const auto source_size = source.size() * source.sizeof_value();
-            debug(source_size);
-            debug(avail_out);
             auto z_stream = Subprojects::zlib::z_stream{
                 .next_in = reinterpret_cast<Subprojects::zlib::Bytef*>(source.begin()),
                 .avail_in = static_cast<Subprojects::zlib::uInt>(source_size),
@@ -54,7 +50,7 @@ namespace Sen::Kernel::Compression::Zlib {
             auto state = int{};
             state = Subprojects::zlib::inflateInit2_(
                 &z_stream,
-                actual_window_bits,
+                static_cast<int>(actual_window_bits),
                 Subprojects::zlib::$ZLIB_VERSION,
                 static_cast<int>(sizeof(z_stream))
             );
@@ -71,7 +67,6 @@ namespace Sen::Kernel::Compression::Zlib {
             if constexpr (is_list_v<Destination>) {
                 destination.resize(static_cast<usize>(z_stream.total_out / destination.sizeof_value()));
             }
-            #pragma clang diagnostic pop
         }
 
         template < auto type = Type::zlib, auto windows_bits = Subprojects::zlib::$MAX_WBITS, typename Source, typename Destination>
@@ -80,7 +75,7 @@ namespace Sen::Kernel::Compression::Zlib {
             Source& source,
             Destination& destination
         ) -> void {
-            process_whole<type, windows_bits>(source, destination);
+            return process_whole<type, windows_bits>(source, destination);
         }
 
     };

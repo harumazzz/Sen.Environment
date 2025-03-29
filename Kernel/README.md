@@ -7,7 +7,7 @@
 
 ## Development
 
--   [CMake 3.8+](https://cmake.org/)
+-   [Meson 1.7.0+](https://mesonbuild.com/)
 
 -   [Powershell for Windows](https://learn.microsoft.com/en-us/powershell/)
 
@@ -15,7 +15,7 @@
 
 -   [Terminal for Macintosh](https://developer.apple.com/library/archive/documentation/OpenSource/Conceptual/ShellScripting/Introduction/Introduction.html)
 
--   [MSVC 19.40 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
+-   [MSVC 19.43 with MSVC for Windows](https://visualstudio.microsoft.com/downloads/)
 
 -   [Clang 19.1 for Linux](https://llvm.org/)
 
