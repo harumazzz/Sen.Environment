@@ -47,3 +47,5 @@ app.*.map.json
 
 # l10n generated
 /lib/i18n/
+
+pubspec.lock
