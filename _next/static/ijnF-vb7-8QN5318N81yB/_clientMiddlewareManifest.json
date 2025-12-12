@@ -1,0 +1,6 @@
+[
+  {
+    "regexp": "^\\/Sen-Website(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next|_vercel|.*\\..*).*))(\\\\.json)?[\\/#\\?]?$",
+    "originalSource": "/((?!api|_next|_vercel|.*\\..*).*)"
+  }
+]
